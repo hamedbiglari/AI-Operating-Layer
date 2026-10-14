@@ -1,0 +1,621 @@
+# AI Operating Layer - WordPress adapter
+# Copyright (C) 2026
+# This file is distributed under the GPL-2.0-or-later license.
+#
+# Translator note: this catalogue supersedes ai-access-toolkit.pot. The
+# gettext approach is inherited from that plugin (capability map #18), but
+# every string is new, so the catalogue was regenerated from source rather
+# than copied - a stale msgid would silently ship an untranslated string.
+msgid ""
+msgstr ""
+"Project-Id-Version: AI Operating Layer 0.9.0\n"
+"Language: fa_IR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Report-Msgid-Bugs-To: https://github.com/hamedbiglari/AI-Operating-Layer\n"
+"POT-Creation-Date: 2026-09-14T00:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: \n"
+"X-Domain: ai-operating-layer\n"
+
+#: includes/class-aiol-diagnostics.php:246
+msgid "%1$d of %2$d checks passing."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:132
+msgid "A sitemap was found at %s."
+msgstr ""
+
+#: admin/view-settings.php:65
+#: admin/class-aiol-admin.php:72
+#: admin/class-aiol-admin.php:73
+msgid "AI Operating Layer"
+msgstr "لایه عملیاتی هوش مصنوعی"
+
+#: includes/class-aiol-actors.php:216
+msgid "AI answering a user"
+msgstr "هوش مصنوعی در حال پاسخ به کاربر"
+
+#: includes/class-aiol-actors.php:215
+msgid "AI crawler (indexing)"
+msgstr "خزنده هوش مصنوعی (نمایه‌سازی)"
+
+#: admin/view-diagnostics.php:77
+msgid "AI visibility"
+msgstr "دیده‌شدن در هوش مصنوعی"
+
+#: admin/view-settings.php:145
+msgid "Adapter type"
+msgstr "نوع آداپتور"
+
+#: includes/class-aiol-actors.php:217
+msgid "Agent acting for a user"
+msgstr "عامل در حال اقدام برای کاربر"
+
+#: includes/class-aiol-diagnostics.php:160
+msgid "An SEO plugin is active and is expected to emit meta descriptions."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:174
+msgid "An llms.txt representation is being served at /llms.txt."
+msgstr ""
+
+#: includes/class-aiol-actors.php:144
+msgid "Browser"
+msgstr "مرورگر"
+
+#: includes/class-aiol-diagnostics.php:150
+msgid "Canonical URL output is not registered. An SEO plugin may be handling it instead — if not, duplicate URLs may be indexed separately."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:146
+#: includes/class-aiol-diagnostics.php:149
+msgid "Canonical URLs"
+msgstr "آدرس‌های کاننیکال"
+
+#: admin/view-settings.php:111
+msgid "Cloud Core"
+msgstr ""
+
+#: admin/view-settings.php:169
+msgid "Cloud Core URL"
+msgstr "آدرس Cloud Core"
+
+#: includes/class-aiol-credentials.php:87
+msgid "Cloud Core URL is not a valid URL."
+msgstr ""
+
+#: includes/class-aiol-credentials.php:63
+msgid "Cloud Core URL is required."
+msgstr ""
+
+#: includes/class-aiol-credentials.php:68
+msgid "Cloud Core URL must start with http:// or https://"
+msgstr ""
+
+#: includes/class-aiol-client.php:165
+msgid "Cloud Core has no such object for this installation. It may have been deleted, or it belongs to a different organization."
+msgstr ""
+
+#: admin/view-settings.php:68
+msgid "Cloud Core is the source of truth for your products, knowledge, evidence and trust. This plugin connects WordPress to it — it publishes references, never business data of its own."
+msgstr ""
+
+#: includes/class-aiol-client.php:177
+msgid "Cloud Core is unreachable or returned a server error. Your data is unchanged; retry is safe."
+msgstr ""
+
+#: includes/class-aiol-credentials.php:83
+msgid "Cloud Core must be reached over HTTPS. Plain http:// is only allowed for local development (localhost or 127.0.0.1), because the installation token would otherwise be sent in clear text."
+msgstr ""
+
+#: admin/view-mappings.php:77
+#: admin/view-mappings.php:104
+msgid "Cloud Core object"
+msgstr "شیء Cloud Core"
+
+#: admin/view-meta-box.php:55
+msgid "Cloud Core object ID"
+msgstr "شناسه شیء Cloud Core"
+
+#: admin/view-meta-box.php:42
+msgid "Cloud Core object type"
+msgstr "نوع شیء Cloud Core"
+
+#: includes/class-aiol-client.php:173
+msgid "Cloud Core rejected the request as invalid. Nothing was changed."
+msgstr ""
+
+#: includes/class-aiol-client.php:161
+msgid "Cloud Core rejected this installation token. It may have been revoked or rotated — issue a new one in Cloud Core and paste it here."
+msgstr ""
+
+#: includes/class-aiol-client.php:181
+msgid "Cloud Core returned an unexpected response. Nothing was changed."
+msgstr ""
+
+#: admin/view-diagnostics.php:76
+msgid "Commerce readiness"
+msgstr "آمادگی تجاری"
+
+#: admin/view-settings.php:192
+msgid "Connect to Cloud Core"
+msgstr "اتصال به Cloud Core"
+
+#: admin/view-settings.php:76
+msgid "Connected to Cloud Core and the credential was verified."
+msgstr ""
+
+#: admin/view-settings.php:108
+msgid "Connection"
+msgstr "اتصال"
+
+#: admin/view-settings.php:163
+msgid "Connection settings"
+msgstr "تنظیمات اتصال"
+
+#: admin/view-meta-box.php:60
+msgid "Copy the ID from Cloud Core. Leave empty to unlink this post. Cloud Core remains the source of truth for its content."
+msgstr ""
+
+#: admin/view-mappings.php:44
+msgid "Could not load mappings."
+msgstr ""
+
+#: includes/class-aiol-client.php:117
+msgid "Could not reach Cloud Core. Check the URL and that the server is running."
+msgstr ""
+
+#: admin/view-diagnostics.php:67
+msgid "Coverage dimensions"
+msgstr "ابعاد پوشش"
+
+#: admin/view-diagnostics.php:114
+msgid "Crawlers and AI clients that visit this site will be listed here. Ordinary human visits are deliberately not logged."
+msgstr ""
+
+#: includes/class-aiol-status.php:61
+msgid "Degraded"
+msgstr "تضعیف‌شده"
+
+#: includes/class-aiol-actors.php:227
+msgid "Detected (self-reported)"
+msgstr "شناسایی‌شده (خوداظهاری)"
+
+#: admin/view-diagnostics.php:101
+msgid "Dimensions shown as \"Not determined\" are measured in Cloud Core or in a later phase — this adapter cannot see them, so it does not guess."
+msgstr ""
+
+#: admin/view-settings.php:198
+#: admin/view-settings.php:206
+msgid "Disconnect"
+msgstr "قطع اتصال"
+
+#: admin/view-settings.php:80
+msgid "Disconnected. The stored token has been removed from this site. Mappings in Cloud Core are unchanged."
+msgstr ""
+
+#: admin/view-mappings.php:34
+msgid "Each row links one WordPress post to one object in Cloud Core. Cloud Core owns the object; WordPress owns only the post."
+msgstr ""
+
+#: admin/view-settings.php:115
+msgid "Endpoint"
+msgstr ""
+
+#: admin/view-diagnostics.php:74
+msgid "Evidence coverage"
+msgstr "پوشش شواهد"
+
+#: admin/view-mappings.php:118
+#: includes/class-aiol-status.php:62
+msgid "Failed"
+msgstr "ناموفق"
+
+#: admin/view-settings.php:174
+msgid "For example https://core.example.com — the address of your Cloud Core server."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:84
+#: includes/class-aiol-diagnostics.php:88
+#: includes/class-aiol-diagnostics.php:91
+msgid "HTTPS"
+msgstr "HTTPS"
+
+#: includes/class-aiol-status.php:60
+msgid "Healthy"
+msgstr "سالم"
+
+#: includes/class-aiol-actors.php:219
+msgid "Human"
+msgstr "انسان"
+
+#: admin/view-diagnostics.php:130
+msgid "Identified from the User-Agent header, which any client can set. These are self-reported claims, not verified identities — and no IP addresses are stored."
+msgstr ""
+
+#: admin/view-settings.php:157
+msgid "Identity unavailable while Cloud Core is unreachable."
+msgstr ""
+
+#: admin/view-settings.php:179
+msgid "Installation token"
+msgstr "توکن نصب"
+
+#: includes/class-aiol-credentials.php:90
+msgid "Installation token is required."
+msgstr ""
+
+#: admin/view-diagnostics.php:33
+msgid "Internal diagnostic."
+msgstr "عیب‌یابی داخلی."
+
+#: admin/view-settings.php:184
+msgid "Issued in Cloud Core under Installations. It begins with \"aiol_\". It is stored on this site and never shown again — if you lose it, rotate the credential in Cloud Core."
+msgstr ""
+
+#: admin/view-diagnostics.php:73
+msgid "Knowledge coverage"
+msgstr "پوشش دانش"
+
+#: admin/view-meta-box.php:48
+msgid "Knowledge object"
+msgstr "شیء دانش"
+
+#: admin/view-mappings.php:80
+#: admin/view-mappings.php:129
+msgid "Last synced"
+msgstr "آخرین همگام‌سازی"
+
+#: admin/view-diagnostics.php:72
+msgid "Machine readability"
+msgstr "خوانایی ماشینی"
+
+#: admin/view-mappings.php:31
+msgid "Mapped content"
+msgstr "محتوای نگاشت‌شده"
+
+#: includes/class-aiol-diagnostics.php:212
+#: includes/class-aiol-diagnostics.php:213
+#: includes/class-aiol-diagnostics.php:214
+msgid "Measured in Cloud Core, not by this adapter."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:159
+#: includes/class-aiol-diagnostics.php:166
+msgid "Meta descriptions"
+msgstr "توضیحات متا"
+
+#: admin/view-diagnostics.php:24
+msgid "Needs attention"
+msgstr "نیازمند توجه"
+
+#: admin/view-mappings.php:134
+msgid "Never"
+msgstr "هرگز"
+
+#: admin/view-mappings.php:64
+msgid "No content is linked yet"
+msgstr "هنوز محتوایی پیوند داده نشده است"
+
+#: includes/class-aiol-diagnostics.php:167
+msgid "No known SEO plugin is active. WordPress does not emit meta descriptions by itself, but your theme might — this cannot be confirmed without inspecting a rendered page."
+msgstr ""
+
+#: admin/view-diagnostics.php:113
+msgid "No machine access observed yet"
+msgstr "هنوز دسترسی ماشینی مشاهده نشده است"
+
+#: includes/class-aiol-diagnostics.php:136
+msgid "No sitemap was found at the usual locations. WordPress generates one at /wp-sitemap.xml unless a plugin or setting disables it."
+msgstr ""
+
+#: includes/class-aiol-actors.php:119
+msgid "No user agent"
+msgstr "بدون user agent"
+
+#: includes/class-aiol-status.php:63
+msgid "Not configured"
+msgstr "پیکربندی نشده"
+
+#: admin/view-settings.php:96
+msgid "Not connected yet"
+msgstr "هنوز متصل نشده است"
+
+#: admin/view-diagnostics.php:26
+msgid "Not determined"
+msgstr "تعیین‌نشده"
+
+#: admin/view-meta-box.php:25
+msgid "Not linked"
+msgstr "پیوند داده نشده"
+
+#: admin/view-mappings.php:47
+msgid "Nothing was changed in Cloud Core. Retrying is safe."
+msgstr ""
+
+#: admin/view-diagnostics.php:109
+msgid "Observed access"
+msgstr "دسترسی‌های مشاهده‌شده"
+
+#: admin/view-mappings.php:66
+msgid "Open any post, page or product, find the \"AI Operating Layer\" panel in the sidebar, and paste the Cloud Core object ID it represents. It will appear here after you save."
+msgstr ""
+
+#: admin/view-settings.php:141
+msgid "Organization"
+msgstr "سازمان"
+
+#: admin/view-mappings.php:117
+msgid "Out of date"
+msgstr "قدیمی"
+
+#: admin/view-diagnostics.php:23
+msgid "Pass"
+msgstr "قبول"
+
+#: admin/view-mappings.php:119
+msgid "Pending"
+msgstr "در انتظار"
+
+#: admin/view-settings.php:149
+msgid "Permissions"
+msgstr "دسترسی‌ها"
+
+#: includes/class-aiol-diagnostics.php:216
+msgid "Planned for a later phase; not measured today."
+msgstr ""
+
+#: admin/view-mappings.php:99
+msgid "Post %d (not on this site)"
+msgstr ""
+
+#: includes/class-aiol-actors.php:228
+msgid "Probable"
+msgstr "محتمل"
+
+#: admin/view-diagnostics.php:25
+msgid "Problem"
+msgstr "مشکل"
+
+#: admin/view-meta-box.php:47
+msgid "Product"
+msgstr "محصول"
+
+#: includes/class-aiol-diagnostics.php:187
+msgid "Product structured data is generated from Cloud Core for mapped products."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:184
+msgid "Product structured data is generated from Cloud Core, which is not connected yet."
+msgstr ""
+
+#: admin/view-settings.php:200
+msgid "Remove the stored token from this site? Mappings already in Cloud Core are not deleted."
+msgstr ""
+
+#: admin/view-settings.php:204
+msgid "Removes the token from this site only. Your data in Cloud Core is untouched."
+msgstr ""
+
+#: admin/view-mappings.php:56
+msgid "Retry"
+msgstr "تلاش مجدد"
+
+#: admin/view-settings.php:129
+msgid "Retrying is safe — nothing was changed."
+msgstr ""
+
+#: admin/view-mappings.php:49
+msgid "Retrying will not help until the cause above is fixed."
+msgstr ""
+
+#: includes/class-aiol-actors.php:218
+msgid "Search crawler"
+msgstr "خزنده جستجو"
+
+#: admin/view-settings.php:84
+msgid "Settings saved, but the credential did not authenticate."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:80
+msgid "Site address"
+msgstr "آدرس سایت"
+
+#: admin/view-diagnostics.php:29
+msgid "Site diagnostics"
+msgstr "عیب‌یابی سایت"
+
+#: admin/view-settings.php:105
+msgid "Status"
+msgstr "وضعیت"
+
+#: admin/view-meta-box.php:33
+msgid "Status:"
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:183
+#: includes/class-aiol-diagnostics.php:186
+msgid "Structured data"
+msgstr "داده ساختاریافته"
+
+#: admin/view-meta-box.php:28
+msgid "Sync failed"
+msgstr "همگام‌سازی ناموفق"
+
+#: admin/view-mappings.php:79
+#: admin/view-mappings.php:110
+msgid "Sync status"
+msgstr "وضعیت همگام‌سازی"
+
+#: admin/view-mappings.php:116
+msgid "Synced"
+msgstr "همگام‌شده"
+
+#: admin/view-meta-box.php:27
+msgid "Synced with Cloud Core"
+msgstr "همگام با Cloud Core"
+
+#: admin/view-diagnostics.php:43
+msgid "Technical checks"
+msgstr "بررسی‌های فنی"
+
+#: admin/view-diagnostics.php:71
+msgid "Technical discoverability"
+msgstr "قابلیت کشف فنی"
+
+#: includes/class-aiol-client.php:169
+msgid "That change conflicts with something already recorded in Cloud Core. Nothing was changed."
+msgstr ""
+
+#: includes/class-aiol-credentials.php:95
+msgid "That does not look like an installation token. Tokens begin with \"aiol_\"."
+msgstr ""
+
+#: admin/class-aiol-admin.php:276
+msgid "That is not a valid Cloud Core object ID. It should look like 123e4567-e89b-12d3-a456-426614174000."
+msgstr ""
+
+#: includes/class-aiol-client.php:92
+#: includes/class-aiol-client.php:179
+msgid "The plugin is not connected to Cloud Core yet."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:81
+msgid "The site address is not set, so HTTPS cannot be checked."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:85
+msgid "The site is served over HTTPS."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:92
+msgid "The site is served over plain HTTP. Install a TLS certificate — AI clients and search engines de-prioritise insecure sites, and credentials sent from this site are readable in transit."
+msgstr ""
+
+#: admin/view-diagnostics.php:34
+msgid "These are technical checks of this WordPress site. They are not a rating, not a score, and say nothing about how any AI system actually treats your content."
+msgstr ""
+
+#: admin/view-settings.php:137
+msgid "This installation"
+msgstr "این نصب"
+
+#: includes/class-aiol-diagnostics.php:89
+msgid "This is a local development site, so plain HTTP is expected here. A production site must use HTTPS."
+msgstr ""
+
+#: includes/class-aiol-client.php:163
+msgid "This token is valid but lacks the permission for that action. Issue a token with the required scopes in Cloud Core."
+msgstr ""
+
+#: admin/view-settings.php:98
+msgid "To connect, open your Cloud Core installation settings, issue an installation token, and paste it below along with your Cloud Core URL."
+msgstr ""
+
+#: admin/view-settings.php:119
+msgid "Token"
+msgstr ""
+
+#: includes/class-aiol-client.php:175
+msgid "Too many requests to Cloud Core. Wait a minute and try again — nothing was lost."
+msgstr ""
+
+#: admin/view-diagnostics.php:75
+msgid "Trust coverage"
+msgstr "پوشش اعتماد"
+
+#: admin/view-mappings.php:78
+#: admin/view-mappings.php:107
+msgid "Type"
+msgstr "نوع"
+
+#: includes/class-aiol-actors.php:220
+#: includes/class-aiol-actors.php:230
+#: includes/class-aiol-status.php:64
+msgid "Unknown"
+msgstr "نامشخص"
+
+#: includes/class-aiol-actors.php:141
+msgid "Unrecognised automated client"
+msgstr ""
+
+#: includes/class-aiol-actors.php:146
+msgid "Unrecognised client"
+msgstr ""
+
+#: admin/view-settings.php:191
+msgid "Update connection"
+msgstr "به‌روزرسانی اتصال"
+
+#: includes/class-aiol-actors.php:229
+msgid "Verified"
+msgstr "تأییدشده"
+
+#: admin/view-meta-box.php:26
+msgid "Will sync on save"
+msgstr "با ذخیره همگام می‌شود"
+
+#: includes/class-aiol-diagnostics.php:147
+msgid "WordPress is emitting canonical URLs."
+msgstr ""
+
+#: admin/view-mappings.php:76
+#: admin/view-mappings.php:90
+msgid "WordPress post"
+msgstr "نوشته وردپرس"
+
+#: includes/class-aiol-diagnostics.php:130
+#: includes/class-aiol-diagnostics.php:135
+msgid "XML sitemap"
+msgstr "نقشه سایت XML"
+
+#: admin/class-aiol-admin.php:101
+#: admin/class-aiol-admin.php:145
+msgid "You do not have permission to change these settings."
+msgstr ""
+
+#: admin/class-aiol-admin.php:169
+msgid "You do not have permission to view this page."
+msgstr ""
+
+#: admin/view-settings.php:154
+msgid "Your organization is determined by Cloud Core from this token. WordPress cannot choose or change it."
+msgstr ""
+
+#: admin/view-mappings.php:133
+msgid "ago"
+msgstr "پیش"
+
+#: includes/class-aiol-diagnostics.php:173
+#: includes/class-aiol-diagnostics.php:176
+msgid "llms.txt"
+msgstr "llms.txt"
+
+#: includes/class-aiol-diagnostics.php:177
+msgid "llms.txt is turned off. It is an optional, emerging convention — enabling it costs nothing and gives AI clients a plain-text index of your content."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:103
+#: includes/class-aiol-diagnostics.php:108
+#: includes/class-aiol-diagnostics.php:115
+msgid "robots.txt"
+msgstr "robots.txt"
+
+#: includes/class-aiol-diagnostics.php:104
+msgid "robots.txt could not be fetched from this site, so its contents are unknown. This is common on local or firewalled installs."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:116
+msgid "robots.txt disallows all crawling. No search engine or AI client will read this site until that rule is removed."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:119
+msgid "robots.txt is reachable and does not block all crawling."
+msgstr ""
+
+#: includes/class-aiol-diagnostics.php:110
+msgid "robots.txt returned HTTP %d. Crawlers expect it to exist and return 200."
+msgstr ""
+

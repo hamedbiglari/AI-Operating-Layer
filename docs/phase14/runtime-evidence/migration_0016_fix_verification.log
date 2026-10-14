@@ -1,0 +1,179 @@
+Phase 14 — Migration 0016 fix verification
+Date: 2026-09-22
+Environment: local (no Docker in this sandbox) — real PostgreSQL 16 +
+pgvector 0.6.0, real Redis 7, real Python venv with the project's exact
+pinned requirements.txt (fastapi 0.115.0, sqlalchemy 2.0.35, alembic
+1.13.2, psycopg[binary] 3.2.2, pgvector 0.3.4).
+
+BUG 1 (root cause): migrations/versions/0016_phase13_analytics_access.py
+assumed `adapter_scope` was a native Postgres ENUM type and tried
+`ALTER TYPE adapter_scope ADD VALUE`. No such type has ever existed —
+installation_credentials.scopes is `ARRAY(String(64))` (see migration
+0010, app/models/installation.py), validated at the application layer
+by AdapterScope(str, enum.Enum) in app/models/enums.py, which already
+defines TELEMETRY_WRITE/TELEMETRY_READ. Fix: removed the ALTER TYPE
+calls entirely (no DDL needed) and simplified the downgrade-time scope
+cleanup to a plain array UPDATE with no type cast.
+
+BUG 2 (found while fixing bug 1): after removing the ALTER TYPE calls,
+upgrade() still explicitly pre-created all 8 new Phase 13 enum types via
+`enum_type.create(bind, checkfirst=True)`, then create_table() for
+ai_agents / access_policies / page_views / search_demand_events (which
+reuse the SAME enum objects, e.g. ACTOR_TYPE in four different tables)
+tried to auto-create each type a second time, unconditionally, failing
+with "type already exists" — reproduced from a genuinely fresh database
+(DROP DATABASE + CREATE DATABASE immediately before), ruling out
+leftover state. create_type=False on the Enum objects did not fix this.
+Fix: removed the redundant explicit pre-creation loop; create_table()'s
+own built-in checkfirst-based type creation correctly creates each
+shared type once and reuses it on every later table.
+
+VERIFICATION RUN:
+$ alembic upgrade head          -> completed, 0001 through 0016, no errors
+$ alembic current                -> 0016 (head)
+$ psql: 54 tables in public schema
+$ psql \d ai_agents               -> actor_type/access_purpose/actor_confidence/
+                                     agent_registration_origin columns all
+                                     correctly typed
+$ alembic downgrade -1           -> 0016 -> 0015, no errors
+$ alembic upgrade head           -> 0015 -> 0016, no errors
+$ scripts/verify_migration_cycle.sh (the project's own base->head->base->head
+  test) -> PASSED end to end:
+    [1/4] upgrade to head          - OK
+    [2/4] downgrade to base        - OK, all 16 migrations reversed cleanly
+    [3/4] confirm no app tables remain - OK
+    [4/4] upgrade back to head     - OK, all 16 migrations re-applied cleanly
+
+STATUS: Migration chain (0001-0016) now genuinely runs to completion in
+both directions against a real Postgres 16 + pgvector database. This was
+never true before this fix — both prior sessions' reports recorded "not
+executed" for the entire migration chain due to no available runtime
+environment.
+
+---
+BUG 3: app/services/search_demand_service.py imported QueryProvenance
+from app.models.query (wrong module — that class lives in the separate
+file app/models/query_provenance.py). This was a hard ImportError that
+blocked the ENTIRE application from booting — not a narrow issue, since
+FastAPI imports the full router tree (including telemetry -> search
+demand service) at startup. Fixed by splitting the import to pull each
+class from its correct module.
+
+BACKEND BOOT VERIFICATION (Section 10):
+$ uvicorn app.main:app  -> "Application startup complete." — first
+  successful boot of this backend in any session's history.
+$ GET /                          -> 200 {"service":"AI Operating Layer",
+                                     "env":"development","api":"/api/v1"}
+$ GET /api/v1/health              -> 200 {"status":"ok","database":"ok",
+                                     "redis":"ok"} — real DB + Redis
+                                     connectivity check, not a stub
+$ GET /api/v1/health/ready         -> 200, same real checks
+$ GET /api/v1/health/live          -> 200, basic liveness (correctly
+                                     does not depend on DB/Redis, as a
+                                     liveness probe should not)
+$ GET /openapi.json               -> 142 routes registered across every
+                                     Phase 0-13 router
+$ GET /api/v1/organizations/me (no auth)  -> 401, structured envelope:
+     {"error":{"code":"UNAUTHORIZED","message":"Could not validate
+     credentials"},"request_id":"<uuid>"} — matches the Section 45
+     error-contract shape (code/message/request_id) exactly
+$ GET /api/v1/knowledge (no auth)         -> 401, same enforcement on a
+                                     different router
+$ POST /api/v1/auth/register-organization with {} -> 422 (Pydantic
+                                     validation error, not a 500 crash)
+
+STATUS: Backend genuinely boots, connects to real Postgres and real
+Redis, all 142 routes mount, and authentication is enforced consistently
+with a proper structured error envelope. This was never true before this
+session — no prior session had a working database or dependency set to
+boot the app against.
+
+---
+WORKER VERIFICATION (Section 19/99):
+
+$ celery -A app.workers.celery_app worker --pool=solo  -> "celery@vm
+  ready.", connected to redis://localhost:6379/0, all 4 tasks registered
+  (documents.ingest, documents.reclaim_stalled, research.execute_task,
+  visibility.execute_run)
+
+REAL END-TO-END CHAIN (POST /documents/ingest-url):
+  API creates job -> returns job_id, status=queued
+  -> worker receives task (confirmed in worker log: "Task documents.ingest[...] received")
+  -> BUG 4 found: run_ingestion_job() unconditionally read
+     payload["document_id"], but url-kind jobs (created by
+     url_ingestion_service.create_url_ingestion_job) never have a
+     document_id at creation time -- the whole point of URL ingestion is
+     that fetching the URL is what CREATES the document. Every url-kind
+     job failed immediately with KeyError('document_id'), was retried
+     twice per the task's own retry policy (confirmed: attempts 1->2->3
+     in the job status, "retry: Retry in 5s" in the worker log), then
+     failed permanently. url_ingestion_service.fetch_and_ingest_url
+     already existed, fully implemented and correct, just never called.
+  -> Fixed: added a payload.get("kind") == "url" branch in
+     run_ingestion_job dispatching to fetch_and_ingest_url, and
+     preserved the code's own documented intent that a UrlRejected
+     (SSRF-guard rejection) should fail permanently rather than retry
+     (retryable=False) -- verified: re-ran the same chain after the fix,
+     job now fails in exactly 1 attempt with a URL-fetch error
+     (ConnectError) instead of 3 attempts with KeyError.
+  -> Progress genuinely persisted to Postgres at every state transition
+     and correctly read back via GET /documents/ingestion-jobs/{id} on
+     every poll.
+
+REMAINING, NOT AN APPLICATION BUG: the worker's own outbound network
+egress is restricted in this sandbox (no general internet access), so
+fetch_and_ingest_url's actual HTTP fetch cannot succeed here regardless
+of the code being correct -- confirmed the SSRF-guard/fetch layer is
+being reached and executing (ConnectError, not KeyError or an import
+failure), which is as far as this can be verified without unrestricted
+network egress in the worker's environment. This is an environment
+constraint (Section 73's NOT_CONFIGURED category), not a code defect.
+
+STATUS: Worker boots, connects to the real broker, receives and
+dispatches real tasks, its retry policy behaves exactly as configured,
+and job state is durably persisted and correctly readable through the
+API at every step. Two real bugs (dispatch + retry classification)
+found and fixed by actually running the chain, not by reading the code.
+
+---
+TENANT ISOLATION ATTACK MATRIX (Section 34/81):
+
+Two real, separate organizations created via the actual registration
+API (Tenant A, Tenant B), each with its own real JWT. Eight attacks run
+against real data in a real database:
+
+1. Tenant B reads Tenant A's source by exact UUID
+   -> 404 NOT_FOUND, no data returned. BLOCKED.
+2. Tenant B PATCHes Tenant A's source (title mutation attempt)
+   -> 404. BLOCKED, no mutation occurred.
+3. Tenant B lists /sources -- does Tenant A's source leak into the
+   collection response?
+   -> {"items":[],"total":0}. NOT PRESENT. BLOCKED.
+4. Tenant B calls /organizations/me -- is the response scoped by the
+   authenticated token or spoofable via a parameter?
+   -> Correctly returns Tenant B's own org; the endpoint takes no
+      org_id input at all, so there is no parameter to spoof.
+5. Forged JWT: took Tenant B's real, validly-issued token, decoded the
+   payload, changed the "org" claim to Tenant A's org_id, re-encoded,
+   kept the ORIGINAL signature (i.e. did not re-sign).
+   -> 401 UNAUTHORIZED. Signature verification correctly rejects the
+      tampered payload. BLOCKED.
+6. Tenant B reads Tenant A's knowledge object by exact UUID
+   -> 404. BLOCKED.
+7. Tenant B lists /knowledge -- leak check
+   -> {"items":[],"total":0}. NOT PRESENT. BLOCKED.
+8. Tenant B reads Tenant A's document-ingestion job by exact UUID
+   -> 404. BLOCKED.
+
+RESULT: 8/8 attacks blocked, across three different resource types
+(sources, knowledge objects, ingestion jobs) and three different attack
+shapes (direct ID access, list-endpoint enumeration, JWT signature
+tampering). No cross-tenant data was returned, mutated, or inferable in
+any of the eight cases. This is real evidence against a real database
+with two genuinely separate tenants -- not a code-reading inference.
+
+NOT YET TESTED (scope for a further pass, not claimed here): products,
+AI execution records, billing, visibility projects, analytics, support
+tickets, admin routes, and role-based (non-owner) authorization within
+a single tenant. The eight cases above are a real but partial sample of
+Section 81's full attack list.

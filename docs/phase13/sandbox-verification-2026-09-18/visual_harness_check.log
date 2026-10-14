@@ -1,0 +1,41 @@
+
+Static UX conformance — source checks only, NOT the §95 visual gate.
+
+  PASS  icon registry has unique names
+  PASS  every icon has a path
+  PASS  every icon is categorised
+  PASS  one canonical geometry declared
+  PASS  harness uses no emoji
+  PASS  harness uses no Unicode box/arrow/tick glyphs as icons
+  PASS  harness references no raster image
+  PASS  no inline SVG outside the icon component — 0 stray <svg>
+  PASS  every icon is either hidden or labelled — 0 unmarked
+  PASS  every icon-only button has an accessible name — 0 unlabelled
+  PASS  icon-only buttons exist to test — 12 found
+  PASS  focus ring is never removed
+  PASS  focus-visible styling is defined
+  PASS  reduced motion is honoured
+  PASS  forced-colors mode is handled
+  PASS  data tables have a caption — 10 captions for 10 tables
+  PASS  every table cell carries data-label for the stacked layout — 0 cells without data-label
+  PASS  components.css contains no hard-coded colour
+  PASS  no hard-coded colour in harness markup
+  PASS  harness chrome is separated from the design system
+  PASS  every semantic status category from §34 has a token
+  PASS  dark theme is defined for every status token
+  PASS  no declared font-size below 12px
+  PASS  a real Persian face is first in the Persian stack
+  PASS  Persian is selected by lang, not by dir
+  PASS  identifiers are bidi-isolated
+  PASS  harness isolates identifiers with <bdi>
+  PASS  components use logical properties, not physical sides
+  PASS  only registry-marked icons are mirrored in RTL
+  PASS  a distinct "not available" treatment exists
+  PASS  the harness actually uses it
+  PASS  no invented composite score in the UI
+  PASS  no fake progress percentage
+
+33 passed, 0 failed.
+Rendered verification (contrast, reflow, overflow, focus ring, bidi):
+  ENVIRONMENT BLOCKED unless `node visual-harness/measure.js` can launch a browser.
+

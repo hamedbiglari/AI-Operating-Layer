@@ -1,0 +1,2013 @@
+{
+  "package": "AI-Operating-Layer-Phase13-SANDBOX-VERIFIED-2026-09-18-B",
+  "generated_at": "2026-09-18T07:14:06.648674+00:00",
+  "phase_12_status": "CONDITIONAL",
+  "phase_13_status": "BLOCKED",
+  "phase_14_gate": "LOCKED",
+  "honest_scope_statement": "Full project source tree plus a second forensic pass (session B, 2026-09-18) that traced Phase 13's actual call graph by hand and found + fixed 5 real defects (see docs/phase13/sandbox-verification-2026-09-18/FORENSIC_FINDINGS_2026-09-18-B.md), then extended the dashboard (clickable AI-visibility detail report; a real Knowledge list with 4 independently-manageable objects) per explicit owner request. Every executable check available in this sandbox was re-run after every edit. No FastAPI/SQLAlchemy/pytest/PostgreSQL/PHP/browser exists here; PHASE 13 = BLOCKED for that reason, unchanged from the prior package.",
+  "defects_found_and_fixed_this_session": [
+    "AIOL_Client had no get()/post() \u2014 the two Phase 13 classes calling them would Fatal Error",
+    "AIOL_Telemetry / AIOL_Access_Gate were require_once'd but never instantiated or registered",
+    "the two custom cron intervals they schedule were never registered via cron_schedules",
+    "AIOL_Access_Gate::evaluate() derived signature only from a fragile label reverse-lookup; broke on merchant rename",
+    "PageViewRead exposed only ai_agent_id (a UUID); added agent_signature via a batched (not N+1) lookup"
+  ],
+  "executed_verification": [
+    "node visual-harness/check.js -> 33 passed, 0 failed (re-run after every edit, including 2 real failures caught and fixed, not suppressed)",
+    "python ast.parse over all 272 cloud-core/**/*.py files -> clean",
+    "node --check wordpress-plugin/assets/js/aiol-dwell.js -> clean",
+    "internal <a href=\"#...\"> link integrity check -> 84 links, 0 broken",
+    "node visual-harness/build.js -> regenerated index.html, 74 registry icons, 239 KB"
+  ],
+  "not_executed": [
+    "pytest (cloud-core) \u2014 no fastapi/sqlalchemy/pytest installed; pip install re-attempted this session, failed (No matching distribution, no network egress)",
+    "alembic upgrade / migration cycle \u2014 no PostgreSQL",
+    "php -l and wordpress-plugin/tests/run.sh \u2014 no php binary (a best-effort brace/paren counter was tried and found unreliable \u2014 false positives from parens inside comments/strings \u2014 and is NOT cited as evidence)",
+    "visual-harness/measure.js \u2014 exits 2, no browser",
+    "mutation testing \u2014 0 of 11 planned",
+    "Phase 0-12 regression (772 tests)"
+  ],
+  "file_count": 396,
+  "files": [
+    {
+      "path": "MANIFEST.json",
+      "bytes": 68969,
+      "sha256": "b63a724ef58103efbffbf077a29d73f0fb34c2649518d4977c352cc267d4f4cc"
+    },
+    {
+      "path": "README.md",
+      "bytes": 42,
+      "sha256": "a8b37fc58409b46cd01d6fee9d080ed8c96a3812f7146be49b8b1aa6fa41e589"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 3417,
+      "sha256": "e6e63e9b9d1abf793312717dcc52b7777494f90f824b3c94c6165d9a5b4cdbd5"
+    },
+    {
+      "path": "cloud-core/Dockerfile",
+      "bytes": 453,
+      "sha256": "ed59634429605a185b41c12b40a700ed93a7f80c9e93bbe771511074b0d44944"
+    },
+    {
+      "path": "cloud-core/alembic.ini",
+      "bytes": 794,
+      "sha256": "a8d6c1943037ac13745d1ddaf361a9c26927a585a9eab816dbaa32e19cfc56fa"
+    },
+    {
+      "path": "cloud-core/app/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/api/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/api/v1/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/api/v1/ai.py",
+      "bytes": 16150,
+      "sha256": "8bdd81ac895161548627beb5579148cef9c62e6664038f37e63bed712a746f28"
+    },
+    {
+      "path": "cloud-core/app/api/v1/auth.py",
+      "bytes": 2875,
+      "sha256": "92709a75f4c1257e83404daa8a8f998e872867e4ab413aaa09a29333b387dbc8"
+    },
+    {
+      "path": "cloud-core/app/api/v1/claim_evidence.py",
+      "bytes": 3924,
+      "sha256": "80ebd10c3d672d653667b4e91999175d166a1d64bed2ecf7f62238383fe07ce1"
+    },
+    {
+      "path": "cloud-core/app/api/v1/claims.py",
+      "bytes": 4598,
+      "sha256": "6dc123253a08147095fdd7a37f26def2f95fe6e204d2d04c1923669b31322a8c"
+    },
+    {
+      "path": "cloud-core/app/api/v1/commerce.py",
+      "bytes": 14085,
+      "sha256": "a4b99d929bec5de49ea808bc3ce6492f54b064ae66ef7a907d7f4b2634170ce6"
+    },
+    {
+      "path": "cloud-core/app/api/v1/documents.py",
+      "bytes": 20612,
+      "sha256": "7344f1d62c8bbc3976e7bbd4f3f4413e745a94e6f076375ec9ad752b20691322"
+    },
+    {
+      "path": "cloud-core/app/api/v1/entities.py",
+      "bytes": 2967,
+      "sha256": "92cccdf5685c87974485214bcf428d4874abf7af226dcaa1833ba8233731fc03"
+    },
+    {
+      "path": "cloud-core/app/api/v1/evidence.py",
+      "bytes": 4066,
+      "sha256": "a5f84e5c659b0b86d59d5ff5b1cd11e260d1c4db33da46a90a002a194261dfe0"
+    },
+    {
+      "path": "cloud-core/app/api/v1/health.py",
+      "bytes": 3423,
+      "sha256": "ec63a80c07489a0827dbd5a69ee7043fd3c1c5061462845d1b896a871dbd5698"
+    },
+    {
+      "path": "cloud-core/app/api/v1/integrations.py",
+      "bytes": 22546,
+      "sha256": "1773545812c010c12caa5070c74cbccc8f48abd8a31e25f910199899d427c3a3"
+    },
+    {
+      "path": "cloud-core/app/api/v1/knowledge.py",
+      "bytes": 13063,
+      "sha256": "7f25fa0b7f5cb51c177033e7a3b14b8381677b4caacd0ec6893647e2f6f6a390"
+    },
+    {
+      "path": "cloud-core/app/api/v1/knowledge_gaps.py",
+      "bytes": 3227,
+      "sha256": "73be1d7d510b48d780d7e593a5457221320b89c949eff47a8deef8d237112d5b"
+    },
+    {
+      "path": "cloud-core/app/api/v1/organizations.py",
+      "bytes": 1507,
+      "sha256": "f632bfdad690fe396fae43c6c484c52d1be95b464d3f8fc776e94ac1d727455f"
+    },
+    {
+      "path": "cloud-core/app/api/v1/queries.py",
+      "bytes": 16903,
+      "sha256": "d7c72ec71a2bae724c52a812bf99301f6911bb26f7127847b3a9bde466d33d92"
+    },
+    {
+      "path": "cloud-core/app/api/v1/recommendations.py",
+      "bytes": 7629,
+      "sha256": "385adca109cdea34c5423631123353c9bb69e51774562fa43d3909ceb9ed6036"
+    },
+    {
+      "path": "cloud-core/app/api/v1/relationships.py",
+      "bytes": 3133,
+      "sha256": "7d47ab9a15b3a1a7ad65d09eebf9032452ad8b4b1495d644bceca66af80fec28"
+    },
+    {
+      "path": "cloud-core/app/api/v1/research.py",
+      "bytes": 10810,
+      "sha256": "db76783787d86da17a459b60a5efe6bdfa35eacc1eb38ab732107572d28b784f"
+    },
+    {
+      "path": "cloud-core/app/api/v1/router.py",
+      "bytes": 2611,
+      "sha256": "015490e49bad719a9a927576c01113c2be67e2cb43bc0bb8e1d831621f32d59a"
+    },
+    {
+      "path": "cloud-core/app/api/v1/sites.py",
+      "bytes": 3524,
+      "sha256": "d7fdcc34d8b0615cc102dd3ac5b6f62f95eb141a425feec627316e4156443bef"
+    },
+    {
+      "path": "cloud-core/app/api/v1/sources.py",
+      "bytes": 3850,
+      "sha256": "50c348dd0238eafed3a26d07c214cf041d9b9bd9a1cd5c3071f1765d0086de59"
+    },
+    {
+      "path": "cloud-core/app/api/v1/telemetry.py",
+      "bytes": 21779,
+      "sha256": "c2062ea6cbac38ad70ef1f435d0c4657cd67e7e94f77e5c280c93d4c50b26e67"
+    },
+    {
+      "path": "cloud-core/app/api/v1/users.py",
+      "bytes": 2929,
+      "sha256": "a595b0950d08407bc824fb91c64d25863b7d111a795986bc87d8899fefa55f93"
+    },
+    {
+      "path": "cloud-core/app/api/v1/visibility.py",
+      "bytes": 17848,
+      "sha256": "e7b570707d59693fe2e8db763a068c8c2986ee859d61ec98f8943e36ec8deab2"
+    },
+    {
+      "path": "cloud-core/app/contracts/__init__.py",
+      "bytes": 773,
+      "sha256": "f0df044387a9abbeaffcc4cfd85feaa69e5f74e2c11bd081dd46eb7723a1af81"
+    },
+    {
+      "path": "cloud-core/app/contracts/commerce.py",
+      "bytes": 14548,
+      "sha256": "c64bab772fce2b97741d86868c9c5a804317ac418d0fbca60347c1054a7fa4f0"
+    },
+    {
+      "path": "cloud-core/app/core/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/core/config.py",
+      "bytes": 4003,
+      "sha256": "5960d81e916b0e6219533701ca054b92d0a32a869b9adc3b062015dfb55511d9"
+    },
+    {
+      "path": "cloud-core/app/core/errors.py",
+      "bytes": 2872,
+      "sha256": "5f6e8acd1c56cf482bf7db1f85c1a5c730d6acc73791c9cdc272a41d9dfaa160"
+    },
+    {
+      "path": "cloud-core/app/core/logging.py",
+      "bytes": 1080,
+      "sha256": "633031570a4efb4fd4011d91cde02fbd56eb2ebf4a7b634e9805ad944022e167"
+    },
+    {
+      "path": "cloud-core/app/core/middleware.py",
+      "bytes": 1723,
+      "sha256": "4163da8b73914bd184d8ef268d77581f53d206211c91e470855fd5bbaf017507"
+    },
+    {
+      "path": "cloud-core/app/db/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/db/base.py",
+      "bytes": 1604,
+      "sha256": "ff686be2dde40ac4a4efe9ebbea33850a072b2bc0bdece2dcaf51ea990ff5f80"
+    },
+    {
+      "path": "cloud-core/app/db/session.py",
+      "bytes": 781,
+      "sha256": "045382917c4ae96957ce78992cc14c6250de5f42d36564a052e99c0f8c34462f"
+    },
+    {
+      "path": "cloud-core/app/ingestion/__init__.py",
+      "bytes": 119,
+      "sha256": "afae94b1f0230a1ed5cf2e92f66268d3374cee7324c510c5a19cf8b45bac8aaa"
+    },
+    {
+      "path": "cloud-core/app/ingestion/converter.py",
+      "bytes": 6818,
+      "sha256": "d7f3b39ca00064bfb8b3f36ad7cf668a63f08f433441a25d77be218174b7929e"
+    },
+    {
+      "path": "cloud-core/app/ingestion/extractors.py",
+      "bytes": 11918,
+      "sha256": "9e85e049b0855f9b11b1b25918aecf9bc9fed4f790f39359d061c4619c22fa6c"
+    },
+    {
+      "path": "cloud-core/app/ingestion/pipeline.py",
+      "bytes": 5585,
+      "sha256": "b6508473b005001e826106157600d26baa97023d6f6b96e3fe2f9b7ce7db2bd9"
+    },
+    {
+      "path": "cloud-core/app/ingestion/storage.py",
+      "bytes": 4910,
+      "sha256": "7729749bae5ba222e697b29237b5c7e2245cb98621c4b1f00fce765fbc234635"
+    },
+    {
+      "path": "cloud-core/app/ingestion/url_source.py",
+      "bytes": 12308,
+      "sha256": "8f5e58f09fde03135bbf0a7fa213c1c35433424ddc7c65a8b53983f78d25cfb3"
+    },
+    {
+      "path": "cloud-core/app/integrations/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/integrations/embeddings/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/integrations/embeddings/base.py",
+      "bytes": 869,
+      "sha256": "98b8f792f829d2ab22bbcb64b786634e95bbfd9a9f42d6c59adc63bea1ce116b"
+    },
+    {
+      "path": "cloud-core/app/integrations/embeddings/deterministic.py",
+      "bytes": 3301,
+      "sha256": "dfafd4b8546e097cbf8d41871af40908af7f8846dfdd70a251e929ac5dbbaf0b"
+    },
+    {
+      "path": "cloud-core/app/integrations/research/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/integrations/research/base.py",
+      "bytes": 4297,
+      "sha256": "f4658c7fa0c818a759638182db0e018d2e539d9a95ab19316ed9bb4079691bbc"
+    },
+    {
+      "path": "cloud-core/app/integrations/search/__init__.py",
+      "bytes": 54,
+      "sha256": "4a7efdf984d057cdb235c95ccfa7a3f35937f157be5b345dab9186ec4d316ca7"
+    },
+    {
+      "path": "cloud-core/app/integrations/search/base.py",
+      "bytes": 4746,
+      "sha256": "f01309b5aefc9644ea4ea2190be8cad6e83f29628470f68fd4e4498d72dbc0a3"
+    },
+    {
+      "path": "cloud-core/app/integrations/search/fixture.py",
+      "bytes": 6476,
+      "sha256": "c64d55e64e9804093ab7b1eac7f7205bfe897fda7c13275bb1171669fb7901d3"
+    },
+    {
+      "path": "cloud-core/app/integrations/visibility/__init__.py",
+      "bytes": 45,
+      "sha256": "cd7aa0ca91775fe3110602b980b2b868b9a34f3e592693a2951ba292d52a3b85"
+    },
+    {
+      "path": "cloud-core/app/integrations/visibility/base.py",
+      "bytes": 4486,
+      "sha256": "37090a961f5211a511e57f6e4d3660a50ec8c8aa1f2009d99097823be023f2e2"
+    },
+    {
+      "path": "cloud-core/app/integrations/visibility/fixture.py",
+      "bytes": 4565,
+      "sha256": "38eb7834cce77332b584f1f6d4d9f5a154fd40c3ce95267b9f5ba5da6e0c0ff9"
+    },
+    {
+      "path": "cloud-core/app/main.py",
+      "bytes": 1040,
+      "sha256": "13e2b0dd6af0db55da0a05932e8db908b51d02d1c22aed17b7f60ab23bddc322"
+    },
+    {
+      "path": "cloud-core/app/models/__init__.py",
+      "bytes": 3956,
+      "sha256": "3e74a2bd11553ac3018025468eba8480af04294b7f2770661f3cde55bc5ade4c"
+    },
+    {
+      "path": "cloud-core/app/models/access_policy.py",
+      "bytes": 5318,
+      "sha256": "e1358ed57bae7c36935ea4e4e0ad1a348594d77513a2177a07fb55ecc9129923"
+    },
+    {
+      "path": "cloud-core/app/models/ai_agent.py",
+      "bytes": 5184,
+      "sha256": "06ee487d7f63cc2b12cc36b280fa7b9d600250203aed0260c65addb511045783"
+    },
+    {
+      "path": "cloud-core/app/models/audit_log.py",
+      "bytes": 1911,
+      "sha256": "767460754a1ef651db693b055493094bfef3f429c7e6c311fbed8451b97f3176"
+    },
+    {
+      "path": "cloud-core/app/models/claim.py",
+      "bytes": 5000,
+      "sha256": "bda1225f7349ea22ad92f5f041a2d3642646fa959f79d77c538560c7fc3784e2"
+    },
+    {
+      "path": "cloud-core/app/models/claim_evidence.py",
+      "bytes": 3268,
+      "sha256": "2c5f456fe64fb82f973803f4a5c6f312d6c3b7e5f8a967dd040e40275a099c52"
+    },
+    {
+      "path": "cloud-core/app/models/commerce_mapping.py",
+      "bytes": 4812,
+      "sha256": "925581570bc845ca576e9bf3e8e0ebd73c7eab5d8f7e0f3c7e50b25c21ef984f"
+    },
+    {
+      "path": "cloud-core/app/models/content_view_daily.py",
+      "bytes": 5623,
+      "sha256": "cde40ec18a098e5e4c757746f83bdec63d394ed1cd36e0e3832e6c3116fd3397"
+    },
+    {
+      "path": "cloud-core/app/models/customer_context.py",
+      "bytes": 5318,
+      "sha256": "a152f5dc46fec724be02100890b8fdd5273f5bec0e799b3e4fcb6757ad62082d"
+    },
+    {
+      "path": "cloud-core/app/models/document.py",
+      "bytes": 3181,
+      "sha256": "b61fb7049f8e95a67ce7f20400c0536078773300c73f17296ad55504fe7bcb97"
+    },
+    {
+      "path": "cloud-core/app/models/document_artifact.py",
+      "bytes": 9334,
+      "sha256": "1fb37b76a717bbc2a2ecae871987e5705fd266a8710bd650ce10155b4e45a298"
+    },
+    {
+      "path": "cloud-core/app/models/document_chunk.py",
+      "bytes": 3389,
+      "sha256": "9f003aa86c436f10ee8e2b9473221b6b5f03be11611ae985b0a075165491c13d"
+    },
+    {
+      "path": "cloud-core/app/models/entity.py",
+      "bytes": 2258,
+      "sha256": "5fa00e6b88a876898acb9d39abca4af55d03b052d73647dd0af943ee5515b9d4"
+    },
+    {
+      "path": "cloud-core/app/models/enums.py",
+      "bytes": 47467,
+      "sha256": "91539e5028193b9a0c8a31f083603c95aae88ee9c0aa261eebb128079fe05a15"
+    },
+    {
+      "path": "cloud-core/app/models/evidence.py",
+      "bytes": 5434,
+      "sha256": "c07c8334fbc2f038e5fce7d06248e16c53f1eb18168afbb43d5d7b78d928d198"
+    },
+    {
+      "path": "cloud-core/app/models/installation.py",
+      "bytes": 6981,
+      "sha256": "e0cb30891e98fa23d1e675264efc163c5fab6d0a2e54341f271b1a9fc25aef74"
+    },
+    {
+      "path": "cloud-core/app/models/intent.py",
+      "bytes": 4584,
+      "sha256": "6dbc11be5495d353f06d4406bc27e837b5c31911f426d4e03726cb86b681b4f5"
+    },
+    {
+      "path": "cloud-core/app/models/knowledge_gap.py",
+      "bytes": 2496,
+      "sha256": "8acb8c5458109ba0c5947d76727789c73243a86ecb8108a7e655eb8311519a56"
+    },
+    {
+      "path": "cloud-core/app/models/knowledge_object.py",
+      "bytes": 4012,
+      "sha256": "5afa20fae06a90d2ec3c4e85345dc20d9fb8d58bb30c333758c448cb870cdda3"
+    },
+    {
+      "path": "cloud-core/app/models/knowledge_version.py",
+      "bytes": 2561,
+      "sha256": "66c5f4cb806d4ec881258fb657331ab61943962e26b880283556b3f18610add1"
+    },
+    {
+      "path": "cloud-core/app/models/offer.py",
+      "bytes": 4803,
+      "sha256": "116f01c566629a6f72fcfdf41d4d876781f09c402815fb11cac2e81d068b8c5b"
+    },
+    {
+      "path": "cloud-core/app/models/organization.py",
+      "bytes": 1564,
+      "sha256": "a8fa801813987155c1dfe90a70fb2f1df6b5abb3b4040b9df746d85cf734d7dd"
+    },
+    {
+      "path": "cloud-core/app/models/page_view.py",
+      "bytes": 9530,
+      "sha256": "563ef7b10392a2091075d32640452549bc85fb94ac715356f2f781ca20645343"
+    },
+    {
+      "path": "cloud-core/app/models/product.py",
+      "bytes": 6969,
+      "sha256": "5910a6d9053eb46453a8560d69945c1b14af8717cef6413d07bcd33c17ff6cc9"
+    },
+    {
+      "path": "cloud-core/app/models/product_evidence.py",
+      "bytes": 4592,
+      "sha256": "c61ec789fa4cc09268f09188e0083b554eb736021e1b40a873fc08979e0ead29"
+    },
+    {
+      "path": "cloud-core/app/models/product_relation.py",
+      "bytes": 3811,
+      "sha256": "f2480c671b2d3e280b0d44822429e0ce4acac7b7168124e820ee451a661a5f62"
+    },
+    {
+      "path": "cloud-core/app/models/query.py",
+      "bytes": 4502,
+      "sha256": "a13376c07812c0fe095d967b19e2d726df29ed4379cb20f124a8eb1a855101b8"
+    },
+    {
+      "path": "cloud-core/app/models/query_cluster.py",
+      "bytes": 2298,
+      "sha256": "35087928a6daa08808f688e1087ab4e2afb415d0343b7a75b96dc1397c04a24c"
+    },
+    {
+      "path": "cloud-core/app/models/query_cluster_membership.py",
+      "bytes": 2533,
+      "sha256": "b8dea9fb8bd0a53cb7b1ce081f073136fef2c3926ea554f11171cc49283b64ae"
+    },
+    {
+      "path": "cloud-core/app/models/query_group.py",
+      "bytes": 2557,
+      "sha256": "6f5436a3a5343b63c6bbb12d960e822ede6f500250bb581afd4051805374fc3d"
+    },
+    {
+      "path": "cloud-core/app/models/query_group_membership.py",
+      "bytes": 2136,
+      "sha256": "df5ac776b51804bd07f01b2031d41947c3711b8e47acc5e39f387b370d4e5ea3"
+    },
+    {
+      "path": "cloud-core/app/models/query_provenance.py",
+      "bytes": 2932,
+      "sha256": "3ec246938d1ec7b86c09fe7aef199e290ea14934c473d5c7349e00cabaec6982"
+    },
+    {
+      "path": "cloud-core/app/models/recommendation.py",
+      "bytes": 6139,
+      "sha256": "31b969be4afab8b3f84934c9b8f1e7c7e56a50c1f8ccadff2e659bdd870390cf"
+    },
+    {
+      "path": "cloud-core/app/models/relationship.py",
+      "bytes": 3662,
+      "sha256": "1bd83c62c06671d66236497270e7373e955bd7271d070325d2b5cca3f76e4785"
+    },
+    {
+      "path": "cloud-core/app/models/research_project.py",
+      "bytes": 3017,
+      "sha256": "dcb9f61fdedfc984de6147f26e7c2f76822c8a8918e3fdc186cd597836ba3f4b"
+    },
+    {
+      "path": "cloud-core/app/models/research_task.py",
+      "bytes": 3733,
+      "sha256": "317ca44e340034026bce6fceb4737dff3588b6e9bff212ec6a055d5a16595210"
+    },
+    {
+      "path": "cloud-core/app/models/research_task_reference.py",
+      "bytes": 3140,
+      "sha256": "4727313d9f1cd610bbfaa6726b77ac09bee4b7622642d8ec031cf2c8dd7b9192"
+    },
+    {
+      "path": "cloud-core/app/models/search_demand_event.py",
+      "bytes": 4809,
+      "sha256": "decb68e93f27a6c5306ebd595e541a8abb7e0ccb05989f74a920031cf63d0502"
+    },
+    {
+      "path": "cloud-core/app/models/search_observation.py",
+      "bytes": 5840,
+      "sha256": "751f55539990d29901decbfd2ed04bcab09d4138b1e458afefd2aa674b222781"
+    },
+    {
+      "path": "cloud-core/app/models/site.py",
+      "bytes": 2003,
+      "sha256": "369a17eb19a226d5192e82ede56d9ff88928f70f54a0b34f59ddb976687e9eef"
+    },
+    {
+      "path": "cloud-core/app/models/source.py",
+      "bytes": 3618,
+      "sha256": "127b94959f83c4ad91373fd07790755ab913d93d7605d64bf315f023c62f379e"
+    },
+    {
+      "path": "cloud-core/app/models/sync_job.py",
+      "bytes": 3597,
+      "sha256": "96a3339066f2f736c58a33aca207ce747a4e35d5945de83b658a708833131dea"
+    },
+    {
+      "path": "cloud-core/app/models/trust_record.py",
+      "bytes": 4369,
+      "sha256": "f719e8ecfac7ea6ee4a1fe2915ec0dc4ce71ac84069159eaa49a86f7e543cb32"
+    },
+    {
+      "path": "cloud-core/app/models/user.py",
+      "bytes": 1860,
+      "sha256": "33140f1cde88f3401d51e9cf1b26eb9954819299a7cc5be962a7c358e3d860d5"
+    },
+    {
+      "path": "cloud-core/app/models/visibility.py",
+      "bytes": 8247,
+      "sha256": "f04968390ac5eaed98ff98fe7fbbba6bf2bc57027abd2d88c0562ea5076ba01a"
+    },
+    {
+      "path": "cloud-core/app/models/visibility_budget.py",
+      "bytes": 3433,
+      "sha256": "ec2bb467a1ad846b957986d30537701b0e3e90f86007e7331707359324663c1c"
+    },
+    {
+      "path": "cloud-core/app/models/visibility_project.py",
+      "bytes": 14434,
+      "sha256": "17cf3248ac9503a36b0d8ac608fd9eecfb4c4de41faf8c9da5146c19088c0a71"
+    },
+    {
+      "path": "cloud-core/app/models/wordpress_mapping.py",
+      "bytes": 4761,
+      "sha256": "b7ff824c89be6f40d6c5b47060e413e2c45e62e36092bf6a5f6a53ff2f87a2a2"
+    },
+    {
+      "path": "cloud-core/app/schemas/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/schemas/ai.py",
+      "bytes": 4740,
+      "sha256": "41c8289fd8f1787b6b85e05a40d8ec9ea6a131d2886a8151b55a51926ecc566c"
+    },
+    {
+      "path": "cloud-core/app/schemas/auth.py",
+      "bytes": 908,
+      "sha256": "18bbd69d0ab5d3daba0b4095f9e0dfa7b2bad662833235df06ab43b59a38ee18"
+    },
+    {
+      "path": "cloud-core/app/schemas/claim.py",
+      "bytes": 4020,
+      "sha256": "64e085469496018fa172a512b82ac4ad34f0d401a5b5c173141bacefe5523384"
+    },
+    {
+      "path": "cloud-core/app/schemas/claim_evidence.py",
+      "bytes": 1007,
+      "sha256": "469a43f87ca459fc7e8a5f8239aa59afe8577205d6ce69e8d3fce3eac4c151e3"
+    },
+    {
+      "path": "cloud-core/app/schemas/common.py",
+      "bytes": 12477,
+      "sha256": "12712c8d8037896de57aa973e942a1967dd06af6c5b566365efafccc2b10f259"
+    },
+    {
+      "path": "cloud-core/app/schemas/document.py",
+      "bytes": 6357,
+      "sha256": "142d10a837f308fa5dca1e8499419dd12d822bcb5f71d881b2ea98c266d3fe73"
+    },
+    {
+      "path": "cloud-core/app/schemas/document_chunk.py",
+      "bytes": 1964,
+      "sha256": "7a29e5333b83fd4375d7d8063e57a012e6c811eb11f6aea83e5b913fc5ee5b21"
+    },
+    {
+      "path": "cloud-core/app/schemas/entity.py",
+      "bytes": 1137,
+      "sha256": "b3370bc9000dd9732f3d73c28e2a0968c274aaf6cd1f7987c7785480b27d46fa"
+    },
+    {
+      "path": "cloud-core/app/schemas/evidence.py",
+      "bytes": 2270,
+      "sha256": "146072592d5374f0f63b3fbcb45ad468cd1bc8aa4ce207a837a4a2d57016b04b"
+    },
+    {
+      "path": "cloud-core/app/schemas/integration.py",
+      "bytes": 6739,
+      "sha256": "5919dbadb3be7c0e19d89bafda86f041d5e16c5ead46f02769e84e34c8183f59"
+    },
+    {
+      "path": "cloud-core/app/schemas/intent.py",
+      "bytes": 1035,
+      "sha256": "eaaabcd82f5806c058ce124508b395ba6dd3adac7413ffec6e66260f935633c6"
+    },
+    {
+      "path": "cloud-core/app/schemas/knowledge_gap.py",
+      "bytes": 1071,
+      "sha256": "c20ceb9675f7fa230d8852cd28fccaa64469e5c75221b65bf744432a49ff3d50"
+    },
+    {
+      "path": "cloud-core/app/schemas/knowledge_object.py",
+      "bytes": 1605,
+      "sha256": "37a129f5a5a0f2720681262a119c042c10066ff04b5cefeb8a95ee2b94cf8d0e"
+    },
+    {
+      "path": "cloud-core/app/schemas/knowledge_version.py",
+      "bytes": 437,
+      "sha256": "7343d301f6f999d71546877870f9590f4827fa86ff3789af3a0ce9ecd4e62986"
+    },
+    {
+      "path": "cloud-core/app/schemas/organization.py",
+      "bytes": 554,
+      "sha256": "bcfb0cae7beba67139e1d20ff87bcdddc4e4f3073b204a2fa511e448a98ec46b"
+    },
+    {
+      "path": "cloud-core/app/schemas/product.py",
+      "bytes": 7790,
+      "sha256": "585b15fb86a23d3c3cc34987e99ab9cb7ada7cf27bfbc23acd26a690df567bac"
+    },
+    {
+      "path": "cloud-core/app/schemas/query.py",
+      "bytes": 2915,
+      "sha256": "45f784622e4217d86053121b5f5cf7186041d46f2a2442a11845e8a6f86ebd7e"
+    },
+    {
+      "path": "cloud-core/app/schemas/query_cluster.py",
+      "bytes": 708,
+      "sha256": "967a1342caabe9ccc74caf2a390314ab9db142d170084bf2d764d0194c61dc89"
+    },
+    {
+      "path": "cloud-core/app/schemas/query_group.py",
+      "bytes": 1797,
+      "sha256": "bf65a3f9b03999cbce685ab9e6d836cda937c7f67493521fa88e4b7c39fe3f32"
+    },
+    {
+      "path": "cloud-core/app/schemas/recommendation.py",
+      "bytes": 5777,
+      "sha256": "bee5fe88392fb16e8969d6851d05343ad1628d9f3f4890d192b4060ddfe0a815"
+    },
+    {
+      "path": "cloud-core/app/schemas/relationship.py",
+      "bytes": 1074,
+      "sha256": "498bcc880ca8dc9a4fa48bb467d757260799782ee29f29cccab7c474e573eb5e"
+    },
+    {
+      "path": "cloud-core/app/schemas/research_project.py",
+      "bytes": 1556,
+      "sha256": "cd91a37c09526213462b58ae099b0219d049c26f583087620892219efd178098"
+    },
+    {
+      "path": "cloud-core/app/schemas/research_task.py",
+      "bytes": 1193,
+      "sha256": "a725449bdf5d45e8bb8a2cb10f80d27939fbaaec8ff9c765cd1dd192e55dd902"
+    },
+    {
+      "path": "cloud-core/app/schemas/research_task_reference.py",
+      "bytes": 738,
+      "sha256": "ebc22d6fd4b74371dfcba106828af92addbc56f72761f1debdc9e669576fe08a"
+    },
+    {
+      "path": "cloud-core/app/schemas/site.py",
+      "bytes": 1029,
+      "sha256": "7aaed8f1743914dc4eff83de744893cc92715d7f1c1594fc6041ce0c3c8a824f"
+    },
+    {
+      "path": "cloud-core/app/schemas/source.py",
+      "bytes": 2604,
+      "sha256": "4a83cf7b2cdb6ca4bb6d78392f7af2684066b59da91bb9303a149ad2b054f159"
+    },
+    {
+      "path": "cloud-core/app/schemas/telemetry.py",
+      "bytes": 10334,
+      "sha256": "a8c0263c4978985c70dae903ebbad11e7a1601e7ccf48233172b4a85b8c71265"
+    },
+    {
+      "path": "cloud-core/app/schemas/user.py",
+      "bytes": 892,
+      "sha256": "8a16e82ba18fdc633b49e8d657d2a69ef3d50f440f70ae4481f9db209b700a2f"
+    },
+    {
+      "path": "cloud-core/app/schemas/visibility.py",
+      "bytes": 3325,
+      "sha256": "235a2e768be840d61470c03e55bcce659a1f623e51644096273d09ee3b76e296"
+    },
+    {
+      "path": "cloud-core/app/schemas/visibility_infra.py",
+      "bytes": 5869,
+      "sha256": "9e945f7f9e09c8e1f1c4bb2a27ca3451bef6c726ea37d3f9891619a79e1ad646"
+    },
+    {
+      "path": "cloud-core/app/security/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/security/dependencies.py",
+      "bytes": 2822,
+      "sha256": "fb12a50e3c5b5e04861f9f8bc5ee979038c1e1ff6feed5665758fcfebfb981d5"
+    },
+    {
+      "path": "cloud-core/app/security/machine_identity.py",
+      "bytes": 6434,
+      "sha256": "6df865fc7bf516eaa586d0f55bdda27d65c103396c74297f97e61dd91eedd629"
+    },
+    {
+      "path": "cloud-core/app/security/passwords.py",
+      "bytes": 430,
+      "sha256": "7f2fdebdb56e67ee8f95a4d603a10bfd5d403d060be9f10115651d370a048620"
+    },
+    {
+      "path": "cloud-core/app/security/rate_limit.py",
+      "bytes": 4929,
+      "sha256": "f2db838812583bde8053c15d43a2f68443128e07b0fcad916f5af95f7c76203a"
+    },
+    {
+      "path": "cloud-core/app/security/tenant.py",
+      "bytes": 1372,
+      "sha256": "c1f7ebe37ece9eab070e20246656bdfff12575c2b0cf8d124932ccf0a2536e61"
+    },
+    {
+      "path": "cloud-core/app/security/tokens.py",
+      "bytes": 1882,
+      "sha256": "8a5c7417217fb196a7882774e6a1260a81292cb03860b31a43a49b6f6b240df7"
+    },
+    {
+      "path": "cloud-core/app/services/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/services/access_policy_service.py",
+      "bytes": 9275,
+      "sha256": "808ffb2bc1172b345499918bc47c11c0bbf2ac5bbf52942438a7d678ae60c116"
+    },
+    {
+      "path": "cloud-core/app/services/actor_signatures.py",
+      "bytes": 6891,
+      "sha256": "1f5c06e3fe713e113653a1512501e03e96c00cb71897fc033353a4584f7ba743"
+    },
+    {
+      "path": "cloud-core/app/services/ai_agent_service.py",
+      "bytes": 8669,
+      "sha256": "2ca3df2cb3fcc4cb047c3607c1380e736943f0b06db568964c0c576fffc6fc31"
+    },
+    {
+      "path": "cloud-core/app/services/audit.py",
+      "bytes": 1034,
+      "sha256": "4918e3d44793d3ae9a8573a18b170103915eeebd1653ed0d68b2cf1c361505a7"
+    },
+    {
+      "path": "cloud-core/app/services/auth_service.py",
+      "bytes": 2985,
+      "sha256": "a6881f7f54a64eaf3dce669bc49aeadf9792c6af350544997fd9b3f63af871d5"
+    },
+    {
+      "path": "cloud-core/app/services/chunking.py",
+      "bytes": 2319,
+      "sha256": "b0a96c4f1b4efb34c533288442ec4170e051bd5354c1d0661d4d0cb8c91d4d3d"
+    },
+    {
+      "path": "cloud-core/app/services/claim_evidence_service.py",
+      "bytes": 10963,
+      "sha256": "9ae8d16ffb2999b109c836dbb9618d1d382d62dc5cd0d31c2b5fc665e77bc0b7"
+    },
+    {
+      "path": "cloud-core/app/services/claim_service.py",
+      "bytes": 8936,
+      "sha256": "a25498622b244abd6bae9b93786775ca990e9206916f5d7fcbbe3835ef9cabe6"
+    },
+    {
+      "path": "cloud-core/app/services/commerce_service.py",
+      "bytes": 20582,
+      "sha256": "5d181f7a752fa4c399dffa237c2a453c4b513852553a57050ced765d2e9e83b0"
+    },
+    {
+      "path": "cloud-core/app/services/commerce_sync_service.py",
+      "bytes": 12912,
+      "sha256": "eeb96a31fc0e7701a77cebf245557251692fa0cafa76a7ed4d1f36b688d6193b"
+    },
+    {
+      "path": "cloud-core/app/services/customer_context_service.py",
+      "bytes": 5314,
+      "sha256": "9586e1c2e280b0da0a9bf802d8fc140ae752a2c86cb387f84d6ec84aa2c0ae72"
+    },
+    {
+      "path": "cloud-core/app/services/document_chunk_service.py",
+      "bytes": 6216,
+      "sha256": "276aefdbef2c4625afc35fb23c8020c4d5b24bdd8ef578c8c7ab2ed31a84eac7"
+    },
+    {
+      "path": "cloud-core/app/services/document_service.py",
+      "bytes": 4902,
+      "sha256": "e060e18c51a1c8524e82275898139df85578352c3eac8ad15963d008e36702c3"
+    },
+    {
+      "path": "cloud-core/app/services/entity_service.py",
+      "bytes": 3918,
+      "sha256": "bf2dde94366420f987d11df5d3a748ec0fc5c9d895cdd1fb1067061bae6cec98"
+    },
+    {
+      "path": "cloud-core/app/services/evidence_service.py",
+      "bytes": 7848,
+      "sha256": "7b18d2ceac259481a62fa1b105a1a24934535d53260cd0469056dac7dd4ee0e9"
+    },
+    {
+      "path": "cloud-core/app/services/ingestion_job_service.py",
+      "bytes": 9749,
+      "sha256": "599a33e7ee6f8bf59a005e7531f6c086fd838fb053718acf5cc4b1a843cadf82"
+    },
+    {
+      "path": "cloud-core/app/services/ingestion_service.py",
+      "bytes": 15150,
+      "sha256": "743f7c39d130048b4dca41b413b971eeca7fa31491fc1b3f474a994aa4cc254c"
+    },
+    {
+      "path": "cloud-core/app/services/installation_service.py",
+      "bytes": 8203,
+      "sha256": "9a3fa5767bf233d170fc7f521445f1df17601fe7773e4ad5943c939bf6d70f9f"
+    },
+    {
+      "path": "cloud-core/app/services/intent_classifier.py",
+      "bytes": 10517,
+      "sha256": "8bc0f2023b835c5903b63a8ec4237ec98e427b1aefde3dda0fa06a88265f4b0b"
+    },
+    {
+      "path": "cloud-core/app/services/intent_service.py",
+      "bytes": 4862,
+      "sha256": "1aadcd76381c3bf9267f5317ec04743d6a45c817a0595391b870b71570abb458"
+    },
+    {
+      "path": "cloud-core/app/services/knowledge_gap_service.py",
+      "bytes": 3639,
+      "sha256": "d5f2a303ba99cda38feefc90e4c578a5b72d235ee96c7b7ef068e8571b91dbf9"
+    },
+    {
+      "path": "cloud-core/app/services/knowledge_representation.py",
+      "bytes": 8940,
+      "sha256": "cc0342807aa0e10f4a6ff960161f5d69dba05c779da3db61e087134f6f1b08f5"
+    },
+    {
+      "path": "cloud-core/app/services/knowledge_service.py",
+      "bytes": 7946,
+      "sha256": "ba1708700b598e879a60b2f143e9f05b040595966114ba77d022191e2e66bdb7"
+    },
+    {
+      "path": "cloud-core/app/services/organization_service.py",
+      "bytes": 944,
+      "sha256": "46300c1c515819a069183fd4a54699b16c2fc8b055625345032f10d4237564cb"
+    },
+    {
+      "path": "cloud-core/app/services/product_service.py",
+      "bytes": 8313,
+      "sha256": "a57cc224b32899317769482bb6bdd3da4a44d5dd508ec7e072bddfa76235f8e5"
+    },
+    {
+      "path": "cloud-core/app/services/query_cluster_service.py",
+      "bytes": 7275,
+      "sha256": "6361646115bf6680957f511ac8ff14a38b14aff419d34a424aa165b237e4abd3"
+    },
+    {
+      "path": "cloud-core/app/services/query_group_service.py",
+      "bytes": 9851,
+      "sha256": "1a563cb4efa9cd8b717b6bf5aa13b4718501ca767ae8c51dfb43c39faf1f154d"
+    },
+    {
+      "path": "cloud-core/app/services/query_service.py",
+      "bytes": 12966,
+      "sha256": "d7fe5ac29d3e83f5b40c4115457eb9c6fea875cc8dbed6faa0667971664a2a1d"
+    },
+    {
+      "path": "cloud-core/app/services/recommendation_policy.py",
+      "bytes": 15619,
+      "sha256": "1d0e3c4287ee042e91bfd330c7e89ffc0e47559cd617093aa5d70497b7a49170"
+    },
+    {
+      "path": "cloud-core/app/services/recommendation_service.py",
+      "bytes": 11366,
+      "sha256": "56eb5a2a1020f576852bb685fadb5243a3f2939021727cec10f65ded2f21ac55"
+    },
+    {
+      "path": "cloud-core/app/services/relationship_service.py",
+      "bytes": 6182,
+      "sha256": "6019d7d1924ccf29ca604451e3a487fc94bbb65545fb1c27fda598dec282f7fc"
+    },
+    {
+      "path": "cloud-core/app/services/research_project_service.py",
+      "bytes": 6262,
+      "sha256": "1631adb4e8188e38c2d73b956bd20bee00592aba010801abbe6682159fc4eb3c"
+    },
+    {
+      "path": "cloud-core/app/services/research_task_service.py",
+      "bytes": 13524,
+      "sha256": "d6b7f4a95cd02895386ec860e06dd3c557ed3cda7cb3c478987a986fff3e7a42"
+    },
+    {
+      "path": "cloud-core/app/services/search_demand_service.py",
+      "bytes": 8408,
+      "sha256": "35aadb195643ddfd37696f80ef36b367b35ce337bb95369be52bc256c0ec6551"
+    },
+    {
+      "path": "cloud-core/app/services/search_intelligence_service.py",
+      "bytes": 10225,
+      "sha256": "7fc40424d7ab9df04e62db68f6dcf6dd36361eb9720d7ee72f38c549af98c216"
+    },
+    {
+      "path": "cloud-core/app/services/site_service.py",
+      "bytes": 3375,
+      "sha256": "dff6e2a499a9ffbcb63efc4ecee8e9fd3698ad62cda67d62e9ac75e3013276eb"
+    },
+    {
+      "path": "cloud-core/app/services/slugs.py",
+      "bytes": 398,
+      "sha256": "767f5689f72751bd7c6551b4fe2c6dce2f5f2caa609320a75d842a628282ae11"
+    },
+    {
+      "path": "cloud-core/app/services/source_service.py",
+      "bytes": 3311,
+      "sha256": "86ab9f73aedea86e483e24be863157c8c1cf10667b3f3365e60d7afe388fcdbb"
+    },
+    {
+      "path": "cloud-core/app/services/telemetry_service.py",
+      "bytes": 16232,
+      "sha256": "b36c133788a627ad11895a62768642ecab3e8a48d10c718ada66bcfbb4b8d31f"
+    },
+    {
+      "path": "cloud-core/app/services/url_ingestion_service.py",
+      "bytes": 6214,
+      "sha256": "45c3bd687a465971df113961c4b90499c9276093dc787583ffb1db927a554eac"
+    },
+    {
+      "path": "cloud-core/app/services/user_service.py",
+      "bytes": 3192,
+      "sha256": "0c79f5140f545f36dde3584c1ff43ff86dd3f49d43324b025a22ee3a20a3436b"
+    },
+    {
+      "path": "cloud-core/app/services/visibility_run_service.py",
+      "bytes": 15666,
+      "sha256": "db90bc4a38c2a1abcdf340127a5068b1e8b0ab64976907f5371debf6cf50a5b3"
+    },
+    {
+      "path": "cloud-core/app/services/visibility_service.py",
+      "bytes": 16586,
+      "sha256": "8e5236d4bcbfa826aae9772c680b6929d3758ea3c7845c5a6bef19a8347d2778"
+    },
+    {
+      "path": "cloud-core/app/services/wordpress_mapping_service.py",
+      "bytes": 7941,
+      "sha256": "8a97d39f2be636ca91cb29365f14410862391fed35f6c3e3ca9d9b1bbf7e07ff"
+    },
+    {
+      "path": "cloud-core/app/workers/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/app/workers/celery_app.py",
+      "bytes": 1420,
+      "sha256": "cbe5334ecc688be538ebf238ddfd1a8ad31932b0d5c0ae9dd28b99559c90400e"
+    },
+    {
+      "path": "cloud-core/app/workers/tasks.py",
+      "bytes": 3473,
+      "sha256": "59ae46b9fd8d19ee21891eb551c342308e34899faaa9f07906254cd61c4a716e"
+    },
+    {
+      "path": "cloud-core/migrations/env.py",
+      "bytes": 1848,
+      "sha256": "c645bedef53d5642061949167908cb8f48795cef4b052eed8f6d26dea802ec4f"
+    },
+    {
+      "path": "cloud-core/migrations/script.py.mako",
+      "bytes": 635,
+      "sha256": "304a8bfb6a804e5493f5300e79882c70c9f5bb2e87512f4d16f0e097dddd323f"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0001_enable_extensions.py",
+      "bytes": 851,
+      "sha256": "5c153723ff842235785543681b53eeafc3c5316dba62bc11442f95f4a659af7f"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0002_organizations_users_sites_audit.py",
+      "bytes": 7558,
+      "sha256": "9109e0c806dff3b744c3e812347f27f93a4cd19822f8b34e7d1759de17756420"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0003_knowledge_core.py",
+      "bytes": 16659,
+      "sha256": "1a50a2cf7332ce727ab61ff73ac7329d71c729043718c6c840746276b1cf7559"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0004_sources_documents_chunks.py",
+      "bytes": 9334,
+      "sha256": "166cb5d0cfbe2093fb77a6def555f0340a06b465b8431d5abf4ebafb14a2c884"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0005_evidence_claim_evidence.py",
+      "bytes": 7241,
+      "sha256": "73e0678477af3e246ac9a5215baa501aca33b007f030a23d1abd1ce5a0eb9470"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0006_research_engine.py",
+      "bytes": 8383,
+      "sha256": "1ca76e49c5941017138ee50c18bb1be044e1d5fced0bed3f69f4b724bac09c4f"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0007_query_engine.py",
+      "bytes": 18016,
+      "sha256": "a6bfe62ae1394184aa5cdc6684d347ebdb7ebc41a14fc6a12fa7e80504c74311"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0008_commerce_product_knowledge.py",
+      "bytes": 17151,
+      "sha256": "b4c8b079340099be056c87f27aafd0f40d81eaad2debe897b16530c158e1728c"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0009_recommendation_engine.py",
+      "bytes": 9786,
+      "sha256": "d31395bd5816229e848cc85f78b18104e14b06fc3073d7d47de47d0cb05cd8e7"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0010_adapter_identity_and_tenant_integrity.py",
+      "bytes": 13637,
+      "sha256": "ef52f6c8d2e10dac9aadb88becc3e068f4a854f924a95a4c446c7a240ac5ed1b"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0011_commerce_mappings_sync_jobs.py",
+      "bytes": 6693,
+      "sha256": "56edb335c9f4f74514ac61e42f62df6a48ca2b73d32a8cd626d6638ec63902dc"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0012_ai_visibility.py",
+      "bytes": 7461,
+      "sha256": "641cdbf074f0fadc37373e2b82d3001fb2bf975478f3495dd9788cd49a6760cc"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0013_document_intelligence.py",
+      "bytes": 9245,
+      "sha256": "a5c1a1ace3ba58de338c4f5aed9340cabb15d2e4a1768d0afc8ce37f64e7f0a0"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0014_job_states_and_dead_enum.py",
+      "bytes": 2381,
+      "sha256": "e8a7746ef5ed674b7637d17e3aa9b00f2e16cb7bb3e20a26e80352ad0564d326"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0015_visibility_infra_search.py",
+      "bytes": 18350,
+      "sha256": "5ba61d450574eec3b1d2e5315d90508dfcddfd5401dffabd70094ce73a1165f2"
+    },
+    {
+      "path": "cloud-core/migrations/versions/0016_phase13_analytics_access.py",
+      "bytes": 19837,
+      "sha256": "4326ab3d1c288dab8e1f16c527e778039dd8e30711eb17f87cd1716f982309ad"
+    },
+    {
+      "path": "cloud-core/pytest.ini",
+      "bytes": 56,
+      "sha256": "37b7898dd0df68d7bacac4726b4836010200403a1abe9542fe229caebe39b8a3"
+    },
+    {
+      "path": "cloud-core/requirements.txt",
+      "bytes": 1046,
+      "sha256": "dbaf66e18831c216b400b059251fc95d927280b2ee5d98c5314eadb720cdf520"
+    },
+    {
+      "path": "cloud-core/scripts/verify_migration_cycle.sh",
+      "bytes": 1755,
+      "sha256": "3a3552ab719f486c28d1276d123c622473882f1ec4f582b894ecfebc9792673a"
+    },
+    {
+      "path": "cloud-core/tests/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/tests/conftest.py",
+      "bytes": 8653,
+      "sha256": "da863cc0d55a02e4d7f233fb2eb12b6fc02f7c815c58f26f3cdbbaf04c9281b4"
+    },
+    {
+      "path": "cloud-core/tests/conftest_fixtures.py",
+      "bytes": 366,
+      "sha256": "af77c228418534cfc554adeef4121a9c15b906d192c6d760dd3f35b73d66497f"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/broken.pdf",
+      "bytes": 34,
+      "sha256": "3e4378f0e58a201b0d479aab529325a04a5ab5ce74f9e53947a607d1a3c74776"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/data.xlsx",
+      "bytes": 4911,
+      "sha256": "3f6872ca4fcd1ac77f29896ba0cd2b36ccec5495562d488ac69a41d3a72a860e"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/empty.pdf",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/figure.png",
+      "bytes": 1947,
+      "sha256": "16906ab999726072c46370ed0e44466705b7b78242d6d5aa14db55c9761b60bb"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/persian.docx",
+      "bytes": 36872,
+      "sha256": "d9b5911dfea1b0c13e31fe77201ea2e6e6f40552a815bed42deba4daf64cb82f"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/ruled.pdf",
+      "bytes": 1591,
+      "sha256": "04853b92e1c45e7985539222cc6bf7c4abf9054ffecd8da9f3e5a47158b112d7"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/simple.pdf",
+      "bytes": 1418,
+      "sha256": "d40195c577a9ea2515d9ae05395fae1b3157f5c6a946036d6d7ba49a7db2c8e0"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/tables.pdf",
+      "bytes": 1789,
+      "sha256": "60cf6ce5413eeea10ed9510f5031152b2220f106e4aceb3bb527d2668fe02787"
+    },
+    {
+      "path": "cloud-core/tests/fixtures/with_image.pdf",
+      "bytes": 3681,
+      "sha256": "542aba32536afa4d606fcafd562607b4040a78864440bd28d4ce97138ea59983"
+    },
+    {
+      "path": "cloud-core/tests/test_adapter_catalog.py",
+      "bytes": 5874,
+      "sha256": "96983d6e8b6960785310a6dbbe888d389be905143bac380a1766ba8c8ca52434"
+    },
+    {
+      "path": "cloud-core/tests/test_async_ingestion.py",
+      "bytes": 13640,
+      "sha256": "9d9f2e9bb3195ee786bacaa096b1fa485ebbead481c3eb078f4628261dbe2c2e"
+    },
+    {
+      "path": "cloud-core/tests/test_auth_flow.py",
+      "bytes": 4366,
+      "sha256": "f8cd1e7de0b4b051f9d22ef9887d53a098744cbee9dedc2e0075d51184691b8e"
+    },
+    {
+      "path": "cloud-core/tests/test_budget_concurrency.py",
+      "bytes": 10775,
+      "sha256": "c89508d251945f68b9b5f658aba24100638253e74fbf16f4229cdc9e552d9846"
+    },
+    {
+      "path": "cloud-core/tests/test_claim_evidence.py",
+      "bytes": 9775,
+      "sha256": "8104d93cd146b185c0a8ab7187aaa8f32f8f0f25a9625cc0dc11f2e9ed880bf1"
+    },
+    {
+      "path": "cloud-core/tests/test_claims.py",
+      "bytes": 14260,
+      "sha256": "0677d2fbd4f162a007835daa931ad892c4335fed98b83604d2d2985753759821"
+    },
+    {
+      "path": "cloud-core/tests/test_commerce_patch_semantics.py",
+      "bytes": 8579,
+      "sha256": "fb04845d1ad24d3b0607a118bae39feb9837acba601400e3b3c81512f945516e"
+    },
+    {
+      "path": "cloud-core/tests/test_config.py",
+      "bytes": 2048,
+      "sha256": "c08a6b9034e9b02361e56de74e1d149b0206c454f501a7f8fcad5b712f778936"
+    },
+    {
+      "path": "cloud-core/tests/test_database.py",
+      "bytes": 1098,
+      "sha256": "a3325e41eb9b02e4c0cd2684858678e769e270e9b3c63182f48ac76ed59e1b9d"
+    },
+    {
+      "path": "cloud-core/tests/test_document_chunks.py",
+      "bytes": 6099,
+      "sha256": "c95eb1c7678461e732a36de9e46ef8faa1337150c35331a812ac512b3ee31700"
+    },
+    {
+      "path": "cloud-core/tests/test_document_intelligence.py",
+      "bytes": 22318,
+      "sha256": "c327997b27047f5efbcecb11f1413e81815694ca112d1e96c86f994a55d1e954"
+    },
+    {
+      "path": "cloud-core/tests/test_documents.py",
+      "bytes": 5287,
+      "sha256": "9fc8768ebfbce864ced89e04aa738bb95518218ad21bb9d3c5d289f8371f5900"
+    },
+    {
+      "path": "cloud-core/tests/test_entities.py",
+      "bytes": 4452,
+      "sha256": "33df72b1efb498e71156a1743a99c03ffdf5542cb22e5cbc7fc21e4d60477e15"
+    },
+    {
+      "path": "cloud-core/tests/test_evidence.py",
+      "bytes": 7377,
+      "sha256": "5298089ff0cef9ce01940c3f3810fd03df0aec1add9f29162b904296c91d3459"
+    },
+    {
+      "path": "cloud-core/tests/test_evidence_verification_invariant.py",
+      "bytes": 10009,
+      "sha256": "1719d9dfffcd91671c6db40c24218c783609a22e583e6f93859f111c2aac31c1"
+    },
+    {
+      "path": "cloud-core/tests/test_forensic_integrity.py",
+      "bytes": 8046,
+      "sha256": "286dc68dc9c40c652c4afbdb996ca2a394ebfe676108d5a3570572b96bf409c7"
+    },
+    {
+      "path": "cloud-core/tests/test_health.py",
+      "bytes": 1507,
+      "sha256": "8ba781f59c0413b5eb73bf5e4ff9cce998592d9b8577ec39910e2130c948bd40"
+    },
+    {
+      "path": "cloud-core/tests/test_intent_classifier.py",
+      "bytes": 3828,
+      "sha256": "2a85d193acf6927b4dbf19643b0347afb118dfa7541bb32d9e419bcdf720e236"
+    },
+    {
+      "path": "cloud-core/tests/test_intent_service.py",
+      "bytes": 4727,
+      "sha256": "ca8e4666d1f049ed473630774a0f5592a5f79fb98aad7dccba83dc4d6e7ff8f4"
+    },
+    {
+      "path": "cloud-core/tests/test_knowledge_gaps.py",
+      "bytes": 4075,
+      "sha256": "6eafb380aca2b03642ba7086804917d39fe054244b0da817394301d42a6b5b8b"
+    },
+    {
+      "path": "cloud-core/tests/test_knowledge_objects.py",
+      "bytes": 6872,
+      "sha256": "0230a45de49d5d5cce083bdcddd9dd4d2b10276d9fdd7f8387965851876b4eae"
+    },
+    {
+      "path": "cloud-core/tests/test_knowledge_representation.py",
+      "bytes": 5115,
+      "sha256": "0cc32afc00c1b3e7453dd96367dcd328b39673307f8544322217ed6e2ca8b2cd"
+    },
+    {
+      "path": "cloud-core/tests/test_knowledge_tenant_isolation.py",
+      "bytes": 14975,
+      "sha256": "a8bafc03b0f0f05772716e69dd4596e4c6e20cf03bc936056109cbc6587c7146"
+    },
+    {
+      "path": "cloud-core/tests/test_offers_and_relations.py",
+      "bytes": 7736,
+      "sha256": "930b6a77183b8126dc0415b70a265bc139b73c802c5c3888dde0e039b63ca7bd"
+    },
+    {
+      "path": "cloud-core/tests/test_organizations.py",
+      "bytes": 1680,
+      "sha256": "e8e8ffd84d483efbba35a62a168bac169b0c342658388af8f106e2eb239f123a"
+    },
+    {
+      "path": "cloud-core/tests/test_original_retention.py",
+      "bytes": 7580,
+      "sha256": "da6246def49cc7c004806386fc962794b1e3d2ee6324f38461f8a29729d61793"
+    },
+    {
+      "path": "cloud-core/tests/test_p1218_visibility_infra.py",
+      "bytes": 17671,
+      "sha256": "4ab411b45a28435b5c0c2f3bf874a3575469ce46600a8116cc3fc8bdb42fc795"
+    },
+    {
+      "path": "cloud-core/tests/test_p1219_search_intelligence.py",
+      "bytes": 12115,
+      "sha256": "b2823f5f54c065f6ca6383f2348e7fe43792f478b8b0610d269b0270d7ef9a96"
+    },
+    {
+      "path": "cloud-core/tests/test_phase10_commerce_sync.py",
+      "bytes": 13792,
+      "sha256": "95eef890d41632770268479c2f39c8455b447c8df320d6d7bc5ad64648a5d61b"
+    },
+    {
+      "path": "cloud-core/tests/test_phase11_ai_interface.py",
+      "bytes": 15281,
+      "sha256": "1c657b2625a8bfec7ebeaa4976991cae210061eecc2f2469712c6640743a1d1e"
+    },
+    {
+      "path": "cloud-core/tests/test_phase12_visibility.py",
+      "bytes": 15929,
+      "sha256": "a15a71bb58aecdfbaefe3bf94139125036e1a2c5b5016bb8b795eb67d159a96c"
+    },
+    {
+      "path": "cloud-core/tests/test_phase13_access_and_agents.py",
+      "bytes": 19647,
+      "sha256": "c4019db5704acd4f97ac5be7c4200fc93703838f8afa0a7cd2b7feca578e200e"
+    },
+    {
+      "path": "cloud-core/tests/test_phase13_telemetry.py",
+      "bytes": 19406,
+      "sha256": "7e92964f36c022e2c2b8b6c79ae3e57d7d127a570aed8bccb1c00b71cef58ee3"
+    },
+    {
+      "path": "cloud-core/tests/test_phase3_tenant_isolation.py",
+      "bytes": 8065,
+      "sha256": "bacd2e452b8047daedcf9db99464a2c91a8368e612b6f2b707bfad9ed02c9c51"
+    },
+    {
+      "path": "cloud-core/tests/test_phase4_tenant_isolation.py",
+      "bytes": 8478,
+      "sha256": "da11c4e601f2bc29e8df2577525b2d42f1c1e63a4c679b2e999ff697ab988e6a"
+    },
+    {
+      "path": "cloud-core/tests/test_phase5_tenant_isolation.py",
+      "bytes": 7375,
+      "sha256": "17f6f7ed56074f323d6667f42e07d2b074a717fc6c33ed9d651dea9d8480046b"
+    },
+    {
+      "path": "cloud-core/tests/test_phase6_tenant_isolation.py",
+      "bytes": 7631,
+      "sha256": "aa5eabd318fd67603159dd1a4b295e73368feb8a1d5c5d061f281656d90d155d"
+    },
+    {
+      "path": "cloud-core/tests/test_phase7_tenant_isolation.py",
+      "bytes": 9404,
+      "sha256": "ac30c53edf9a6d6c42f7b9d9b693fdcae7f6248c323cd2ffb85bb5196fd93dba"
+    },
+    {
+      "path": "cloud-core/tests/test_phase8_tenant_isolation.py",
+      "bytes": 9145,
+      "sha256": "3c749b2fc339e5874a557f7f745cd8a17feeec980d338a7ca89f98dc32bdb502"
+    },
+    {
+      "path": "cloud-core/tests/test_phase9_machine_identity.py",
+      "bytes": 14715,
+      "sha256": "02e8867ff14165388127d9648653ecbe3ea9c9fdf16556f1f086312dae82bd82"
+    },
+    {
+      "path": "cloud-core/tests/test_product_evidence_and_trust.py",
+      "bytes": 13051,
+      "sha256": "06b696efa579340da9c65289d53707980c16d242e2d509540def9d559b89927e"
+    },
+    {
+      "path": "cloud-core/tests/test_products.py",
+      "bytes": 7059,
+      "sha256": "24ead0d2390946b4b45aa4670b2fa4bc3ae2cd9a20f50f2aa3aa940d0fa6a9de"
+    },
+    {
+      "path": "cloud-core/tests/test_queries.py",
+      "bytes": 8476,
+      "sha256": "f710d75f4f42ff23c626e6eaa9ce2e50283b78b59fbec60ce3fcc22e0e8bd4a1"
+    },
+    {
+      "path": "cloud-core/tests/test_query_clustering.py",
+      "bytes": 3030,
+      "sha256": "c5a6b9879b6f004b4704f2bb425b44efcd9725471593fb873659dd0dfbeaa0af"
+    },
+    {
+      "path": "cloud-core/tests/test_query_groups.py",
+      "bytes": 7150,
+      "sha256": "968a4195032ef6192d16350c4db5d8a767937aaaec9196876e52679791b4b7e5"
+    },
+    {
+      "path": "cloud-core/tests/test_recommendation_policy.py",
+      "bytes": 11046,
+      "sha256": "4c80f04e69849c5c42ca42cb2cb364c9c2e414df93502d57d883cc178c66fb33"
+    },
+    {
+      "path": "cloud-core/tests/test_recommendations.py",
+      "bytes": 13512,
+      "sha256": "27a4327b05caabad23b8a3563f912c93c9fb53de4df55326e163edf44b9a46ff"
+    },
+    {
+      "path": "cloud-core/tests/test_redis_down_failopen.py",
+      "bytes": 10684,
+      "sha256": "d2aff3496219ee557dbd57cc959dcc3f3c7a34214d1219e4fe0c43045b65edba"
+    },
+    {
+      "path": "cloud-core/tests/test_relationships.py",
+      "bytes": 10096,
+      "sha256": "c198aa5a242ae5ab9d91b70f2de4cf12ee6c84e1bd9dbb5b9d6c87d422867164"
+    },
+    {
+      "path": "cloud-core/tests/test_request_id.py",
+      "bytes": 1246,
+      "sha256": "a890bda9d052b350e4fcc34a8ad02cbf8933a19df6f148907e8e414e4188b2bc"
+    },
+    {
+      "path": "cloud-core/tests/test_research_execution.py",
+      "bytes": 7861,
+      "sha256": "0cbba97a047e0927ac2d95963fe784d90e3beb0206a181067a9758d061d62e91"
+    },
+    {
+      "path": "cloud-core/tests/test_research_projects.py",
+      "bytes": 7764,
+      "sha256": "304601104dda094179470e881c0fae61cdbbf5cf4561205fb5ac5f42cd071404"
+    },
+    {
+      "path": "cloud-core/tests/test_research_tasks.py",
+      "bytes": 8128,
+      "sha256": "9b21be4af97e6ad047c4be45d3807b26ba803e8f7fedf11bbfc25c8d1714ac1f"
+    },
+    {
+      "path": "cloud-core/tests/test_same_tenant_semantic_scope.py",
+      "bytes": 6213,
+      "sha256": "373a24bc632ee3dc4fd5da6ee6e990b475b63b5b35cf1bf805da26e047922b34"
+    },
+    {
+      "path": "cloud-core/tests/test_security.py",
+      "bytes": 1622,
+      "sha256": "7bf99a538e173cae21ad7329a28d38839c39aa8a9abeb5eed7c03359b19904ed"
+    },
+    {
+      "path": "cloud-core/tests/test_sites.py",
+      "bytes": 3815,
+      "sha256": "6ae93cf70217786cf04ec2b3b87c2634d8acf808ba829285a503efa4938e87fd"
+    },
+    {
+      "path": "cloud-core/tests/test_sorting.py",
+      "bytes": 18196,
+      "sha256": "855f83f15895555ba1a25e2a215e558d2051605f13369abc3e0d9583a279d81c"
+    },
+    {
+      "path": "cloud-core/tests/test_sources.py",
+      "bytes": 3818,
+      "sha256": "e118ab245e0a53cf9a360857974f079c7c09e4696690ff1ccd795cbfa2ad6167"
+    },
+    {
+      "path": "cloud-core/tests/test_sql_level_tenant_integrity.py",
+      "bytes": 5539,
+      "sha256": "5d84e9bd06bc1b5bbbb1a09bcdcba7748c2fe3eafb9ba4d1fd9ed5fdb3d39a0a"
+    },
+    {
+      "path": "cloud-core/tests/test_tenant_isolation.py",
+      "bytes": 4878,
+      "sha256": "ccaca9f67c87a6ba46e6338fd853ef9a0a8bcafb331ef251ee0d32d5360d551d"
+    },
+    {
+      "path": "cloud-core/tests/test_url_ingestion.py",
+      "bytes": 11388,
+      "sha256": "47a86aac35e9c2fb076bd428cc6f8e45edfd363c409c3390a1142f481c8c1c1e"
+    },
+    {
+      "path": "cloud-core/tests/test_url_ingestion_security.py",
+      "bytes": 7143,
+      "sha256": "6c1729271acf9f68db135ce3c6d29ea1b295d3b6c200a66ebfb206305a036cc7"
+    },
+    {
+      "path": "cloud-core/tests/test_users.py",
+      "bytes": 4179,
+      "sha256": "1d38517f4a3bdabe3aa5340b10bb6cde72525d53fd71ef47ec92fe39266ca5bf"
+    },
+    {
+      "path": "docker-compose.yml",
+      "bytes": 1407,
+      "sha256": "f3b4e76764db10dbbe2f0edd4be13f0474c41304eb898f178432b8be12e66b26"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "bytes": 450,
+      "sha256": "1797e7715dd32781604375ed8151b83ba1246a459119f5e03f80af585ed12189"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "bytes": 82995,
+      "sha256": "8f43aee95b5312b48f2913001989a743de46b658ee6add629c57b757a458c706"
+    },
+    {
+      "path": "docs/ai-context/ACTIVE_TASK.md",
+      "bytes": 2611,
+      "sha256": "d3eeac0941724bad12f8d95053923e8b341f88415c902ee12eae0942647c870c"
+    },
+    {
+      "path": "docs/ai-context/AI_ACCESS_TOOLKIT_ABSORPTION_REQUIREMENT.md",
+      "bytes": 2090,
+      "sha256": "75b75082b46735e29575e50164bcd72035dc1c0ada722ffa65a86847be73cf12"
+    },
+    {
+      "path": "docs/ai-context/AI_ACCESS_TOOLKIT_CAPABILITY_MAP.md",
+      "bytes": 5890,
+      "sha256": "62bb0f5e7d8d247588b537bd550135d7da48ed3e06f0d4f4587ffcade9fe64b2"
+    },
+    {
+      "path": "docs/ai-context/AI_RULES.md",
+      "bytes": 744,
+      "sha256": "ca87f5dd9d286f823a28483358866b8973b330260cfb4b2dda208831f0dd8cc0"
+    },
+    {
+      "path": "docs/ai-context/CURRENT_STATE.md",
+      "bytes": 10307,
+      "sha256": "9d392b556beed8cac660d7ece6a974c7e0bd8e82e16fb7e01d9b62c7f9071b9e"
+    },
+    {
+      "path": "docs/ai-context/DEBT_REGISTER.md",
+      "bytes": 9213,
+      "sha256": "5131ba2f617af4c3cbafee81d814611d22afeda4413a4efb1f30e4498e6e7f3c"
+    },
+    {
+      "path": "docs/ai-context/KNOWN_ISSUES.md",
+      "bytes": 17266,
+      "sha256": "963f14d6b34bc84a83beb95cdf2535d258ef7bbae69ee9e8d487f6512e002fe5"
+    },
+    {
+      "path": "docs/api.md",
+      "bytes": 30096,
+      "sha256": "d0c197acbec413643deb2703dce59cf452d0c660c06b63f61445c2efb48e5c20"
+    },
+    {
+      "path": "docs/audits/CROSS_PHASE_FORENSIC_AUDIT.md",
+      "bytes": 4127,
+      "sha256": "84f744a2968fd55eb940d91bd9b14d9f3aed93f2e6edd5c1ffe9889c90e0aa2a"
+    },
+    {
+      "path": "docs/audits/DOCUMENT_INTELLIGENCE_CAPABILITY_MATRIX.md",
+      "bytes": 7908,
+      "sha256": "08f71b228cb0c3028e0c6a5628997e4f0c74ad88185db27eed414f4494e6a0bc"
+    },
+    {
+      "path": "docs/audits/MARKITDOWN_AUDIT.md",
+      "bytes": 8699,
+      "sha256": "bf23c42634bbeb0ee4e2f58e2f2ae70fcb6f86e2c11b9cad142f585f1e56b96c"
+    },
+    {
+      "path": "docs/audits/MASTER_FORENSIC_AUDIT.md",
+      "bytes": 2121,
+      "sha256": "9a5dfde1ab094e287992477b9bf8cded4e9961815258fc959d6763009cd39d91"
+    },
+    {
+      "path": "docs/audits/PHASE0_12_GAP_MATRIX.md",
+      "bytes": 5797,
+      "sha256": "6c6e6673e8e773bb017781fa0cc25263df305f3ac11be1ce7b6db2d1de6e1008"
+    },
+    {
+      "path": "docs/audits/PHASE12_FORENSIC_REVIEW.md",
+      "bytes": 1763,
+      "sha256": "b041ed072f803f1fe0b5cea959d6353834ebcb21928c3969d5a5a98e620e1b3c"
+    },
+    {
+      "path": "docs/audits/PHASE12_REMEDIATION_FINAL_REPORT.md",
+      "bytes": 2273,
+      "sha256": "5e47ec7e1386b5ebbbe33d71e8caafdf91cce2fa8d663977c29f10a54139edd3"
+    },
+    {
+      "path": "docs/audits/PRODUCT_UX_ARCHITECTURE_CHECKPOINT_REPORT.md",
+      "bytes": 45062,
+      "sha256": "2e99a505db333514e65182fee9027ba15dcccc286231ca5f513fbc6376e59e8b"
+    },
+    {
+      "path": "docs/database.md",
+      "bytes": 22030,
+      "sha256": "44008977a49a73e16f6bafe41962c2f6eef3c50ae5c2ceb80833ae1fd5e8c1ca"
+    },
+    {
+      "path": "docs/development.md",
+      "bytes": 95676,
+      "sha256": "6c82298039a4bb2660bf8e451220180accfbc312275bf2167091f458c122dfe2"
+    },
+    {
+      "path": "docs/master-spec/MASTER_SPEC.md",
+      "bytes": 38426,
+      "sha256": "90e8cc6c4402676e433ee5946a91c498a93f5deaa66dc768c36046b72622587c"
+    },
+    {
+      "path": "docs/phase13/MEMORY-CHANGE-P13-001.md",
+      "bytes": 3474,
+      "sha256": "7e506cdb0ea66d624ba43eb05185922c90dbf88bd49fc6b9d4b4b57fe3ed894a"
+    },
+    {
+      "path": "docs/phase13/MUTATION_PLAN.md",
+      "bytes": 3127,
+      "sha256": "32367b730f69d5da2e2f54669f1fd95b670519874ca6dab2d14d2ccc0ad6c1d1"
+    },
+    {
+      "path": "docs/phase13/PHASE13_REPORT.md",
+      "bytes": 16050,
+      "sha256": "b70cc426bffceaf315213122dbd6b5388dfb7eec1cb558fb77bb633fdd76fbc3"
+    },
+    {
+      "path": "docs/phase13/REQUIREMENT_MATRIX.md",
+      "bytes": 9528,
+      "sha256": "9865716aec2587bf40cbf57590e2629ebb2a4095d7bb846f180e161f84f647c1"
+    },
+    {
+      "path": "docs/phase13/sandbox-verification-2026-09-18/FORENSIC_FINDINGS_2026-09-18-B.md",
+      "bytes": 12899,
+      "sha256": "6eb408b2a57b34bc0e91055eac224677a32ef212655404574a80cc422f89b3d0"
+    },
+    {
+      "path": "docs/phase13/sandbox-verification-2026-09-18/README.md",
+      "bytes": 5531,
+      "sha256": "695e9e9f7cf29554084b1e0c36b6380c23b602737477be7c621d32fdc306e387"
+    },
+    {
+      "path": "docs/phase13/sandbox-verification-2026-09-18/py_compile_all.log",
+      "bytes": 38,
+      "sha256": "c554ecf59286bdfaaaffd41ccf26e74d9fe2876a0aa2021a999e068e7e6be390"
+    },
+    {
+      "path": "docs/phase13/sandbox-verification-2026-09-18/sandbox_logic_tests.log",
+      "bytes": 607,
+      "sha256": "903ed95b95882f0b7d5c64dd7005b04243bcbffecdedbdd7bc802a189d2a8591"
+    },
+    {
+      "path": "docs/phase13/sandbox-verification-2026-09-18/sandbox_logic_tests.py",
+      "bytes": 5821,
+      "sha256": "77f7b7074997887f806eee13e0b85e4da967833acef5922421e45b0192b28525"
+    },
+    {
+      "path": "docs/phase13/sandbox-verification-2026-09-18/visual_harness_check.log",
+      "bytes": 1891,
+      "sha256": "97c48516b0198bb432207197161d7fcbcbdb09f28e1fad35f52932348d49f2f8"
+    },
+    {
+      "path": "docs/phase13/sandbox-verification-2026-09-18/visual_harness_measure.log",
+      "bytes": 82,
+      "sha256": "643f46929b2f30539bae20b47eb9cad72dfde0fd41fd1ff04515c92c60f7dcd2"
+    },
+    {
+      "path": "docs/strategy/AI_COMMERCE_VISION_2035.md",
+      "bytes": 34781,
+      "sha256": "7a6e201ccfd18ba7cf93d67854ba1d18c56ed565657a68f603f6d90a67956355"
+    },
+    {
+      "path": "docs/ux/ACCESSIBILITY_UX.md",
+      "bytes": 2515,
+      "sha256": "b6564a3f6b010456dd30e9a183c0c40e59e90a2598d8f0b09e71751f0013f698"
+    },
+    {
+      "path": "docs/ux/AI_VISIBILITY_UX.md",
+      "bytes": 5950,
+      "sha256": "cbc6729b7f415504736ad1009c41acd2ef33ae9bf627b7ebc69c10ebca2d34c8"
+    },
+    {
+      "path": "docs/ux/DASHBOARD_UX.md",
+      "bytes": 8679,
+      "sha256": "592734bc732edc5b5215bf6443ea27418813146e7d4e2d820ff8118e70235751"
+    },
+    {
+      "path": "docs/ux/DESIGN_SYSTEM.md",
+      "bytes": 4973,
+      "sha256": "87d9553bdd7ccadeaabf034b350d8ab163f35bf05c9e858d546202bf85f2769a"
+    },
+    {
+      "path": "docs/ux/ICON_SYSTEM.md",
+      "bytes": 3442,
+      "sha256": "58932d9afde40aa970eca0551b05b4ae6695ab8fbd4c384b16c6baba3c7434db"
+    },
+    {
+      "path": "docs/ux/INFORMATION_ARCHITECTURE.md",
+      "bytes": 3644,
+      "sha256": "72ce2e95fcf4e4f55ed3175b0ec069205863a69da439124b932cc1465bf5142b"
+    },
+    {
+      "path": "docs/ux/KNOWLEDGE_PROVENANCE_UX.md",
+      "bytes": 4515,
+      "sha256": "5e1b1a6421385f19972aa8c2487f33aafd3e7fc5d4117272ecc0b23611244d15"
+    },
+    {
+      "path": "docs/ux/PRODUCT_UX_ARCHITECTURE.md",
+      "bytes": 4736,
+      "sha256": "bd6367547e555aee2dc97387632511fd1f3286d54960edcdff005a6d4bdc0740"
+    },
+    {
+      "path": "docs/ux/RTL_LTR_UX.md",
+      "bytes": 3433,
+      "sha256": "f74004d65adfd5921becd3e46f79dd56b5539c17b2defcef9e95f8093c70af62"
+    },
+    {
+      "path": "docs/ux/SOURCE_DOCUMENT_UX.md",
+      "bytes": 8957,
+      "sha256": "72180b17767d83d988169a359e1f973b112778648423837b198bc41cfc302250"
+    },
+    {
+      "path": "frontend/design-system/components.css",
+      "bytes": 17662,
+      "sha256": "8186868b1fcdc1f1495bd1b696bf82ace27e92d130568f9abd8249ad6bb3bc19"
+    },
+    {
+      "path": "frontend/design-system/tokens.css",
+      "bytes": 8898,
+      "sha256": "ef8d361c138c1ddafa9d376fed94fad0687430eccbd029582c1012e23de70460"
+    },
+    {
+      "path": "frontend/icons/class-aiol-icon.php",
+      "bytes": 5482,
+      "sha256": "698f06aed6568da078640637bae08fb2574fb45e18b68d2fde42db11749d43f3"
+    },
+    {
+      "path": "frontend/icons/icon-paths.json",
+      "bytes": 13211,
+      "sha256": "0c63f73eb6d614f7005f0571489943c41eee5d53cdcd0fad62c1ea4def70a926"
+    },
+    {
+      "path": "frontend/icons/icon.js",
+      "bytes": 6043,
+      "sha256": "008338c6f5afcb97c76b859b3908bbf34b92c6b07a7411fac4109f9170f9abaf"
+    },
+    {
+      "path": "scripts/sync-design-system.php",
+      "bytes": 1920,
+      "sha256": "1e502cfda8b167485b987c88e0571fe63432d60cc3b224e52d31031e8f6a7828"
+    },
+    {
+      "path": "scripts/sync-signatures.php",
+      "bytes": 1925,
+      "sha256": "e821a4ebdaeca24ad72e5f4a4a8c8c9164f1f82618743a60a8e59494d4032f5c"
+    },
+    {
+      "path": "visual-harness/README.md",
+      "bytes": 4398,
+      "sha256": "57e59030ed2f3286dd47e9fee1abb9dddf548bb8f1ca4c47dcc9e6b755eb52e5"
+    },
+    {
+      "path": "visual-harness/build.js",
+      "bytes": 97790,
+      "sha256": "61824bd8df497897a26cd2f00fa0292012ef00d78d4cd4480e6122f2568d7f42"
+    },
+    {
+      "path": "visual-harness/check.js",
+      "bytes": 8750,
+      "sha256": "c73469a7bb2e7eff58cb558f2671549dabcd6ef1e94c7f8780e710678fcde233"
+    },
+    {
+      "path": "visual-harness/index.html",
+      "bytes": 245130,
+      "sha256": "890f3b25a7fc0ada0c241c01da9fa91c7aa3cb906617c3996afe634f4ddab085"
+    },
+    {
+      "path": "visual-harness/measure.js",
+      "bytes": 6660,
+      "sha256": "9a80662458ad95b591558e787b5e8755f8f717c82f1d870489f2368a0e137ded"
+    },
+    {
+      "path": "wordpress-plugin/README.md",
+      "bytes": 3208,
+      "sha256": "5dd85434ab134d1711430a7acf6b57ee4f832f8b5712aa7203a1d3ac2e8b8c3d"
+    },
+    {
+      "path": "wordpress-plugin/admin/class-aiol-admin.php",
+      "bytes": 16950,
+      "sha256": "468c2deac37bfa3049154f7768961d20d8e82b9824e56bfcaac8da822a49ea46"
+    },
+    {
+      "path": "wordpress-plugin/admin/view-dashboard-not-connected.php",
+      "bytes": 1701,
+      "sha256": "584f66c6413fe0b0be280434014d61a55cca40c950fcd7c3a8df25c1ac564528"
+    },
+    {
+      "path": "wordpress-plugin/admin/view-dashboard.php",
+      "bytes": 34790,
+      "sha256": "cb59844ad68e4a6d9c9690a83db4895eb9ac68714263b52ed6514e2a3eaa9146"
+    },
+    {
+      "path": "wordpress-plugin/admin/view-diagnostics.php",
+      "bytes": 6406,
+      "sha256": "92e7df2762d297457dbc71539149f8ad82a73f485cd5a7b079baea3fedd19c8a"
+    },
+    {
+      "path": "wordpress-plugin/admin/view-mappings.php",
+      "bytes": 6920,
+      "sha256": "5cc24a81a14be8c4c6a5a30bff522c81ce138481b0b31ea1ae504ecf40f09210"
+    },
+    {
+      "path": "wordpress-plugin/admin/view-meta-box.php",
+      "bytes": 2725,
+      "sha256": "093784a32b206e2b8232bfebe7ade78636c551d2b5871165abff4fc6e929b03f"
+    },
+    {
+      "path": "wordpress-plugin/admin/view-settings.php",
+      "bytes": 11852,
+      "sha256": "0f5cd48ad93fe8c747993f4b9bd2108d7cefcbb2e870865147b2a1c8fe2e0a5b"
+    },
+    {
+      "path": "wordpress-plugin/ai-operating-layer.php",
+      "bytes": 6825,
+      "sha256": "d439ecf87d3afcdaed827b2c76b19e834270172c4f9bbb4e88b739f1d5de1f13"
+    },
+    {
+      "path": "wordpress-plugin/assets/css/admin.css",
+      "bytes": 7335,
+      "sha256": "3cb519ccd3eea20d5ddca4a0ad375af187ff4f55e41c79394bec63f2a0061c69"
+    },
+    {
+      "path": "wordpress-plugin/assets/css/components.css",
+      "bytes": 17662,
+      "sha256": "8186868b1fcdc1f1495bd1b696bf82ace27e92d130568f9abd8249ad6bb3bc19"
+    },
+    {
+      "path": "wordpress-plugin/assets/css/tokens.css",
+      "bytes": 8898,
+      "sha256": "ef8d361c138c1ddafa9d376fed94fad0687430eccbd029582c1012e23de70460"
+    },
+    {
+      "path": "wordpress-plugin/assets/icons/icon-paths.json",
+      "bytes": 13211,
+      "sha256": "0c63f73eb6d614f7005f0571489943c41eee5d53cdcd0fad62c1ea4def70a926"
+    },
+    {
+      "path": "wordpress-plugin/assets/js/aiol-dwell.js",
+      "bytes": 2270,
+      "sha256": "a96d85dae9fe0a5ad79681b6f87f830158250646d33aa8542bb72fa348b3aac7"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-access-gate.php",
+      "bytes": 15226,
+      "sha256": "dacfeaa0846b07112c0f3fd0dd46fbefa7e85c5b10fe0a5fd2d31d6246e909fa"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-actors.php",
+      "bytes": 15003,
+      "sha256": "c5bbe0d843e47628f52004ca9278d404841d01f89e880fc35ea5c8b2a0c5eb6b"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-cache.php",
+      "bytes": 2346,
+      "sha256": "0a53b9a4aec2884480eed6d9d56db18c7b161ba2c0b8694c83f48e48810a3391"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-client.php",
+      "bytes": 12562,
+      "sha256": "124c32173dfd4657ddddb3dec099dc60769d6d1abbc6ac344d745ecd42df9a26"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-credentials.php",
+      "bytes": 6023,
+      "sha256": "8f3031f6f1263da1330c26a2c1ee1b1c40cd6221d91c09945009b235de6fd9aa"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-diagnostics.php",
+      "bytes": 12376,
+      "sha256": "0b6a5bbd4ccae211ad1ece4856fecaf064597fcaec1012f3ea15de0d03936aa6"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-geo.php",
+      "bytes": 4396,
+      "sha256": "7e13e3104b9f44fcaf118a684a113fafb9f784f86c55a30830da492a7f6bbe09"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-hooks.php",
+      "bytes": 5426,
+      "sha256": "45f4d7c61f4729696d00f369ad7bf04a9afdb004dd8a10f611da4ee139696971"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-icon.php",
+      "bytes": 5482,
+      "sha256": "698f06aed6568da078640637bae08fb2574fb45e18b68d2fde42db11749d43f3"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-logger.php",
+      "bytes": 2176,
+      "sha256": "9b5be48ffd3bf0564a00f4d00bfb01b89d23eef5eef10765bc6d4e3c4cca5417"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-mappings.php",
+      "bytes": 2519,
+      "sha256": "5fcbec8274eb60d13dc0578d62a23782e84a57fcd34cc6b74744f3402444b7cd"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-representations.php",
+      "bytes": 8101,
+      "sha256": "97c0813110650c0e6e73d8c176ee4394c7249d4b9295fec942a7d017a0999707"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-schema.php",
+      "bytes": 7342,
+      "sha256": "4523f3faaa46b27ab15e22d2e649e3faf39c05f21018a7656830557eb739f10e"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-status.php",
+      "bytes": 3322,
+      "sha256": "8ed3ef7ede32d225567472c0af26048c2b2fbb29589987f6a0bafc836d9145f2"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-telemetry.php",
+      "bytes": 10588,
+      "sha256": "cc507c528570cc4cebfe1e6180bee5fdb0be05750cdd66bc4031f4019a6fcea8"
+    },
+    {
+      "path": "wordpress-plugin/includes/class-aiol-woocommerce.php",
+      "bytes": 11619,
+      "sha256": "307699e549d065a66d3c841a7bbdde242c64b11562b3d68fb3b54656fa56cdac"
+    },
+    {
+      "path": "wordpress-plugin/languages/ai-operating-layer-fa_IR.po",
+      "bytes": 18049,
+      "sha256": "3aca5c498c1e58d50e19a9fb25b8386f761d7dcc8734fb0e69b6955fb6cd6bb2"
+    },
+    {
+      "path": "wordpress-plugin/languages/ai-operating-layer.pot",
+      "bytes": 16246,
+      "sha256": "24d85daf52e4e6d5a8297af0b106aa4f63eef7d333fe02dce8643f856c1377e5"
+    },
+    {
+      "path": "wordpress-plugin/tests/bootstrap-assert.php",
+      "bytes": 1099,
+      "sha256": "5a7dee0ab3f2b548e5fd90fa70661864adcf01103504f8d4f2a2e2553980792e"
+    },
+    {
+      "path": "wordpress-plugin/tests/bootstrap.php",
+      "bytes": 1508,
+      "sha256": "20b1d5f648b02487a539751174a2c4a6e75a2cd32547898a2184cf28808fe834"
+    },
+    {
+      "path": "wordpress-plugin/tests/run.sh",
+      "bytes": 362,
+      "sha256": "79ce66416fcc567141a17aba008fddeda03b07f497b1e1a3fae534ddc94e3c43"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-absorption.php",
+      "bytes": 10089,
+      "sha256": "c5af6920df814e3866dc29e6fc5d7313b60278d032d7dced35aff9a05a153ef5"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-access-gate.php",
+      "bytes": 5576,
+      "sha256": "402e74bfc8548bb3486fa620455076e06e6537cf7edaf338b95a086ba8807a7f"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-bulk-guard.php",
+      "bytes": 5198,
+      "sha256": "156ad790cdd73eb3ee86f55484a3aa4a303ecdfa6c19d9320f3a54ef082b4491"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-design-system-parity.php",
+      "bytes": 1517,
+      "sha256": "66aa6e7c6c89cc31ecfbc384c6848cd560fdd3e6e0e0852d1117b958b77802fb"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-schema.php",
+      "bytes": 4706,
+      "sha256": "7a857505d14b2308000c5cc29d0c7dbb0a1b039dae3ae0d1e04850f82b4aec40"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-security.php",
+      "bytes": 4916,
+      "sha256": "74236cea8c90bdf43523aa5c8eb4f995a0458bfbea2092a99a8a25852a5fefd6"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-signature-parity.php",
+      "bytes": 2032,
+      "sha256": "c91a7829b415b33dec9daf62adb9367503e551b8e011c2a94777300955cc57f8"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-status.php",
+      "bytes": 2143,
+      "sha256": "ad204cb9e0391f6194ced1792e1650f4db5e52a0df5e3096c093b78ba40d4eec"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-wiring.php",
+      "bytes": 5843,
+      "sha256": "e5c4b41961e3e82bef3cff5c2ece06cc97736a0220062fe7871853c76e7fe8b6"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-woocommerce-contract.php",
+      "bytes": 7603,
+      "sha256": "cc1988f58f404484b7142e64085e26b02c395c6a8fccbfff21dad92556988f32"
+    },
+    {
+      "path": "wordpress-plugin/tests/test-woocommerce.php",
+      "bytes": 6612,
+      "sha256": "ab9a27e25339839ade2cbecb62df649b2bcf461d8a78aa1b0626c646d57ebdf0"
+    },
+    {
+      "path": "wordpress-plugin/tests/visual/README.md",
+      "bytes": 2444,
+      "sha256": "aece010954bdc42f2b317b1b091340340833b738e6986cfb5912dcae04658453"
+    },
+    {
+      "path": "wordpress-plugin/tests/visual/harness.html",
+      "bytes": 6865,
+      "sha256": "cc3a4908231a9db28736945b467e42e3cef2364d2e3d5bbe8317206bc647fee8"
+    },
+    {
+      "path": "wordpress-plugin/tests/visual/shoot.js",
+      "bytes": 1900,
+      "sha256": "557d4f0f59b57f1e1f592643fac45014528a9cec3179e470b2af64c2dbdbb82b"
+    },
+    {
+      "path": "wordpress-plugin/uninstall.php",
+      "bytes": 1334,
+      "sha256": "5b30f0053af10ad220ac32b61d42fed40925b608784c2457ba62f8affcba3130"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+PASS  Googlebot -> SEARCH_CRAWLER/SEARCH_INDEXING
+PASS  GPTBot -> AI_CRAWLER/TRAINING
+PASS  ChatGPT-User -> AI_USER_AGENT/ANSWERING
+PASS  Claude-User -> AI_USER_AGENT/ANSWERING
+PASS  ClaudeBot -> AI_CRAWLER/TRAINING
+PASS  Claude-SearchBot NOT classified as ClaudeBot (order-sensitive)
+PASS  Ordinary Chrome UA -> no signature match (None)
+PASS  Unrecognised crawler -> no signature match (None)
+PASS  Empty UA -> None, no exception
+PASS  needles() returns 36 canonical entries
+PASS  PHP mirror has same signature count (36 vs 36)
+PASS  PHP mirror keys match Python needles() exactly, in order
+
+12/12 passed

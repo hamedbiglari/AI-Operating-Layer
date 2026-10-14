@@ -1,0 +1,31 @@
+P14-CORRECTION-001 — manual retry — runtime evidence
+Fresh DB (aiol_p15c), real uvicorn + real celery worker.
+
+SECURITY:
+  cross-tenant retry (Tenant B on Tenant A's job)  -> 404
+  unauthenticated retry                            -> 401
+  invalid/nonexistent job id                       -> 404
+
+STATE VALIDATION / IDEMPOTENCY (3 rapid POSTs against the same job):
+  1st: FAILED -> QUEUED, dispatched                -> 200
+  2nd: job now RUNNING (worker already picked it up) -> 409 CONFLICT
+       "Job is running; only a failed job can be retried."
+  3rd: same                                         -> 409 CONFLICT
+  DB: SELECT count(*), attempts, status FROM sync_jobs WHERE id=<job>
+      -> 1 row, attempts=2, status=running
+      (exactly one row, one dispatch -- no duplicate work created)
+
+FAILURE HISTORY PRESERVATION:
+  error_message present immediately after the 1st retry call
+  (status=queued) -- not cleared until the next real outcome overwrites it.
+
+FULL CYCLE (separate job):
+  create -> fails (attempts=1, status=failed, real ConnectError,
+            this sandbox's worker has no outbound network -- not faked)
+  -> retry (200) -> worker re-executes for real -> attempts=2,
+     status=failed again (same real network limitation -- no fake success)
+  -> retried again while FAILED -> 200 (correctly eligible once more)
+
+MIGRATION (fresh DB, unrelated to the DB used above):
+  scripts/verify_migration_cycle.sh: base -> head -> base -> head
+  "=== Migration cycle verified: base -> head -> base -> head ===" (real output)

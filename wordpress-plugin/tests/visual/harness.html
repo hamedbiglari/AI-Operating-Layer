@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIOL admin — visual harness</title>
+<style>
+/* Approximate wp-admin context so the plugin CSS is judged in situ. */
+body{margin:0;background:#f0f0f1;color:#3c434a;font:13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{margin:10px 20px 0 2px}
+h1{font-size:23px;font-weight:400;margin:0 0 16px;padding:9px 0 4px}
+h2{font-size:1.3em;margin:1.5em 0 .5em}
+h3{font-size:1em;margin:1em 0 .5em}
+.button{display:inline-block;border:1px solid #2271b1;background:#f6f7f7;color:#2271b1;padding:0 10px;border-radius:3px;cursor:pointer;text-decoration:none;line-height:2.15384615}
+.button-primary{background:#2271b1;border-color:#2271b1;color:#fff}
+.notice{background:#fff;border-left:4px solid #72aee6;margin:15px 0;padding:1px 12px}
+.notice-success{border-left-color:#00a32a}.notice-error{border-left-color:#d63638}
+.description{color:#50575e}
+code{background:#f0f0f1;padding:2px 4px;border-radius:2px;font-size:12px}
+input,select{border:1px solid #8c8f94;border-radius:4px;padding:0 8px;background:#fff}
+</style>
+<link rel="stylesheet" href="admin.css">
+</head><body>
+<div class="wrap aiol-wrap">
+  <h1>AI Operating Layer</h1>
+  <p class="description" style="max-width:70ch">Cloud Core is the source of truth for your products, knowledge, evidence and trust. This plugin connects WordPress to it — it publishes references, never business data of its own.</p>
+
+  <div class="notice notice-error" role="alert"><p>Cloud Core rejected this installation token. It may have been revoked or rotated — issue a new one in Cloud Core and paste it here.</p></div>
+
+  <h2>Status</h2>
+  <div class="aiol-grid">
+    <section class="aiol-card"><h3 class="aiol-card__title">Connection</h3>
+      <dl class="aiol-status-list">
+        <div><dt>Cloud Core</dt><dd><span class="aiol-pill aiol-pill--ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Healthy</span></span></dd></div>
+        <div><dt>Redis</dt><dd><span class="aiol-pill aiol-pill--degraded"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Degraded</span></span></dd></div>
+        <div><dt>Rate limiting</dt><dd><span class="aiol-pill aiol-pill--degraded"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Degraded</span></span></dd></div>
+        <div><dt>Endpoint</dt><dd><code>https://core.example.com</code></dd></div>
+        <div><dt>Token</dt><dd><code>aiol_abc123_••••••••7f2a</code></dd></div>
+      </dl>
+    </section>
+    <section class="aiol-card"><h3 class="aiol-card__title">This installation</h3>
+      <dl class="aiol-status-list">
+        <div><dt>Organization</dt><dd><code>3f2504e0-4f89-11d3-9a0c-0305e82c3301</code></dd></div>
+        <div><dt>Adapter type</dt><dd>wordpress</dd></div>
+        <div><dt>Permissions</dt><dd>catalog:read, mappings:read, mappings:write</dd></div>
+      </dl>
+      <p class="aiol-hint">Your organization is determined by Cloud Core from this token. WordPress cannot choose or change it.</p>
+    </section>
+  </div>
+
+  <h2>Connection settings</h2>
+  <form class="aiol-card">
+    <div class="aiol-field"><label for="a">Cloud Core URL *</label>
+      <input type="url" id="a" value="https://core.example.com" aria-describedby="ah">
+      <span class="aiol-hint" id="ah">For example https://core.example.com — the address of your Cloud Core server.</span></div>
+    <div class="aiol-field aiol-field--error"><label for="b">Installation token *</label>
+      <input type="password" id="b" aria-describedby="bh">
+      <span class="aiol-error-text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span>That does not look like an installation token. Tokens begin with "aiol_".</span></span>
+      <span class="aiol-hint" id="bh">Issued in Cloud Core under Installations. It is stored on this site and never shown again.</span></div>
+    <p><button type="button" class="button button-primary">Update connection</button></p>
+  </form>
+
+  <h2 id="mh">Mapped content</h2>
+  <table class="aiol-table" aria-labelledby="mh">
+    <thead><tr><th scope="col">WordPress post</th><th scope="col">Cloud Core object</th><th scope="col">Type</th><th scope="col">Sync status</th><th scope="col">Last synced</th></tr></thead>
+    <tbody>
+      <tr><td data-label="WordPress post"><a href="#">Taranjabin 500g — organic grade A harvested in Khorasan</a></td>
+        <td data-label="Cloud Core object"><code>123e4567-e89b-12d3-a456-426614174000</code></td>
+        <td data-label="Type">product</td>
+        <td data-label="Sync status"><span class="aiol-pill aiol-pill--ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Synced</span></span></td>
+        <td data-label="Last synced">2 mins ago</td></tr>
+      <tr><td data-label="WordPress post"><a href="#">What is taranjabin?</a></td>
+        <td data-label="Cloud Core object"><code>7c9e6679-7425-40de-944b-e07fc1f90ae7</code></td>
+        <td data-label="Type">knowledge_object</td>
+        <td data-label="Sync status"><span class="aiol-pill aiol-pill--degraded"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Out of date</span></span></td>
+        <td data-label="Last synced">3 days ago</td></tr>
+      <tr><td data-label="WordPress post"><a href="#">Wholesale enquiries</a></td>
+        <td data-label="Cloud Core object"><code>550e8400-e29b-41d4-a716-446655440000</code></td>
+        <td data-label="Type">product</td>
+        <td data-label="Sync status"><span class="aiol-pill aiol-pill--failed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span>Failed</span></span></td>
+        <td data-label="Last synced">Never</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Empty state</h2>
+  <div class="aiol-empty"><h3>No content is linked yet</h3>
+    <p>Open any post, page or product, find the "AI Operating Layer" panel in the sidebar, and paste the Cloud Core object ID it represents. It will appear here after you save.</p></div>
+</div>
+</body></html>

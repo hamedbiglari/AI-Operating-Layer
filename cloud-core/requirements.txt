@@ -1,0 +1,39 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+sqlalchemy==2.0.35
+alembic==1.13.2
+psycopg[binary]==3.2.2
+pgvector==0.3.4
+
+pydantic==2.9.2
+pydantic-settings==2.5.2
+email-validator==2.2.0
+
+redis==5.0.8
+celery==5.4.0
+
+httpx==0.27.2
+
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.9
+openpyxl==3.1.5
+
+pytest==8.3.3
+pytest-asyncio==0.24.0
+
+# --- Phase 3 Document Intelligence (ADR-065, ADR-066) ---
+# MarkItDown: normalization only. Measured: correct on text PDF/DOCX/XLSX and
+# Persian; does NOT preserve PDF tables or embedded images.
+markitdown[pdf,docx,pptx,xlsx]==0.1.7
+# pdfplumber (MIT): recovers PDF tables MarkItDown flattens. 0.013s/page measured.
+pdfplumber==0.11.10
+# pypdf (BSD-3-Clause): recovers embedded images MarkItDown drops.
+pypdf==6.18.1
+# pytesseract (Apache-2.0): Level 3 OCR. Requires the `tesseract-ocr` system
+# package; absence yields ocr_status=unavailable, never a silent empty result.
+pytesseract==0.3.13
+# NOT PyMuPDF: AGPL-3.0, unsuitable for a network-served commercial core.
+

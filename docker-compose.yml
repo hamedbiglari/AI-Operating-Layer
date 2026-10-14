@@ -1,0 +1,98 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: aiol_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aiol}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aiol_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-aiol}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aiol} -d ${POSTGRES_DB:-aiol}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: aiol_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./cloud-core
+      dockerfile: Dockerfile
+    container_name: aiol_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://aiol:aiol_dev_password@postgres:5432/aiol}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./cloud-core:/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  # Phase 17: the Celery worker (all async jobs) and Celery beat (periodic
+  # jobs — today only ai_executions.reclaim_stale). Before Phase 17 this file
+  # defined no worker at all, and its build context pointed at a ./backend
+  # directory that does not exist in this repository (the code lives in
+  # ./cloud-core) — both corrected here because stale-execution recovery
+  # cannot run without them.
+  worker:
+    build:
+      context: ./cloud-core
+      dockerfile: Dockerfile
+    container_name: aiol_worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://aiol:aiol_dev_password@postgres:5432/aiol}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "--loglevel=info"]
+
+  beat:
+    build:
+      context: ./cloud-core
+      dockerfile: Dockerfile
+    container_name: aiol_beat
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      redis:
+        condition: service_healthy
+    # Exactly one beat process per deployment, or jobs are scheduled twice.
+    command: ["celery", "-A", "app.workers.celery_app", "beat", "--loglevel=info",
+              "--schedule=/tmp/celerybeat-schedule"]
+
+volumes:
+  pgdata:

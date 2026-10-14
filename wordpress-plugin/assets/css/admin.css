@@ -1,0 +1,239 @@
+/*
+ * AI Operating Layer — adapter admin design system.
+ *
+ * DESIGN DECISION (ADR-043): this EXTENDS WordPress admin rather than
+ * replacing it. The repository had no existing design system (verified: zero
+ * CSS/JS files before Phase 9), so one is defined here — but deliberately as
+ * a thin semantic layer over WP's own primitives.
+ *
+ * Why not a bespoke SaaS look: the user is a merchant who is already in
+ * wp-admin doing other work. A visually disconnected mini-application would
+ * cost them re-orientation on every visit, break WP's own focus/contrast
+ * conventions, and drift every time WordPress restyles. The Phase 9 brief
+ * says it in one line: "must feel native to WordPress where appropriate."
+ *
+ * Techniques from the external references were assessed and mostly NOT used:
+ * GSAP/Lenis/WebGL/scroll choreography are built for marketing sites and are
+ * actively wrong for an admin settings screen (performance cost, motion-
+ * sickness risk, no user benefit). What WAS taken: the anti-pattern
+ * checklist (no emoji icons, visible focus, no colour-only signals,
+ * reduced-motion support, 44px targets, reflow at 375px).
+ *
+ * Tokens use WP core variables where they exist so the panel follows admin
+ * colour schemes instead of fighting them.
+ */
+
+.aiol-wrap {
+  /* Semantic tokens — no raw hex repeated through the file. */
+  --aiol-space-1: 4px;
+  --aiol-space-2: 8px;
+  --aiol-space-3: 12px;
+  --aiol-space-4: 16px;
+  --aiol-space-5: 24px;
+  --aiol-space-6: 32px;
+
+  --aiol-radius: 4px;
+  --aiol-border: #c3c4c7;
+  --aiol-surface: #fff;
+  --aiol-surface-muted: #f6f7f7;
+  --aiol-text: #1d2327;
+  --aiol-text-muted: #50575e;
+
+  /* Semantic status colours. Each is ALWAYS paired with an icon and a
+     text label in markup — colour never carries meaning alone. */
+  --aiol-ok: #00713c;        /* AA on white */
+  --aiol-degraded: #8a6100;  /* amber dark enough for AA, not #ffb900 */
+  --aiol-failed: #b32d2e;
+  --aiol-info: #2271b1;
+
+  --aiol-focus: var(--wp-admin-theme-color, #2271b1);
+
+  max-width: 1200px;
+}
+
+/* ---------- Layout ---------- */
+
+.aiol-grid {
+  display: grid;
+  gap: var(--aiol-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.aiol-card {
+  background: var(--aiol-surface);
+  border: 1px solid var(--aiol-border);
+  border-radius: var(--aiol-radius);
+  padding: var(--aiol-space-5);
+}
+
+.aiol-card__title {
+  margin: 0 0 var(--aiol-space-3);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--aiol-text);
+}
+
+/* ---------- Status list ---------- */
+
+.aiol-status-list { margin: 0; }
+
+.aiol-status-list div {
+  display: flex;
+  align-items: center;
+  gap: var(--aiol-space-2);
+  padding: var(--aiol-space-2) 0;
+  border-bottom: 1px solid var(--aiol-surface-muted);
+}
+.aiol-status-list div:last-child { border-bottom: 0; }
+
+.aiol-status-list dt { flex: 1 1 auto; margin: 0; color: var(--aiol-text-muted); }
+.aiol-status-list dd { margin: 0; font-weight: 600; }
+
+/*
+ * Status pills. The icon is an inline SVG in markup (never an emoji), the
+ * word is always present, and the colour is the third signal — so the
+ * component still reads correctly in greyscale and to a screen reader.
+ */
+.aiol-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aiol-space-1);
+  padding: 2px var(--aiol-space-2);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+.aiol-pill svg { width: 14px; height: 14px; flex: none; }
+.aiol-pill--ok       { color: var(--aiol-ok); }
+.aiol-pill--degraded { color: var(--aiol-degraded); }
+.aiol-pill--failed   { color: var(--aiol-failed); }
+.aiol-pill--muted    { color: var(--aiol-text-muted); }
+
+/* ---------- Forms ---------- */
+
+.aiol-field { margin-bottom: var(--aiol-space-5); }
+
+.aiol-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--aiol-space-1);
+}
+
+/* Hint text is a real element tied by aria-describedby, not a placeholder.
+   Placeholder-only labelling is on the anti-pattern list for good reason:
+   it disappears exactly when the user needs it. */
+.aiol-field .aiol-hint {
+  display: block;
+  margin-top: var(--aiol-space-1);
+  color: var(--aiol-text-muted);
+  font-size: 13px;
+}
+
+.aiol-field input[type="text"],
+.aiol-field input[type="url"],
+.aiol-field input[type="password"] {
+  width: 100%;
+  max-width: 560px;
+  min-height: 40px; /* comfortable target, incl. touch */
+}
+
+.aiol-field--error input { border-color: var(--aiol-failed); }
+
+.aiol-error-text {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--aiol-space-1);
+  margin-top: var(--aiol-space-1);
+  color: var(--aiol-failed);
+  font-size: 13px;
+}
+
+/* ---------- Focus: never removed ---------- */
+
+.aiol-wrap :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--aiol-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ---------- Interactive targets ---------- */
+
+.aiol-wrap .button {
+  min-height: 40px;
+  padding-inline: var(--aiol-space-4);
+}
+
+/* ---------- Empty state ---------- */
+
+.aiol-empty {
+  text-align: center;
+  padding: var(--aiol-space-6) var(--aiol-space-4);
+  color: var(--aiol-text-muted);
+  background: var(--aiol-surface-muted);
+  border-radius: var(--aiol-radius);
+}
+.aiol-empty h3 { margin: 0 0 var(--aiol-space-2); color: var(--aiol-text); }
+.aiol-empty p { margin: 0 auto; max-width: 52ch; } /* readable measure */
+
+/* ---------- Busy / loading ---------- */
+
+.aiol-busy { opacity: 0.6; pointer-events: none; }
+
+.aiol-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: aiol-spin 0.7s linear infinite;
+}
+@keyframes aiol-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Tables: reflow rather than overflow ---------- */
+
+.aiol-table { width: 100%; border-collapse: collapse; }
+.aiol-table th, .aiol-table td {
+  text-align: start;
+  padding: var(--aiol-space-2) var(--aiol-space-3);
+  border-bottom: 1px solid var(--aiol-surface-muted);
+  vertical-align: top;
+}
+.aiol-table code { word-break: break-all; } /* long UUIDs must not overflow */
+
+@media (max-width: 782px) {
+  /* Stacked card layout instead of a horizontally scrolling table.
+     Headers are carried by data-label so the meaning survives the reflow. */
+  .aiol-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .aiol-table tr {
+    display: block;
+    border: 1px solid var(--aiol-border);
+    border-radius: var(--aiol-radius);
+    margin-bottom: var(--aiol-space-3);
+    padding: var(--aiol-space-2);
+  }
+  .aiol-table td { display: flex; gap: var(--aiol-space-3); border: 0; padding: var(--aiol-space-1) 0; }
+  .aiol-table td::before {
+    content: attr(data-label);
+    flex: 0 0 40%;
+    font-weight: 600;
+    color: var(--aiol-text-muted);
+  }
+}
+
+/* ---------- Motion preference respected ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .aiol-wrap *, .aiol-wrap *::before, .aiol-wrap *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Forced colors (Windows high contrast) ---------- */
+
+@media (forced-colors: active) {
+  .aiol-pill { border: 1px solid CanvasText; }
+  .aiol-card { border: 1px solid CanvasText; }
+}
