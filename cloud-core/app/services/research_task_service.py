@@ -15,7 +15,10 @@ ever pointing at a real project row.
 ResearchOutcomeStatus onto ResearchTaskStatus, persists any references
 it reported (each resolved and tenant-checked exactly like
 research_task_service._resolve_reference does for CREATE), and leaves a
-clear audit trail (started / completed / failed). It is deliberately
+clear audit trail (started / completed / failed). The provider is asked
+for by `get_research_provider(db=..., organization_id=..., task=...)`:
+a discovery provider's output is new rows, so it is handed the context
+of this execution to bind rather than being a context-free singleton. It is deliberately
 plain, synchronous, DB-agnostic-of-caller code — app/workers/
 research_tasks.py wraps it in a Celery task; nothing here assumes it is
 called from a worker versus called directly (same "the function doesn't
@@ -303,7 +306,8 @@ def execute_research_task(
         action="research_task.started",
     )
 
-    active_provider = provider or _default_get_research_provider()
+    active_provider = provider or _default_get_research_provider(
+        db=db, organization_id=organization_id, task=task)
     outcome = active_provider.run(task_type=task.task_type, query=task.query)
 
     for ref in outcome.references:

@@ -146,3 +146,71 @@ def run_ai_job(job_id: str) -> dict:
         return ai_job_service.run_job(db, job)
     finally:
         db.close()
+
+
+@celery_app.task(name="ai_center.recover_jobs")
+def recover_ai_jobs() -> dict:
+    """ADR-131: re-queue AI jobs whose worker died or whose provider limit has reset."""
+    from app.services import ai_job_service
+
+    db = SessionLocal()
+    try:
+        out = ai_job_service.recover_jobs(db)
+    finally:
+        db.close()
+    for job_id in out["requeued"]:
+        run_ai_job.delay(str(job_id))
+    return {**out, "requeued": [str(i) for i in out["requeued"]]}
+
+
+@celery_app.task(name="synthesis.advance")
+def advance_synthesis_run(run_id: str) -> dict:
+    """v4 (ADR-124): drive a synthesis run through its stages and audit. Re-delivery is safe: finished
+    stages are skipped and finished job items are never re-run."""
+    from uuid import UUID
+
+    from app.models.synthesis import SynthesisRun
+    from app.services import synthesis_service
+
+    db = SessionLocal()
+    try:
+        run = db.get(SynthesisRun, UUID(run_id))
+        if run is None:
+            return {"skipped": True}
+        run = synthesis_service.advance(db, run)
+        return {"status": run.status}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="workspace.execute_command")
+def execute_workspace_command(command_id: str, version: int) -> dict:
+    """v4 (ADR-125): execute one version of a workspace command. The command row, not this task, is the
+    record of what happened; closing the browser does not touch it."""
+    from uuid import UUID
+
+    from app.services import workspace_service
+
+    db = SessionLocal()
+    try:
+        return workspace_service.execute(db, command_id=UUID(command_id), version=version)
+    finally:
+        db.close()
+
+
+@celery_app.task(name="chat.run_research_request")
+def run_chat_research_request(request_id: str, organization_id: str) -> dict:
+    """§13.6 steps 5-9 (ADR-130): carry out an approved chat research request. The request row, not
+    this task, is the record of what happened — a worker that dies leaves the request `running` and
+    the next approval is unaffected."""
+    from uuid import UUID
+
+    from app.services import chat_research_service
+
+    db = SessionLocal()
+    try:
+        req = chat_research_service.run_by_id(
+            db, request_id=UUID(request_id), organization_id=UUID(organization_id))
+        return {"state": req.state, "sources_added": req.sources_added} if req else {"skipped": True}
+    finally:
+        db.close()

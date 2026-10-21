@@ -24,6 +24,15 @@ logger = logging.getLogger("app.request")
 # Conservative allow-list: hex UUID-like or short alphanumeric/dash/underscore
 # tokens only. Anything else (excessive length, control characters, header
 # injection attempts, etc.) is rejected and replaced.
+_SECURITY_HEADERS = (
+    ("X-Content-Type-Options", "nosniff"),
+    ("X-Frame-Options", "DENY"),
+    ("Referrer-Policy", "no-referrer"),
+    ("Cross-Origin-Resource-Policy", "same-site"),
+)
+# Responses that carry tokens or one-time codes must never sit in a shared or browser cache.
+_NO_STORE_PREFIXES = ("/api/v1/auth/",)
+
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
@@ -43,6 +52,12 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         duration_ms = (time.perf_counter() - start) * 1000
 
         response.headers["X-Request-ID"] = request_id
+        # Baseline hardening for every API response (security audit SEC-07). setdefault: a route that sets its
+        # own value (e.g. a sandboxed HTML rendering) keeps it.
+        for name, value in _SECURITY_HEADERS:
+            response.headers.setdefault(name, value)
+        if request.url.path.startswith(_NO_STORE_PREFIXES):
+            response.headers["Cache-Control"] = "no-store"
         logger.info(
             "%s %s -> %s (%.2fms)",
             request.method,
@@ -52,3 +67,47 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
             extra={"request_id": request_id},
         )
         return response
+
+
+class BodySizeLimitMiddleware:
+    """Refuses request bodies above a fixed size before they are read (security audit SEC-16).
+
+    Without it a multipart upload is written to a temporary file in full before the endpoint's own size check
+    runs, so one client could fill the disk. A declared Content-Length over the limit gets 413 at once; a
+    chunked body is cut off as soon as it crosses the limit. Pure ASGI, so streaming responses are untouched.
+    """
+
+    def __init__(self, app, max_bytes: int) -> None:  # noqa: ANN001
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def _reject(self, send) -> None:  # noqa: ANN001
+        body = b'{"error":{"code":"payload_too_large","message":"Request body is too large."}}'
+        await send({"type": "http.response.start", "status": 413,
+                    "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
+        await send({"type": "http.response.body", "body": body})
+
+    async def __call__(self, scope, receive, send):  # noqa: ANN001
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        for name, value in scope.get("headers") or []:
+            if name == b"content-length":
+                try:
+                    if int(value) > self.max_bytes:
+                        return await self._reject(send)
+                except ValueError:
+                    return await self._reject(send)
+        from starlette.exceptions import HTTPException
+
+        received = 0
+
+        async def limited_receive():
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    raise HTTPException(status_code=413, detail="Request body is too large.")
+            return message
+
+        return await self.app(scope, limited_receive, send)

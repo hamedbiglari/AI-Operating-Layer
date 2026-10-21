@@ -62,6 +62,34 @@ def _validate_provenance_chain(
             )
 
 
+def _element_location(db: Session, *, organization_id: UUID, document_id: UUID | None,
+                      document_element_id: UUID | None) -> dict | None:
+    """v4 §9 — the element must belong to the caller's org AND to the evidence's document. The page,
+    box and extraction that located it are snapshotted onto the evidence."""
+    if document_element_id is None:
+        return None
+    from app.models.document_artifact import DocumentConversion
+    from app.models.document_element import DocumentElement
+
+    if document_id is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="document_element_id requires document_id to also be provided")
+    el = db.execute(select(DocumentElement).where(
+        DocumentElement.id == document_element_id,
+        DocumentElement.organization_id == organization_id)).scalar_one_or_none()
+    if el is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document element not found")
+    if el.document_id != document_id:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="document_element_id does not belong to the given document_id")
+    conv = db.get(DocumentConversion, el.conversion_id)
+    return {"page": el.page, "bbox": el.bbox, "block_id": el.block_id, "element_type": el.element_type,
+            "conversion_id": str(el.conversion_id),
+            "provider": conv.layout_provider if conv else None,
+            "provider_version": conv.layout_provider_version if conv else None,
+            "extraction_confidence": el.confidence}
+
+
 def list_evidence(
     db: Session,
     *,
@@ -113,6 +141,7 @@ def create_evidence(
     sample_size: int | None,
     population: str | None,
     actor_user_id: UUID,
+    document_element_id: UUID | None = None,
 ) -> Evidence:
     _validate_provenance_chain(
         db,
@@ -121,6 +150,8 @@ def create_evidence(
         document_id=document_id,
         document_chunk_id=document_chunk_id,
     )
+    location = _element_location(db, organization_id=organization_id, document_id=document_id,
+                                 document_element_id=document_element_id)
 
     evidence = Evidence(
         organization_id=organization_id,
@@ -136,6 +167,9 @@ def create_evidence(
         population=population,
         source_generated=False,
         human_reviewed=False,
+        document_element_id=document_element_id,
+        page_number=location.get("page") if location else None,
+        location=location,
     )
     db.add(evidence)
     db.flush()

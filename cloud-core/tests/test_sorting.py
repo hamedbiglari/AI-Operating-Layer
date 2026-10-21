@@ -261,6 +261,12 @@ _EXCLUDED = {
     # directions). Documented in the final existing-owner closure pass,
     # after the other six telemetry routes were moved onto SortParams.
     "/api/v1/telemetry/search-demand/terms",
+    # Reading order of one document (ADR-122): elements are returned in the order they are read on the page.
+    # Any other order would scramble the text the list exists to show.
+    "/api/v1/documents/{document_id}/elements",
+    # Units of one synthesis run in plan order (ADR-124): the coverage ledger is read top to bottom against the
+    # plan, so the order IS the information.
+    "/api/v1/synthesis/runs/{run_id}/units",
 }
 
 
@@ -435,3 +441,12 @@ def test_apply_sort_appends_a_stable_tiebreak() -> None:
     sql = str(stmt).lower()
     assert "order by" in sql
     assert "products.id" in sql.split("order by")[1], "no stable tiebreak on id"
+
+
+def test_new_lists_sort_and_refuse_unknown_fields(client: TestClient, register_org) -> None:
+    """Synthesis runs and workspace commands joined the sortable lists in the 2026-10-14 audit."""
+    org = register_org()
+    for path in ("/api/v1/synthesis/runs", "/api/v1/workspace/commands"):
+        assert client.get(f"{path}?sort_by=created_at&sort_dir=asc", headers=org["headers"]).status_code == 200
+        bad = client.get(f"{path}?sort_by=password_hash", headers=org["headers"])
+        assert bad.status_code == 422 and "Allowed values" in bad.text

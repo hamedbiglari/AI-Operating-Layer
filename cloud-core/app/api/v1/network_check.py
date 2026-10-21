@@ -10,6 +10,7 @@ The response never echoes the client's IP address or header values.
 """
 from fastapi import APIRouter, HTTPException, Request, status
 
+from app.security.client_ip import client_ip
 from app.core.config import settings
 from app.security.rate_limit import check_rate_limit
 
@@ -36,7 +37,7 @@ def _signals(request: Request) -> list[str]:
 
 @router.get("/network-check")
 def network_check(request: Request) -> dict:
-    ip = request.client.host if request.client else "unknown"
+    ip = client_ip(request)
     rl = check_rate_limit(installation_id=f"network-check:{ip}", limit=60)
     if not rl.allowed:
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Too many checks.", headers={"Retry-After": str(rl.retry_after)})

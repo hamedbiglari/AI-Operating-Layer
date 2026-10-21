@@ -16,6 +16,9 @@ class EvidenceRead(BaseModel):
     source_id: uuid.UUID
     document_id: uuid.UUID | None
     document_chunk_id: uuid.UUID | None
+    document_element_id: uuid.UUID | None = None
+    page_number: int | None = None
+    location: dict | None = None
     study_type: str | None
     directness: EvidenceDirectness
     evidence_strength: EvidenceStrength
@@ -33,6 +36,8 @@ class EvidenceCreate(BaseModel):
     source_id: uuid.UUID
     document_id: uuid.UUID | None = None
     document_chunk_id: uuid.UUID | None = None
+    # v4 §9: the canonical-representation element this evidence was read from (page + box follow it)
+    document_element_id: uuid.UUID | None = None
     study_type: str | None = Field(default=None, max_length=100)
     directness: EvidenceDirectness = EvidenceDirectness.DIRECT
     evidence_strength: EvidenceStrength = EvidenceStrength.VERY_LOW

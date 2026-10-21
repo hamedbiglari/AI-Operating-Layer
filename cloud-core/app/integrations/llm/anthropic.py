@@ -16,6 +16,7 @@ from app.integrations.llm.base import (
     AdapterError,
     AdapterResult,
     ModelRequest,
+    parse_retry_after,
     register_adapter,
     require_invocation_permit,
 )
@@ -51,6 +52,8 @@ class AnthropicAdapter:
             "max_tokens": request.max_output_tokens,
             "messages": [{"role": "user", "content": request.prompt}],
         }
+        if request.system:
+            body["system"] = request.system          # separate channel: outranks anything in the user turn
         headers = {"x-api-key": key, "anthropic-version": ANTHROPIC_VERSION,
                    "content-type": "application/json"}
         url = settings.ANTHROPIC_API_BASE_URL.rstrip("/") + "/v1/messages"
@@ -59,6 +62,7 @@ class AnthropicAdapter:
             with httpx.Client(timeout=settings.AI_PROVIDER_TIMEOUT_SECONDS, transport=self._transport) as client:
                 with client.stream("POST", url, headers=headers, json=body) as response:
                     request_id = response.headers.get("request-id")
+                    retry_after = parse_retry_after(response.headers.get("retry-after"))
                     chunks, size = [], 0
                     for chunk in response.iter_bytes():
                         size += len(chunk)
@@ -81,7 +85,9 @@ class AnthropicAdapter:
                                safe_message=f"Network error contacting provider ({type(exc).__name__})") from None
 
         if status_code != 200:
-            raise _http_error(status_code, request_id)
+            err = _http_error(status_code, request_id)
+            err.retry_after_seconds = retry_after
+            raise err
 
         try:
             data = json.loads(raw)

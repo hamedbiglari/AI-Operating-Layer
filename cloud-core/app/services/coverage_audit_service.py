@@ -80,13 +80,44 @@ def _processing_dimension(db: Session, org: UUID, source_ids: list[UUID]) -> dic
     for d in docs:
         key = str(getattr(d.extraction_status, "value", d.extraction_status))
         by_status[key] = by_status.get(key, 0) + 1
-    done = by_status.get("succeeded", 0) + by_status.get("completed", 0)
+    # v4 fix: documents are stored as `extracted` (DocumentExtractionStatus). This used to count
+    # `succeeded`/`completed`, which no document ever has, so every processed topic reported 0 %.
+    done = by_status.get("extracted", 0)
     failed = by_status.get("failed", 0)
+    structure = _structure_coverage(db, org, [d.id for d in docs])
     return {"documents": len(docs), "by_extraction_status": by_status, "extracted": done, "failed": failed,
+            "pending": by_status.get("pending", 0) + by_status.get("extracting", 0),
             "percent_extracted": _pct(done, len(docs)),
             "sources_without_a_document": len(set(source_ids) - {d.source_id for d in docs}),
-            "note": ("OCR, table, figure, audio and video coverage are not separately recorded yet; "
-                     "they are reported as unavailable rather than as zero.")}
+            "structure": structure,
+            "note": ("Structure figures come from the canonical document representation. A document converted "
+                     "before it existed has no elements and is counted as `without_canonical_representation`, "
+                     "not as zero elements. Audio and video are not processed.")}
+
+
+def _structure_coverage(db: Session, org: UUID, document_ids: list[UUID]) -> dict:
+    """§36 processing coverage from the canonical representation: what kinds of structure were preserved,
+    and how many documents still need review or reprocessing."""
+    from app.models.document_artifact import DocumentConversion
+    from app.models.document_element import DocumentElement
+
+    if not document_ids:
+        return {"documents_with_canonical_representation": 0, "without_canonical_representation": 0}
+    current = db.execute(select(DocumentConversion).where(
+        DocumentConversion.organization_id == org, DocumentConversion.document_id.in_(document_ids),
+        DocumentConversion.is_current.is_(True))).scalars().all()
+    with_cdr = db.execute(select(DocumentElement.document_id).where(
+        DocumentElement.organization_id == org, DocumentElement.document_id.in_(document_ids),
+        DocumentElement.conversion_id.in_([c.id for c in current] or [None])).distinct()).scalars().all()
+    kinds = dict(db.execute(select(DocumentElement.element_type, func.count()).where(
+        DocumentElement.organization_id == org,
+        DocumentElement.conversion_id.in_([c.id for c in current] or [None]))
+        .group_by(DocumentElement.element_type)).all())
+    return {"documents_with_canonical_representation": len(set(with_cdr)),
+            "without_canonical_representation": len(set(document_ids) - set(with_cdr)),
+            "elements_by_type": kinds,
+            "needs_review": sum(1 for c in current if c.needs_review),
+            "partially_processed": sum(1 for c in current if c.processing_state == "partially_processed")}
 
 
 def _knowledge_dimension(db: Session, org: UUID, topic_id: UUID) -> dict:
@@ -160,13 +191,32 @@ def _section_dimension(db: Session, org: UUID, topic_id: UUID) -> dict:
 
 
 def _publication_dimension(db: Session, org: UUID, topic: KnowledgeObject) -> dict:
-    """Publication coverage is honest about not existing yet: there is no publication engine in the
-    repository, so this reports the KO's own visibility state and says the rest is unavailable."""
-    return {"knowledge_version": topic.version, "status": str(getattr(topic.status, "value", topic.status)),
-            "public_visibility": topic.public_visibility, "ai_visibility": topic.ai_visibility,
-            "published_sections": None, "citation_coverage": None,
-            "note": ("No publication or citation layer exists yet (planned as migrations 0035–0036), so these "
-                     "figures are unavailable rather than zero.")}
+    """Publication coverage, read from the publication layer (ADR-116). v4 fix: this used to report that
+    no publication layer existed, long after migration 0035 had added one."""
+    from app.models.publication import Publication, PublicationSentence
+
+    base = {"knowledge_version": topic.version, "status": str(getattr(topic.status, "value", topic.status)),
+            "public_visibility": topic.public_visibility, "ai_visibility": topic.ai_visibility}
+    pub = db.execute(select(Publication).where(
+        Publication.organization_id == org, Publication.knowledge_object_id == topic.id,
+        Publication.status.in_(("resolved", "published")))
+        .order_by(Publication.publication_version.desc()).limit(1)).scalar_one_or_none()
+    if pub is None:
+        return {**base, "publication_version": None, "citation_coverage": None,
+                "note": ("No resolved publication exists for this topic, so citation coverage is "
+                         "unavailable rather than zero.")}
+    sentences = db.execute(select(PublicationSentence).where(
+        PublicationSentence.publication_id == pub.id)).scalars().all()
+    needing = [s for s in sentences if s.kind in ("factual", "inference", "interpretation")]
+    cited = sum(1 for s in needing if s.citation_numbers)
+    return {**base, "publication_version": pub.publication_version, "publication_status": pub.status,
+            "built_on_knowledge_version": pub.knowledge_version,
+            "knowledge_changed_since_publication": (pub.knowledge_version or -1) != topic.version,
+            "sentences": len(sentences), "citation_required_sentences": len(needing),
+            "sentences_with_citations": cited,
+            "sentences_marked_evidence_unavailable": sum(1 for s in needing if s.evidence_unavailable),
+            "references": pub.reference_count, "citation_coverage": _pct(cited, len(needing)),
+            "note": "Citation presence only; whether each citation supports its sentence is the integrity audit's job."}
 
 
 # ---------------------------------------------------------------- running an audit
@@ -309,13 +359,63 @@ def current_view(db: Session, *, organization_id: UUID, scope: str, knowledge_ob
                         knowledge_object_id=knowledge_object_id, category_id=category_id)
     newest = latest_audit(db, organization_id=organization_id, scope=scope,
                           knowledge_object_id=knowledge_object_id, category_id=category_id, succeeded_only=False)
+    freshness = _freshness(db, organization_id, scope, knowledge_object_id, category_id, good)
     if good is None and newest is None:
-        return {"state": "never_run", "audit": None,
+        return {"state": "never_run", "audit": None, "freshness": freshness,
                 "message": "No coverage audit has run for this scope yet."}
     if newest is not None and newest.status == "failed" and (good is None or newest.audit_version > good.audit_version):
-        return {"state": "stale", "audit": audit_out(good) if good else None,
+        return {"state": "stale", "audit": audit_out(good) if good else None, "freshness": freshness,
                 "failed_attempt": {"audit_version": newest.audit_version, "reason": newest.failure_reason,
                                    "at": newest.finished_at},
                 "message": ("The last audit failed. The figures below are the last successful audit, not current."
                             if good else "The only audit attempt failed; there are no figures to show.")}
-    return {"state": "current", "audit": audit_out(good), "message": None}
+    if freshness["data_changed_since_audit"]:
+        return {"state": "outdated", "audit": audit_out(good), "freshness": freshness,
+                "message": ("Data changed after this audit ran. These figures describe the knowledge base as it "
+                            "was at the last verified audit, not as it is now.")}
+    return {"state": "current", "audit": audit_out(good), "freshness": freshness, "message": None}
+
+
+def last_data_update(db: Session, organization_id: UUID, topic_ids: list[UUID]) -> datetime | None:
+    """§37 — the newest change to anything an audit counts. Separate from the audit's own timestamp, so a
+    source update can never be mistaken for a re-audit of the whole knowledge base."""
+    if not topic_ids:
+        return None
+    claim_ids = select(Claim.id).where(Claim.organization_id == organization_id,
+                                       Claim.knowledge_object_id.in_(topic_ids))
+    ev_ids = select(ClaimEvidence.evidence_id).where(ClaimEvidence.organization_id == organization_id,
+                                                     ClaimEvidence.claim_id.in_(claim_ids))
+    src_ids = select(Evidence.source_id).where(Evidence.id.in_(ev_ids))
+    candidates = [
+        db.execute(select(func.max(KnowledgeObject.updated_at)).where(
+            KnowledgeObject.organization_id == organization_id, KnowledgeObject.id.in_(topic_ids))).scalar_one(),
+        db.execute(select(func.max(Claim.updated_at)).where(Claim.id.in_(claim_ids))).scalar_one(),
+        db.execute(select(func.max(ClaimEvidence.updated_at)).where(
+            ClaimEvidence.organization_id == organization_id, ClaimEvidence.claim_id.in_(claim_ids))).scalar_one(),
+        db.execute(select(func.max(Evidence.updated_at)).where(Evidence.id.in_(ev_ids))).scalar_one(),
+        db.execute(select(func.max(Source.updated_at)).where(Source.id.in_(src_ids))).scalar_one(),
+        db.execute(select(func.max(Document.updated_at)).where(
+            Document.organization_id == organization_id, Document.source_id.in_(src_ids))).scalar_one(),
+        db.execute(select(func.max(KnowledgeSection.updated_at)).where(
+            KnowledgeSection.organization_id == organization_id,
+            KnowledgeSection.knowledge_object_id.in_(topic_ids))).scalar_one(),
+    ]
+    present = [c for c in candidates if c is not None]
+    return max(present) if present else None
+
+
+def _freshness(db: Session, org: UUID, scope: str, topic_id: UUID | None, category_id: UUID | None,
+               good: CoverageAudit | None) -> dict:
+    if scope == "topic":
+        topic_ids = [topic_id] if topic_id else []
+    elif scope == "category":
+        topic_ids = list(db.execute(select(KnowledgeObject.id).where(
+            KnowledgeObject.organization_id == org, KnowledgeObject.category_id == category_id)).scalars().all())
+    else:
+        topic_ids = []
+    updated = last_data_update(db, org, topic_ids)
+    verified = good.started_at if good is not None else None
+    return {"last_data_update": updated, "last_verified_audit": good.finished_at if good else None,
+            # compared with the audit's START: anything written while it ran may not be in it
+            "data_changed_since_audit": bool(updated and verified and updated > verified),
+            "note": "Last data update and last verified audit are separate facts and are never merged."}

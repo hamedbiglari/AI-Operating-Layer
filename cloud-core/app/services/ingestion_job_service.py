@@ -316,6 +316,7 @@ def run_ingestion_job(
                 conversion_id=UUID(payload["conversion_id"]),
                 enable_ocr=bool(payload.get("enable_ocr", True)),
                 ocr_languages=str(payload.get("ocr_languages", "eng")),
+                providers=payload.get("providers") or None,
             )
     except Exception as exc:  # noqa: BLE001
         # Unexpected exceptions are treated as transient: the bytes are

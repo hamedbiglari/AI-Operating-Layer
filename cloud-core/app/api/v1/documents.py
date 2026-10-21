@@ -257,6 +257,12 @@ async def upload_document(
     source_service.get_source_or_404(
         db, source_id=source_id, organization_id=current_user.organization_id
     )
+    from app.ingestion.providers.ocr import safe_languages
+
+    try:
+        ocr_languages = safe_languages(ocr_languages)          # security audit SEC-15
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
 
     data = await file.read(ingestion_service.MAX_UPLOAD_BYTES + 1)
     filename = file.filename or "upload"
@@ -330,26 +336,34 @@ def get_document_markdown(
 @router.get("/{document_id}/artifacts", response_model=DocumentArtifactsResponse)
 def get_document_artifacts(
     document_id: UUID,
+    conversion_id: UUID | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> DocumentArtifactsResponse:
     """Structured tables and image assets, including images that were found
-    but NOT interpreted — which is information, not an omission."""
+    but NOT interpreted — which is information, not an omission.
+
+    v4 (ADR-122): rows belong to the extraction that produced them. By default the CURRENT extraction's
+    rows are returned; `conversion_id` selects an earlier one, which stays readable after a reprocess.
+    Rows written before migration 0037 carry no extraction and are returned when the current one has none."""
     document_service.get_document_or_404(
         db, document_id=document_id, organization_id=current_user.organization_id
     )
-    tables = db.execute(
-        select(DocumentTable).where(
-            DocumentTable.organization_id == current_user.organization_id,
-            DocumentTable.document_id == document_id,
-        ).order_by(DocumentTable.position.asc())
-    ).scalars().all()
-    assets = db.execute(
-        select(DocumentAsset).where(
-            DocumentAsset.organization_id == current_user.organization_id,
-            DocumentAsset.document_id == document_id,
-        ).order_by(DocumentAsset.created_at.asc())
-    ).scalars().all()
+    if conversion_id is None:
+        current = ingestion_service.current_conversion(
+            db, organization_id=current_user.organization_id, document_id=document_id)
+        conversion_id = current.id if current is not None else None
+
+    def _scoped(model):
+        base = select(model).where(model.organization_id == current_user.organization_id,
+                                   model.document_id == document_id)
+        if conversion_id is not None:
+            own = db.execute(base.where(model.conversion_id == conversion_id)).scalars().first()
+            return base.where(model.conversion_id == conversion_id) if own is not None                 else base.where(model.conversion_id.is_(None))
+        return base
+
+    tables = db.execute(_scoped(DocumentTable).order_by(DocumentTable.position.asc())).scalars().all()
+    assets = db.execute(_scoped(DocumentAsset).order_by(DocumentAsset.created_at.asc())).scalars().all()
     return DocumentArtifactsResponse(
         document_id=document_id,
         tables=[DocumentTableRead.model_validate(t) for t in tables],

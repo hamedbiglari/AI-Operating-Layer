@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.integrations.memory import walrus
 from app.models.ai_center import (
-    DISCOVERY_STATUSES, ROUTING_MODES, AIDiscoveryEntry, AIHealthEvent, AIJob, AIJobItem, AIModel, AIProvider,
+    CAPABILITY_SOURCES, DISCOVERY_STATUSES, ROUTING_MODES, AIDiscoveryEntry, AIHealthEvent, AIJob, AIJobItem, AIModel, AIProvider,
     AIProviderAccount, AIRoutingDecision, AIRoutingPolicy, AIRoutingStep, AIWorkingMemory, KnowledgeKeyword,
 )
 from app.models.enums import ADMIN_ROLES, KNOWLEDGE_EDITOR_ROLES
@@ -28,6 +28,7 @@ from app.services import ai_center_service as svc
 from app.services import ai_job_service, ai_memory_service, keyword_service
 from app.services.ai_discovery_seed import BASIS, ENTRIES, SOURCE
 from app.services.ai_routing_service import decide
+from app.services.audit import record_audit_log
 
 router = APIRouter(prefix="/ai-center", tags=["ai-center"])
 kw_router = APIRouter(prefix="/knowledge", tags=["knowledge-keywords"])
@@ -224,11 +225,33 @@ class ModelIn(BaseModel):
     modalities: list[str] = Field(default_factory=list, max_length=10)
     context_window: int | None = Field(default=None, ge=1)
     license: str | None = None
+    # ADR-136: NULL = unknown. Enter what the provider documents; say where it came from.
+    max_input_tokens: int | None = Field(default=None, ge=1)
+    max_output_tokens: int | None = Field(default=None, ge=1)
+    rpm_limit: int | None = Field(default=None, ge=1)
+    tpm_limit: int | None = Field(default=None, ge=1)
+    supports_structured_output: bool | None = None
+    supports_tools: bool | None = None
+    capability_source: Literal[CAPABILITY_SOURCES] | None = None  # type: ignore[valid-type]
+
+
+class ModelPatch(BaseModel):
+    context_window: int | None = Field(default=None, ge=1)
+    max_input_tokens: int | None = Field(default=None, ge=1)
+    max_output_tokens: int | None = Field(default=None, ge=1)
+    rpm_limit: int | None = Field(default=None, ge=1)
+    tpm_limit: int | None = Field(default=None, ge=1)
+    supports_structured_output: bool | None = None
+    supports_tools: bool | None = None
+    capability_source: Literal[CAPABILITY_SOURCES] | None = None  # type: ignore[valid-type]
 
 
 class ModelOut(_Out):
     id: UUID; provider_id: UUID; name: str; version: str | None; capabilities: list[str]; modalities: list[str]
     context_window: int | None; license: str | None; status: str; last_verified_at: datetime | None
+    max_input_tokens: int | None = None; max_output_tokens: int | None = None; rpm_limit: int | None = None
+    tpm_limit: int | None = None; supports_structured_output: bool | None = None; supports_tools: bool | None = None
+    capability_source: str | None = None
 
 
 @router.get("/models", response_model=Page[ModelOut])
@@ -256,6 +279,21 @@ def create_model(body: ModelIn, user: User = Admin, db: Session = Depends(get_db
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="Model already registered for this provider") from None
+    return ModelOut.model_validate(row)
+
+
+@router.patch("/models/{model_id}", response_model=ModelOut)
+def update_model_limits(model_id: UUID, body: ModelPatch, user: User = Admin, db: Session = Depends(get_db)):
+    """ADR-136: limits change; a person corrects them here. Only the fields sent are changed (null clears one
+    back to unknown), and the old and new values are audit-logged."""
+    row = svc.get_or_404(db, AIModel, model_id, user.organization_id)
+    changes = body.model_dump(exclude_unset=True)
+    old = {k: getattr(row, k) for k in changes}
+    for k, v in changes.items():
+        setattr(row, k, v)
+    record_audit_log(db, organization_id=user.organization_id, user_id=user.id, action="ai_model.limits_updated",
+                     resource_type="ai_model", resource_id=row.id, old_value=old, new_value=changes)
+    db.commit()
     return ModelOut.model_validate(row)
 
 
@@ -486,6 +524,8 @@ class ItemIn(BaseModel):
     prompt: str = Field(min_length=1, max_length=200_000)
     source_id: UUID | None = None
     document_id: UUID | None = None
+    # ADR-135: keys of items in this job that must complete first (task DAG; checked acyclic).
+    depends_on: list[str] = Field(default_factory=list, max_length=100)
 
 
 class JobIn(BaseModel):
@@ -496,13 +536,18 @@ class JobIn(BaseModel):
     # Set for background work: the tenant's BackgroundTaskPolicy is then enforced (ADR-095).
     task_type: str | None = Field(default=None, max_length=80)
     knowledge_object_id: UUID | None = None
+    # ADR-134: 'ktp_v1' = each item returns a Knowledge Transfer Package that is validated and reconciled.
+    output_contract: Literal["ktp_v1"] | None = None
     items: list[ItemIn] = Field(min_length=1, max_length=1000)
 
 
 def _job_view(db: Session, job: AIJob) -> dict:
     counts = ai_job_service._counts(db, job)
     return {"id": str(job.id), "job_key": job.job_key, "goal": job.goal, "stage": job.stage, "status": job.status,
-            "stop_reason": job.stop_reason, "retry_count": job.retry_count, "switch_count": job.switch_count, "task_type": job.task_type, "policy_id": str(job.policy_id), **counts}
+            "stop_reason": job.stop_reason, "retry_count": job.retry_count, "switch_count": job.switch_count, "task_type": job.task_type, "policy_id": str(job.policy_id),
+            "resume_after": job.resume_after.isoformat() if job.resume_after and job.status == "blocked" else None,
+            "auto_resume_count": job.auto_resume_count, "worker_lease_active": job.lease_owner is not None,
+            "output_contract": job.output_contract, **counts}
 
 
 def _run_in_background(job_id: UUID) -> None:
@@ -513,10 +558,19 @@ def _run_in_background(job_id: UUID) -> None:
 @router.post("/jobs", status_code=202)
 def create_job(body: JobIn, background: BackgroundTasks, user: User = Depends(require_roles(*KNOWLEDGE_EDITOR_ROLES)),
                db: Session = Depends(get_db)) -> dict:
-    job, created = ai_job_service.create_job(db, organization_id=user.organization_id, job_key=body.job_key, goal=body.goal,
-                                             policy_id=body.policy_id, stage=body.stage, user_id=user.id,
-                                             knowledge_object_id=body.knowledge_object_id, task_type=body.task_type,
-                                             items=[i.model_dump() for i in body.items])
+    if body.output_contract is not None:
+        if body.knowledge_object_id is None:
+            raise HTTPException(status_code=422, detail="output_contract needs knowledge_object_id")
+        from app.services.knowledge_service import get_knowledge_object_or_404
+        get_knowledge_object_or_404(db, object_id=body.knowledge_object_id, organization_id=user.organization_id)
+    try:
+        job, created = ai_job_service.create_job(db, organization_id=user.organization_id, job_key=body.job_key,
+                                                 goal=body.goal, policy_id=body.policy_id, stage=body.stage,
+                                                 user_id=user.id, knowledge_object_id=body.knowledge_object_id,
+                                                 task_type=body.task_type, output_contract=body.output_contract,
+                                                 items=[i.model_dump() for i in body.items])
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     if created:
         background.add_task(_run_in_background, job.id)
     return {"created": created, **_job_view(db, job)}
@@ -546,7 +600,8 @@ def control_job(job_key: str, body: ControlIn, background: BackgroundTasks,
     if body.action == "resume":
         if job.status not in ("paused", "blocked"):
             raise HTTPException(status_code=409, detail=f"Job is {job.status}; only a paused or blocked job can be resumed")
-        job.status = "queued"
+        # A person resuming starts a fresh allowance of automatic resumes (ADR-131).
+        job.status, job.resume_after, job.auto_resume_count = "queued", None, 0
         db.commit()
         background.add_task(_run_in_background, job.id)
     else:
@@ -571,7 +626,24 @@ def job_handoff(job_key: str, user: User = Depends(get_current_user), db: Sessio
 
 class MemoryOut(_Out):
     id: UUID; kind: str; version: int; status: str; stage: str | None; item_key: str | None; content: dict
-    created_by: str; provenance: dict; created_at: datetime
+    created_by: str; provenance: dict; created_at: datetime; superseded_by_id: UUID | None = None
+
+
+class MemoryTransitionIn(BaseModel):
+    status: Literal["validated", "active", "archived"]
+    reason: str | None = Field(default=None, max_length=500)
+
+
+@router.post("/memory/{memory_id}/status", response_model=MemoryOut)
+def memory_transition(memory_id: UUID, body: MemoryTransitionIn, user: User = Depends(require_roles(*KNOWLEDGE_EDITOR_ROLES)),
+                      db: Session = Depends(get_db)):
+    """ADR-133: a person validates, activates or archives a memory record. It never becomes a claim."""
+    row = svc.get_or_404(db, AIWorkingMemory, memory_id, user.organization_id)
+    try:
+        ai_memory_service.transition(db, row, body.status, actor=f"user:{user.id}", reason=body.reason)
+    except ai_memory_service.InvalidMemoryTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    return MemoryOut.model_validate(row)
 
 
 @router.get("/memory", response_model=Page[MemoryOut])
@@ -716,7 +788,7 @@ def stream_session_factory():
     return SessionLocal()
 
 
-TERMINAL_JOB_STATES = ("completed", "failed", "cancelled", "blocked")
+TERMINAL_JOB_STATES = ("completed", "completed_with_failures", "failed", "cancelled", "blocked")
 
 
 @router.get("/jobs/{job_key}/events")

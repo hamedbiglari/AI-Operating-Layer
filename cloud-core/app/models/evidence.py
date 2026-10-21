@@ -29,7 +29,7 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -81,6 +81,13 @@ class Evidence(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     # in_vitro, animal_study, observational_study, expert_opinion,
     # traditional_use, narrative_review, mechanistic_study, ...) - plain
     # indexed string, same rationale as source_type/entity_type.
+    # v4 §9 (ADR-122): where in the source this evidence was read. The element link is the live pointer;
+    # page_number and location are a snapshot taken when the link was made, so the location survives
+    # even if that extraction is later superseded. All NULL = location not recorded (never "page 0").
+    document_element_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("document_elements.id", ondelete="SET NULL"), nullable=True, index=True)
+    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    location: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     study_type: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
 
     directness: Mapped[EvidenceDirectness] = mapped_column(

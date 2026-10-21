@@ -13,7 +13,10 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.claim_evidence import router as claim_evidence_router
 from app.api.v1.claims import router as claims_router
 from app.api.v1.commerce import router as commerce_router
+from app.api.v1.document_intelligence import router as document_intelligence_router
 from app.api.v1.documents import router as documents_router
+from app.api.v1.synthesis import router as synthesis_router
+from app.api.v1.workspace import router as workspace_router
 from app.api.v1.entities import router as entities_router
 from app.api.v1.evidence import router as evidence_router
 from app.api.v1.health import router as health_router
@@ -45,6 +48,8 @@ api_router.include_router(claims_router)
 api_router.include_router(relationships_router)
 api_router.include_router(knowledge_gaps_router)
 api_router.include_router(sources_router)
+# v4: registered first so its two-segment literal paths are matched before `/documents/{document_id}/...`
+api_router.include_router(document_intelligence_router)
 api_router.include_router(documents_router)
 api_router.include_router(evidence_router)
 api_router.include_router(claim_evidence_router)
@@ -91,3 +96,12 @@ from app.api.v1.website import router as website_router  # noqa: E402
 api_router.include_router(website_router)
 # Phase 13 — analytics, demand intelligence, AI access control.
 api_router.include_router(telemetry_router)
+# v4 (ADR-124, ADR-125)
+api_router.include_router(synthesis_router)
+api_router.include_router(workspace_router)
+# Authenticated knowledge chat (master prompt §13-§14, ADR-128).
+from app.api.v1.chat import router as chat_router  # noqa: E402
+api_router.include_router(chat_router)
+
+from app.api.v1.knowledge_transfer import router as knowledge_transfer_router  # noqa: E402
+api_router.include_router(knowledge_transfer_router)

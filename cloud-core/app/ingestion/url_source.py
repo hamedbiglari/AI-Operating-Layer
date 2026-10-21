@@ -223,7 +223,11 @@ def fetch_url(url: str, *, max_bytes: int = MAX_RESPONSE_BYTES) -> FetchedResour
                 headers={"Host": parsed.netloc, "User-Agent": "AIOL-Ingestion/1.0",
                          "Accept-Encoding": "identity"},
             ) as client:
-                with client.stream("GET", pinned) as response:
+                # The socket goes to the pinned IP, but TLS must be verified against the NAME: without
+                # sni_hostname the certificate is checked against the IP and every real HTTPS site fails
+                # with "IP address mismatch" (security audit 2026-10-14, finding SEC-01).
+                ext = {"sni_hostname": hostname} if scheme == "https" else {}
+                with client.stream("GET", pinned, extensions=ext) as response:
                     if response.status_code in (301, 302, 303, 307, 308):
                         location = response.headers.get("location")
                         if not location:

@@ -21,6 +21,7 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.security.client_ip import client_ip
 from app.db.session import get_db
 from app.models.enums import ADMIN_ROLES
 from app.models.organization import Organization
@@ -353,7 +354,7 @@ class SubscribeIn(BaseModel):
 
 @router.post("/public/website/{org_slug}/subscribe", status_code=202)
 def public_subscribe(org_slug: str, body: SubscribeIn, request: Request, db: Session = Depends(get_db)) -> dict:
-    client = (request.client.host if request.client else "unknown").rsplit(".", 1)[0]   # /24 for IPv4: no full IP kept
+    client = client_ip(request).rsplit(".", 1)[0]   # /24 for IPv4: no full IP kept
     rl = check_rate_limit(installation_id=f"subscribe:{org_slug}:{client}", limit=10, window_seconds=3600)
     if not rl.allowed:
         raise HTTPException(429, "Too many requests.", headers={"Retry-After": str(rl.retry_after)})

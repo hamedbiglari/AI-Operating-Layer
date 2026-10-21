@@ -110,6 +110,7 @@ class AgentHandoff(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 class AgentMemoryBinding(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     """Explicit permission for an agent to access a memory profile."""
     __tablename__ = "agent_memory_bindings"
+    __table_args__ = (CheckConstraint("access_level IN ('read', 'write', 'admin')", name="access_level"),)
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
     )

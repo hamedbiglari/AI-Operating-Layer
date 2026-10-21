@@ -36,10 +36,11 @@ the building.
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.ai.prompt_safety import outbound
 from app.contracts import commerce as commerce_contract
 from app.db.session import get_db
 from app.models.claim import Claim
@@ -72,7 +73,14 @@ from app.security.machine_identity import MachineIdentity, get_machine_identity
 from app.security.rate_limit import rate_limited
 from app.services import recommendation_service
 
-router = APIRouter(prefix="/ai", tags=["ai-interface"])
+def _content_policy(response: Response) -> None:
+    """Every answer to an external agent says, in a header, that its text fields are data (ADR-126)."""
+    from app.ai.prompt_safety import OUTBOUND_POLICY_HEADER
+
+    response.headers[OUTBOUND_POLICY_HEADER[0]] = OUTBOUND_POLICY_HEADER[1]
+
+
+router = APIRouter(prefix="/ai", tags=["ai-interface"], dependencies=[Depends(_content_policy)])
 
 
 def _now() -> datetime:
@@ -188,7 +196,7 @@ def get_knowledge(
             AIClaim(
                 claim_id=claim.id,
                 predicate=claim.predicate,
-                object_value=claim.object_value,
+                object_value=outbound(claim.object_value),   # cleaned for external agents (ADR-126)
                 object_entity_id=claim.object_entity_id,
                 status=claim.status,
                 evidence_strength=claim.evidence_strength,
@@ -224,7 +232,7 @@ def get_knowledge(
 
     return AIKnowledgeResponse(
         knowledge_object_id=ko.id,
-        canonical_name=ko.canonical_name,
+        canonical_name=outbound(ko.canonical_name),
         object_type=ko.object_type,
         claims=out_claims,
         coverage=AICoverage(
@@ -282,7 +290,7 @@ def get_product_trust(
     # Second gate: only records whose type survived the contract's
     # effective-verification check are surfaced.
     listed = [
-        AITrustRecord(trust_type=r.trust_type, claim=r.claim, verified_at=r.verified_at)
+        AITrustRecord(trust_type=r.trust_type, claim=outbound(r.claim), verified_at=r.verified_at)
         for r in records
         if r.trust_type in verified_types
     ]

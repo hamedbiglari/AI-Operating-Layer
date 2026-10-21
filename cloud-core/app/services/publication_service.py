@@ -90,7 +90,7 @@ def _sources_for_claim(db: Session, organization_id: UUID, claim_id: UUID) -> li
         if ev is None or ev.source_id is None:
             continue
         verified = str(getattr(ev.status, "value", ev.status)) == "verified"
-        out.append({"source_id": ev.source_id, "evidence_id": ev.id,
+        out.append({"source_id": ev.source_id, "evidence_id": ev.id, "claim_id": claim_id,
                     "directness": str(getattr(ev.directness, "value", ev.directness)),
                     "support": "supports" if verified else "unverified"})
     return out
@@ -98,7 +98,8 @@ def _sources_for_claim(db: Session, organization_id: UUID, claim_id: UUID) -> li
 
 def add_sentence(db: Session, *, organization_id: UUID, publication_id: UUID, text: str,
                  kind: str = "factual", claim_id: UUID | None = None, paragraph: int = 0,
-                 section_id: UUID | None = None, extra_source_ids: list[UUID] | None = None) -> dict:
+                 section_id: UUID | None = None, extra_source_ids: list[UUID] | None = None,
+                 additional_claim_ids: list[UUID] | None = None) -> dict:
     """Create one sentence together with the sources that justify it.
 
     A sentence of a citation-requiring kind with no claim and no validated source is accepted, but it is
@@ -121,6 +122,23 @@ def add_sentence(db: Session, *, organization_id: UUID, publication_id: UUID, te
         if claim is None:
             raise HTTPException(404, "Claim not found.")
         supports = _sources_for_claim(db, organization_id, claim.id)
+    # v4: a synthesised sentence may rest on several claims. Each one's sources come through that claim's
+    # own evidence chain — the same rule as the primary claim, never topic relevance (§48).
+    for extra_claim in (additional_claim_ids or []):
+        if claim_id is None:
+            raise HTTPException(422, "Additional claims need a primary claim.")
+        other = db.execute(select(Claim).where(Claim.id == extra_claim,
+                                               Claim.organization_id == organization_id)).scalar_one_or_none()
+        if other is None:
+            raise HTTPException(404, "Claim not found.")
+        supports.extend(_sources_for_claim(db, organization_id, other.id))
+    # one row per source: a verified link wins over an unverified one for the same source
+    best: dict = {}
+    for item in supports:
+        held = best.get(item["source_id"])
+        if held is None or (held["support"] != "supports" and item["support"] == "supports"):
+            best[item["source_id"]] = item
+    supports = list(best.values())
 
     # §48 — an extra source is only accepted if it genuinely supports this claim; topic relevance is not enough
     for sid in (extra_source_ids or []):
@@ -131,7 +149,8 @@ def add_sentence(db: Session, *, organization_id: UUID, publication_id: UUID, te
 
     for s in supports:
         db.add(SentenceSource(organization_id=organization_id, publication_sentence_id=sentence.id,
-                              source_id=s["source_id"], claim_id=claim_id, evidence_id=s["evidence_id"],
+                              source_id=s["source_id"], claim_id=s.get("claim_id") or claim_id,
+                              evidence_id=s["evidence_id"],
                               support=s["support"], directness=s["directness"]))
     if kind in CITATION_REQUIRED_KINDS and not any(s["support"] == "supports" for s in supports):
         sentence.evidence_unavailable = True

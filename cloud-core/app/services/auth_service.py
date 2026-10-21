@@ -95,11 +95,22 @@ def register_organization(
     return organization, owner
 
 
+_DUMMY_HASH: str | None = None
+
+
+def _dummy_hash() -> str:
+    global _DUMMY_HASH
+    if _DUMMY_HASH is None:
+        _DUMMY_HASH = hash_password("timing-equaliser-not-a-password")
+    return _DUMMY_HASH
+
+
 def authenticate(db: Session, *, email: str, password: str) -> User | None:
     user = db.execute(select(User).where(User.email == email.lower())).scalar_one_or_none()
-    if user is None:
-        return None
-    if not user.password_hash:      # passwordless owner (ADR-106): only the emailed code can sign this user in
+    if user is None or not user.password_hash:
+        # Unknown address, or a passwordless owner (ADR-106) whom only the emailed code can sign in. Spend the
+        # same bcrypt work as a real check so response time does not reveal which addresses exist (SEC-02).
+        verify_password(password, _dummy_hash())
         return None
     if not verify_password(password, user.password_hash):
         return None

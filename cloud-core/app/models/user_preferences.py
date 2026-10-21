@@ -3,7 +3,7 @@ One row per user; tenant-scoped with a composite FK so a row can never point
 at another tenant's user."""
 import uuid
 
-from sqlalchemy import JSON, CheckConstraint, ForeignKey, ForeignKeyConstraint, String, UniqueConstraint
+from sqlalchemy import JSON, CheckConstraint, ForeignKey, ForeignKeyConstraint, SmallInteger, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -21,6 +21,7 @@ class UserPreferences(UUIDPrimaryKeyMixin, TimestampMixin, Base):
                              ondelete="CASCADE", name="fk_user_preferences_user_org"),
         CheckConstraint("language IN ('en', 'fa')", name="ck_user_preferences_language"),
         CheckConstraint("theme IN ('light', 'dark', 'system')", name="ck_user_preferences_theme"),
+        CheckConstraint("usage_alert_threshold BETWEEN 50 AND 100", name="ck_user_preferences_usage_alert_threshold"),
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
@@ -28,3 +29,5 @@ class UserPreferences(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     theme: Mapped[str] = mapped_column(String(10), nullable=False, default="system")
     font: Mapped[str | None] = mapped_column(String(60))
     notifications: Mapped[dict | None] = mapped_column(JSON)
+    # Percent of a quota at which the Usage view shows the upgrade nudge (ADR-127).
+    usage_alert_threshold: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=80, server_default="80")

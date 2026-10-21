@@ -1,0 +1,19 @@
+{
+  "_read_me": "Copy to business.json and replace EVERY value with the real one, then run: python3 -I tools/configure_site.py website --business tools/business.json. The script refuses these placeholder values on purpose.",
+  "type": "ProfessionalService",
+  "name": "AI Operating Layer",
+  "telephone": "<+98 51 0000 0000>",
+  "email": "<hello@your-domain>",
+  "address": {
+    "streetAddress": "<street and number>",
+    "addressLocality": "Mashhad",
+    "addressRegion": "Razavi Khorasan",
+    "postalCode": "<postal code>",
+    "addressCountry": "IR"
+  },
+  "geo": { "latitude": 0, "longitude": 0 },
+  "openingHours": [
+    { "days": ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"], "opens": "09:00", "closes": "17:00" }
+  ],
+  "areaServed": "Worldwide"
+}

@@ -21,15 +21,17 @@ class PreferencesIn(BaseModel):
     theme: Literal["light", "dark", "system"] | None = None
     font: str | None = Field(default=None, max_length=60)
     notifications: dict[str, bool] | None = None
+    usage_alert_threshold: int | None = Field(default=None, ge=50, le=100)
 
 
 def _out(p: UserPreferences | None) -> dict:
     if p is None:
         return {"language": "en", "theme": "system", "font": None,
-                "notifications": {k: True for k in NOTIFICATION_KEYS}, "persisted": False, "updated_at": None}
+                "notifications": {k: True for k in NOTIFICATION_KEYS}, "usage_alert_threshold": 80,
+                "persisted": False, "updated_at": None}
     return {"language": p.language, "theme": p.theme, "font": p.font,
             "notifications": {**{k: True for k in NOTIFICATION_KEYS}, **(p.notifications or {})},
-            "persisted": True, "updated_at": p.updated_at}
+            "usage_alert_threshold": p.usage_alert_threshold or 80, "persisted": True, "updated_at": p.updated_at}
 
 
 def _row(db: Session, user: User) -> UserPreferences | None:
@@ -46,7 +48,8 @@ def get_preferences(user: User = Depends(get_current_user), db: Session = Depend
 def put_preferences(body: PreferencesIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
     row = _row(db, user)
     if row is None:
-        row = UserPreferences(organization_id=user.organization_id, user_id=user.id, language="en", theme="system")
+        row = UserPreferences(organization_id=user.organization_id, user_id=user.id, language="en", theme="system",
+                              usage_alert_threshold=80)
         db.add(row)
     data = body.model_dump(exclude_none=True)
     if "notifications" in data:

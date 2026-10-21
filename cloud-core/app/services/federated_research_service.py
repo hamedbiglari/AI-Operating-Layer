@@ -223,15 +223,20 @@ def upsert_source(db: Session, organization_id: UUID, rec: ScholarlyRecord) -> t
 
 
 # ---------------------------------------------------------------- federated run
-def run_query(db: Session, *, organization_id: UUID, research_task: ResearchTask, query_text: str, mode: str,
-              route: str = "general", keyword_ids: list[UUID] | None = None, question_id: UUID | None = None,
-              providers: list | None = None, limit: int = 20) -> dict:
+def discover(db: Session, *, organization_id: UUID, research_task: ResearchTask, query_text: str, mode: str,
+             route: str = "general", keyword_ids: list[UUID] | None = None, question_id: UUID | None = None,
+             providers: list | None = None, limit: int = 20) -> dict:
+    """The discovery half of a federated run: one query row, one provider run per provider,
+    deduplicated sources, hit rows, keyword traces and (for a question) one iteration row.
+    It never touches the task's status — the caller owns that lifecycle, because the two
+    callers own it differently: run_query() below sets it directly, while
+    research_task_service.execute_research_task() moves it through its transition table.
+    It does not commit either, for the same reason."""
     rq = ResearchQuery(organization_id=organization_id, research_task_id=research_task.id, research_question_id=question_id,
                        mode=mode, route=route, query_text=query_text,
                        keyword_ids=[str(k) for k in (keyword_ids or [])] or None)
     db.add(rq)
     db.flush()
-    research_task.status, research_task.started_at = ResearchTaskStatus.RUNNING, _now()
     runs, new_sources, merged = [], 0, 0
     source_ids: list[UUID] = []
     for prov in (providers if providers is not None else default_providers()):
@@ -273,16 +278,27 @@ def run_query(db: Session, *, organization_id: UUID, research_task: ResearchTask
                                  new_sources=new_sources, duplicate_sources=merged,
                                  providers_ok=sum(1 for r in runs if r["status"] == "ok"),
                                  providers_failed=sum(1 for r in runs if r["status"] == "failed")))
-    ok = [r for r in runs if r["status"] == "ok"]
-    research_task.status = ResearchTaskStatus.COMPLETED if ok else ResearchTaskStatus.FAILED
-    research_task.completed_at = _now()
-    research_task.result = {"query_id": str(rq.id), "providers": runs, "unique_sources": len(source_ids),
-                            "new_sources": new_sources, "merged_duplicates": merged,
-                            "note": "Discovery creates sources only; evidence requires human review."}
-    db.commit()
     return {"research_query_id": str(rq.id), "research_task_id": str(research_task.id), "query": query_text,
             "providers": runs, "unique_sources": len(source_ids), "new_sources": new_sources,
             "merged_duplicates": merged, "source_ids": [str(s) for s in source_ids]}
+
+
+def run_query(db: Session, *, organization_id: UUID, research_task: ResearchTask, query_text: str, mode: str,
+              route: str = "general", keyword_ids: list[UUID] | None = None, question_id: UUID | None = None,
+              providers: list | None = None, limit: int = 20) -> dict:
+    research_task.status, research_task.started_at = ResearchTaskStatus.RUNNING, _now()
+    out = discover(db, organization_id=organization_id, research_task=research_task, query_text=query_text,
+                   mode=mode, route=route, keyword_ids=keyword_ids, question_id=question_id,
+                   providers=providers, limit=limit)
+    ok = [r for r in out["providers"] if r["status"] == "ok"]
+    research_task.status = ResearchTaskStatus.COMPLETED if ok else ResearchTaskStatus.FAILED
+    research_task.completed_at = _now()
+    research_task.result = {"query_id": out["research_query_id"], "providers": out["providers"],
+                            "unique_sources": out["unique_sources"], "new_sources": out["new_sources"],
+                            "merged_duplicates": out["merged_duplicates"],
+                            "note": "Discovery creates sources only; evidence requires human review."}
+    db.commit()
+    return out
 
 
 def _project_and_task(db: Session, organization_id: UUID, actor: UUID, name: str, objective: str, query: str,

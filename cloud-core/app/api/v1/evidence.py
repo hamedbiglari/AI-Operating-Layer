@@ -63,6 +63,7 @@ def create_evidence(
         sample_size=payload.sample_size,
         population=payload.population,
         actor_user_id=current_user.id,
+        document_element_id=payload.document_element_id,
     )
 
 

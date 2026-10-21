@@ -16,7 +16,9 @@ THE NON-BYPASS RULE
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from decimal import Decimal
+from email.utils import parsedate_to_datetime
 from typing import Protocol
 
 from sqlalchemy import inspect as sa_inspect
@@ -29,6 +31,9 @@ class ModelRequest:
     prompt: str
     max_output_tokens: int
     operation_type: AIOperationType = AIOperationType.CHAT
+    # Trusted operator instructions, sent through the provider's SYSTEM channel — never concatenated with the
+    # prompt, which may carry untrusted document text (prompt-injection defence, ADR-126).
+    system: str | None = None
 
 
 @dataclass(frozen=True)
@@ -54,6 +59,7 @@ class AdapterError(Exception):
         self, *, error_code: str, status: AIExecutionStatus, retryable: bool, safe_message: str,
         provider_request_id: str | None = None,
         input_tokens: int | None = None, output_tokens: int | None = None,
+        retry_after_seconds: int | None = None,
     ) -> None:
         super().__init__(safe_message)
         self.error_code = error_code
@@ -63,6 +69,30 @@ class AdapterError(Exception):
         self.provider_request_id = provider_request_id
         self.input_tokens = input_tokens
         self.output_tokens = output_tokens
+        # The provider's own Retry-After, when it sent one (v5 §9, ADR-132). None = not reported.
+        self.retry_after_seconds = retry_after_seconds
+
+
+# A Retry-After beyond a day is treated as unreadable rather than parking work for longer.
+MAX_RETRY_AFTER_SECONDS = 86400
+
+
+def parse_retry_after(value: str | None, *, now: datetime | None = None) -> int | None:
+    """RFC 9110 Retry-After: delta-seconds or an HTTP-date. Anything unreadable, negative or above a day -> None."""
+    if not value:
+        return None
+    value = value.strip()
+    if value.isdigit():
+        seconds = int(value)
+    else:
+        try:
+            when = parsedate_to_datetime(value)
+        except (TypeError, ValueError):
+            return None
+        if when is None or when.tzinfo is None:
+            return None
+        seconds = int((when - (now or datetime.now(timezone.utc))).total_seconds())
+    return max(seconds, 1) if 0 <= seconds <= MAX_RETRY_AFTER_SECONDS else None
 
 
 class InvocationPermitError(RuntimeError):

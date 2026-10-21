@@ -14,10 +14,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
 
+# Every session runs in UTC, so timestamps the API returns carry +00:00 whatever the server's local zone is.
+CONNECT_ARGS = {"options": "-c timezone=UTC"}
+
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
     future=True,
+    connect_args=CONNECT_ARGS,
 )
 
 SessionLocal = sessionmaker(

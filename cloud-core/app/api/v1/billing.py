@@ -57,6 +57,21 @@ def _page(db, stmt, model, p, sort, default):  # noqa: ANN001, ANN202
     return total, db.execute(stmt.limit(p.limit).offset(p.offset)).scalars().all()
 
 
+@router.get("/usage")
+def usage(user: User = Reader, db: Session = Depends(get_db)) -> dict:
+    """Credit, AI-account quotas, the visibility budget and this month's tokens, each measured against the
+    limit that enforces it (ADR-127). Money amounts on AI accounts are shown to owners and admins only."""
+    from app.models.user_preferences import UserPreferences
+
+    pref = db.execute(select(UserPreferences).where(UserPreferences.organization_id == user.organization_id,
+                                                    UserPreferences.user_id == user.id)).scalar_one_or_none()
+    threshold = ((pref.usage_alert_threshold if pref else None) or 80) / 100
+    out = svc.usage_summary(db, user.organization_id, show_costs=user.role in (UserRole.OWNER, UserRole.ADMIN),
+                            threshold=threshold)
+    db.commit()            # the wallet row may have just been created
+    return out
+
+
 @router.get("/wallet/ledger", response_model=Page[dict])
 def ledger(p: PaginationParams = Depends(), sort: SortParams = Depends(), user: User = Reader, db: Session = Depends(get_db)):
     total, rows = _page(db, select(WalletLedgerEntry).where(WalletLedgerEntry.organization_id == user.organization_id),

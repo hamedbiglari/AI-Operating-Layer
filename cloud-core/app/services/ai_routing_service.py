@@ -98,6 +98,28 @@ def _soft_blocks(db: Session, c: Candidate, capability: str | None) -> str | Non
     return None
 
 
+def request_fit(db: Session, c: Candidate, *, input_tokens: int, output_tokens: int) -> str | None:
+    """ADR-136: why this request cannot fit the candidate's registered model limits, or None.
+
+    Unknown limits (model not registered, or column NULL) block nothing: the provider remains the authority.
+    `context window = available input` is never assumed: without max_input_tokens the input room is the
+    window minus the reserved output."""
+    m = db.execute(select(AIModel).where(AIModel.organization_id == c.account.organization_id,
+                                         AIModel.provider_id == c.provider.id, AIModel.name == c.step.model)
+                   ).scalar_one_or_none()
+    if m is None:
+        return None
+    if m.max_output_tokens is not None and output_tokens > m.max_output_tokens:
+        return (f"OUTPUT_EXCEEDS_MODEL_LIMIT: {output_tokens} output tokens reserved, model '{m.name}' allows "
+                f"{m.max_output_tokens}")
+    room = [x for x in (m.max_input_tokens,
+                        m.context_window - output_tokens if m.context_window is not None else None) if x is not None]
+    if room and input_tokens > min(room):
+        return (f"CONTEXT_OVERFLOW: ~{input_tokens} input tokens, model '{m.name}' has room for {max(min(room), 0)} "
+                f"after reserving {output_tokens} for output; split the item")
+    return None
+
+
 def _price_key(c: Candidate) -> Decimal:
     price = ConfiguredPricing().price(c.provider.adapter_key or c.provider.canonical_name, c.step.model)
     return (price.input_per_mtok + price.output_per_mtok) if price else Decimal("Infinity")

@@ -18,7 +18,10 @@ too, not just to commerce cart tokens).
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from jose import JWTError, jwt
+# PyJWT replaces python-jose (security audit SEC-08): python-jose 3.3.0 carries PYSEC-2024-232/233 and pulls in
+# `ecdsa`, which has an unfixed timing advisory. Only HS256 with an explicit algorithm list is accepted.
+import jwt
+from jwt import PyJWTError as JWTError
 
 from app.core.config import settings
 

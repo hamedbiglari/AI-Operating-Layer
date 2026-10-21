@@ -34,10 +34,18 @@ HEALTH_STATES = ("healthy", "degraded", "rate_limited", "quota_exhausted", "auth
                  "unavailable", "timeout", "unknown", "disconnected")
 MEMORY_KINDS = ("job_state", "ai_handoff", "intermediate_finding", "open_question", "current_synthesis",
                 "next_action", "conflict_context", "processing_checkpoint", "ai_summary")
+# ADR-133 lifecycle (v5 §87). Memory never becomes canonical knowledge by any transition here.
+MEMORY_STATES = ("created", "validated", "active", "superseded", "archived")
+MEMORY_TRANSITIONS = {"created": ("validated", "archived"), "validated": ("active", "archived"),
+                      "active": ("superseded", "archived"), "superseded": ("archived",), "archived": ()}
+# State-like kinds: only the newest version is current; writing a new one supersedes the previous.
+# The other kinds (findings, open questions, conflicts, summaries) accumulate.
+SINGLETON_MEMORY_KINDS = ("job_state", "current_synthesis", "processing_checkpoint", "ai_handoff", "next_action")
 DISCOVERY_STATUSES = ("discovered", "identified", "official_source_verified", "api_capability_checked",
                       "credential_method_verified", "capability_verified", "health_checked", "approved",
                       "active", "application_only", "model_only", "specialized_research_tool",
                       "no_verified_api", "not_verified", "deprecated", "blocked_external_dependency", "disabled")
+CAPABILITY_SOURCES = ("official_docs", "provider_api", "operator", "conservative_estimate")
 KEYWORD_KINDS = ("primary", "secondary", "long_tail", "question", "commercial", "transactional", "local",
                  "scientific", "synonym", "alias", "alternative_spelling", "related_entity",
                  "customer_question", "ai_query",
@@ -112,6 +120,12 @@ class AIModel(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         UniqueConstraint("organization_id", "provider_id", "name", name="uq_ai_models_provider_name"),
         _tenant_fk(["provider_id"], "ai_providers", "fk_ai_models_provider"),
         CheckConstraint(f"status IN ({_in(DISCOVERY_STATUSES)})", name="status"),
+        CheckConstraint(f"capability_source IS NULL OR capability_source IN ({_in(CAPABILITY_SOURCES)})",
+                        name="capability_source"),
+        CheckConstraint("(max_input_tokens IS NULL OR max_input_tokens > 0) AND "
+                        "(max_output_tokens IS NULL OR max_output_tokens > 0) AND "
+                        "(rpm_limit IS NULL OR rpm_limit > 0) AND (tpm_limit IS NULL OR tpm_limit > 0)",
+                        name="limits_positive"),
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     provider_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
@@ -123,6 +137,16 @@ class AIModel(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     license: Mapped[str | None] = mapped_column(String(120))
     status: Mapped[str] = mapped_column(String(40), nullable=False, default="discovered")
     last_verified_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
+    # ADR-136: provider limits as registered per tenant, never hardcoded. NULL = unknown (nothing is assumed).
+    # max_input/max_output are enforced before a call; rpm/tpm are recorded, not yet enforced.
+    max_input_tokens: Mapped[int | None] = mapped_column(Integer)
+    max_output_tokens: Mapped[int | None] = mapped_column(Integer)
+    rpm_limit: Mapped[int | None] = mapped_column(Integer)
+    tpm_limit: Mapped[int | None] = mapped_column(Integer)
+    supports_structured_output: Mapped[bool | None] = mapped_column(Boolean)
+    supports_tools: Mapped[bool | None] = mapped_column(Boolean)
+    # Where the figures came from: official_docs | provider_api | operator | conservative_estimate.
+    capability_source: Mapped[str | None] = mapped_column(String(40))
 
 
 class AIHealthEvent(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -195,6 +219,9 @@ class AIWorkingMemory(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "ai_working_memory"
     __table_args__ = (
         CheckConstraint(f"kind IN ({_in(MEMORY_KINDS)})", name="kind"),
+        CheckConstraint(f"status IN ({_in(MEMORY_STATES)})", name="status"),
+        CheckConstraint("superseded_by_id IS NULL OR status IN ('superseded', 'archived')",
+                        name="successor_only_when_superseded"),
         UniqueConstraint("organization_id", "job_key", "kind", "content_hash", name="uq_ai_working_memory_dedupe"),
         Index("ix_ai_working_memory_job", "organization_id", "job_key", "kind", "version"),
     )
@@ -213,6 +240,10 @@ class AIWorkingMemory(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     created_by: Mapped[str] = mapped_column(String(120), nullable=False)   # user:<id> | execution:<id> | system
     provenance: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    # ADR-133: the newer version of a state-like record that replaced this one.
+    superseded_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ai_working_memory.id", ondelete="SET NULL",
+                                       name="fk_ai_working_memory_superseded_by"))
 
 
 class AIDiscoveryEntry(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -268,7 +299,11 @@ class AIJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         UniqueConstraint("organization_id", "job_key", name="uq_ai_jobs_job_key"),
         _tenant_fk(["policy_id"], "ai_routing_policies", "fk_ai_jobs_policy", ondelete="RESTRICT"),
         CheckConstraint("status IN ('queued', 'running', 'paused', 'pause_requested', 'blocked', 'completed', "
+                        "'completed_with_failures', "
                         "'cancelled', 'cancel_requested')", name="status"),
+        CheckConstraint("(lease_owner IS NULL) = (lease_expires_at IS NULL)", name="lease_pair"),
+        CheckConstraint("output_contract IS NULL OR output_contract IN ('ktp_v1')", name="output_contract"),
+        Index("ix_ai_jobs_recovery", "status", "lease_expires_at", "resume_after"),
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     job_key: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -288,6 +323,17 @@ class AIJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     knowledge_object_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     max_output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=400)
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    # ADR-131: the worker running the job holds a lease it renews per item. A lease that expires means the
+    # worker died; the recovery sweep re-queues the job (at-least-once; finished items are never redone).
+    lease_owner: Mapped[str | None] = mapped_column(String(120))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
+    # Set only on a job blocked purely by provider capacity: the earliest time a resource is usable again.
+    # Meaningful only while status is `blocked` (the sweep filters on it; run_job clears it).
+    resume_after: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
+    auto_resume_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    # ADR-134: 'ktp_v1' = each item must return a Knowledge Transfer Package, which is validated and
+    # reconciled into claims/evidence. NULL = free-text findings kept in memory only, as before.
+    output_contract: Mapped[str | None] = mapped_column(String(40))
 
 
 class AIJobItem(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -311,3 +357,7 @@ class AIJobItem(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     last_execution_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     failure_reason: Mapped[str | None] = mapped_column(String(300))
     completed_by_account_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    # ADR-135: item_keys of the same job that must be `completed` before this item runs (task DAG). Checked
+    # acyclic at creation; items are never added afterwards. A failed dependency fails this item visibly.
+    depends_on: Mapped[list[str]] = mapped_column(ARRAY(String(200)), nullable=False, default=list,
+                                                  server_default="{}")

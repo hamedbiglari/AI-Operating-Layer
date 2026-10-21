@@ -20,6 +20,9 @@ from datetime import datetime
 from sqlalchemy import (
     TIMESTAMP,
     BigInteger,
+    CheckConstraint,
+    Index,
+    text,
     Enum as SAEnum,
     Float,
     ForeignKey,
@@ -56,6 +59,13 @@ class DocumentConversion(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             ["document_id", "organization_id"], ["documents.id", "documents.organization_id"],
             name="fk_document_conversions_document_organization", ondelete="CASCADE",
         ),
+        # v4 (ADR-122), mirrored in migration 0037
+        CheckConstraint("processing_state IN ('queued', 'processing', 'partially_processed', 'processed', "
+                        "'failed', 'retrying', 'needs_review', 'completed')", name="processing_state"),
+        CheckConstraint("NOT needs_review OR jsonb_array_length(review_reasons) > 0", name="a_flag_needs_a_reason"),
+        CheckConstraint("superseded_at IS NULL OR NOT is_current", name="superseded_is_not_current"),
+        Index("uq_document_conversions_one_current", "document_id", unique=True,
+              postgresql_where=text("is_current")),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(
@@ -108,6 +118,36 @@ class DocumentConversion(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     warnings: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
     completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
 
+    # ---- v4 (ADR-122): the canonical representation, differentiated confidence, candidates, history ----
+    # Which provider produced the canonical representation (distinct from `converter_name`, the
+    # MarkItDown normaliser that still produces the legacy text channel).
+    layout_provider: Mapped[str | None] = mapped_column(String(60), nullable=True, index=True)
+    layout_provider_version: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    provider_config: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    cdr_schema_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    document_class: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # §10 — NULL means "not measured", never zero
+    text_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    layout_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    table_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    equation_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    figure_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    overall_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # §25 state vocabulary; `processed` only for a complete, unflagged extraction
+    processing_state: Mapped[str] = mapped_column(String(30), nullable=False, default="queued",
+                                                  server_default="queued", index=True)
+    needs_review: Mapped[bool] = mapped_column(nullable=False, default=False, server_default="false")
+    review_reasons: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    unprocessed_pages: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    # every provider attempt for this extraction: provider, version, status, reason, overall confidence
+    candidates: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    # verbatim provider output kept for audit (e.g. Mathpix MMD)
+    provider_raw_output: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # §12/§56 history: exactly one current extraction per document; older ones stay readable
+    is_current: Mapped[bool] = mapped_column(nullable=False, default=True, server_default="true", index=True)
+    superseded_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    trigger: Mapped[str] = mapped_column(String(40), nullable=False, default="upload", server_default="upload")
+
 
 class DocumentTable(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     """A table kept as STRUCTURE, not only as Markdown text (§7).
@@ -129,6 +169,10 @@ class DocumentTable(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False, index=True,
     )
     document_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
+    # v4 (ADR-122): which extraction produced this row. NULL only for rows written before 0037. A
+    # reprocess adds rows for its own conversion instead of deleting the previous ones (§12).
+    conversion_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("document_conversions.id", ondelete="CASCADE"), nullable=True, index=True)
 
     page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
@@ -164,6 +208,8 @@ class DocumentAsset(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False, index=True,
     )
     document_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
+    conversion_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("document_conversions.id", ondelete="CASCADE"), nullable=True, index=True)
 
     asset_id: Mapped[str] = mapped_column(String(300), nullable=False)
     page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)

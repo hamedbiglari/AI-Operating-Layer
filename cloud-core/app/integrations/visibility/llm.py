@@ -117,7 +117,13 @@ class LLMVisibilityProvider:
                 return SignalPresence.NOT_CHECKED
             return SignalPresence.PRESENT if needle.lower() in lowered else SignalPresence.ABSENT
 
-        return ProbeResult(outcome=ProviderOutcome.SUCCESS, response_text=text,
+        # The answer is observed, not trusted (ADR-126): signals are read from it as received, but what is stored
+        # and later shown has hidden characters, images and HTML removed. URLs stay — citing a site is what a
+        # visibility probe measures. The probe prompt itself is the operator's query and is sent unwrapped, so
+        # the measurement is not skewed by safety wording.
+        from app.ai.prompt_safety import strip_active_content
+
+        return ProbeResult(outcome=ProviderOutcome.SUCCESS, response_text=strip_active_content(text),
                            signals=ProbeSignals(mentioned=presence(target_brand),
                                                 url_present=presence(target_domain)), **base)
 

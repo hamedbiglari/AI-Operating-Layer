@@ -51,8 +51,22 @@ class _FakeProvider:
 
 
 def test_execute_with_no_provider_configured_fails_honestly(
-    client: TestClient, register_org, db_session: Session
+    client: TestClient, register_org, db_session: Session, monkeypatch
 ) -> None:
+    """A task executed with no `provider` argument uses whatever
+    get_research_provider() registers — today the federated scholarly
+    provider. This test is about the deployment where there is nothing
+    to ask: every registered provider reports itself unconfigured, so
+    the only honest outcome is `not_configured`, and the task fails
+    rather than reporting a result it never got. The provider list is
+    narrowed here rather than left to chance, so the assertion does not
+    depend on whether this machine can reach the scholarly APIs."""
+    from app.integrations.research import scholarly
+    from app.services import federated_research_service
+
+    monkeypatch.setattr(federated_research_service, "default_providers",
+                        lambda transport=None: [scholarly.NotConfiguredWebProvider()])
+
     org = register_org()
     task = _create_project_and_task(client, org["headers"])
     org_id, user_id = UUID(org["organization"]["id"]), UUID(org["user"]["id"])

@@ -6,13 +6,19 @@ POST /auth/login                  — OAuth2 password flow (email as username)
 POST /auth/login-code/request     — email a 6-digit sign-in code (owner rules)
 POST /auth/login-code/verify      — exchange the code for a token
 GET  /auth/me                     — current user + their organization
+POST /auth/session                — open a browser session (code sign-in + HttpOnly refresh cookie)
+POST /auth/session/refresh        — rotate the cookie, hand back a short-lived access token
+DELETE /auth/session              — sign out of the browser session
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from datetime import timedelta
+
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, EmailStr, Field
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from app.security.client_ip import client_ip
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.organization import Organization
@@ -25,7 +31,7 @@ from app.schemas.auth import (
 )
 from app.security.dependencies import get_current_user
 from app.security.tokens import create_access_token
-from app.services import auth_service, signup_code_service
+from app.services import auth_service, auth_session_service, signup_code_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -45,8 +51,14 @@ def _issue_token(user: User) -> TokenResponse:
     status_code=status.HTTP_201_CREATED,
 )
 def register_organization(
-    payload: RegisterOrganizationRequest, db: Session = Depends(get_db)
+    payload: RegisterOrganizationRequest, request: Request, db: Session = Depends(get_db)
 ) -> RegisterOrganizationResponse:
+    # Password registration creates a tenant without proving the e-mail address. It is off in production
+    # unless explicitly enabled; the public path is /auth/signup/request + /verify (security audit SEC-03).
+    if not settings.password_registration_enabled:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+    _throttle(f"register-ip:{client_ip(request)}", settings.REGISTRATION_IP_LIMIT_PER_HOUR, 3600,
+              "Too many registrations from this address. Try again later.")
     try:
         organization, owner = auth_service.register_organization(
             db,
@@ -80,7 +92,7 @@ class SignupVerifyRequest(BaseModel):
 def signup_request(payload: SignupRequest, request: Request, db: Session = Depends(get_db)) -> dict:
     """Start a passwordless sign-up: emails a 6-digit code. The answer never reveals whether the
     address already has an account."""
-    ip = request.client.host if request.client else None
+    ip = client_ip(request)
     out = signup_code_service.request_signup(db, email=payload.owner_email, organization_name=payload.organization_name,
                                              owner_name=payload.owner_name, ip=ip)
     if out.kind == "cooldown":
@@ -112,10 +124,28 @@ def signup_verify(payload: SignupVerifyRequest, db: Session = Depends(get_db)) -
     raise HTTPException(status.HTTP_401_UNAUTHORIZED, "That code is not valid.")
 
 
+def _throttle(key: str, limit: int, window_seconds: int, message: str) -> None:
+    from app.security.rate_limit import check_rate_limit
+
+    result = check_rate_limit(installation_id=key, limit=limit, window_seconds=window_seconds)
+    if not result.allowed:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=message,
+                            headers={"Retry-After": str(result.retry_after)})
+
+
 @router.post("/login", response_model=TokenResponse)
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+    request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ) -> TokenResponse:
+    # Online password guessing is throttled per address and per account (security audit SEC-02). The account
+    # key is a hash so the limiter never stores the address in clear.
+    import hashlib
+
+    _throttle(f"login-pw-ip:{client_ip(request)}", settings.LOGIN_PASSWORD_IP_LIMIT_PER_MINUTE, 60,
+              "Too many sign-in attempts. Try again later.")
+    acct = hashlib.sha256(form_data.username.strip().lower().encode()).hexdigest()[:32]
+    _throttle(f"login-pw-acct:{acct}", settings.LOGIN_PASSWORD_ACCOUNT_LIMIT_PER_15_MIN, 900,
+              "Too many sign-in attempts for this account. Try again in 15 minutes, or sign in with an emailed code.")
     user = auth_service.authenticate(db, email=form_data.username, password=form_data.password)
     if user is None:
         raise HTTPException(
@@ -147,7 +177,7 @@ class LoginCodeVerify(BaseModel):
 def _ip_limit(request: Request) -> None:
     from app.security.rate_limit import check_rate_limit
 
-    ip = request.client.host if request.client else "unknown"
+    ip = client_ip(request)
     result = check_rate_limit(installation_id=f"login-code-ip:{ip}",
                               limit=settings.LOGIN_CODE_IP_LIMIT_PER_MINUTE)
     if not result.allowed:
@@ -192,3 +222,108 @@ def verify_login_code(payload: LoginCodeVerify, request: Request, db: Session = 
     if outcome.kind == "locked":
         raise _lock_error(outcome)
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired code.")
+
+
+# --- Browser session: refresh cookie + in-memory access token (ADR-129) ----------
+#
+# The website keeps its access token in a JavaScript variable, never in localStorage or
+# sessionStorage, so a cross-site script has nothing durable to read. What survives a reload is this
+# HttpOnly cookie, which a page script cannot touch at all, and which is scoped to these three routes
+# so it is never attached to a chat or knowledge request.
+#
+# These routes are additive. /login, /login-code/verify and /signup/verify are untouched and still
+# return a bearer token to API and dashboard clients that never wanted a cookie.
+
+
+def _set_session_cookie(response: Response, cookie: str) -> None:
+    response.set_cookie(
+        settings.SESSION_COOKIE_NAME,
+        cookie,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        path=settings.session_cookie_path,
+        domain=settings.SESSION_COOKIE_DOMAIN,
+        secure=settings.session_cookie_secure,
+        httponly=True,
+        samesite=settings.SESSION_COOKIE_SAMESITE.lower(),
+    )
+
+
+def _clear_session_cookie(response: Response) -> None:
+    # Same path/domain as the cookie was set with, or the browser deletes nothing.
+    response.delete_cookie(
+        settings.SESSION_COOKIE_NAME,
+        path=settings.session_cookie_path,
+        domain=settings.SESSION_COOKIE_DOMAIN,
+        secure=settings.session_cookie_secure,
+        httponly=True,
+        samesite=settings.SESSION_COOKIE_SAMESITE.lower(),
+    )
+
+
+def _browser_token(user: User) -> TokenResponse:
+    """Deliberately shorter-lived than the API token: this one is replaceable at any moment by a
+    cookie the page cannot read, so there is no reason to make it last an hour."""
+    minutes = settings.BROWSER_ACCESS_TOKEN_EXPIRE_MINUTES
+    token = create_access_token(
+        user_id=str(user.id),
+        organization_id=str(user.organization_id),
+        role=user.role.value,
+        expires_delta=timedelta(minutes=minutes),
+    )
+    return TokenResponse(access_token=token, expires_in_minutes=minutes)
+
+
+@router.post("/session", response_model=TokenResponse)
+def open_session(payload: LoginCodeVerify, request: Request, response: Response,
+                 db: Session = Depends(get_db)) -> TokenResponse:
+    """Verify an emailed code and open a browser session. Same verification, lockout and
+    indistinguishable-failure rules as /login-code/verify — only the delivery differs."""
+    from app.services import login_code_service
+
+    _ip_limit(request)
+    outcome = login_code_service.verify_code(db, email=payload.email, code=payload.code)
+    if outcome.kind == "locked":
+        raise _lock_error(outcome)
+    if outcome.kind != "ok":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired code.")
+    started = auth_session_service.start(
+        db, user=outcome.user, user_agent=request.headers.get("user-agent"), ip=client_ip(request),
+    )
+    _set_session_cookie(response, started.cookie)
+    return _browser_token(outcome.user)
+
+
+_SESSION_GONE = {
+    "invalid": "No browser session.",
+    "expired": "This session has expired. Sign in again.",
+    "revoked": "This session was signed out. Sign in again.",
+    "reuse_detected": "This session was ended because an old session cookie was presented. Sign in again.",
+    "user_inactive": "This account is no longer active.",
+}
+
+
+@router.post("/session/refresh", response_model=TokenResponse)
+def refresh_session(request: Request, response: Response, db: Session = Depends(get_db),
+                    session_cookie: str | None = Cookie(default=None,
+                                                        alias=settings.SESSION_COOKIE_NAME)) -> TokenResponse:
+    """Rotate the session cookie and issue the next access token. Every failure clears the cookie, so a
+    browser is never left holding one that cannot work."""
+    outcome = auth_session_service.rotate(
+        db, cookie=session_cookie, user_agent=request.headers.get("user-agent"), ip=client_ip(request),
+    )
+    if outcome.kind != "ok":
+        _clear_session_cookie(response)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=_SESSION_GONE.get(outcome.kind, _SESSION_GONE["invalid"]))
+    _set_session_cookie(response, outcome.cookie)
+    return _browser_token(outcome.user)
+
+
+@router.delete("/session", status_code=status.HTTP_204_NO_CONTENT)
+def close_session(response: Response, db: Session = Depends(get_db),
+                  session_cookie: str | None = Cookie(default=None,
+                                                      alias=settings.SESSION_COOKIE_NAME)) -> None:
+    """Sign out. Succeeds whether or not there was a session to end, so a signed-out browser is never
+    told that its cookie was already worthless."""
+    auth_session_service.end(db, cookie=session_cookie)
+    _clear_session_cookie(response)

@@ -217,12 +217,14 @@ def queue_research_task(
     db: Session = Depends(get_db),
 ) -> ResearchTask:
     """Transitions PENDING -> QUEUED and dispatches the Celery job that
-    will actually run the configured ResearchProvider. With no real
-    provider configured (see app/integrations/research/base.py), the
-    dispatched job will honestly complete with the task in FAILED
-    status and `result.outcome_status == "not_configured"` — this is
-    expected, documented behavior, not a bug in the queue action
-    itself."""
+    will actually run the configured ResearchProvider — scholarly
+    discovery over Crossref, PubMed and Europe PMC (see
+    app/integrations/research/federated.py), which registers the
+    sources it finds and nothing else: no claim, no evidence, no full
+    text. If those hosts cannot be reached, the dispatched job
+    honestly completes with the task in FAILED status and the reason in
+    `result` — that is expected, documented behavior, not a bug in the
+    queue action itself."""
     task = research_task_service.get_research_task_or_404(
         db, task_id=task_id, organization_id=current_user.organization_id
     )

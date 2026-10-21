@@ -26,12 +26,17 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
     task_ignore_result=True,
-    # Phase 17: the only periodic job. Requires a `celery beat` process
+    # Periodic jobs. They require a `celery beat` process
     # alongside the worker (see docs/phase17/PHASE17_EXCEPTION_REGISTER.md).
     beat_schedule={
         "ai-executions-reclaim-stale": {
             "task": "ai_executions.reclaim_stale",
             "schedule": float(settings.AI_EXECUTION_RECLAIM_INTERVAL_SECONDS),
+        },
+        # ADR-131: dead workers and reset provider limits.
+        "ai-center-recover-jobs": {
+            "task": "ai_center.recover_jobs",
+            "schedule": float(settings.AI_JOB_RECOVERY_INTERVAL_SECONDS),
         },
     },
 )

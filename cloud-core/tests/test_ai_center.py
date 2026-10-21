@@ -347,10 +347,16 @@ def test_manual_switch_mid_job(client, db_session, org, no_background):
 def test_job_cost_limit_stops_the_job(client, db_session, org, no_background, monkeypatch):
     h = org["headers"]; _, (a, *_r) = _setup_three(client, h)
     monkeypatch.setattr(settings, "AI_MODEL_PRICING_JSON", json.dumps({"anthropic/m": {"input_per_mtok": "1000", "output_per_mtok": "1000"}}))
-    pol = mk_policy(client, h, "priority_pool", [{"account_id": a["id"], "model": "m"}], max_cost_per_job=0.5, currency="USD")
+    # The pre-call bound counts every byte sent, including the system policy (ADR-126), whose length is fixed.
+    from app.ai import prompt_safety
+    system_bytes = len(prompt_safety.system_policy(canary=prompt_safety.new_canary()).encode())
+    bound = (system_bytes + 10 + 400) * 1000 / 1e6
+    pol = mk_policy(client, h, "priority_pool", [{"account_id": a["id"], "model": "m"}],
+                    max_cost_per_job=round(bound + 0.09, 6), currency="USD")
     job = _job(client, db_session, h, pol, 10, key="cost-10")
     # actual per call: 15 tokens * 1000/1e6 = 0.015; worst case checked BEFORE each call:
-    # (10 prompt bytes + 400 max output tokens) * 1000/1e6 = 0.41 -> 7 calls fit, the 8th is never made
+    # (system + 10 prompt bytes + 400 max output tokens) * 1000/1e6 = bound; limit = bound + 0.09
+    # -> after 6 calls 0.09 is spent, the 7th still fits (0.09 + bound), the 8th (0.105 + bound) is never made
     s = Scripted(lambda n: (200, ok_body()))
     res = ai_job_service.run_job(db_session, job, adapters={acct(db_session, a).id: s.adapter()})
     assert res["status"] == "blocked" and res["stop_reason"] == "SPEND_LIMIT" and res["completed"] == 7 and s.calls == 7

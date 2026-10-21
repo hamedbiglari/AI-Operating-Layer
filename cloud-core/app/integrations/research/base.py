@@ -3,11 +3,17 @@ ResearchProvider interface (master spec section 18).
 
 Mirrors app/integrations/embeddings/base.py's two-method-interface
 pattern: app/services/research_task_service.py depends only on
-`ResearchProvider`, never on a concrete implementation, so adding a
-real provider later (a web search client, a PubMed/DOI lookup client,
-a user-document search over the existing Source/Document/Chunk store,
+`ResearchProvider`, never on a concrete implementation, so adding
+another real provider (a licensed corpus, a web search client, a
+user-document search over the existing Source/Document/Chunk store,
 ...) means implementing this interface and changing what
 `get_research_provider()` returns — no other code changes.
+
+The provider registered today is
+app/integrations/research/federated.py's FederatedResearchProvider:
+scholarly discovery over Crossref, PubMed and Europe PMC, which need
+no API key. NotConfiguredResearchProvider below is what a caller gets
+when there is no execution context to bind a discovery run to.
 
 Section 18 is explicit that the system must be able to tell these
 apart, not collapse them into one generic "failure":
@@ -69,23 +75,18 @@ class ResearchProvider(Protocol):
 
 
 class NotConfiguredResearchProvider:
-    """**The only provider registered by default.** This environment has
-    no reachable external research/search API — no web search client,
-    scientific-database client, or DOI/PMID lookup — for the same
-    reason app/integrations/embeddings/deterministic.py's placeholder
-    exists: this sandbox's network allow-list has no such API on it,
-    and requiring one would break the project running out of the box
-    for anyone who clones this repo.
+    """What a caller gets when no provider can be bound. Discovery
+    writes rows — the Source rows a ResearchTaskReference then points at
+    — so a discovery provider needs the session, tenant and task of the
+    execution it serves; `get_research_provider()` called without that
+    context has nothing to bind, and says so rather than guessing.
 
-    Unlike the embedding placeholder, this one does NOT fabricate a
-    plausible-looking result — section 18 explicitly forbids that
-    ("Do NOT invent fake integrations. Do NOT claim that a search API
-    works if no real provider is configured."). It reports
-    NOT_CONFIGURED honestly, every time, for every task_type. Every
-    ResearchTask executed against this provider will end in FAILED with
-    that reason recorded in `result` — this is expected, documented
-    behavior for a real environment that has not yet configured a real
-    provider, not a bug.
+    It does NOT fabricate a plausible-looking result — section 18
+    explicitly forbids that ("Do NOT invent fake integrations. Do NOT
+    claim that a search API works if no real provider is
+    configured."). It reports NOT_CONFIGURED honestly, every time, for
+    every task_type, and the ResearchTask ends FAILED with that reason
+    recorded in `result`.
     """
 
     def run(self, *, task_type: str, query: str) -> ResearchOutcome:
@@ -102,10 +103,24 @@ class NotConfiguredResearchProvider:
 _default_provider: ResearchProvider | None = None
 
 
-def get_research_provider() -> ResearchProvider:
-    """Single shared provider instance, same pattern as
-    get_embedding_provider(). Swapping providers later means changing
-    this function's return value, not any caller."""
+def get_research_provider(*, db=None, organization_id=None, task=None) -> ResearchProvider:  # noqa: ANN001
+    """The one registration point, same pattern as
+    get_embedding_provider(). Swapping providers means changing this
+    function's return value, not any caller.
+
+    Given the execution context of a task — its session, its tenant and
+    the task row itself — this returns the federated scholarly provider.
+    A discovery run's output is new Source rows, so a provider that
+    performs one cannot be a context-free singleton; `_default_provider`
+    stays a singleton because reporting "not configured" needs nothing.
+    """
+    if db is not None and organization_id is not None and task is not None:
+        # Imported here: federated.py reaches app/services, which imports
+        # research_task_service, which imports this module.
+        from app.integrations.research.federated import FederatedResearchProvider
+
+        return FederatedResearchProvider(db, organization_id=organization_id, task=task)
+
     global _default_provider
     if _default_provider is None:
         _default_provider = NotConfiguredResearchProvider()

@@ -28,6 +28,7 @@ evidence rules forbid.
 from __future__ import annotations
 
 import shutil
+from app.ingestion.providers.ocr import safe_languages
 import subprocess
 import tempfile
 import time
@@ -263,7 +264,7 @@ def ocr_image(data: bytes, languages: str = "eng") -> tuple[OcrStatus, str | Non
         target.write_bytes(data)
         try:
             out = subprocess.run(
-                ["tesseract", str(target), "stdout", "-l", languages],
+                ["tesseract", str(target), "stdout", "-l", safe_languages(languages)],
                 capture_output=True, text=True, timeout=OCR_TIMEOUT_SECONDS, shell=False,
             )
         except subprocess.TimeoutExpired:
@@ -319,6 +320,12 @@ def extract_structure(
         page_count = len(pypdf.PdfReader(str(path)).pages)
     except Exception:
         pass
+    if page_count is not None and page_count > MAX_PAGES:
+        # v4 §13: this cap used to apply silently. Pages beyond it are not scanned for tables or images
+        # by this legacy pass; say so. (The canonical representation has its own, configurable limit and
+        # lists unprocessed pages explicitly.)
+        notes.append(f"legacy table/image pass covered pages 1–{MAX_PAGES} of {page_count}; "
+                     f"pages {MAX_PAGES + 1}–{page_count} were not scanned for tables or images")
 
     return ExtractionResult(
         level_used=level, tables=tables, images=images, page_count=page_count,

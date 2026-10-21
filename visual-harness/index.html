@@ -3214,6 +3214,33 @@ button.card { color: inherit; font: inherit; }
 .kx-dim dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-3); font-size: .8125rem; }
 .kx-dim dd { margin: 0; font-variant-numeric: tabular-nums; text-align: end; }
 .kx-dim p { margin: 0; font-size: .75rem; color: var(--text-muted); }
+/* ===== Command workspace (v4, ADR-125) ===== */
+.ws-grid { display: grid; gap: var(--space-4); grid-template-columns: minmax(14rem, 19rem) minmax(0, 1fr); align-items: start; }
+@media (max-width: 960px) { .ws-grid { grid-template-columns: minmax(0, 1fr); } }
+.ws-side { display: flex; flex-direction: column; gap: var(--space-3); min-inline-size: 0; }
+.ws-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); max-block-size: 32rem; overflow-y: auto; }
+.ws-item { inline-size: 100%; text-align: start; display: flex; flex-direction: column; gap: 2px; min-block-size: 44px; padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: inherit; font: inherit; cursor: pointer; }
+.ws-item[aria-current="true"] { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 7%, transparent); }
+.ws-item-title { font-weight: 600; overflow-wrap: anywhere; }
+.ws-item-meta { font-size: .75rem; color: var(--text-muted); }
+.ws-main { min-inline-size: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.ws-head h2 { margin: 0; overflow-wrap: anywhere; }
+.ws-main textarea { inline-size: 100%; min-block-size: 9rem; resize: vertical; font: inherit; line-height: 1.6;
+  padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: inherit; }
+.ws-check { display: flex; align-items: center; gap: var(--space-2); }
+.ws-actions .btn { min-block-size: 44px; }
+.ws-resume { display: flex; flex-direction: column; gap: var(--space-2); }
+.ws-resume p { margin: 0; }
+.ws-dl { display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-3); font-size: .8125rem; }
+.ws-versions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.ws-versions li { border-block-end: 1px solid var(--border); padding-block: var(--space-2); overflow-wrap: anywhere; }
+.ws-diff { white-space: pre-wrap; font-size: .8125rem; background: var(--surface-raised, var(--surface)); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: var(--space-3); margin-block-start: var(--space-2); overflow-x: auto; }
+#ws-state[data-s="blocked"], #ws-state[data-s="failed"] { color: var(--danger); }
+#ws-state[data-s="completed"] { color: var(--success); }
+#ws-state[data-s="completed_with_gaps"], #ws-state[data-s="running"], #ws-state[data-s="queued"] { color: var(--warning); }
 .kx-banner { border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1px solid var(--border); margin-block: var(--space-3); }
 .kx-banner[data-s="stale"] { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 8%, transparent); }
 .kx-banner[data-s="current"] { border-color: var(--success); background: color-mix(in srgb, var(--success) 7%, transparent); }
@@ -3232,7 +3259,7 @@ button.card { color: inherit; font: inherit; }
 <div class="harness-bar">
   <strong>UX prototype harness</strong>
   <label>Screen
-    <select id="pick-screen"><option value="screen-dashboard">Dashboard</option><option value="screen-sources">Sources</option><option value="screen-add">Add source</option><option value="screen-processing">Processing</option><option value="screen-detail">Source detail</option><option value="screen-provenance">Provenance</option><option value="screen-knowledge">Knowledge</option><option value="screen-knowledge-taranjebin">ترنجبین</option><option value="screen-knowledge-saffron">زعفران</option><option value="screen-knowledge-garlic">سیر</option><option value="screen-knowledge-thyme">آویشن</option><option value="screen-gap">Knowledge gap</option><option value="screen-visibility">AI Visibility</option><option value="screen-visibility-detail">Visibility detail</option><option value="screen-ai-executions">AI executions (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-ai-catalog">AI Catalog (live)</option><option value="screen-memory">Memory Center (live)</option><option value="screen-matrix">Categories &amp; matrix (live)</option><option value="screen-coverage">Coverage audit (live)</option><option value="screen-publications">Publications &amp; citations (live)</option><option value="screen-site-blog">Website: blog (live)</option><option value="screen-site-sections">Website: page sections (live)</option><option value="screen-site-subscribers">Website: subscribers (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-analytics">Analytics & demand</option><option value="screen-access">AI access</option><option value="screen-operations">Connection & logs</option><option value="screen-states">Edge states</option><option value="screen-settings">Settings</option><option value="screen-chat">Chat</option><option value="screen-products">Products</option><option value="screen-product-taranjebin-grade-a">ترنجبین درجه یک — ۱۰۰ گرم</option><option value="screen-product-saffron-negin-5g">زعفران نگین — ۵ گرم</option><option value="screen-product-garlic-oil-30ml">روغن سیر — ۳۰ میلی‌لیتر</option><option value="screen-admin-overview">Admin — overview</option><option value="screen-admin-users">Admin — users</option><option value="screen-admin-billing">Admin — billing &amp; wallets</option><option value="screen-statistics">Statistics</option><option value="screen-payment">Payment</option><option value="screen-transactions">Transactions</option><option value="screen-traffic">Traffic &amp; content</option><option value="screen-research">Research</option><option value="screen-admin-user-u1">Admin — Hamed Biglari</option><option value="screen-admin-user-u2">Admin — <span lang="fa" dir="rtl">مریم سلیمانی</span></option><option value="screen-admin-user-u3">Admin — Reza Kiani</option><option value="screen-admin-user-u4">Admin — Sahar Ahmadi</option><option value="screen-admin-user-u5">Admin — Unknown applicant</option><option value="screen-login">Login</option><option value="screen-signup">Sign up</option><option value="screen-login-code">Login — enter code</option></select>
+    <select id="pick-screen"><option value="screen-dashboard">Dashboard</option><option value="screen-sources">Sources</option><option value="screen-add">Add source</option><option value="screen-processing">Processing</option><option value="screen-detail">Source detail</option><option value="screen-provenance">Provenance</option><option value="screen-knowledge">Knowledge</option><option value="screen-knowledge-taranjebin">ترنجبین</option><option value="screen-knowledge-saffron">زعفران</option><option value="screen-knowledge-garlic">سیر</option><option value="screen-knowledge-thyme">آویشن</option><option value="screen-gap">Knowledge gap</option><option value="screen-visibility">AI Visibility</option><option value="screen-visibility-detail">Visibility detail</option><option value="screen-ai-executions">AI executions (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-ai-catalog">AI Catalog (live)</option><option value="screen-memory">Memory Center (live)</option><option value="screen-matrix">Categories &amp; matrix (live)</option><option value="screen-coverage">Coverage audit (live)</option><option value="screen-publications">Publications &amp; citations (live)</option><option value="screen-site-blog">Website: blog (live)</option><option value="screen-site-sections">Website: page sections (live)</option><option value="screen-site-subscribers">Website: subscribers (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-analytics">Analytics & demand</option><option value="screen-access">AI access</option><option value="screen-chat-settings">Chat settings (live)</option><option value="screen-operations">Connection & logs</option><option value="screen-states">Edge states</option><option value="screen-settings">Settings</option><option value="screen-chat">Command workspace (live)</option><option value="screen-products">Products</option><option value="screen-product-taranjebin-grade-a">ترنجبین درجه یک — ۱۰۰ گرم</option><option value="screen-product-saffron-negin-5g">زعفران نگین — ۵ گرم</option><option value="screen-product-garlic-oil-30ml">روغن سیر — ۳۰ میلی‌لیتر</option><option value="screen-admin-overview">Admin — overview</option><option value="screen-admin-users">Admin — users</option><option value="screen-admin-billing">Admin — billing &amp; wallets</option><option value="screen-statistics">Statistics</option><option value="screen-payment">Payment</option><option value="screen-transactions">Transactions</option><option value="screen-traffic">Traffic &amp; content</option><option value="screen-research">Research</option><option value="screen-admin-user-u1">Admin — Hamed Biglari</option><option value="screen-admin-user-u2">Admin — <span lang="fa" dir="rtl">مریم سلیمانی</span></option><option value="screen-admin-user-u3">Admin — Reza Kiani</option><option value="screen-admin-user-u4">Admin — Sahar Ahmadi</option><option value="screen-admin-user-u5">Admin — Unknown applicant</option><option value="screen-login">Login</option><option value="screen-signup">Sign up</option><option value="screen-login-code">Login — enter code</option></select>
   </label>
   <label>Language
     <select id="pick-lang"><option value="en">English (LTR)</option><option value="fa">فارسی (RTL)</option></select>
@@ -3429,7 +3456,7 @@ button.card { color: inherit; font: inherit; }
           <a href="#screen-site-sections" data-nav-target="screen-site-sections"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="11" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="3" rx="1"/></svg><span>Website: page sections</span></a>
           <a href="#screen-site-subscribers" data-nav-target="screen-site-subscribers"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/></svg><span>Website: subscribers</span></a>
           <a href="#screen-access" data-nav-target="screen-access"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.3 2.9 8.2 7 9.5 4.1-1.3 7-5.2 7-9.5V6l-7-3Z"/></svg><span>AI access</span></a>
-          <a href="#screen-chat" data-nav-target="screen-chat"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4z"/><path d="M8.5 9h7M8.5 12h4.5" opacity=".6"/></svg><span>Chat &amp; tickets</span></a>
+          <a href="#screen-chat-settings" data-nav-target="screen-chat-settings"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.9-.9L3 21l1.9-5.6A8.4 8.4 0 0 1 4 11.5a8.4 8.4 0 0 1 8.5-8.5A8.4 8.4 0 0 1 21 11.5Z"/></svg><span>Chat settings</span></a><a href="#screen-chat" data-nav-target="screen-chat"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4z"/><path d="M8.5 9h7M8.5 12h4.5" opacity=".6"/></svg><span>Command workspace</span></a>
           <a href="#screen-inbox" data-nav-target="screen-inbox"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8z"/></svg><span>Inbox</span><span class="nav__badge" id="nav-inbox-badge" hidden></span></a>
           <a href="#screen-admin-billing" data-nav-target="screen-admin-billing"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3zM3 11h18M7 15h4"/></svg><span>Wallet &amp; billing</span></a>
           <a href="#screen-statistics" data-nav-target="screen-statistics"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Statistics</span></a>
@@ -4616,6 +4643,53 @@ button.card { color: inherit; font: inherit; }
   </div>
 </section>
 
+<section class="screen" id="screen-chat-settings" aria-labelledby="h-chat-settings">
+  <div class="page-header"><div><h1 id="h-chat-settings">Chat settings</h1>
+    <div class="callout page-intro" role="note"><p>Controls for the knowledge chat on the public website. Choose which knowledge topics it may read, whether it may ask to research online, which AI resource pays for it, and the limits per person. The chat stays off until you enable it here, and every rule on this screen is enforced on the server — not in the browser.</p></div></div></div>
+  <div class="card live-panel">
+    <p class="profile-missing cs-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <div class="cs-body" hidden>
+      <div class="live-toolbar">
+        <button type="button" class="btn" id="cs-refresh">Refresh</button>
+        <button type="button" class="btn btn--primary" id="cs-save">Save settings</button>
+      </div>
+      <p id="cs-state" class="cat-total"></p>
+      <div class="kx-form">
+        <label class="field"><span class="field__label">Chat on the website</span>
+          <select id="cs-enabled"><option value="false">Off</option><option value="true">On</option></select></label>
+        <label class="field"><span class="field__label">Online research</span>
+          <select id="cs-research">
+            <option value="disabled">Never — answer only from stored knowledge</option>
+            <option value="ask_every_time">Ask the person every time</option>
+            <option value="preauthorized">Allowed without asking each time</option>
+          </select></label>
+        <label class="field"><span class="field__label">AI resource that pays for answers</span>
+          <select id="cs-policy"><option value="">None — the chat cannot call a model</option></select></label>
+        <label class="field"><span class="field__label">Answers per person per day</span>
+          <input id="cs-daily" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+        <label class="field"><span class="field__label">Longest answer (output tokens)</span>
+          <input id="cs-out" type="number" min="128" max="32000" step="1" inputmode="numeric" dir="ltr"></label>
+        <label class="field"><span class="field__label">Knowledge per answer (context tokens)</span>
+          <input id="cs-ctx" type="number" min="2000" max="400000" step="1000" inputmode="numeric" dir="ltr"></label>
+        <label class="field"><span class="field__label">Cost ceiling per answer</span>
+          <input id="cs-cost" type="number" min="0" step="0.01" inputmode="decimal" dir="ltr" placeholder="no ceiling"></label>
+        <label class="field"><span class="field__label">Keep conversations for (days)</span>
+          <input id="cs-retention" type="number" min="1" step="1" inputmode="numeric" dir="ltr" placeholder="keep until deleted"></label>
+        <label class="field"><span class="field__label">Show sources under each answer</span>
+          <select id="cs-citations"><option value="true">Yes</option><option value="false">No</option></select></label>
+        <label class="field"><span class="field__label">Collect answer feedback</span>
+          <select id="cs-feedback"><option value="true">Yes</option><option value="false">No</option></select></label>
+      </div>
+      <fieldset class="kx-create">
+        <legend>Knowledge topics the chat may read</legend>
+        <p class="aic-hint">Select none to allow every topic in this workspace. Selecting some makes the list exact: the chat can read nothing else, and a question outside it is answered as a knowledge gap rather than guessed.</p>
+        <div id="cs-topics"></div>
+      </fieldset>
+      <p id="cs-msg" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
 <section class="screen" id="screen-memory" aria-labelledby="h-memory">
   <div class="page-header"><div>
     <h1 id="h-memory">Memory Center</h1>
@@ -4715,7 +4789,7 @@ button.card { color: inherit; font: inherit; }
           <label class="field"><span class="field__label">Name</span><input name="name" required></label>
           <label class="field"><span class="field__label">Official URL</span><input name="official_url" type="url" dir="ltr"></label>
           <label class="field"><span class="field__label">API base URL</span><input name="api_base_url" type="url" dir="ltr"></label>
-          <label class="field"><span class="field__label">Adapter</span><select name="adapter_key"><option value="">None (registry only)</option><option value="anthropic">anthropic</option></select></label>
+          <label class="field"><span class="field__label">Adapter</span><select name="adapter_key"><option value="">None (registry only)</option><option value="anthropic">anthropic</option><option value="openai">openai</option></select></label>
           <button class="btn btn--primary" type="submit">Add provider</button>
         </form>
       </div>
@@ -4734,6 +4808,34 @@ button.card { color: inherit; font: inherit; }
           <label class="field"><span class="field__label">Account</span><select name="account_id" id="aic-account-select"></select></label>
           <label class="field"><span class="field__label">Secret (never shown again)</span><input name="secret" type="password" autocomplete="off" dir="ltr"></label>
           <button class="btn btn--primary" type="submit">Save credential</button>
+        </form>
+      </div>
+      <div class="card"><h2 class="card__title">Models and their limits</h2>
+        <p class="aic-note">Limits are what the provider documents for your account. Providers change them, so enter them here rather than trusting a built-in table. Empty means "Unknown" and blocks nothing. A job item larger than a known input limit, or a job reserving more output than a known output limit, fails with CONTEXT_OVERFLOW or OUTPUT_EXCEEDS_MODEL_LIMIT before any call: it is never truncated. Without a max input, the room is the context window minus the output reserve. Requests and tokens per minute are recorded, not yet enforced.</p>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table"><caption class="visually-hidden">Registered models and their limits</caption><thead><tr><th scope="col">Model</th><th scope="col">Provider</th><th scope="col">Context window</th><th scope="col">Max input</th><th scope="col">Max output</th><th scope="col">RPM / TPM</th><th scope="col">Source</th><th scope="col">Actions</th></tr></thead><tbody id="aic-models"></tbody></table></div>
+        <form class="aic-form" id="aic-add-model" novalidate>
+          <h3>Register a model</h3>
+          <label class="field"><span class="field__label">Provider</span><select name="provider_id" id="aic-model-provider"></select></label>
+          <label class="field"><span class="field__label">Model name (as the provider spells it)</span><input name="name" required maxlength="160" dir="ltr"></label>
+          <label class="field"><span class="field__label">Context window (tokens)</span><input name="context_window" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Max input tokens</span><input name="max_input_tokens" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Max output tokens</span><input name="max_output_tokens" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Requests per minute</span><input name="rpm_limit" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Tokens per minute</span><input name="tpm_limit" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Where the figures come from</span><select name="capability_source"><option value="">Unknown</option><option value="official_docs">Provider documentation</option><option value="provider_api">Provider API</option><option value="operator">Entered by an operator</option><option value="conservative_estimate">Conservative estimate</option></select></label>
+          <button class="btn btn--primary" type="submit">Register model</button>
+        </form>
+        <form class="aic-form" id="aic-edit-model" novalidate hidden>
+          <h3 id="aic-edit-model-title">Edit limits</h3>
+          <input type="hidden" name="model_id">
+          <label class="field"><span class="field__label">Context window (tokens)</span><input name="context_window" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Max input tokens</span><input name="max_input_tokens" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Max output tokens</span><input name="max_output_tokens" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Requests per minute</span><input name="rpm_limit" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Tokens per minute</span><input name="tpm_limit" type="number" min="1" step="1" inputmode="numeric" dir="ltr"></label>
+          <label class="field"><span class="field__label">Where the figures come from</span><select name="capability_source"><option value="">Unknown</option><option value="official_docs">Provider documentation</option><option value="provider_api">Provider API</option><option value="operator">Entered by an operator</option><option value="conservative_estimate">Conservative estimate</option></select></label>
+          <button class="btn btn--primary" type="submit">Save limits</button>
+          <button class="btn btn--quiet" type="button" id="aic-edit-model-cancel">Cancel</button>
         </form>
       </div>
     </div>
@@ -4769,6 +4871,15 @@ button.card { color: inherit; font: inherit; }
           <button class="btn btn--primary" type="submit">Open job</button>
         </form>
         <div id="aic-job"></div>
+      </div>
+      <div class="card"><h2 class="card__title">Knowledge transfer packages</h2>
+        <p class="aic-note">What workers handed back as structured findings, and what the validator and reconciler did with each claim. Nothing a worker returns becomes approved knowledge: accepted claims and evidence are drafts for review. A quote that cannot be found in the stored source text is rejected as a citation mismatch. Rejected items stay listed here with their reason.</p>
+        <form class="aic-form aic-form--inline" id="aic-ktp-filter" novalidate>
+          <label class="field"><span class="field__label">Status</span><select id="aic-ktp-status"><option value="">All</option><option value="reconciled">Reconciled</option><option value="partially_reconciled">Partly reconciled</option><option value="nothing_accepted">Nothing accepted</option><option value="invalid">Invalid</option></select></label>
+        </form>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table"><caption class="visually-hidden">Knowledge transfer packages</caption><thead><tr><th scope="col">Received</th><th scope="col">From</th><th scope="col">Status</th><th scope="col">Claims accepted</th><th scope="col">Outcomes</th><th scope="col">Actions</th></tr></thead><tbody id="aic-ktp"></tbody></table></div>
+        <p class="aic-pager"><button type="button" class="btn btn--quiet" id="aic-ktp-prev">Previous</button> <span id="aic-ktp-info"></span> <button type="button" class="btn btn--quiet" id="aic-ktp-next">Next</button></p>
+        <div id="aic-ktp-detail" class="aic-explain" aria-live="polite"></div>
       </div>
       <div class="card"><h2 class="card__title">Semantic memory backend</h2><p id="aic-walrus">—</p></div>
     </div>
@@ -5999,15 +6110,90 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 </section>
 
 <section class="screen" id="screen-chat" aria-labelledby="h-chat">
-  <h1 id="h-chat">Chat</h1>
-  <p style="color:var(--text-muted);max-width:60ch;margin-top:0">Ask a question about this tenant's knowledge, sources, or visibility — answered from the same evidence the rest of the dashboard shows, never from a separate model with its own opinion.</p>
-  <section class="card" style="display:flex;flex-direction:column;gap:var(--space-3);min-height:320px">
-    <div style="flex:1;color:var(--text-subtle);display:flex;align-items:center;justify-content:center">No messages yet.</div>
-    <div class="btn-group">
-      <input type="text" placeholder="Ask about Toranjebin, a source, or a claim…" style="flex:1;min-width:200px" aria-label="Message">
-      <button type="button" class="btn btn--primary">Send</button>
+  <div class="page-header"><div>
+    <h1 id="h-chat">Command workspace</h1>
+    <div class="callout page-intro" role="note"><p>Type a research or knowledge command. It is saved to Cloud Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back.</p></div>
+  </div></div>
+  <div class="card live-panel">
+    <p class="profile-missing kx-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <div class="kx-body ws-grid" hidden>
+      <aside class="ws-side" aria-label="Your commands">
+        <div class="btn-group">
+          <button type="button" class="btn btn--primary" id="ws-new">New command</button>
+        </div>
+        <label class="field"><span class="field__label">Show</span><select id="ws-filter">
+          <option value="">Active</option><option value="draft">Drafts</option><option value="running">Running</option>
+          <option value="blocked">Waiting to continue</option><option value="completed">Completed</option>
+          <option value="completed_with_gaps">Completed with gaps</option><option value="failed">Failed</option>
+          <option value="archived">Archived</option></select></label>
+        <label class="field"><span class="field__label">Search your commands</span><input type="search" id="ws-search" autocomplete="off"></label>
+        <ul class="ws-items" id="ws-items" aria-live="polite"></ul>
+      </aside>
+      <div class="ws-main">
+        <div class="kx-banner ws-resume" data-s="stale" id="ws-resume" hidden>
+          <p id="ws-resume-text"></p>
+          <div class="btn-group">
+            <button type="button" class="btn btn--primary" id="ws-resume-continue">Continue</button>
+            <button type="button" class="btn" id="ws-resume-view">View result</button>
+            <button type="button" class="btn" id="ws-resume-restart">Restart as a new version</button>
+          </div>
+        </div>
+        <p class="aic-empty" id="ws-empty">Choose a command on the left, or start a new one.</p>
+        <div id="ws-editor" hidden>
+          <div class="ws-head"><h2 id="ws-title">Command</h2><span class="chip" id="ws-state"></span><span class="aic-hint" id="ws-ver"></span></div>
+          <label class="field"><span class="field__label">Command</span>
+            <textarea id="ws-text" rows="6" spellcheck="true" placeholder="For example: Analyze all human studies on Toranjebin safety."></textarea></label>
+          <p class="aic-hint" id="ws-save" role="status" aria-live="polite"></p>
+          <details class="kx-create" id="ws-scope-box">
+            <summary>Scope, model and budget</summary>
+            <div class="kx-form">
+              <label class="field"><span class="field__label">What it should do</span><select id="ws-intent">
+                <option value="">Work it out from the text</option>
+                <option value="evidence_research">Research the evidence (uses a model)</option>
+                <option value="synthesis">Write a synthesis (uses a model)</option>
+                <option value="matrix_cell_research">Research one matrix section (uses a model)</option>
+                <option value="contradictions">Find contradictions</option>
+                <option value="find_evidence_for_claim">Evidence for one claim</option>
+                <option value="claims_from_page">Claims from a document page</option>
+                <option value="unsupported_statements">Unsupported statements</option>
+                <option value="section_applicability">Does a section apply across the category</option>
+                <option value="coverage_audit">Coverage audit</option>
+                <option value="reprocess_document">Reprocess a document</option>
+                <option value="continue_previous">Continue my previous task</option></select></label>
+              <label class="field"><span class="field__label">Topic</span><select id="ws-topic"></select></label>
+              <label class="field"><span class="field__label">Category</span><select id="ws-category"></select></label>
+              <label class="field"><span class="field__label">Section key</span><input id="ws-section" autocomplete="off" placeholder="e.g. safety"></label>
+              <label class="field"><span class="field__label">Document id</span><input id="ws-document" autocomplete="off"></label>
+              <label class="field"><span class="field__label">Page</span><input id="ws-page" type="number" min="1" inputmode="numeric"></label>
+              <label class="field"><span class="field__label">Claim id</span><input id="ws-claim" autocomplete="off"></label>
+              <label class="field"><span class="field__label">Routing policy</span><select id="ws-policy"></select></label>
+              <label class="field"><span class="field__label">Context per call (tokens)</span><input id="ws-ctx" type="number" min="1000" step="1000" value="24000"></label>
+              <label class="field"><span class="field__label">Output per call (tokens)</span><input id="ws-out" type="number" min="100" step="100" value="2000"></label>
+              <label class="field"><span class="field__label">Most model calls</span><input id="ws-calls" type="number" min="1" placeholder="no limit"></label>
+              <label class="field"><span class="field__label">Most it may cost</span><input id="ws-cost" type="number" min="0" step="0.01" placeholder="no limit"></label>
+              <label class="field kx-wide ws-check"><input type="checkbox" id="ws-partial"> <span>If the budget is too small, process the most important parts and leave the rest visibly pending</span></label>
+            </div>
+          </details>
+          <div class="btn-group ws-actions">
+            <button type="button" class="btn" id="ws-plan">Check the plan</button>
+            <button type="button" class="btn btn--primary" id="ws-run">Run</button>
+            <button type="button" class="btn" id="ws-resume-btn">Continue</button>
+            <button type="button" class="btn" id="ws-regen">Run again as a new version</button>
+            <button type="button" class="btn" id="ws-cancel">Cancel</button>
+            <button type="button" class="btn" id="ws-archive">Archive</button>
+            <button type="button" class="btn btn--danger-ghost" id="ws-delete">Delete permanently</button>
+          </div>
+          <p class="aic-hint">Keyboard: Ctrl+Enter checks the plan, then runs it. Ctrl+S saves now.</p>
+          <div id="ws-plan-out"></div>
+          <h3>Result</h3>
+          <div id="ws-result"><p class="aic-empty">Nothing has run yet.</p></div>
+          <h3>Versions</h3>
+          <div id="ws-versions"></div>
+          <p id="ws-msg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
     </div>
-  </section>
+  </div>
 </section>
 
 <section class="screen" id="screen-settings" aria-labelledby="h-settings">
@@ -9404,8 +9590,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var HEALTH = { healthy: 'badge--success', degraded: 'badge--warning', rate_limited: 'badge--warning', quota_exhausted: 'badge--danger', auth_failed: 'badge--danger', unavailable: 'badge--danger', timeout: 'badge--warning' };
   var providers = [];
   function loadResources() {
-    return Promise.all([api('/ai-center/providers?limit=100'), api('/ai-center/accounts?limit=100')]).then(function (r) {
-      providers = r[0].items || r[0]; var accounts = r[1].items || r[1];
+    return Promise.all([api('/ai-center/providers?limit=100'), api('/ai-center/accounts?limit=100'), api('/ai-center/models?limit=100')]).then(function (r) {
+      providers = r[0].items || r[0]; var accounts = r[1].items || r[1]; renderModels(r[2].items || r[2]);
       var tb = $('aic-providers'); tb.textContent = '';
       if (!providers.length) row(tb, ['No providers registered yet.', '', '', '']);
       providers.forEach(function (p) { row(tb, [p.name, p.adapter_key ? p.adapter_key + (p.adapter_implemented ? '' : ' (no adapter)') : 'None', badge(p.verification_status), fmt(p.credential_method)]); });
@@ -9575,9 +9761,55 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       $('aic-disc-prev').disabled = discOffset === 0; $('aic-disc-next').disabled = end >= total;
     });
   }
+  /* Knowledge transfer packages (ADR-134): server-side paging; verdicts rendered as text only. */
+  var ktpOffset = 0;
+  var KTP_BADGE = { reconciled: 'badge--success', partially_reconciled: 'badge--warning', nothing_accepted: 'badge--warning', invalid: 'badge--danger' };
+  function ktpCounts(x) {
+    var v = (x.validation && x.validation.claims) || [], o = (x.reconciliation && x.reconciliation.claims) || [], n = {};
+    o.forEach(function (c) { n[c.outcome] = (n[c.outcome] || 0) + 1; });
+    return { accepted: v.filter(function (c) { return c.accepted; }).length + ' of ' + v.length,
+      outcomes: Object.keys(n).map(function (k) { return k.replace(/_/g, ' ') + ': ' + n[k]; }).join(', ') || '—' };
+  }
+  function showKtp(id) {
+    var box = $('aic-ktp-detail'); box.textContent = 'Loading…';
+    api('/knowledge-transfer/packages/' + id).then(function (x) {
+      box.textContent = ''; box.appendChild(el('h3', null, 'Package ' + x.id));
+      if (x.invalid_reason) box.appendChild(el('p', null, 'Not used: ' + x.invalid_reason));
+      var out = {}; ((x.reconciliation && x.reconciliation.claims) || []).forEach(function (c) { out[c.local_id] = c; });
+      var ol = el('ol');
+      ((x.validation && x.validation.claims) || []).forEach(function (c) {
+        var r = out[c.local_id], li = el('li', null, c.local_id + ': ' + (c.accepted ? 'accepted — ' + (r ? r.outcome.replace(/_/g, ' ') + ', ' + r.evidence_created + ' new evidence, ' + r.links_created + ' new links' : '') : 'rejected — ' + c.reason));
+        (c.rejected_evidence || []).forEach(function (e) { li.appendChild(el('div', 'aic-hint', 'evidence ' + e.index + ' rejected: ' + e.code)); });
+        ol.appendChild(li);
+      });
+      if (ol.children.length) box.appendChild(ol); else if (!x.invalid_reason) box.appendChild(el('p', null, 'The package carried no claims.'));
+      var rc = x.reconciliation || {};
+      [['Open questions', rc.open_questions], ['Gaps', rc.gaps], ['Unknown entities (candidates)', rc.entity_candidates], ['Conflicts recorded', rc.conflicts_recorded]].forEach(function (pair) {
+        if (pair[1] && pair[1].length) box.appendChild(el('p', null, pair[0] + ': ' + pair[1].join('; ')));
+      });
+    }).catch(function (e) { box.textContent = 'Could not load the package: ' + e.message; });
+  }
+  function loadKtp() {
+    var st = $('aic-ktp-status').value;
+    return api('/knowledge-transfer/packages?limit=25&offset=' + ktpOffset + (st ? '&status=' + encodeURIComponent(st) : '')).then(function (d) {
+      var tb = $('aic-ktp'); tb.textContent = ''; var items = d.items || [];
+      if (!items.length) row(tb, [st ? 'No package with this status.' : 'No packages yet. They arrive from AI jobs run with the ktp_v1 output contract.', '', '', '', '', '']);
+      items.forEach(function (x) {
+        var c = ktpCounts(x), b = el('button', 'btn btn--quiet', 'Verdicts'); b.type = 'button'; b.onclick = function () { showKtp(x.id); };
+        row(tb, [new Date(x.created_at).toLocaleString(), x.job_key ? x.job_key + (x.item_key ? ' / ' + x.item_key : '') : x.submitted_by,
+          badge(x.status.replace(/_/g, ' '), KTP_BADGE[x.status]), c.accepted, c.outcomes, b]);
+      });
+      var total = d.total || 0, end = Math.min(ktpOffset + items.length, total);
+      $('aic-ktp-info').textContent = total ? (ktpOffset + 1) + '–' + end + ' of ' + total : '';
+      $('aic-ktp-prev').disabled = ktpOffset === 0; $('aic-ktp-next').disabled = end >= total;
+    });
+  }
+  $('aic-ktp-status').addEventListener('change', function () { ktpOffset = 0; loadKtp().catch(function (e) { status(e.message); }); });
+  $('aic-ktp-prev').addEventListener('click', function () { ktpOffset = Math.max(0, ktpOffset - 25); loadKtp().catch(function (e) { status(e.message); }); });
+  $('aic-ktp-next').addEventListener('click', function () { ktpOffset += 25; loadKtp().catch(function (e) { status(e.message); }); });
   function loadAll() {
     status('Loading…');
-    Promise.all([loadResources(), loadRouting(), loadDiscovery(),
+    Promise.all([loadResources(), loadRouting(), loadDiscovery(), loadKtp(),
       api('/ai-center/memory/semantic-backend').then(function (w) { $('aic-walrus').textContent = 'Walrus: ' + w.status + ' — ' + w.detail; })])
       .then(function () { status(''); }).catch(function (e) { status('Could not load: ' + e.message); });
   }
@@ -9592,6 +9824,43 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   document.querySelectorAll('[data-aic-tab]').forEach(function (t) { t.addEventListener('click', function () {
     document.querySelectorAll('[data-aic-tab]').forEach(function (x) { x.setAttribute('aria-selected', String(x === t)); });
     document.querySelectorAll('[data-aic-pane]').forEach(function (p) { p.hidden = p.getAttribute('data-aic-pane') !== t.getAttribute('data-aic-tab'); }); }); });
+  /* Models and limits (ADR-136). Empty field = unknown = null; nothing is assumed. */
+  var LIMIT_FIELDS = ['context_window', 'max_input_tokens', 'max_output_tokens', 'rpm_limit', 'tpm_limit'];
+  var SOURCE_LABEL = { official_docs: 'Provider documentation', provider_api: 'Provider API', operator: 'Operator', conservative_estimate: 'Conservative estimate' };
+  function limitBody(form) {
+    var f = new FormData(form), body = {}, bad = null;
+    LIMIT_FIELDS.forEach(function (k) { var v = String(f.get(k) || '').trim(); if (!v) { body[k] = null; return; }
+      var n = Number(v); if (!Number.isInteger(n) || n < 1) bad = k.replace(/_/g, ' '); body[k] = n; });
+    body.capability_source = String(f.get('capability_source') || '') || null;
+    return bad ? { error: 'Limits must be whole numbers of at least 1 (' + bad + ').' } : { body: body };
+  }
+  function renderModels(models) {
+    var name = {}; providers.forEach(function (p) { name[p.id] = p.name; });
+    var mp = $('aic-model-provider'); mp.textContent = ''; providers.forEach(function (p) { var o = el('option', null, p.name); o.value = p.id; mp.appendChild(o); });
+    var tb = $('aic-models'); tb.textContent = '';
+    if (!models.length) { row(tb, ['No models registered yet. Routing still works; limits are then unknown.', '', '', '', '', '', '', '']); return; }
+    models.forEach(function (m) {
+      var edit = el('button', 'btn btn--quiet', 'Edit limits'); edit.type = 'button';
+      edit.onclick = function () { var f = $('aic-edit-model'); f.hidden = false; f.elements.model_id.value = m.id;
+        $('aic-edit-model-title').textContent = 'Edit limits — ' + m.name;
+        LIMIT_FIELDS.forEach(function (k) { f.elements[k].value = m[k] == null ? '' : String(m[k]); });
+        f.elements.capability_source.value = m.capability_source || ''; f.elements.context_window.focus(); };
+      row(tb, [m.name, name[m.provider_id] || '—', fmt(m.context_window), fmt(m.max_input_tokens), fmt(m.max_output_tokens),
+        fmt(m.rpm_limit) + ' / ' + fmt(m.tpm_limit), m.capability_source ? SOURCE_LABEL[m.capability_source] || m.capability_source : 'Unknown', edit]);
+    });
+  }
+  $('aic-add-model').addEventListener('submit', function (e) { e.preventDefault(); var f = new FormData(e.target);
+    var pid = f.get('provider_id'), nm = String(f.get('name') || '').trim();
+    if (!pid) { status('Add a provider first.'); return; } if (!nm) { status('The model name is required.'); return; }
+    var lb = limitBody(e.target); if (lb.error) { status(lb.error); return; }
+    var body = { provider_id: pid, name: nm }; Object.keys(lb.body).forEach(function (k) { if (lb.body[k] !== null) body[k] = lb.body[k]; });
+    status('Registering ' + nm + '…');
+    api('/ai-center/models', { method: 'POST', json: body }).then(function () { e.target.reset(); status('Model registered.'); loadResources(); }).catch(function (x) { status(x.message); }); });
+  $('aic-edit-model').addEventListener('submit', function (e) { e.preventDefault(); var id = e.target.elements.model_id.value;
+    var lb = limitBody(e.target); if (lb.error) { status(lb.error); return; }
+    status('Saving limits…');
+    api('/ai-center/models/' + id, { method: 'PATCH', json: lb.body }).then(function () { e.target.hidden = true; status('Limits saved.'); loadResources(); }).catch(function (x) { status(x.message); }); });
+  $('aic-edit-model-cancel').addEventListener('click', function () { $('aic-edit-model').hidden = true; });
   function formJson(f) { var o = {}; new FormData(f).forEach(function (v, k) { if (String(v).trim()) o[k] = String(v).trim(); }); return o; }
   $('aic-add-provider').addEventListener('submit', function (e) { e.preventDefault(); var d = formJson(e.target); if (!d.name) { status('Provider name is required.'); return; }
     api('/ai-center/providers', { method: 'POST', json: d }).then(function () { e.target.reset(); status('Provider added.'); loadResources(); }).catch(function (x) { status(x.message); }); });
@@ -10037,7 +10306,6 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-product-garlic-oil-30ml': 'A design sample of one product. Real products and offers: Products screen (live).',
     'screen-states': 'A reference of empty, loading, error and dialog states — not data.',
     'screen-inbox': 'No backend: support messaging is not an established requirement (FINAL_EXISTING_OWNER_AUDIT).',
-    'screen-chat': 'No backend: chat is not an established requirement.',
     'screen-transactions': 'Sample transactions. Real ledger entries: Payment screen (live wallet).'
   };
   ['u1', 'u2', 'u3', 'u4', 'u5'].forEach(function (u) { FIXTURE['screen-admin-user-' + u] = 'A design sample of one user. Real users of this organization: Users screen (live).'; });
@@ -11118,6 +11386,364 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     document.querySelectorAll('.ws-note').forEach(function (n) { n.hidden = true; });
     document.querySelectorAll('.ws-body').forEach(function (n) { n.hidden = false; });
     loadPosts(); loadSections(); loadSubs();
+  });
+})();
+</script>
+<script>
+/* Command workspace (prompt v4.0 §46–§54, ADR-125). Live from Cloud Core only.
+   The server is the authority for every draft and every run. localStorage holds only a copy of the text
+   typed since the last confirmed save, so a lost connection cannot lose a sentence; it is never read as
+   the record of what was asked or what ran. */
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function live() { return window.AIOL_LIVE_STATE && window.AIOL_LIVE_STATE(); }
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x !== undefined && x !== null) e.textContent = x; return e; }
+  function api(path, method, body) { var L = live(); var h = { Authorization: 'Bearer ' + L.token }; if (body) h['Content-Type'] = 'application/json';
+    return fetch(L.base + '/api/v1' + path, { method: method || 'GET', headers: h, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { if (r.status === 204) return {}; return r.json().catch(function () { return {}; }).then(function (b) {
+        if (!r.ok) { var d = (b.error && b.error.message) || b.detail || ('HTTP ' + r.status);
+          var e = new Error(typeof d === 'string' ? d : (d.message || JSON.stringify(d))); e.status = r.status; e.body = b; throw e; } return b; }); }); }
+  function say(msg) { $('ws-msg').textContent = msg || ''; }
+  function store(key, val) { try { if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, val); } catch (e) { /* storage may be blocked; the server copy is what counts */ } }
+  function recall(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var STATE_WORD = { draft: 'Draft', queued: 'Queued', running: 'Running', completed: 'Completed',
+    completed_with_gaps: 'Completed with gaps', blocked: 'Waiting to continue', failed: 'Failed', cancelled: 'Cancelled' };
+  var current = null, revision = null, saveTimer = null, pollTimer = null, dirty = false;
+
+  /* ---------------------------------------------------------------- list */
+  function loadList() {
+    var f = $('ws-filter').value, q = $('ws-search').value.trim();
+    var path = '/workspace/commands?limit=50' + (f === 'archived' ? '&archived=true' : (f ? '&state=' + f : '')) + (q ? '&q=' + encodeURIComponent(q) : '');
+    return api(path).then(function (r) { var ul = $('ws-items'); ul.textContent = '';
+      if (!r.items.length) { ul.appendChild(el('li', 'aic-empty', 'No commands here yet.')); return; }
+      r.items.forEach(function (c) { var li = el('li'); var b = el('button', 'ws-item');
+        b.type = 'button'; b.setAttribute('aria-current', current && current.id === c.id ? 'true' : 'false');
+        b.appendChild(el('span', 'ws-item-title', c.title || (c.current && c.current.text.slice(0, 60)) || 'Untitled'));
+        var meta = el('span', 'ws-item-meta', STATE_WORD[c.state] + ' · v' + c.current_version);
+        b.appendChild(meta); b.addEventListener('click', function () { open(c.id); }); li.appendChild(b); ul.appendChild(li); }); })
+      .catch(function (e) { say(e.message); });
+  }
+
+  function loadResumable() {
+    return api('/workspace/commands/resumable').then(function (rows) { var box = $('ws-resume');
+      var first = rows.filter(function (r) { return r.offer.indexOf('continue') >= 0; })[0];
+      if (!first) { box.hidden = true; return; }
+      box.hidden = false; box.dataset.id = first.id;
+      $('ws-resume-text').textContent = 'Continue your previous task? “' + (first.title || 'Untitled') + '” is '
+        + (STATE_WORD[first.state] || first.state).toLowerCase() + (first.error ? ' — ' + first.error : '') + '.'; })
+      .catch(function () {});
+  }
+
+  /* ---------------------------------------------------------------- one command */
+  function fillScope(v) { var s = v.scope || {}, b = v.budget || {}, m = v.model_config || {};
+    $('ws-intent').value = (v.intent && v.intent !== 'unknown') ? v.intent : '';
+    $('ws-topic').value = s.knowledge_object_id || (current && current.knowledge_object_id) || '';
+    $('ws-category').value = s.category_id || (current && current.category_id) || '';
+    $('ws-section').value = s.section_key || ''; $('ws-document').value = s.document_id || '';
+    $('ws-page').value = s.page || ''; $('ws-claim').value = s.claim_id || '';
+    $('ws-policy').value = m.policy_id || ''; $('ws-ctx').value = b.context_tokens || 24000; $('ws-out').value = b.max_output_tokens || 2000;
+    $('ws-calls').value = b.max_calls || ''; $('ws-cost').value = (b.max_cost === 0 || b.max_cost) ? b.max_cost : ''; $('ws-partial').checked = !!b.allow_partial; }
+
+  function readScope() { var s = {}; function put(k, v) { if (v !== '' && v !== null && v !== undefined) s[k] = v; }
+    put('knowledge_object_id', $('ws-topic').value); put('category_id', $('ws-category').value); put('section_key', $('ws-section').value.trim());
+    put('document_id', $('ws-document').value.trim()); put('page', $('ws-page').value ? parseInt($('ws-page').value, 10) : '');
+    put('claim_id', $('ws-claim').value.trim()); return s; }
+  function readBudget() { var b = { context_tokens: parseInt($('ws-ctx').value, 10) || 24000, max_output_tokens: parseInt($('ws-out').value, 10) || 2000,
+    allow_partial: $('ws-partial').checked };
+    if ($('ws-calls').value) b.max_calls = parseInt($('ws-calls').value, 10);
+    if ($('ws-cost').value !== '') b.max_cost = parseFloat($('ws-cost').value); return b; }
+
+  function render(c) { current = c; var v = c.current; revision = v.draft_revision;
+    $('ws-empty').hidden = true; $('ws-editor').hidden = false;
+    $('ws-title').textContent = c.title || 'Untitled command';
+    var st = $('ws-state'); st.textContent = STATE_WORD[c.state] || c.state; st.setAttribute('data-s', c.state);
+    $('ws-ver').textContent = 'Version ' + v.version + (v.frozen ? ' · has run, read-only — editing starts version ' + (v.version + 1) : '');
+    var local = recall('aiol-ws-' + c.id);
+    if (document.activeElement !== $('ws-text')) $('ws-text').value = v.text;
+    if (local && local !== v.text && !v.frozen) {
+      $('ws-save').textContent = 'This browser has unsaved text from an earlier visit. ';
+      var use = el('button', 'btn', 'Use it'); use.type = 'button';
+      use.addEventListener('click', function () { $('ws-text').value = local; dirty = true; saveNow(); });
+      $('ws-save').appendChild(use);
+    } else { $('ws-save').textContent = 'Saved to Cloud Core · revision ' + v.draft_revision + '.'; }
+    fillScope(v);
+    var running = c.state === 'queued' || c.state === 'running';
+    $('ws-run').disabled = v.frozen || running; $('ws-cancel').disabled = !running;
+    $('ws-resume-btn').disabled = !c.resumable; $('ws-regen').disabled = !c.last_executed_version || running;
+    $('ws-archive').textContent = c.archived ? 'Restore from archive' : 'Archive';
+    renderPlan(v.plan); renderResult(c);
+    clearTimeout(pollTimer); if (running) pollTimer = setTimeout(function () { open(c.id, true); }, 3000);
+  }
+
+  function open(id, quiet) {
+    return api('/workspace/commands/' + id).then(function (c) { render(c); if (!quiet) { loadVersions(); loadList(); } })
+      .catch(function (e) { say(e.message); });
+  }
+
+  /* ---------------------------------------------------------------- autosave (§48) */
+  function scheduleSave() { dirty = true; store('aiol-ws-' + current.id, $('ws-text').value);
+    $('ws-save').textContent = 'Saving…'; clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 800); }
+  function saveNow(force) { if (!current) return Promise.resolve();
+    clearTimeout(saveTimer);
+    var body = { text: $('ws-text').value, base_revision: force ? null : revision, scope: readScope(), budget: readBudget(),
+      model_config: $('ws-policy').value ? { policy_id: $('ws-policy').value } : {} };
+    if ($('ws-intent').value) body.intent = $('ws-intent').value;
+    return api('/workspace/commands/' + current.id + '/draft', 'PUT', body).then(function (r) {
+      dirty = false; store('aiol-ws-' + current.id, null); revision = r.version.draft_revision;
+      var newVersion = r.version.version !== current.current.version;
+      current.current = r.version;
+      $('ws-save').textContent = 'Saved to Cloud Core · version ' + r.version.version + ', revision ' + r.version.draft_revision + '.';
+      if (newVersion) open(current.id); else renderPlan(null); })
+      .catch(function (e) {
+        if (e.status === 409 && e.body && (e.body.detail || {}).server_text !== undefined) {
+          var d = e.body.detail; $('ws-save').textContent = 'This draft was changed in another tab or device. ';
+          var keepTheirs = el('button', 'btn', 'Use the saved version'); keepTheirs.type = 'button';
+          keepTheirs.addEventListener('click', function () { $('ws-text').value = d.server_text; revision = d.server_revision; store('aiol-ws-' + current.id, null); $('ws-save').textContent = 'Loaded the saved version.'; });
+          var keepMine = el('button', 'btn', 'Keep mine'); keepMine.type = 'button';
+          keepMine.addEventListener('click', function () { revision = d.server_revision; saveNow(); });
+          $('ws-save').appendChild(keepTheirs); $('ws-save').appendChild(document.createTextNode(' ')); $('ws-save').appendChild(keepMine);
+        } else { $('ws-save').textContent = 'Not saved yet (' + e.message + '). Your text is kept in this browser until it is.'; } });
+  }
+
+  /* ---------------------------------------------------------------- plan, run, results */
+  function renderPlan(p) { var box = $('ws-plan-out'); box.textContent = ''; if (!p) return;
+    var b = el('div', 'kx-banner'); b.setAttribute('data-s', p.missing_scope && p.missing_scope.length ? 'stale' : 'current');
+    b.appendChild(el('p', null, 'It will: ' + (p.description || p.intent) + (p.intent !== p.proposed_intent ? ' (you chose this; the text suggested “' + p.proposed_intent + '”)' : '')));
+    if (p.missing_scope && p.missing_scope.length) b.appendChild(el('p', null, 'Before it can run, set: ' + p.missing_scope.join(', ').replace(/_/g, ' ') + '.'));
+    var scope = Object.keys(p.scope || {}).filter(function (k) { return k !== 'terms'; }).map(function (k) { return k.replace(/_/g, ' ') + ' = ' + p.scope[k]; });
+    if (scope.length) b.appendChild(el('p', 'aic-hint', 'Acts on: ' + scope.join(' · ')));
+    var sp = p.synthesis_plan;
+    if (sp) { b.appendChild(el('p', null, sp.units + ' knowledge unit(s) in scope, in ' + sp.packs + ' context pack(s), ' + sp.calls + ' model call(s)'
+        + (sp.estimated_cost === null || sp.estimated_cost === undefined ? ', cost unknown (no price configured for the model)' : ', estimated cost ' + sp.estimated_cost) + '.'));
+      if (sp.blocked_by && sp.blocked_by.length) b.appendChild(el('p', null, 'Blocked by budget: ' + sp.notes.join('; ') + '. Nothing will be cut to fit: raise the budget, narrow the scope, or allow a partial run.'));
+      if (sp.scope_applied && sp.scope_applied.claims_excluded_by_filters) { var x = sp.scope_applied.claims_excluded_by_filters;
+        b.appendChild(el('p', 'aic-hint', 'Filters left out ' + (x.by_terms || 0) + ' claim(s) by wording and ' + (x.by_directness || 0) + ' by directness.')); } }
+    box.appendChild(b);
+  }
+
+  function dl(obj) { var d = el('dl', 'ws-dl'); Object.keys(obj).forEach(function (k) { var v = obj[k];
+      if (v === undefined || typeof v === 'object' && v !== null) return;
+      d.appendChild(el('dt', null, k.replace(/_/g, ' '))); d.appendChild(el('dd', null, v === null ? 'unknown' : String(v))); }); return d; }
+
+  function renderResult(c) { var box = $('ws-result'); box.textContent = '';
+    var v = c.current.frozen ? c.current : null;
+    var ver = c.last_executed_version;
+    if (!v && ver) { api('/workspace/commands/' + c.id + '/versions/' + ver).then(function (x) { showVersion(box, x); }).catch(function () {}); return; }
+    if (!v) { box.appendChild(el('p', 'aic-empty', 'Nothing has run yet.')); return; }
+    showVersion(box, v);
+  }
+
+  function showVersion(box, v) { box.textContent = '';
+    box.appendChild(el('p', 'aic-hint', 'Version ' + v.version + ' · ' + (STATE_WORD[v.execution_state] || v.execution_state)
+      + (v.executed_at ? ' · started ' + new Date(v.executed_at).toLocaleString() : '') + (v.finished_at ? ' · finished ' + new Date(v.finished_at).toLocaleString() : '')));
+    if (v.error) { var er = el('div', 'kx-banner'); er.setAttribute('data-s', 'stale'); er.textContent = v.error; box.appendChild(er); }
+    if (v.cost) box.appendChild(el('p', 'aic-hint', 'Cost: ' + v.cost.estimated + ' estimated' + (v.cost.executions_with_unknown_cost ? '; ' + v.cost.executions_with_unknown_cost + ' call(s) with an unknown price (not counted as zero)' : '') + '.'));
+    var r = v.result; if (!r) return;
+    if (r.coverage) { var cov = r.coverage, d = el('div', 'kx-dims');
+      [['Represented', cov.represented], ['Merged as duplicates', cov.merged], ['Contested, both sides kept', cov.contradictory],
+       ['Unresolved', cov.unresolved], ['Pending (not processed)', cov.pending], ['Lost', cov.omitted]].forEach(function (p) {
+        var x = el('div', 'kx-dim'); x.appendChild(el('h4', null, p[0])); x.appendChild(el('span', 'kx-big', String(p[1] || 0))); d.appendChild(x); });
+      box.appendChild(d);
+      box.appendChild(el('p', 'aic-hint', cov.input + ' unit(s) went in. Information-loss rate: '
+        + (cov.information_loss_rate === null ? 'not measured' : (Math.round(cov.information_loss_rate * 1000) / 10) + ' %')
+        + '. Lost means neither cited nor accounted for — a merged duplicate is not a loss.'));
+      (r.audit && r.audit.findings || []).forEach(function (f) { box.appendChild(el('p', 'aic-hint', 'Audit: ' + f)); });
+      if (r.result_text) { var doc = el('div', 'kx-doc'); r.result_text.split('---LEDGER---')[0].split(/\n\s*\n/).forEach(function (p) { if (p.trim()) doc.appendChild(el('p', null, p.trim())); });
+        box.appendChild(doc); }
+      if (r.status === 'completed' || r.status === 'completed_with_gaps') { var pub = el('button', 'btn', r.publication_id ? 'Published — open Publications' : 'Turn into a cited publication');
+        pub.type = 'button'; pub.disabled = !!r.publication_id;
+        pub.addEventListener('click', function () { api('/synthesis/runs/' + r.id + '/publish', 'POST').then(function (x) {
+          say('Publication created; ' + x.resolved.references + ' reference(s) numbered from the units’ own sources' + (x.sentences_without_units ? ', ' + x.sentences_without_units + ' sentence(s) with no source are marked, not numbered' : '') + '.'); open(current.id); }).catch(function (e) { say(e.message); }); });
+        box.appendChild(pub); }
+      return; }
+    if (r.claims) { var ul = el('ul'); r.claims.forEach(function (c) { ul.appendChild(el('li', null, c.predicate + ' ' + (c.object_value || '') + ' — ' + c.relation + ' (' + c.status + ')')); });
+      if (!r.claims.length) ul.appendChild(el('li', 'aic-empty', 'No claims recorded on this page.')); box.appendChild(ul); }
+    if (r.conflicts) { var u2 = el('ul'); r.conflicts.forEach(function (k) { u2.appendChild(el('li', null, k.claim + ' — ' + k.status)); });
+      (r.claims_with_both_sides_but_no_conflict_record || []).forEach(function (id) { u2.appendChild(el('li', null, 'Claim ' + id + ' has evidence on both sides but no conflict record yet.')); });
+      if (!u2.childNodes.length) u2.appendChild(el('li', 'aic-empty', 'No contradictions recorded.')); box.appendChild(u2); }
+    if (r.sentences) { var u3 = el('ul'); r.sentences.forEach(function (s) { u3.appendChild(el('li', null, '#' + s.position + ' ' + s.text)); });
+      if (!r.sentences.length) u3.appendChild(el('li', 'aic-empty', 'Every statement has a source.')); box.appendChild(u3); }
+    if (r.evidence) { var u4 = el('ul'); r.evidence.forEach(function (e) { u4.appendChild(el('li', null, e.relation + ' · ' + e.directness + ' · ' + e.status + ' — ' + e.summary)); });
+      box.appendChild(u4); }
+    if (r.topics) { var u5 = el('ul'); r.topics.forEach(function (t) { u5.appendChild(el('li', null, t.name + ': ' + (t.cell_status || 'no cell') + (t.proposal_state ? ' · proposal ' + t.proposal_state : ''))); }); box.appendChild(u5); }
+    if (r.dimensions) box.appendChild(el('p', null, 'Coverage audit v' + r.audit_version + ' finished — see the Coverage audit screen for all six dimensions.'));
+    ['note', 'job_status'].forEach(function (k) { if (r[k]) box.appendChild(el('p', 'aic-hint', String(r[k]))); });
+    if (r.external_search) box.appendChild(el('p', 'aic-hint', r.external_search.reason));
+  }
+
+  function loadVersions() { if (!current) return;
+    api('/workspace/commands/' + current.id + '/versions').then(function (rows) { var box = $('ws-versions'); box.textContent = '';
+      var ul = el('ul', 'ws-versions');
+      rows.forEach(function (v) { var li = el('li');
+        li.appendChild(el('strong', null, 'v' + v.version)); li.appendChild(document.createTextNode(' · ' + (STATE_WORD[v.execution_state] || v.execution_state) + ' · ' + (v.text.slice(0, 90) || '(empty)') + ' '));
+        var view = el('button', 'btn', 'View'); view.type = 'button'; view.addEventListener('click', function () { showVersion($('ws-result'), v); });
+        var restore = el('button', 'btn', 'Restore as a new draft'); restore.type = 'button';
+        restore.addEventListener('click', function () { api('/workspace/commands/' + current.id + '/versions/' + v.version + '/restore', 'POST').then(function () { say('Restored v' + v.version + ' as the current draft; history is unchanged.'); open(current.id); }).catch(function (e) { say(e.message); }); });
+        li.appendChild(view); li.appendChild(document.createTextNode(' ')); li.appendChild(restore);
+        if (v.version > 1) { var cmp = el('button', 'btn', 'Compare with v' + (v.version - 1)); cmp.type = 'button';
+          cmp.addEventListener('click', function () { api('/workspace/commands/' + current.id + '/compare?a=' + (v.version - 1) + '&b=' + v.version).then(function (d) {
+            var pre = el('pre', 'ws-diff', d.text_diff.join('\n') || 'Same text.'); li.appendChild(pre); }).catch(function (e) { say(e.message); }); });
+          li.appendChild(document.createTextNode(' ')); li.appendChild(cmp); }
+        ul.appendChild(li); });
+      box.appendChild(ul); }).catch(function () {});
+  }
+
+  function act(path, method, ok) { return function () { if (!current) return;
+    var go = function () { return api('/workspace/commands/' + current.id + path, method || 'POST').then(function (r) { if (ok) say(ok); open(current.id); loadResumable(); return r; }); };
+    (dirty ? saveNow() : Promise.resolve()).then(go).catch(function (e) {
+      if (e.body && e.body.detail && e.body.detail.missing_scope) say('Set ' + e.body.detail.missing_scope.join(', ').replace(/_/g, ' ') + ' first (open “Scope, model and budget”).');
+      else say(e.message); }); }; }
+
+  $('ws-plan').addEventListener('click', act('/plan', 'POST', 'Plan ready — check what it will act on, then run.'));
+  $('ws-run').addEventListener('click', act('/run', 'POST', 'Running on the server. You can close this page; it will keep going.'));
+  $('ws-resume-btn').addEventListener('click', act('/resume', 'POST', 'Continuing from the last checkpoint; finished work is not redone.'));
+  $('ws-regen').addEventListener('click', act('/regenerate', 'POST', 'Running again as a new version; the earlier result is kept.'));
+  $('ws-cancel').addEventListener('click', act('/cancel', 'POST', 'Cancelled.'));
+  $('ws-archive').addEventListener('click', function () { if (!current) return;
+    act(current.archived ? '/unarchive' : '/archive', 'POST', current.archived ? 'Restored from the archive.' : 'Archived. Find it with Show set to Archived.')(); });
+  $('ws-delete').addEventListener('click', function () { if (!current) return;
+    if (!window.confirm('Delete this command and every one of its versions permanently? Archive keeps them instead.')) return;
+    api('/workspace/commands/' + current.id + '?permanent=true', 'DELETE').then(function () { store('aiol-ws-' + current.id, null); current = null;
+      $('ws-editor').hidden = true; $('ws-empty').hidden = false; say('Deleted permanently.'); loadList(); }).catch(function (e) { say(e.message); }); });
+  $('ws-new').addEventListener('click', function () {
+    api('/workspace/commands', 'POST', { text: '', knowledge_object_id: $('ws-topic').value || null }).then(function (c) { render(c); loadList(); $('ws-text').focus(); })
+      .catch(function (e) { say(e.message); }); });
+  $('ws-text').addEventListener('input', scheduleSave);
+  ['ws-intent', 'ws-topic', 'ws-category', 'ws-section', 'ws-document', 'ws-page', 'ws-claim', 'ws-policy', 'ws-ctx', 'ws-out', 'ws-calls', 'ws-cost', 'ws-partial']
+    .forEach(function (id) { $(id).addEventListener('change', function () { if (current) { dirty = true; saveNow(); } }); });
+  $('ws-text').addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault();
+      if (current && current.current.plan && !current.current.plan.missing_scope.length) $('ws-run').click(); else $('ws-plan').click(); }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); saveNow(); } });
+  $('ws-filter').addEventListener('change', loadList);
+  var searchTimer = null;
+  $('ws-search').addEventListener('input', function () { clearTimeout(searchTimer); searchTimer = setTimeout(loadList, 300); });
+  $('ws-resume-continue').addEventListener('click', function () { var id = $('ws-resume').dataset.id;
+    open(id).then(function () { $('ws-resume-btn').click(); }); });
+  $('ws-resume-view').addEventListener('click', function () { open($('ws-resume').dataset.id); });
+  $('ws-resume-restart').addEventListener('click', function () { var id = $('ws-resume').dataset.id;
+    open(id).then(function () { $('ws-regen').click(); }); });
+  window.addEventListener('beforeunload', function () { if (dirty && current) store('aiol-ws-' + current.id, $('ws-text').value); });
+
+  function fillSelect(id, rows, label, empty) { var s = $(id); s.textContent = ''; var o = el('option', null, empty); o.value = ''; s.appendChild(o);
+    rows.forEach(function (r) { var x = el('option', null, label(r)); x.value = r.id; s.appendChild(x); }); }
+
+  document.addEventListener('aiol:live', function () {
+    var screen = $('screen-chat'); screen.querySelector('.kx-note').hidden = true; screen.querySelector('.kx-body').hidden = false;
+    Promise.all([
+      api('/knowledge?limit=100').then(function (r) { fillSelect('ws-topic', r.items || [], function (t) { return t.canonical_name; }, 'No topic'); }).catch(function () {}),
+      api('/categories?limit=100').then(function (r) { fillSelect('ws-category', r.items || r || [], function (c) { return c.name; }, 'No category'); }).catch(function () { fillSelect('ws-category', [], null, 'No category'); }),
+      api('/ai-center/routing-policies').then(function (r) { fillSelect('ws-policy', r.items || r || [], function (p) { return p.name + ' (' + p.mode + ')'; }, 'The only policy, if there is exactly one'); }).catch(function () { fillSelect('ws-policy', [], null, 'No routing policy'); })
+    ]).then(function () { loadList(); loadResumable(); });
+  });
+})();
+</script>
+<script>
+/* Chat settings (master prompt S14, ADR-128) - live from Cloud Core only. Every value is rendered with
+   textContent, and nothing is saved that the server would not accept. */
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  if (!$('cs-save')) return;
+  function live() { return window.AIOL_LIVE_STATE && window.AIOL_LIVE_STATE(); }
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x !== undefined && x !== null) e.textContent = x; return e; }
+  function api(path, method, body) {
+    var L = live();
+    if (!L) return Promise.reject(new Error('Not connected to Cloud Core.'));
+    return fetch(L.base + '/api/v1' + path, { method: method || 'GET',
+      headers: Object.assign({ Authorization: 'Bearer ' + L.token }, body ? { 'Content-Type': 'application/json' } : {}),
+      body: body ? JSON.stringify(body) : undefined }).then(function (r) {
+        if (r.status === 204) return {};
+        return r.json().catch(function () { return {}; }).then(function (b) {
+          if (!r.ok) throw new Error((b.error && b.error.message) || (typeof b.detail === 'string' ? b.detail : '') || ('HTTP ' + r.status));
+          return b; }); });
+  }
+  function say(m, bad) { var n = $('cs-msg'); if (!n) return; n.textContent = m || ''; n.className = bad ? 'otp-message otp-message--error' : 'otp-message'; }
+  function num(id) { var v = $(id).value.trim(); return v === '' ? null : Number(v); }
+
+  var current = null;
+
+  function paintTopics(all, allowed) {
+    var box = $('cs-topics'); box.textContent = '';
+    if (!all.length) { box.appendChild(el('p', 'aic-empty', 'This workspace has no knowledge topics yet. Add sources and build a topic first.')); return; }
+    var chosen = {}; (allowed || []).forEach(function (id) { chosen[id] = true; });
+    all.forEach(function (k) {
+      var row = el('label', 'field field--inline');
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = k.id;
+      cb.className = 'cs-topic'; cb.checked = !!chosen[k.id];
+      var name = el('span', null, k.canonical_name + ' (' + k.object_type + ')'); name.dir = 'auto';
+      row.appendChild(cb); row.appendChild(name); box.appendChild(row);
+    });
+  }
+
+  function paint(s) {
+    current = s;
+    $('cs-enabled').value = s.enabled ? 'true' : 'false';
+    $('cs-research').value = s.online_research;
+    $('cs-policy').value = s.routing_policy_id || '';
+    $('cs-daily').value = s.messages_per_user_per_day === null ? '' : s.messages_per_user_per_day;
+    $('cs-out').value = s.max_output_tokens;
+    $('cs-ctx').value = s.context_token_budget;
+    $('cs-cost').value = s.max_cost_per_message === null ? '' : s.max_cost_per_message;
+    $('cs-retention').value = s.retention_days === null ? '' : s.retention_days;
+    $('cs-citations').value = s.show_citations ? 'true' : 'false';
+    $('cs-feedback').value = s.collect_feedback ? 'true' : 'false';
+    var state = $('cs-state');
+    state.textContent = s.configured
+      ? (s.enabled ? 'The website chat is ON.' : 'Saved, but the website chat is OFF.')
+      : 'Never configured: the website chat is OFF for this workspace.';
+    if (s.configured && s.enabled && !s.routing_policy_id) {
+      state.textContent += ' No AI resource is chosen, so questions are answered as "provider unavailable" rather than guessed.';
+    }
+  }
+
+  function load() {
+    say('');
+    return Promise.all([
+      api('/chat/settings'),
+      api('/ai-center/routing-policies?limit=100').catch(function () { return { items: [] }; }),
+      api('/knowledge?limit=200').catch(function () { return { items: [] }; })
+    ]).then(function (r) {
+      var sel = $('cs-policy'); sel.textContent = '';
+      var none = el('option', null, 'None - the chat cannot call a model'); none.value = ''; sel.appendChild(none);
+      (r[1].items || []).forEach(function (p) { var o = el('option', null, p.name + ' (' + p.mode + ')'); o.value = p.id; sel.appendChild(o); });
+      paintTopics(r[2].items || [], r[0].allowed_knowledge_object_ids);
+      paint(r[0]);
+    }).catch(function (e) { say(e.message, true); });
+  }
+
+  function save() {
+    var topics = [];
+    document.querySelectorAll('.cs-topic').forEach(function (c) { if (c.checked) topics.push(c.value); });
+    var body = {
+      enabled: $('cs-enabled').value === 'true',
+      online_research: $('cs-research').value,
+      routing_policy_id: $('cs-policy').value || null,
+      allowed_knowledge_object_ids: topics,
+      messages_per_user_per_day: num('cs-daily'),
+      max_output_tokens: num('cs-out'),
+      context_token_budget: num('cs-ctx'),
+      max_cost_per_message: num('cs-cost'),
+      retention_days: num('cs-retention'),
+      show_citations: $('cs-citations').value === 'true',
+      collect_feedback: $('cs-feedback').value === 'true'
+    };
+    if (body.max_output_tokens === null || body.context_token_budget === null) {
+      say('The answer length and the knowledge budget are both required.', true); return;
+    }
+    $('cs-save').disabled = true; say('Saving...');
+    api('/chat/settings', 'PUT', body).then(function (s) {
+      paint(s); say('Saved. The website chat uses these settings from the next question.');
+    }).catch(function (e) { say(e.message, true); })
+      .then(function () { $('cs-save').disabled = false; });
+  }
+
+  $('cs-refresh').addEventListener('click', load);
+  $('cs-save').addEventListener('click', save);
+  document.addEventListener('aiol:live', function () {
+    document.querySelectorAll('.cs-note').forEach(function (n) { n.hidden = true; });
+    document.querySelectorAll('.cs-body').forEach(function (n) { n.hidden = false; });
+    load();
   });
 })();
 </script>

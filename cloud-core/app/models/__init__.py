@@ -12,6 +12,7 @@ an empty/incorrect migration.
 from app.models.access_policy import AccessPolicy
 from app.models.ai_agent import AiAgent
 from app.models.audit_log import AuditLog
+from app.models.auth_session import AuthSession
 from app.models.coverage_audit import CoverageAudit
 from app.models.website import NewsletterSubscriber, SitePost, SitePostRevision, SiteSection
 from app.models.publication import (
@@ -23,6 +24,14 @@ from app.models.commerce_mapping import CommerceMapping
 from app.models.customer_context import CustomerContext
 from app.models.document import Document
 from app.models.document_artifact import DocumentAsset, DocumentConversion, DocumentTable
+from app.models.document_element import DocumentElement
+from app.models.synthesis import SynthesisRun, SynthesisUnit
+from app.models.workspace import WorkspaceCommand, WorkspaceCommandVersion
+from app.models.knowledge_transfer import KnowledgeTransferRecord
+from app.models.conversation import (
+    ChatSettings, Conversation, ConversationCitation, ConversationFeedback,
+    ConversationMessage, ConversationResearchRequest,
+)
 from app.models.document_chunk import DocumentChunk
 from app.models.entity import Entity
 from app.models.evidence_conflict import EvidenceConflict
@@ -89,6 +98,7 @@ __all__ = [
     "User",
     "Site",
     "AuditLog",
+    "AuthSession",
     "KnowledgeObject",
     "Entity",
     "Claim",
@@ -133,6 +143,17 @@ __all__ = [
     "SearchObservation",
     "DocumentConversion",
     "DocumentTable",
+    "DocumentElement",
+    "SynthesisRun",
+    "SynthesisUnit",
+    "WorkspaceCommand",
+    "WorkspaceCommandVersion",
+    "ChatSettings",
+    "Conversation",
+    "ConversationMessage",
+    "ConversationCitation",
+    "ConversationFeedback",
+    "ConversationResearchRequest",
     "DocumentAsset",
     # --- Phase 13
     "AiAgent",
