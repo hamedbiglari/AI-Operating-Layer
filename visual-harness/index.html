@@ -3489,7 +3489,6 @@ button.card { color: inherit; font: inherit; }
           <div class="nav__group" data-nav-group="dashboard"><div class="nav__group-row"><a href="#screen-dashboard" data-nav-target="screen-dashboard"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 14h7v7H3z"/></svg><span>Dashboard</span></a><button type="button" class="nav__disclosure" aria-expanded="false" aria-controls="navsub-dashboard" aria-label="Toggle dashboard submenu"><svg class="icon nav__chevron" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5 12 15.5 18 9.5"/></svg></button></div><div class="nav__sub" id="navsub-dashboard"><div class="nav__sub-inner">
               <a href="#screen-analytics" data-nav-target="screen-analytics">Analytics &amp; demand</a>
               <a href="#screen-traffic" data-nav-target="screen-traffic">Traffic &amp; content</a>
-              <a href="#screen-states" data-nav-target="screen-states">Edge states</a>
             </div></div></div>
           <a href="#screen-products" data-nav-target="screen-products"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-1.2 11.1A2 2 0 0 1 16.8 21H7.2a2 2 0 0 1-2-1.9zM8.5 8V6a3.5 3.5 0 0 1 7 0v2"/></svg><span>Products</span></a>
           <a href="#screen-inbox" data-nav-target="screen-inbox"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8z"/></svg><span>Inbox</span><span class="nav__badge" id="nav-inbox-badge" hidden></span></a>
@@ -11901,6 +11900,190 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     document.querySelectorAll('.cs-body').forEach(function (n) { n.hidden = false; });
     load();
   });
+})();
+</script>
+<script>
+/* Persian (fa) UI strings for the Dashboard and the app shell, keyed by the
+   English source text like the plugin's gettext catalogue. A string with no
+   entry stays English rather than ship a guessed translation (DEBT_REGISTER,
+   AAT-i18n). Other screens are not translated yet. Numbers that stand alone
+   (counts, stat figures) switch to Persian digits; identifiers, emails,
+   paths and inputs keep Latin script. */
+(function () {
+  var FA = {
+    "Dashboard": "داشبورد",
+    "What entered the system, what it became, and what needs a person.": "چه چیزی وارد سیستم شد، به چه تبدیل شد و چه چیزی به رسیدگی انسانی نیاز دارد.",
+    "Live overview (Cloud Core)": "نمای زنده (Cloud Core)",
+    "NOT CONNECTED": "متصل نیست",
+    "Sample data: the counts on this screen are illustrative, not read from Cloud Core.": "داده‌های نمونه: اعداد این صفحه نمایشی‌اند و از Cloud Core خوانده نشده‌اند.",
+    "Connect Cloud Core": "اتصال به Cloud Core",
+    "Cloud Core URL": "آدرس Cloud Core",
+    "Access token": "توکن دسترسی",
+    "Connect": "اتصال",
+    "The token is kept in this page’s memory only and is never saved.": "توکن فقط در حافظهٔ همین صفحه نگه داشته می‌شود و هرگز ذخیره نمی‌شود.",
+    "Sources": "منابع",
+    "12 added this month": "۱۲ مورد در این ماه اضافه شد",
+    "Processing": "در حال پردازش",
+    "Oldest queued 4 min ago": "قدیمی‌ترین مورد در صف: ۴ دقیقه پیش",
+    "Completed": "تکمیل‌شده",
+    "10 ended in a failure state": "۱۰ مورد با وضعیت ناموفق پایان یافت",
+    "Needs human review": "نیازمند بررسی انسانی",
+    "6 conversions, 4 conflicts": "۶ تبدیل، ۴ تعارض",
+    "Waiting on a person": "در انتظار اقدام شما",
+    "These are not errors the system can clear itself.": "این‌ها خطاهایی نیستند که سیستم بتواند خودش برطرف کند.",
+    "Evidence awaiting review": "شواهد در انتظار بررسی",
+    "Conflicting claims": "ادعاهای متعارض",
+    "Knowledge gaps open": "شکاف‌های باز",
+    "Duplicate decisions": "بررسی موارد تکراری",
+    "Coverage honesty": "شفافیت پوشش",
+    "4 of the 7 highest-priority claims rest on sources whose full text was never accessible.": "۴ مورد از ۷ ادعای با بالاترین اولویت به منابعی تکیه دارند که متن کامل آن‌ها هرگز در دسترس نبوده است.",
+    "Review which claims": "ببینید کدام ادعاها",
+    "Visible to AI right now": "اکنون برای هوش مصنوعی قابل مشاهده",
+    "Two different signals, kept separate on purpose.": "دو سیگنال متفاوت که عمداً جدا نگه داشته شده‌اند.",
+    "Open the full report": "مشاهدهٔ گزارش کامل",
+    "Platform observations (30d)": "مشاهدات پلتفرم (۳۰ روز)",
+    "Automated requests (30d)": "درخواست‌های خودکار (۳۰ روز)",
+    "Breadcrumb": "مسیر صفحه",
+    "Menu": "منو",
+    "Settings": "تنظیمات",
+    "Admin console": "کنسول مدیریت",
+    "Language": "زبان",
+    "Get help": "دریافت راهنمایی",
+    "Upgrade plan": "ارتقای طرح",
+    "Get apps and extensions": "دریافت برنامه‌ها و افزونه‌ها",
+    "Learn more": "بیشتر بدانید",
+    "Log out": "خروج",
+    "Toggle dark/light theme": "تغییر پوستهٔ تیره/روشن",
+    "Change language": "تغییر زبان",
+    "Admin": "مدیر",
+    "Analytics & demand": "تحلیل و تقاضا",
+    "Traffic & content": "ترافیک و محتوا",
+    "Products": "محصولات",
+    "Inbox": "صندوق پیام",
+    "Knowledge": "دانش",
+    "Knowledge Objects": "موجودیت‌های دانش",
+    "Research": "پژوهش",
+    "Categories & matrix": "دسته‌بندی‌ها و ماتریس",
+    "Coverage audit": "ممیزی پوشش",
+    "Publications & citations": "انتشارات و استنادها",
+    "AI": "هوش مصنوعی",
+    "AI Visibility": "دیده‌شدن در هوش مصنوعی",
+    "AI executions": "اجراهای هوش مصنوعی",
+    "AI Center": "مرکز هوش مصنوعی",
+    "AI Catalog": "کاتالوگ هوش مصنوعی",
+    "Memory Center": "مرکز حافظه",
+    "AI access": "دسترسی هوش مصنوعی",
+    "Chat settings": "تنظیمات گفتگو",
+    "Command workspace": "میز کار فرمان",
+    "Website": "وب‌سایت",
+    "Analytics": "تحلیل‌ها",
+    "Website: blog": "وب‌سایت: وبلاگ",
+    "Website: page sections": "وب‌سایت: بخش‌های صفحه",
+    "Website: subscribers": "وب‌سایت: مشترکان",
+    "Statistics": "آمار",
+    "Billing": "صورت‌حساب",
+    "Wallet & billing": "کیف پول و صورت‌حساب",
+    "Payment": "پرداخت",
+    "Transactions": "تراکنش‌ها",
+    "Admin & settings": "مدیریت و تنظیمات",
+    "Users": "کاربران",
+    "Connection & logs": "اتصال و گزارش‌ها",
+    "Overview": "نمای کلی",
+    "Change profile photo": "تغییر عکس پروفایل",
+    "Profile photo": "عکس پروفایل",
+    "Main": "ناوبری اصلی",
+    "Toggle dashboard submenu": "باز و بسته کردن زیرمنوی داشبورد",
+    "Toggle knowledge submenu": "باز و بسته کردن زیرمنوی دانش",
+    "Skip to main content": "رفتن به محتوای اصلی",
+    "Show navigation": "نمایش منو",
+    "Hide navigation": "پنهان کردن منو",
+    "Both the Cloud Core URL and an access token are required.": "هم آدرس Cloud Core و هم توکن دسترسی لازم است.",
+    "Loading…": "در حال بارگذاری…",
+    "LIVE DATA": "دادهٔ زنده",
+    "Knowledge objects": "موجودیت‌های دانش",
+    "Documents": "اسناد",
+    "Jobs queued / running": "کارهای در صف / در حال اجرا",
+    "Jobs failed": "کارهای ناموفق",
+    "Recommendations": "توصیه‌ها"
+  };
+  var PATTERNS = [
+    [/^Inbox, (\d+) unread messages?$/, "صندوق پیام، $1 پیام خوانده‌نشده"],
+    [/^Account menu — signed in as (.+)$/, "منوی حساب — واردشده با $1"],
+    [/^Connected to (.+)\. Showing real Cloud Core data; the sample content of this screen is hidden\.$/, "به $1 متصل است. داده‌های واقعی Cloud Core نمایش داده می‌شود و محتوای نمونهٔ این صفحه پنهان است."]
+  ];
+  var ROOTS = ['.app > .skip-link', 'header.app-topbar', '#sidebar-collapse', '#app-sidebar', '#screen-dashboard'];
+  var ATTRS = ['aria-label', 'title', 'placeholder'];
+  var KEEP_LATIN = 'bdi, code, input, textarea, select, .identifier, script, style, svg';
+  var DIGITS = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+  var records = [];   // { node | el + attr, en, fa } so switching back restores exactly
+  var active = false;
+
+  function faDigits(s) { return s.replace(/[0-9]/g, function (d) { return DIGITS[d]; }); }
+  function translate(raw) {
+    var key = raw.replace(/\s+/g, ' ').trim();
+    if (!key) return null;
+    if (Object.prototype.hasOwnProperty.call(FA, key)) return FA[key];
+    for (var i = 0; i < PATTERNS.length; i++) {
+      var m = key.match(PATTERNS[i][0]);
+      if (m) return PATTERNS[i][1].replace('$1', /^[0-9]+$/.test(m[1]) ? faDigits(m[1]) : m[1]);
+    }
+    if (/^[0-9][0-9,.]*$/.test(key)) return faDigits(key).replace(/,/g, '\u066c');
+    return null;
+  }
+  function keepSpace(raw, t) { return raw.match(/^\s*/)[0] + t + raw.match(/\s*$/)[0]; }
+
+  function toFa(root) {
+    if (!root) return;
+    var el = root.nodeType === 3 ? root.parentElement : root;
+    if (!el || el.closest(KEEP_LATIN)) return;
+    var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) {
+      if (n.parentElement.closest(KEEP_LATIN)) continue;
+      var t = translate(n.nodeValue);
+      if (t === null) continue;
+      var fa = keepSpace(n.nodeValue, t);
+      records.push({ node: n, en: n.nodeValue, fa: fa }); n.nodeValue = fa;
+    }
+    [el].concat(Array.prototype.slice.call(el.querySelectorAll('[' + ATTRS.join('],[') + ']'))).forEach(function (e) {
+      if (e.closest(KEEP_LATIN) && e.tagName !== 'INPUT') return;
+      ATTRS.forEach(function (a) {
+        var v = e.getAttribute(a); if (v === null) return;
+        var t = translate(v); if (t === null) return;
+        records.push({ el: e, attr: a, en: v, fa: t }); e.setAttribute(a, t);
+      });
+    });
+  }
+  function toEn() {
+    // Restore only what still shows our translation; anything the app has
+    // rewritten since is already current English.
+    records.forEach(function (r) {
+      if (r.node) { if (r.node.nodeValue === r.fa) r.node.nodeValue = r.en; }
+      else if (r.el.getAttribute(r.attr) === r.fa) r.el.setAttribute(r.attr, r.en);
+    });
+    records = [];
+  }
+
+  // While Persian is on, text the app writes later (live strip states, chips,
+  // navigation labels) is translated as it appears.
+  var watcher = new MutationObserver(function (list) {
+    list.forEach(function (m) {
+      if (m.type === 'childList') m.addedNodes.forEach(toFa); else toFa(m.target);
+    });
+  });
+  function roots() { return ROOTS.map(function (s) { return document.querySelector(s); }).filter(Boolean); }
+  function sync() {
+    var on = document.documentElement.lang === 'fa';
+    if (on === active) return;
+    active = on;
+    if (on) {
+      roots().forEach(toFa);
+      roots().forEach(function (r) { watcher.observe(r, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS }); });
+    } else {
+      watcher.disconnect(); watcher.takeRecords(); toEn();
+    }
+  }
+  new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  sync();
 })();
 </script>
 </body>
