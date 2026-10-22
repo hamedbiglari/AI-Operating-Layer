@@ -915,6 +915,7 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
 .skip-link:focus { position: fixed; inset-block-start: var(--space-3); inset-inline-start: var(--space-3); z-index: 100;
   padding: var(--space-2) var(--space-4); background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
 .main:focus { outline: none; } /* focus target of the skip link, not a control */
+.screen h1[tabindex="-1"]:focus { outline: none; } /* focus target after navigation */
 
 /* Drawer widths: a labelled Menu button opens the nav; the edge dot only
    appears on the open drawer, where it closes it. */
@@ -7711,10 +7712,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   // than degrading after one use.
   window.aiolGoBack = function () {
     var hist = window.aiolScreenHistory || [];
-    if (hist.length <= 1) { show('screen-dashboard'); return; }
+    if (hist.length <= 1) { show('screen-dashboard'); focusScreenHeading('screen-dashboard'); return; }
     hist.pop();
     var target = hist.pop();
     show(target);
+    focusScreenHeading(target);
   };
 
   // Real hash-based routing: previously NOTHING listened for hash
@@ -7725,16 +7727,18 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   // any link to #screen-... anywhere in the document (nav, breadcrumbs,
   // cross-links) now works, because they all already point at real
   // section ids; they just needed something listening.
-  function routeFromHash() {
+  function routeFromHash(moveFocus) {
     // A hash may carry a query (#screen-sources?status=success) and may name
     // an element inside a screen (#waiting-on-person): show the screen that
     // owns it, then bring that element into view.
     var id = location.hash.replace(/^#/, '').split('?')[0];
+    // No hash (e.g. Back to the first page) means the default screen.
+    if (!id) id = 'screen-dashboard';
     var el = id && document.getElementById(id);
     if (!el) return;
     var screen = el.classList.contains('screen') ? el : el.closest('.screen');
     if (screen) show(screen.id);
-    if (el === screen) window.scrollTo(0, 0);
+    if (el === screen) { window.scrollTo(0, 0); if (moveFocus) focusScreenHeading(screen.id); }
     if (el !== screen) {
       // Clear the harness's sticky toolbar so the target is not scrolled under it.
       var bar = document.querySelector('.harness-bar');
@@ -7742,7 +7746,17 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       el.focus({ preventScroll: true });
     }
   }
-  window.addEventListener('hashchange', routeFromHash);
+  // After an in-app navigation, keyboard and screen-reader users land on
+  // the new screen's heading instead of <body>, so they hear where they
+  // are and Tab continues from the top of that screen. Not done on first
+  // load (the skip link stays the first stop) or from the harness picker.
+  function focusScreenHeading(id) {
+    var h = document.querySelector('#' + id + ' h1');
+    if (!h) return;
+    if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1');
+    h.focus({ preventScroll: true });
+  }
+  window.addEventListener('hashchange', function () { routeFromHash(true); });
   if (location.hash) routeFromHash(); else show('screen-dashboard');
 
   document.getElementById('pick-screen').addEventListener('change', function (e) { show(e.target.value); });
@@ -9029,6 +9043,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     // silently re-apply when this screen is shown without one.
     if (location.hash.indexOf('?') !== -1) history.replaceState(null, '', href);
     show(href.slice(1));
+    focusScreenHeading(href.slice(1));
     window.scrollTo(0, 0);
   });
 
