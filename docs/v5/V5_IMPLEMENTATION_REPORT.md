@@ -32,8 +32,13 @@ defence.
 | — | Dashboard: provider form now offers the `openai` adapter (ADR-121 had added it to the backend only) | IMPLEMENTED_BUT_UNVERIFIED in a browser |
 
 ## D. Still incomplete
-* **§38 control-by-control dashboard audit.** Not done. It needs a browser, and none can be launched in this
-  environment (see E).
+* **§38 control-by-control dashboard audit.** Partly done on 2026-10-22; details in `V5_DASHBOARD_AUDIT.md`.
+  Done: the two v5 cards (KTP list and Models/limits) control by control, in a real browser against a local API;
+  console and page errors on all 52 screens (none, apart from a favicon 404); a browser re-check of the 33 rules.
+  Found: the Edit-limits form is always visible, AI Center tables lack `data-label` (rule 17 fails at 390px),
+  mid-word breaks, no Persian font on UI text, a 10px text, 3 tables without a caption. Not audited: every control
+  on the other ~50 screens, four AI Center tabs, KTP paging beyond 25 rows, reconciled-outcome KTP rows. The ADR-135
+  task dependency graph has no dashboard card (backend only), so it could not be shown. Defects are reported, not fixed.
 * **Oversized items are not split or re-routed automatically** in plain AI jobs (ADR-136). They fail visibly.
   Synthesis runs do split.
 * **RPM/TPM are recorded, not enforced.**
@@ -44,9 +49,11 @@ defence.
 
 ## E. Could not be verified here
 * **Any live provider call.** No API key exists, so every provider path is IMPLEMENTED_BUT_LIVE_PROVIDER_NOT_VERIFIED.
-* **Browser rendering of the dashboard changes.** The installed Chrome exits at launch (code 21), Edge is not
-  installed, and Playwright's own Chromium is not downloaded. What was verified instead: `visual-harness/check.js`
-  33/33 rules, every inline script parses, and the API routes the UI calls are covered by tests.
+* **Browser rendering of the dashboard changes.** Chrome (code 21) still does not launch and Edge is not installed.
+  On 2026-10-22 the cached Playwright Chromium 1194 (`141.0.7390.37`, headless, driven by playwright-core 1.64)
+  did launch and was used for the audit in `V5_DASHBOARD_AUDIT.md`. Of the 33 rules, 16 were confirmed in the
+  browser (rule 22 partial), 4 failed, 3 are unresolved and 10 are source-only; it is not 33/33 visually checked. Everything outside
+  the two cards stays unverified in a browser beyond "loads without console errors".
 * **WordPress plugin PHP tests.** PHP is absent.
 
 ## F/G. Tests
@@ -110,7 +117,7 @@ See `RESIDUAL_RISK_REGISTER.md`. The highest is R-17: no live provider has ever 
 
 ## N. Recommended next stage
 1. Configure one real provider key and run the pilot runbook: the first live verification of ADR-131/132/134/136.
-2. Run the §38 dashboard audit in a working browser, starting with the two cards added here.
+2. Continue the §38 dashboard audit (the two cards and the 52-screen error pass are done, see `V5_DASHBOARD_AUDIT.md`): the other ~50 screens, and decide on fixes for D1-D3 (they must go into `index.html` or a reconciled `build.js`).
 3. Automatic split or re-route of oversized items in plain AI jobs.
 4. Scheduled living-knowledge refresh (§68).
 5. Benchmark corpus for §78 once a provider is live.
