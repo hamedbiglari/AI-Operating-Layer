@@ -1072,11 +1072,14 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
     border-inline-end: 1px solid var(--border);
     border-block-end: 0;
     transform: translateX(-102%);       /* 102% also hides the shadow */
-    transition: transform 0.22s ease;
+    /* Closed drawer is also `visibility: hidden` so its links leave the Tab
+       order; the delay keeps it visible until the slide-out finishes. */
+    visibility: hidden;
+    transition: transform 0.22s ease, visibility 0s linear 0.22s;
     box-shadow: var(--shadow-lg, var(--shadow-md));
   }
   [dir="rtl"] .sidebar { transform: translateX(102%); }
-  .app.sidebar-open .sidebar { transform: none; }
+  .app.sidebar-open .sidebar { transform: none; visibility: visible; transition: transform 0.22s ease, visibility 0s; }
 
   /* Backdrop: tapping outside closes the drawer, which is the gesture
      people try first. */
