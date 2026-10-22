@@ -75,3 +75,5 @@ def reservation_upper_bound(price: ModelPrice | None, *, prompt: str, max_output
     one = (price.input_per_mtok * len(prompt.encode("utf-8"))
            + price.output_per_mtok * max_output_tokens) / _MTOK
     return (one * max(attempts, 1)).quantize(_Q)
+# AI_MODEL_PRICING_JSON shape (see .env.example): {"<provider>/<model>": {"input_per_mtok": "<price>",
+#   "output_per_mtok": "<price>", "currency": "USD"}}; currency is optional (defaults to USD).
