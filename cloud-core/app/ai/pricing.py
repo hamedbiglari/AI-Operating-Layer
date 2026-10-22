@@ -22,20 +22,27 @@ _Q = Decimal("0.000001")
 
 @dataclass(frozen=True)
 class ModelPrice:
+    """Per-million-token (MTok) input/output prices for one provider/model, in a 3-letter currency code."""
     input_per_mtok: Decimal
     output_per_mtok: Decimal
     currency: str
 
 
 class PricingResolver(Protocol):
-    def price(self, provider: str, model: str) -> ModelPrice | None: ...
+    """Looks up the configured price for a provider/model; injectable for tests."""
+
+    def price(self, provider: str, model: str) -> ModelPrice | None:
+        """Return the price, or None when unknown (never a zero price)."""
 
 
 class ConfiguredPricing:
+    """PricingResolver backed by a JSON map keyed "provider/model" (defaults to settings.AI_MODEL_PRICING_JSON)."""
+
     def __init__(self, raw_json: str | None = None) -> None:
         self._raw = raw_json if raw_json is not None else settings.AI_MODEL_PRICING_JSON
 
     def price(self, provider: str, model: str) -> ModelPrice | None:
+        """Return the configured price, or None if pricing is absent or malformed — unknown, never zero."""
         if not self._raw:
             return None
         try:
