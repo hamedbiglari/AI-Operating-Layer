@@ -1374,7 +1374,6 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
   display: flex;
   gap: var(--space-3);
   border: 1px solid var(--border);
-  border-inline-start: 3px solid var(--info);
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
   background: var(--surface);
@@ -1383,23 +1382,21 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
 /* The text column previously sat at its own natural content width
    inside the flex row rather than spanning the space actually available
    — flex children default to their content size, not the container's
-   remaining width. flex:1 makes it claim that space, and justify gives
-   the paragraph an even right edge across the full box rather than a
-   ragged one — applied to every callout, including page-intro, since
-   both share this same shell. */
+   remaining width. flex:1 makes it claim that space — applied to every
+   callout, including page-intro, since both share this same shell. */
 .callout > div { flex: 1; min-inline-size: 0; }
 .callout p {
-  text-align: justify; text-justify: inter-word;
-  /* The global `p { max-inline-size: var(--measure) }` rule (a sensible
-     ~68-character reading-width cap for ordinary body text) was also
-     capping this text to a fixed width regardless of how wide the box
-     actually was, so justify had no extra width to actually justify
-     into. Removed here, and only here — every other paragraph in the
-     app keeps the comfortable reading width. */
+  /* Start-aligned: justify opened wide gaps between words in narrow
+     boxes and is wrong for Persian. The global `p { max-inline-size:
+     var(--measure) }` cap is lifted here, and only here, so the text
+     uses the box's full width; every other paragraph keeps it. */
+  text-align: start;
   max-inline-size: none;
 }
-.callout--warning { border-inline-start-color: var(--warning); }
-.callout--danger  { border-inline-start-color: var(--danger); }
+/* Variants tint the whole box rather than a side stripe; the icon and the
+   wording still carry the state, so colour is never the only signal. */
+.callout--warning { border-color: var(--warning); background: var(--warning-tint); }
+.callout--danger  { border-color: var(--danger);  background: var(--danger-tint); }
 .callout__icon { color: var(--info); }
 .callout--warning .callout__icon { color: var(--warning); }
 .callout--danger .callout__icon  { color: var(--danger); }
@@ -2864,12 +2861,6 @@ body:has(#screen-dashboard.is-active) .harness-note { display: none; }
 .src-search { flex: 1 1 auto; min-inline-size: min(280px, 100%); align-self: stretch; }
 .plan-box__grant select { flex: 1 1 auto; min-inline-size: min(220px, 100%); }
 
-/* 3c. Justified text opens large gaps between words in narrow columns
-       (visible in every callout at 390 px). Start-aligned below 640 px. */
-@container app (max-width: 640px) {
-  .callout p, .callout { text-align: start; }
-}
-
 /* 3d. Links had no colour of their own, so they used the browser default
        (the browser default link blue): 1.8:1 contrast on the dark theme. */
 :where(a) { color: var(--primary); }
@@ -3566,12 +3557,8 @@ button.card { color: inherit; font: inherit; }
     </div>
     <div class="card">
       <h2 class="card__title">Coverage honesty</h2>
-      <div class="callout"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg></span>
-        <div>
-          <p>4 of the 7 highest-priority claims rest on sources whose full text was never accessible.</p>
-          <p><a href="#screen-knowledge">Review which claims</a></p>
-        </div>
-      </div>
+      <p style="margin-top:0">4 of the 7 highest-priority claims rest on sources whose full text was never accessible.</p>
+      <p style="margin-bottom:0"><a href="#screen-knowledge">Review which claims</a></p>
     </div>
     <div class="card">
       <h2 class="card__title">Visible to AI right now</h2>
