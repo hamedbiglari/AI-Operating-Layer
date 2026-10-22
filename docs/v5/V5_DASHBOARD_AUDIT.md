@@ -137,3 +137,80 @@ confirm; the static PASS stands and no browser result is claimed. Totals: 16 bro
   runtime-only style injection (no file changed). `models_dark_1280`, `ktp_dark_1280`, `ktp_fa_rtl_*`,
   `models_fa_rtl_*`, `ktp_light_390`, `models_light_390` and the forced-colors KTP shot were viewed; `ktp_light_1280`,
   `models_light_1280`, `models_forced_colors_1280` and `ktp_focus_ring_1280` were generated but not individually viewed.
+
+## 7. Re-run after fixes (2026-10-22)
+
+D1 to D7 were fixed directly in `visual-harness/index.html`. `visual-harness/build.js` was not run and is still out of
+sync with `index.html`: running it would erase the v5 cards and every fix below. `frontend/design-system/components.css`
+was not touched (it has the same `.app` font reset as D4, see "Left open").
+
+### 7.1 What changed
+* **D1.** New rule `.aic-form[hidden] { display: none; }` after `.aic-form` in the AI Center `<style>` block.
+* **D3.** In the same block, `#screen-ai-center td` uses `overflow-wrap: break-word` (was `anywhere`); the combined
+  `td, dd` rule is split so `dd` keeps `anywhere`.
+* **D4.** Harness chrome, after the `body` rule: `:is([lang="fa"], [lang^="fa-"], [lang="ar"], [lang^="ar-"]) :is(body, .app) { font-family: var(--font-fa); }`.
+  Selected by `lang`, not `dir`.
+* **D5.** `.notif-count` and `.nav__badge` use `font-size: var(--text-xs)` (12px) instead of 10px and 11px.
+* **D2.** The AI Center `row()` helper sets `data-label` from the header cell of the same column (covers providers,
+  accounts, models, KTP and discovery, including the empty-state rows).
+* **D7.** New `ktpFrom()` in the AI Center script: `user:<id>` shows "User " plus `<bdi class="identifier">`,
+  `execution:<id>` shows "AI execution " plus the identifier, any other value is shown as is. No backend change, no name lookup.
+* **D6.** `<caption class="visually-hidden">` added in two builders: the wired-screen table builder (caption = the
+  panel title, for example "Users of this organization (Cloud Core)") and the page-sections table in the website
+  script ("Page sections and their order", through a new optional `caption` argument of that script's `table()`).
+  Only the tables found were handled; the other JS table builders still create tables without a caption.
+
+### 7.2 Re-run setup
+New throwaway organization `audit-2026-10-22-fix` (owner role) in the dev DB `aiol_v5c` at Alembic 0046, re-seeded by the
+same script as before: one provider, two models, one knowledge object, two KTP packages. Same browser (Chromium
+141.0.7390.37 through Playwright-core), `index.html` served over http on 8080, API on 8000. No provider key, no job, no
+live provider call. Raw JSON and screenshots: gitignored `.devdb/audit-2026-10-22-fix/`. No token or password is in
+this document; a scan found the token in none of the saved JSON or log files.
+
+### 7.3 Per-defect results (`passE.json`)
+| Defect | Check | Result |
+|---|---|---|
+| D1 | computed `display` of `#aic-edit-model`: at load, after "Edit limits", after Cancel, after Save | PASS: none, grid, none, none; the API value was unchanged after Cancel |
+| D2 | `td` without `data-label` in the whole DOM; 390px `::before` content vs header text in models and KTP | PASS: 0 of 987; 16 of 16 and 12 of 12 cells match |
+| D3 | per-word line check in models, providers and KTP cells at 1280 (en LTR and fa RTL), hyphen-separated parts checked separately, `bdi.identifier` skipped; page overflow at 1280 and 390 | PASS: 0 broken words (29, 5 and 21 words), no horizontal page overflow |
+| D4 | computed first font family of `body`, the active screen and a KTP cell | PASS: `lang=fa` gives Vazirmatn, `lang=en` gives IBM Plex Sans |
+| D5 | smallest computed text size on the AI Center tabs and on each of the 52 screens | PASS on AI Center (12px) and on all 52 screens after connecting. NOT fully passing offline: see 7.5 |
+| D6 | tables without a caption in the rendered DOM | PASS: 0 of 63 (it was 3 of 63) |
+| D7 | KTP "From" cell of the 2 rows submitted with the user token (`user:<uuid>`) | PASS: text is "User " plus the UUID in `bdi.identifier`; no `user:` prefix |
+
+The three tables behind the original D6 were not identified before the fix. A probe on the empty org found two (the
+page-sections table and the users table of the wired Admin screen); the third appears only with seeded data. After
+seeding and the fix the DOM has 63 tables and none without a caption. Which builder produced the third was not
+observed.
+
+### 7.4 Rules 16, 17, 23, 24, 25 after the fixes
+| # | Rule | Static | Browser result after fixes |
+|---|---|---|---|
+| 16 | data tables have a caption | PASS | PASS (0 of 63 without a caption) |
+| 17 | every table cell carries `data-label` | PASS | PASS (0 of 987 cells without; 390px labels match their headers) |
+| 23 | no declared font-size below 12px | PASS | FAIL, narrower than before: smallest visible text is 12px on all 52 screens in connected mode, but the SVG chart text on `screen-statistics` (sample content, visible when not connected) is 10px and 11px |
+| 24 | a real Persian face is first in the Persian stack | PASS | PASS at UI-text level (Vazirmatn first on `body`, the active screen and the KTP cell with `lang=fa`) |
+| 25 | Persian is selected by lang, not by dir | PASS | PASS: `lang=en dir=rtl` computes IBM Plex Sans, `lang=fa dir=ltr` computes Vazirmatn |
+
+Rules 22 (partial), 29 and 33 (unresolved) are unchanged and were not re-examined. All other rows of section 5 are as written.
+No new check was run for rules 26 and 27 beyond D7: the KTP identifier is now a `bdi.identifier`.
+
+### 7.5 Still failing or left open
+* **Chart text, rule 23.** `.stat-chart__label` (11px) and `.stat-chart__axis` (10px) in `index.html` are SVG chart
+  labels. They are not changed (user decision). In the re-run the check found them only on `screen-statistics`, and only
+  when the dashboard is not connected, because live mode hides the sample content.
+* **Other JS table builders** (about ten, found by reading the source, not run) still create tables without a caption. They did not render in this audit; rule 16 can fail in live states that were not visited.
+* **`components.css`.** `frontend/design-system/components.css:14` has the same `.app { font-family: var(--font-ui) }`
+  reset as D4. Not changed in this task, so the real product CSS probably has the Persian-font bug.
+* **D7** shows the full UUID, not a name; a name needs a backend field or a user-lookup call.
+* Unchanged from section 4: the favicon 404 (it appears once at first page load), the sticky dev bar overlapping element
+  screenshots.
+* Console, page and request errors: 0 on 104 screen visits (52 screens, before and after connecting); the connect step
+  also produced none. Token scan: not in the HTML, inner text or any attribute.
+
+### 7.6 Screenshots viewed (`.devdb/audit-2026-10-22-fix/`)
+`models_empty_1280` (edit form hidden at load), `models_seeded_1280` (words wrap at the hyphen only), `models_light_390`
+(stacked labels shown), `ktp_light_390` ("From: User" plus the isolated UUID, labels shown), `models_fa_rtl_1280` and
+`ktp_fa_rtl_1280` (mirrored layout), and two crops made for this audit, `notif_badge_1280` and `nav_badge_1280` (the "3"
+at 12px is not clipped in either badge, so the badge size was left as it was). Generated but not looked at: the other
+files in the folder.

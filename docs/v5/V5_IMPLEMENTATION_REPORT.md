@@ -36,9 +36,11 @@ defence.
   Done: the two v5 cards (KTP list and Models/limits) control by control, in a real browser against a local API;
   console and page errors on all 52 screens (none, apart from a favicon 404); a browser re-check of the 33 rules.
   Found: the Edit-limits form is always visible, AI Center tables lack `data-label` (rule 17 fails at 390px),
-  mid-word breaks, no Persian font on UI text, a 10px text, 3 tables without a caption. Not audited: every control
+  mid-word breaks, no Persian font on UI text, a 10px text, 3 tables without a caption. All seven defects (D1-D7) were
+  then fixed in `visual-harness/index.html` and re-checked in the browser on 2026-10-22 (`V5_DASHBOARD_AUDIT.md` section 7):
+  rules 16, 17, 24 and 25 now pass in the browser. Rule 23 still fails only for the 10px/11px SVG chart text, left unchanged. Not audited: every control
   on the other ~50 screens, four AI Center tabs, KTP paging beyond 25 rows, reconciled-outcome KTP rows. The ADR-135
-  task dependency graph has no dashboard card (backend only), so it could not be shown. Defects are reported, not fixed.
+  task dependency graph has no dashboard card (backend only), so it could not be shown. Defects D1-D7 were fixed afterwards (see above).
 * **Oversized items are not split or re-routed automatically** in plain AI jobs (ADR-136). They fail visibly.
   Synthesis runs do split.
 * **RPM/TPM are recorded, not enforced.**
@@ -117,7 +119,7 @@ See `RESIDUAL_RISK_REGISTER.md`. The highest is R-17: no live provider has ever 
 
 ## N. Recommended next stage
 1. Configure one real provider key and run the pilot runbook: the first live verification of ADR-131/132/134/136.
-2. Continue the §38 dashboard audit (the two cards and the 52-screen error pass are done, see `V5_DASHBOARD_AUDIT.md`): the other ~50 screens, and decide on fixes for D1-D3 (they must go into `index.html` or a reconciled `build.js`).
+2. Continue the §38 dashboard audit (the two cards and the 52-screen error pass are done, see `V5_DASHBOARD_AUDIT.md`): the other ~50 screens, D1-D7 are fixed in `index.html` and were re-verified in a browser (section 7 of the audit). `build.js` is still out of sync and would undo them, so reconcile it before anyone runs it.
 3. Automatic split or re-route of oversized items in plain AI jobs.
 4. Scheduled living-knowledge refresh (§68).
 5. Benchmark corpus for §78 once a provider is live.

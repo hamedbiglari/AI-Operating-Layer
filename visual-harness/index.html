@@ -1578,6 +1578,7 @@ tr.is-new-version, .card.is-new-version { animation: highlight-new 2s ease-out; 
 /* ===== harness chrome (NOT part of the design system) ===== */
 html, body { margin: 0; background: var(--canvas); }
 body { font-family: var(--font-ui); color: var(--text); }
+:is([lang="fa"], [lang^="fa-"], [lang="ar"], [lang^="ar-"]) :is(body, .app) { font-family: var(--font-fa); }
 .harness-bar {
   position: sticky; top: 0; z-index: 10;
   display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center;
@@ -2226,7 +2227,7 @@ tr.is-paged-out { display: none; }
   display: grid; place-items: center;
   border-radius: 999px;
   background: var(--primary); color: #fff;
-  font-size: 10px; font-weight: var(--weight-bold, 700);
+  font-size: var(--text-xs); font-weight: var(--weight-bold, 700);
   line-height: 1; border: 1.5px solid var(--surface);
   animation: notif-breathe 2.4s ease-in-out infinite;
 }
@@ -2244,7 +2245,7 @@ tr.is-paged-out { display: none; }
   display: grid; place-items: center;
   border-radius: 999px;
   background: var(--primary); color: #fff;
-  font-size: 11px; font-weight: var(--weight-bold, 700);
+  font-size: var(--text-xs); font-weight: var(--weight-bold, 700);
 }
 .nav__badge[hidden] { display: none; }
 
@@ -2964,6 +2965,7 @@ button.card { color: inherit; font: inherit; }
 .aic-status { margin: 0 0 var(--space-3); color: var(--text-muted); }
 .aic-note { margin: 0 0 var(--space-3); color: var(--text-muted); font-size: var(--text-sm); max-inline-size: 75ch; }
 .aic-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--space-3); align-items: end; margin-block-start: var(--space-4); padding-block-start: var(--space-4); border-block-start: 1px solid var(--border); }
+.aic-form[hidden] { display: none; }
 .aic-form h3 { grid-column: 1 / -1; margin: 0; font-size: var(--text-md, 1rem); }
 .aic-form .field { min-inline-size: 0; } .aic-form .field :is(input, select) { inline-size: 100%; }
 .aic-form--inline { border: 0; padding: 0; margin: 0 0 var(--space-3); }
@@ -2978,7 +2980,7 @@ button.card { color: inherit; font: inherit; }
 .aic-kv dd { margin: 0; overflow-wrap: anywhere; }
 .aic-pre { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: var(--text-sm); background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3); max-block-size: 24rem; overflow: auto; }
 .aic-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-#screen-ai-center td { overflow-wrap: anywhere; }
+#screen-ai-center td { overflow-wrap: break-word; }
 </style>
 <style>
 /* AI Center (live) */
@@ -2986,7 +2988,8 @@ button.card { color: inherit; font: inherit; }
 #screen-ai-center .aic-connect { margin-block-end: var(--space-4); }
 #screen-ai-center .aic-tabs { margin-block-end: var(--space-4); }
 #screen-ai-center .aic-hint { color: var(--text-muted); font-size: var(--text-sm); margin-block: 0 var(--space-3); }
-#screen-ai-center td, #screen-ai-center dd { overflow-wrap: anywhere; }
+#screen-ai-center td { overflow-wrap: break-word; }
+#screen-ai-center dd { overflow-wrap: anywhere; }
 #screen-ai-center .aic-explain ol { padding-inline-start: var(--space-5); }
 #screen-ai-center .aic-explain li { margin-block: var(--space-1); }
 #screen-ai-center .aic-empty { color: var(--text-muted); }
@@ -9318,7 +9321,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (!page.items.length) { state(panel, 'empty', 'Nothing here yet in Cloud Core.'); return; }
       var wrap = el('div', 'table-wrap'), tb = el('table', 'table'), th = el('thead'), tr = el('tr');
       cfg.cols.forEach(function (c) { var h = el('th', null, c[0]); h.scope = 'col'; tr.appendChild(h); });
-      th.appendChild(tr); tb.appendChild(th); var bd = el('tbody');
+      tb.appendChild(el('caption', 'visually-hidden', cfg.title)); th.appendChild(tr); tb.appendChild(th); var bd = el('tbody');
       page.items.forEach(function (it) {
         var r = el('tr');
         cfg.cols.forEach(function (c) {
@@ -9585,7 +9588,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       .then(function (r) { return r.text().then(function (t) { var d = t ? JSON.parse(t) : null;
         if (!r.ok) { var m = (d && d.error && d.error.message) || ('HTTP ' + r.status); throw new Error(r.status === 403 ? 'Permission denied: ' + m : m); } return d; }); });
   }
-  function row(tb, cells) { var tr = el('tr'); cells.forEach(function (c, i) { var td = el('td'); if (c instanceof Node) td.appendChild(c); else { var b = el('bdi'); b.textContent = c; td.appendChild(b); } tr.appendChild(td); }); tb.appendChild(tr); return tr; }
+  function row(tb, cells) { var tr = el('tr'); var ths = tb.closest('table').querySelectorAll('thead th'); cells.forEach(function (c, i) { var td = el('td'); td.setAttribute('data-label', ths[i] ? ths[i].textContent : ''); if (c instanceof Node) td.appendChild(c); else { var b = el('bdi'); b.textContent = c; td.appendChild(b); } tr.appendChild(td); }); tb.appendChild(tr); return tr; }
   function badge(text, kind) { return el('span', 'badge ' + (kind || 'badge--unknown'), text); }
   var HEALTH = { healthy: 'badge--success', degraded: 'badge--warning', rate_limited: 'badge--warning', quota_exhausted: 'badge--danger', auth_failed: 'badge--danger', unavailable: 'badge--danger', timeout: 'badge--warning' };
   var providers = [];
@@ -9789,6 +9792,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       });
     }).catch(function (e) { box.textContent = 'Could not load the package: ' + e.message; });
   }
+  function ktpFrom(s) {
+    var m = /^(user|execution):(.+)$/.exec(s || '');
+    if (!m) return fmt(s);
+    var sp = el('span', null, m[1] === 'user' ? 'User ' : 'AI execution ');
+    sp.appendChild(el('bdi', 'identifier', m[2])); return sp;
+  }
   function loadKtp() {
     var st = $('aic-ktp-status').value;
     return api('/knowledge-transfer/packages?limit=25&offset=' + ktpOffset + (st ? '&status=' + encodeURIComponent(st) : '')).then(function (d) {
@@ -9796,7 +9805,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (!items.length) row(tb, [st ? 'No package with this status.' : 'No packages yet. They arrive from AI jobs run with the ktp_v1 output contract.', '', '', '', '', '']);
       items.forEach(function (x) {
         var c = ktpCounts(x), b = el('button', 'btn btn--quiet', 'Verdicts'); b.type = 'button'; b.onclick = function () { showKtp(x.id); };
-        row(tb, [new Date(x.created_at).toLocaleString(), x.job_key ? x.job_key + (x.item_key ? ' / ' + x.item_key : '') : x.submitted_by,
+        row(tb, [new Date(x.created_at).toLocaleString(), x.job_key ? x.job_key + (x.item_key ? ' / ' + x.item_key : '') : ktpFrom(x.submitted_by),
           badge(x.status.replace(/_/g, ' '), KTP_BADGE[x.status]), c.accepted, c.outcomes, b]);
       });
       var total = d.total || 0, end = Math.min(ktpOffset + items.length, total);
@@ -11256,8 +11265,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           return b; }); });
   }
   function say(id, m) { var n = $(id); if (n) n.textContent = m || ''; }
-  function table(cols, rows) {
+  function table(cols, rows, caption) {
     var w = el('div', 'table-wrap'), t = el('table', 'table'), h = el('thead'), hr = el('tr');
+    if (caption) t.appendChild(el('caption', 'visually-hidden', caption));
     cols.forEach(function (c) { var th = el('th', null, c[0]); th.scope = 'col'; hr.appendChild(th); });
     h.appendChild(hr); t.appendChild(h); var b = el('tbody');
     rows.forEach(function (r) { var tr = el('tr'); cols.forEach(function (c) { var td = el('td'); td.setAttribute('data-label', c[0]);
@@ -11343,7 +11353,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
             .catch(function (er) { say('ws-msg', er.message); }); }; return i; }],
         ['Order', function (s) { var w = el('span');
           w.appendChild(btn('Up', function () { move(rows, s, -1); })); w.appendChild(document.createTextNode(' '));
-          w.appendChild(btn('Down', function () { move(rows, s, 1); })); return w; }]], rows));
+          w.appendChild(btn('Down', function () { move(rows, s, 1); })); return w; }]], rows, 'Page sections and their order'));
     }).catch(function (e) { say('ws-msg', e.message); });
   }
   function move(rows, s, dir) {
