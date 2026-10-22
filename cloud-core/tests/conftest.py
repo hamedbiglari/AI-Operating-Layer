@@ -240,19 +240,26 @@ def viewer_headers(client: TestClient, register_org):
     )
 
 
+_redis_unreachable = False
+
+
 @pytest.fixture(autouse=True)
 def _reset_signin_throttles():
     """Each test starts with empty password-login and registration counters (security audit SEC-02/SEC-03).
     Without this, the per-address limits — correct in production — would count every test in the run as one
     client. The limits themselves are asserted in test_security_audit_2026_10.py."""
+    global _redis_unreachable
     from app.security.rate_limit import _redis_client
+    from redis.exceptions import ConnectionError as RedisConnectionError
 
-    client = _redis_client()
+    client = None if _redis_unreachable else _redis_client()
     if client is not None:
         try:
             for pattern in ("ratelimit:installation:login-pw-*", "ratelimit:installation:register-ip:*"):
                 for key in client.scan_iter(pattern):
                     client.delete(key)
+        except RedisConnectionError:
+            _redis_unreachable = True
         except Exception:  # noqa: BLE001 - no Redis: the limiter fails open and there is nothing to reset
             pass
     yield

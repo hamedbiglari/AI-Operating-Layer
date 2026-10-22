@@ -34,7 +34,7 @@ TIMEOUT = 20
 
 
 @pytest.fixture()
-def committed_org():
+def committed_org(db_engine):
     """A real, committed organization plus budget row, removed afterwards."""
     engine = create_engine(get_settings().DATABASE_URL, future=True, pool_size=15, max_overflow=15)
     Session = sessionmaker(bind=engine, future=True, expire_on_commit=False)

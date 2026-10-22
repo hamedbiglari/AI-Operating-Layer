@@ -7,6 +7,7 @@ there is nothing left to reconvert.
 """
 
 import hashlib
+import sys
 from pathlib import Path
 
 import pytest
@@ -183,6 +184,7 @@ def test_unsafe_suffix_is_not_carried_into_storage(temp_store) -> None:
     assert not stored.storage_path.endswith(".sh")
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX file modes not supported on Windows")
 def test_stored_file_is_not_world_readable(temp_store) -> None:
     import uuid as _uuid
 
