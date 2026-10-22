@@ -36,6 +36,7 @@ def list_claims(
     organization_id: UUID,
     knowledge_object_id: UUID | None,
     status: ClaimStatus | None,
+    evidence_strength: ClaimEvidenceStrength | None = None,
     sort: SortParams | None = None,
     limit: int,
     offset: int,
@@ -45,6 +46,8 @@ def list_claims(
         base = base.where(Claim.knowledge_object_id == knowledge_object_id)
     if status:
         base = base.where(Claim.status == status)
+    if evidence_strength:
+        base = base.where(Claim.evidence_strength == evidence_strength)
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
     rows = (

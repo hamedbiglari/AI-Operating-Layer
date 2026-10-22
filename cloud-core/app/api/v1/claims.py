@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.claim import Claim
-from app.models.enums import KNOWLEDGE_EDITOR_ROLES, ClaimStatus
+from app.models.enums import KNOWLEDGE_EDITOR_ROLES, ClaimEvidenceStrength, ClaimStatus
 from app.models.user import User
 from app.schemas.claim import ClaimCreate, ClaimRead, ClaimReviewRequest, ClaimUpdate
 from app.schemas.common import Page, PaginationParams, SortParams
@@ -21,6 +21,10 @@ router = APIRouter(prefix="/claims", tags=["claims"])
 def list_claims(
     knowledge_object_id: UUID | None = Query(default=None),
     status_filter: ClaimStatus | None = Query(default=None, alias="status"),
+    # e.g. ?evidence_strength=conflicting: claims whose VERIFIED evidence has
+    # real weight on both sides (claim_evidence_service.recompute_claim_aggregate).
+    # The Dashboard's "claims in conflict" count is this list's `total`.
+    evidence_strength: ClaimEvidenceStrength | None = Query(default=None),
     pagination: PaginationParams = Depends(),
     sort: SortParams = Depends(),
     current_user: User = Depends(get_current_user),
@@ -31,6 +35,7 @@ def list_claims(
         organization_id=current_user.organization_id,
         knowledge_object_id=knowledge_object_id,
         status=status_filter,
+        evidence_strength=evidence_strength,
         sort=sort,
         limit=pagination.limit,
         offset=pagination.offset,

@@ -229,6 +229,62 @@ def test_list_claims_filtered_by_status(client: TestClient, register_org) -> Non
     assert all(c["id"] != claim["id"] for c in draft["items"])
 
 
+def test_list_claims_filtered_by_evidence_strength(client: TestClient, register_org) -> None:
+    """The Dashboard's "claims in conflict" count is the `total` of
+    ?evidence_strength=conflicting, so the filter must be exact and tenant-scoped."""
+
+    def make_claim(org: dict, ctx: dict, predicate: str) -> dict:
+        return client.post(
+            "/api/v1/claims",
+            json={
+                "knowledge_object_id": ctx["ko"]["id"],
+                "subject_entity_id": ctx["subject"]["id"],
+                "predicate": predicate,
+                "object_entity_id": ctx["object"]["id"],
+            },
+            headers=org["headers"],
+        ).json()
+
+    org = register_org()
+    ctx = _setup_ko_with_entities(client, org["headers"])
+    conflicting = make_claim(org, ctx, "contains")
+    strong = make_claim(org, ctx, "is_source_of")
+    make_claim(org, ctx, "relates_to")  # left unverified
+    client.post(
+        f"/api/v1/claims/{conflicting['id']}/review",
+        json={"status": "disputed", "evidence_strength": "conflicting"},
+        headers=org["headers"],
+    )
+    client.post(
+        f"/api/v1/claims/{strong['id']}/review",
+        json={"status": "approved", "evidence_strength": "strong"},
+        headers=org["headers"],
+    )
+
+    # Another organization's conflicting claim must never be counted.
+    other = register_org()
+    other_ctx = _setup_ko_with_entities(client, other["headers"])
+    other_claim = make_claim(other, other_ctx, "contains")
+    client.post(
+        f"/api/v1/claims/{other_claim['id']}/review",
+        json={"status": "disputed", "evidence_strength": "conflicting"},
+        headers=other["headers"],
+    )
+
+    page = client.get("/api/v1/claims?evidence_strength=conflicting", headers=org["headers"]).json()
+    assert [c["id"] for c in page["items"]] == [conflicting["id"]]
+    assert page["total"] == 1
+
+    strong_page = client.get("/api/v1/claims?evidence_strength=strong", headers=org["headers"]).json()
+    assert [c["id"] for c in strong_page["items"]] == [strong["id"]]
+
+    unfiltered = client.get("/api/v1/claims", headers=org["headers"]).json()
+    assert unfiltered["total"] == 3
+
+    bad = client.get("/api/v1/claims?evidence_strength=not_a_strength", headers=org["headers"])
+    assert bad.status_code == 422
+
+
 # --- Regression tests for the Phase 2 review's three MUST FIX findings -----
 
 
