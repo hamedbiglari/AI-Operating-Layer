@@ -485,7 +485,7 @@ svg.icon[data-icon-size="default"] {
   z-index: 1;
   inline-size: 10px;
   block-size: 10px;
-  color: #fff;
+  color: var(--primary-contrast);
   pointer-events: none;
   /* A quick full spin plays alongside the shape morph — the flourish
      that makes toggling feel like an intentional, delightful moment
@@ -497,7 +497,10 @@ svg.icon[data-icon-size="default"] {
 /* The ring that used to appear on hover (a box-shadow "halo" around the
    circle) is removed — just the circle itself scaling up slightly now. */
 #sidebar-collapse:hover::after { transform: scale(1.15); }
+/* The button box is invisible (only its ::after dot is drawn), so the
+   keyboard focus ring goes on the dot rather than being removed. */
 #sidebar-collapse:focus-visible { outline: none; }
+#sidebar-collapse:focus-visible::after { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* Collapsed: the sidebar itself is width 0. Rather than the same small
    circle peeking out from being off-centred, it becomes a portrait
@@ -848,19 +851,23 @@ tr.is-new-version, .card.is-new-version { animation: highlight-new 2s ease-out; 
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-bold, 700);
-  color: var(--text);
-}
-/* Icon tracks the label's own size (now larger) via em, rather than the
-   fixed body-text --icon-size, so the two stay proportional together. */
-.stat__label .icon { inline-size: 1em; block-size: 1em; flex: 0 0 auto; }
-.stat__value {
-  font-size: var(--text-base);
-  font-weight: var(--weight-regular, 400);
-  line-height: 1.3;
-  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   color: var(--text-muted);
+}
+/* Icon tracks the label's own size via em, rather than the fixed
+   body-text --icon-size, so the two stay proportional together. */
+.stat__label .icon { inline-size: 1em; block-size: 1em; flex: 0 0 auto; }
+/* The figure is what a reader scans a stat card for, so it carries the
+   weight; the label names it quietly. --text-xl rather than the canonical
+   --text-2xl because some values here are words ("United States"). */
+.stat__value {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 /* The absolute date + time shown alongside a relative phrase like
    "2 hours ago" — smaller and quieter than the relative text, since the
@@ -893,7 +900,32 @@ tr.is-new-version, .card.is-new-version { animation: highlight-new 2s ease-out; 
 }
 .stat__note { font-size: var(--text-sm); color: var(--text-subtle); }
 .stat--attention { border-color: var(--warning); }
-.stat--attention .stat__label { color: var(--warning); }
+.stat--attention .stat__value { color: var(--warning); }
+/* A stat card that opens the list behind its number. */
+a.stat--link { color: inherit; text-decoration: none; transition: border-color .15s ease-out; }
+a.stat--link:hover { border-color: var(--border-strong); }
+a.stat--link.stat--attention:hover { border-color: var(--warning); }
+
+/* Sidebar sections: the nav grouped by job, each under a quiet label. */
+.nav__section { display: flex; flex-direction: column; gap: 2px; margin-block-start: var(--space-4); }
+.nav__heading { padding: 0 var(--space-3) var(--space-1); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-subtle); }
+
+/* Skip link: first stop for keyboard users, hidden until focused. */
+.skip-link:not(:focus) { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip-link:focus { position: fixed; inset-block-start: var(--space-3); inset-inline-start: var(--space-3); z-index: 100;
+  padding: var(--space-2) var(--space-4); background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.main:focus { outline: none; } /* focus target of the skip link, not a control */
+
+/* Drawer widths: a labelled Menu button opens the nav; the edge dot only
+   appears on the open drawer, where it closes it. */
+.topbar-menu { display: none; }
+@container app (max-width: 860px) {
+  .topbar-menu { display: inline-flex; }
+  .app:not(.sidebar-open) #sidebar-collapse { display: none; }
+  /* On the open drawer the dot sits on the drawer's real edge (its width is
+     min(280px, 85vw) here, not --sidebar-w) and above it, so it can close it. */
+  .app.sidebar-open #sidebar-collapse { inset-inline-start: min(280px, 85vw); z-index: 61; }
+}
 
 /* ---------- StatusBadge ---------- */
 
@@ -2226,7 +2258,7 @@ tr.is-paged-out { display: none; }
   min-inline-size: 17px; block-size: 17px; padding: 0 4px;
   display: grid; place-items: center;
   border-radius: 999px;
-  background: var(--primary); color: #fff;
+  background: var(--primary); color: var(--primary-contrast);
   font-size: var(--text-xs); font-weight: var(--weight-bold, 700);
   line-height: 1; border: 1.5px solid var(--surface);
   animation: notif-breathe 2.4s ease-in-out infinite;
@@ -2244,7 +2276,7 @@ tr.is-paged-out { display: none; }
   min-inline-size: 18px; block-size: 18px; padding: 0 5px;
   display: grid; place-items: center;
   border-radius: 999px;
-  background: var(--primary); color: #fff;
+  background: var(--primary); color: var(--primary-contrast);
   font-size: var(--text-xs); font-weight: var(--weight-bold, 700);
 }
 .nav__badge[hidden] { display: none; }
@@ -2762,6 +2794,17 @@ tr.is-paged-out { display: none; }
 .live-panel [hidden] { display: none !important; }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel) { display: none !important; }
+/* Compact live panel (Dashboard): title, note and Connect button share one
+   line; everything else in the panel takes a full row when shown. Children
+   stay direct so the data-state chip still finds `.live-panel > .card__title`. */
+.live-panel--compact { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); padding: var(--space-3) var(--space-4); }
+.live-panel--compact > .card__title { margin: 0; font-size: var(--text-base); }
+.live-panel--compact > .live-note { margin: 0; flex: 1 1 18rem; color: var(--text-muted); font-size: var(--text-sm); }
+.live-panel--compact > :not(.card__title):not(.live-note):not(.live-toggle) { flex: 1 0 100%; }
+.live-hint { grid-column: 1 / -1; margin: 0; color: var(--text-muted); font-size: var(--text-sm); }
+/* The compact panel already says the Dashboard is sample data; the
+   harness-wide note would say it a second time. */
+body:has(#screen-dashboard.is-active) .harness-note { display: none; }
 </style>
 <style>
 /* ===== Responsive & sizing standards (full dashboard audit) ============
@@ -3391,8 +3434,10 @@ button.card { color: inherit; font: inherit; }
 </div>
 </div>
   <div class="app">
+    <a class="skip-link" href="#main">Skip to main content</a>
     <header class="app-topbar">
       <div class="app-topbar__start">
+        <button type="button" class="btn topbar-menu" id="topbar-menu" aria-controls="app-sidebar" aria-expanded="false"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M9 3v18"/></svg><span>Menu</span></button>
         <div class="brand"><svg class="icon brand__pulse" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="20px" height="20px" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg><span>AI Operating Layer</span></div>
       </div>
       <div class="app-topbar__end">
@@ -3441,39 +3486,54 @@ button.card { color: inherit; font: inherit; }
               <a href="#screen-analytics" data-nav-target="screen-analytics">Analytics &amp; demand</a>
               <a href="#screen-traffic" data-nav-target="screen-traffic">Traffic &amp; content</a>
               <a href="#screen-states" data-nav-target="screen-states">Edge states</a>
-            </div></div>
+            </div></div></div>
+          <a href="#screen-products" data-nav-target="screen-products"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-1.2 11.1A2 2 0 0 1 16.8 21H7.2a2 2 0 0 1-2-1.9zM8.5 8V6a3.5 3.5 0 0 1 7 0v2"/></svg><span>Products</span></a>
+          <a href="#screen-inbox" data-nav-target="screen-inbox"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8z"/></svg><span>Inbox</span><span class="nav__badge" id="nav-inbox-badge" hidden></span></a>
+          <div class="nav__section" role="group" aria-labelledby="nav-h-knowledge">
+          <span class="nav__heading" id="nav-h-knowledge">Knowledge</span>
           <div class="nav__group" data-nav-group="knowledge"><div class="nav__group-row"><a href="#screen-knowledge" data-nav-target="screen-knowledge"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg><span>Knowledge Objects</span></a><button type="button" class="nav__disclosure" aria-expanded="false" aria-controls="navsub-knowledge" aria-label="Toggle knowledge submenu"><svg class="icon nav__chevron" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5 12 15.5 18 9.5"/></svg></button></div><div class="nav__sub" id="navsub-knowledge"><div class="nav__sub-inner">
               <a href="#screen-research" data-nav-target="screen-research">Research</a>
-            </div></div>
-          <a href="#screen-products" data-nav-target="screen-products"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-1.2 11.1A2 2 0 0 1 16.8 21H7.2a2 2 0 0 1-2-1.9zM8.5 8V6a3.5 3.5 0 0 1 7 0v2"/></svg><span>Products</span></a>
-          <a href="#screen-analytics" data-nav-target="screen-analytics"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Analytics</span></a>
+            </div></div></div>
+          <a href="#screen-matrix" data-nav-target="screen-matrix"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Categories &amp; matrix</span></a>
+          <a href="#screen-coverage" data-nav-target="screen-coverage"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Coverage audit</span></a>
+          <a href="#screen-publications" data-nav-target="screen-publications"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/></svg><span>Publications &amp; citations</span></a>
+          </div>
+          <div class="nav__section" role="group" aria-labelledby="nav-h-ai">
+          <span class="nav__heading" id="nav-h-ai">AI</span>
           <a href="#screen-visibility" data-nav-target="screen-visibility"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg><span>AI Visibility</span></a>
           <a href="#screen-ai-executions" data-nav-target="screen-ai-executions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" style="inline-size:var(--icon-size);block-size:var(--icon-size)" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7M17 15l2 2 3-4"/></svg><span>AI executions</span></a>
           <a href="#screen-ai-center" data-nav-target="screen-ai-center"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="inline-size:var(--icon-size);block-size:var(--icon-size)"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 10h4v4h-4z"/></svg><span>AI Center</span></a>
           <a href="#screen-ai-catalog" data-nav-target="screen-ai-catalog"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="inline-size:var(--icon-size);block-size:var(--icon-size)"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span>AI Catalog</span></a>
           <a href="#screen-memory" data-nav-target="screen-memory"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg><span>Memory Center</span></a>
-          <a href="#screen-matrix" data-nav-target="screen-matrix"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Categories &amp; matrix</span></a>
-          <a href="#screen-coverage" data-nav-target="screen-coverage"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Coverage audit</span></a>
-          <a href="#screen-publications" data-nav-target="screen-publications"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/></svg><span>Publications &amp; citations</span></a>
+          <a href="#screen-access" data-nav-target="screen-access"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.3 2.9 8.2 7 9.5 4.1-1.3 7-5.2 7-9.5V6l-7-3Z"/></svg><span>AI access</span></a>
+          <a href="#screen-chat-settings" data-nav-target="screen-chat-settings"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.9-.9L3 21l1.9-5.6A8.4 8.4 0 0 1 4 11.5a8.4 8.4 0 0 1 8.5-8.5A8.4 8.4 0 0 1 21 11.5Z"/></svg><span>Chat settings</span></a><a href="#screen-chat" data-nav-target="screen-chat"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4z"/><path d="M8.5 9h7M8.5 12h4.5" opacity=".6"/></svg><span>Command workspace</span></a>
+          </div>
+          <div class="nav__section" role="group" aria-labelledby="nav-h-website">
+          <span class="nav__heading" id="nav-h-website">Website</span>
+          <a href="#screen-analytics" data-nav-target="screen-analytics"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Analytics</span></a>
           <a href="#screen-site-blog" data-nav-target="screen-site-blog"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg><span>Website: blog</span></a>
           <a href="#screen-site-sections" data-nav-target="screen-site-sections"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="11" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="3" rx="1"/></svg><span>Website: page sections</span></a>
           <a href="#screen-site-subscribers" data-nav-target="screen-site-subscribers"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon-size="default"><path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/></svg><span>Website: subscribers</span></a>
-          <a href="#screen-access" data-nav-target="screen-access"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.3 2.9 8.2 7 9.5 4.1-1.3 7-5.2 7-9.5V6l-7-3Z"/></svg><span>AI access</span></a>
-          <a href="#screen-chat-settings" data-nav-target="screen-chat-settings"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.9-.9L3 21l1.9-5.6A8.4 8.4 0 0 1 4 11.5a8.4 8.4 0 0 1 8.5-8.5A8.4 8.4 0 0 1 21 11.5Z"/></svg><span>Chat settings</span></a><a href="#screen-chat" data-nav-target="screen-chat"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4z"/><path d="M8.5 9h7M8.5 12h4.5" opacity=".6"/></svg><span>Command workspace</span></a>
-          <a href="#screen-inbox" data-nav-target="screen-inbox"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8z"/></svg><span>Inbox</span><span class="nav__badge" id="nav-inbox-badge" hidden></span></a>
-          <a href="#screen-admin-billing" data-nav-target="screen-admin-billing"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3zM3 11h18M7 15h4"/></svg><span>Wallet &amp; billing</span></a>
           <a href="#screen-statistics" data-nav-target="screen-statistics"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Statistics</span></a>
+          </div>
+          <div class="nav__section" role="group" aria-labelledby="nav-h-billing">
+          <span class="nav__heading" id="nav-h-billing">Billing</span>
+          <a href="#screen-admin-billing" data-nav-target="screen-admin-billing"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3zM3 11h18M7 15h4"/></svg><span>Wallet &amp; billing</span></a>
           <a href="#screen-payment" data-nav-target="screen-payment"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span>Payment</span></a>
           <a href="#screen-transactions" data-nav-target="screen-transactions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg><span>Transactions</span></a>
+          </div>
+          <div class="nav__section" role="group" aria-labelledby="nav-h-admin">
+          <span class="nav__heading" id="nav-h-admin">Admin &amp; settings</span>
           <a href="#screen-admin-users" data-nav-target="screen-admin-users" class="nav--admin-only"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg><span>Users</span></a>
           <a href="#screen-operations" data-nav-target="screen-operations"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 7 17a3.5 3.5 0 0 1-5-5l2.5-2.5M14.5 9.5 17 7a3.5 3.5 0 0 1 5 5l-2.5 2.5M9 15l6-6"/></svg><span>Connection & logs</span></a>
           <a href="#screen-admin-overview" data-nav-target="screen-admin-overview"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/></svg><span>Overview</span></a>
           <a href="#screen-settings" data-nav-target="screen-settings"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.14.6.6 1.07 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></a>
+          </div>
         </nav>
         <a href="#" class="nav__logout" style="display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);color:var(--text-muted)"><svg class="icon icon--mirror" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/><path d="M16 17l4-5-4-5M20 12H9"/></svg><span>Log out</span></a>
       </aside>
       <div class="main-column" style="display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden">
-      <main class="main" id="main">
+      <main class="main" id="main" tabindex="-1">
         
 <section class="screen is-active" id="screen-dashboard" aria-labelledby="h-dashboard">
   <nav class="breadcrumbs" aria-label="Breadcrumb"><span>Hamed Commerce</span><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span>toranjebin.ir</span></nav>
@@ -3484,19 +3544,19 @@ button.card { color: inherit; font: inherit; }
   </div>
 
   <div class="stat-grid">
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">248</span><span class="stat__note">12 added this month</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg>Processing</span><span class="stat__value">7</span><span class="stat__note">Oldest queued 4 min ago</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Completed</span><span class="stat__value">231</span><span class="stat__note">10 ended in a failure state</span></div>
-    <div class="stat stat--attention"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Needs review</span><span class="stat__value">10</span><span class="stat__note">6 conversions, 4 conflicts</span></div>
+    <a class="stat stat--link" href="#screen-sources"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">248</span><span class="stat__note">12 added this month</span></a>
+    <a class="stat stat--link" href="#screen-sources?status=processing"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg>Processing</span><span class="stat__value">7</span><span class="stat__note">Oldest queued 4 min ago</span></a>
+    <a class="stat stat--link" href="#screen-sources?status=success"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Completed</span><span class="stat__value">231</span><span class="stat__note">10 ended in a failure state</span></a>
+    <a class="stat stat--attention stat--link" href="#waiting-on-person"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Needs human review</span><span class="stat__value">10</span><span class="stat__note">6 conversions, 4 conflicts</span></a>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px, 100%), 1fr));gap:var(--space-4)">
-    <div class="card">
+    <div class="card" id="waiting-on-person" tabindex="-1">
       <h2 class="card__title">Waiting on a person</h2>
       <p style="color:var(--text-muted);margin-top:0">These are not errors the system can clear itself.</p>
       <dl class="kv">
-        <dt>Evidence pending review</dt><dd class="num">38</dd>
-        <dt>Claims in conflict</dt><dd class="num">7</dd>
+        <dt>Evidence awaiting review</dt><dd class="num">38</dd>
+        <dt>Conflicting claims</dt><dd class="num">7</dd>
         <dt>Knowledge gaps open</dt><dd><a href="#screen-gap" class="num">21</a></dd>
         <dt>Duplicate decisions</dt><dd class="num">2</dd>
       </dl>
@@ -3512,7 +3572,7 @@ button.card { color: inherit; font: inherit; }
     </div>
     <div class="card">
       <h2 class="card__title">Visible to AI right now</h2>
-      <p style="color:var(--text-muted);margin-top:0">Two different signals, kept separate on purpose — see below. <a href="#screen-visibility-detail">Open the full report</a>.</p>
+      <p style="color:var(--text-muted);margin-top:0">Two different signals, kept separate on purpose. <a href="#screen-visibility-detail">Open the full report</a>.</p>
       <dl class="kv">
         <dt>Platform observations (30d)</dt><dd><a href="#screen-visibility-detail" class="num">47</a></dd>
         <dt>Automated requests (30d)</dt><dd><a href="#screen-visibility-detail" class="num">2,085</a></dd>
@@ -7663,8 +7723,21 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   // cross-links) now works, because they all already point at real
   // section ids; they just needed something listening.
   function routeFromHash() {
-    var id = location.hash.replace(/^#/, '');
-    if (id && document.getElementById(id)) show(id);
+    // A hash may carry a query (#screen-sources?status=success) and may name
+    // an element inside a screen (#waiting-on-person): show the screen that
+    // owns it, then bring that element into view.
+    var id = location.hash.replace(/^#/, '').split('?')[0];
+    var el = id && document.getElementById(id);
+    if (!el) return;
+    var screen = el.classList.contains('screen') ? el : el.closest('.screen');
+    if (screen) show(screen.id);
+    if (el === screen) window.scrollTo(0, 0);
+    if (el !== screen) {
+      // Clear the harness's sticky toolbar so the target is not scrolled under it.
+      var bar = document.querySelector('.harness-bar');
+      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0) - 16);
+      el.focus({ preventScroll: true });
+    }
   }
   window.addEventListener('hashchange', routeFromHash);
   if (location.hash) routeFromHash(); else show('screen-dashboard');
@@ -7736,6 +7809,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var sidebarEdge = document.getElementById('sidebar-edge');
   var appEl = document.querySelector('.app');
   var sidebarEl = document.getElementById('app-sidebar');
+  var topMenu = document.getElementById('topbar-menu');
 
   if (sidebarCollapse && appEl) {
     // THREE STATES, driven by two different inputs (requirement 1):
@@ -7755,6 +7829,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var shown = drawer ? open : !collapsed;
       sidebarCollapse.setAttribute('aria-expanded', String(shown));
       sidebarCollapse.setAttribute('aria-label', shown ? 'Hide navigation' : 'Show navigation');
+      if (topMenu) topMenu.setAttribute('aria-expanded', String(drawer && open));
     }
 
     // Drawer mode is detected from the SIDEBAR'S OWN computed position
@@ -7818,11 +7893,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       setLabel();
     });
 
+    // The labelled Menu button (drawer widths only) drives the same toggle.
+    if (topMenu) topMenu.addEventListener('click', function () { sidebarCollapse.click(); });
+
     // Tapping the backdrop closes the drawer — the first gesture people try.
     document.addEventListener('click', function (e) {
       if (!appEl.classList.contains('sidebar-open')) return;
       if (sidebarEl && sidebarEl.contains(e.target)) return;
-      if (sidebarCollapse.contains(e.target)) return;
+      if (sidebarCollapse.contains(e.target) || (topMenu && topMenu.contains(e.target))) return;
       appEl.classList.remove('sidebar-open');
       setLabel();
     });
@@ -8694,22 +8772,39 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       rows.forEach(function (tr) { tbody.appendChild(tr); });
 
       var q = (input && input.value || '').trim().toLowerCase();
+      // Status filter from a link such as #screen-sources?status=success:
+      // keeps rows whose Status badge carries badge--<status>.
+      var status = statusFromHash();
       var shown = 0;
       rows.forEach(function (tr) {
-        var hit = !q || tr.textContent.toLowerCase().indexOf(q) !== -1;
+        var hit = (!q || tr.textContent.toLowerCase().indexOf(q) !== -1) &&
+          (!status || !!tr.querySelector('td[data-label="Status"] .badge--' + status));
         tr.classList.toggle('is-filtered', !hit);
         if (hit) shown++;
       });
 
       if (count) {
-        count.textContent = q
+        count.textContent = (q || status)
           ? (shown === 0
-              ? 'No sources match “' + (input.value.trim()) + '”.'
+              ? (q ? 'No sources match “' + (input.value.trim()) + '”.' : 'No sources with this status.')
               : 'Showing ' + shown + ' of ' + rows.length + ' sources.')
           : 'Showing all ' + rows.length + ' sources.';
+        if (status) {
+          var badge = tbody.querySelector('td[data-label="Status"] .badge--' + status);
+          count.textContent += ' Status: ' + (badge ? badge.textContent.trim() : status) + '. ';
+          var all = document.createElement('a'); all.href = '#screen-sources'; all.textContent = 'Show all sources';
+          count.appendChild(all);
+        }
       }
     }
 
+    function statusFromHash() {
+      var m = location.hash.match(/^#screen-sources\?(?:.*&)?status=([a-z-]+)/);
+      return m ? m[1] : '';
+    }
+    document.addEventListener('aiol:screenchange', function (e) {
+      if (e.detail.id === 'screen-sources') apply();
+    });
     if (input) input.addEventListener('input', apply);
 
     if (sortBtn) {
@@ -8911,12 +9006,26 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     });
   });
 
+  // Skip link: focus the content region directly, so the hash router is
+  // not asked to show a screen called "main".
+  document.querySelector('.skip-link').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('main').focus();
+  });
+
   // Internal links jump between prototype screens instead of scrolling.
   document.addEventListener('click', function (e) {
     var a = e.target.closest('a[href^="#screen-"]');
     if (!a) return;
+    var href = a.getAttribute('href');
+    // A link carrying a filter (#screen-sources?status=success) goes
+    // through the hash router so the target screen can read it.
+    if (href.indexOf('?') !== -1) return;
     e.preventDefault();
-    show(a.getAttribute('href').slice(1));
+    // Drop a filter left in the hash by an earlier link, so it cannot
+    // silently re-apply when this screen is shown without one.
+    if (location.hash.indexOf('?') !== -1) history.replaceState(null, '', href);
+    show(href.slice(1));
     window.scrollTo(0, 0);
   });
 
@@ -9227,7 +9336,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 (function () {
   var LIVE = null;
   var SCREENS = {
-    'screen-dashboard': { kind: 'overview', title: 'Live overview (Cloud Core)' },
+    'screen-dashboard': { kind: 'overview', title: 'Live overview (Cloud Core)', compact: true },
     'screen-knowledge': { kind: 'table', title: 'Knowledge objects (Cloud Core)', endpoint: '/knowledge', search: 'search',
       cols: [['Name', 'canonical_name'], ['Type', 'object_type'], ['Status', 'status', 'badge'], ['Version', 'version'], ['Updated', 'updated_at', 'date']],
       detail: 'knowledge' },
@@ -9536,8 +9645,26 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var cfg = SCREENS[id]; screen.setAttribute('data-live-wired', '');
     var panel = el('section', 'card live-panel'); panel.setAttribute('aria-label', cfg.title); panel.id = 'live-' + id;
     panel.appendChild(el('h2', 'card__title', cfg.title));
-    var note = el('p', 'live-note', 'Not connected — the content below this panel is sample data. Connect to show real Cloud Core data here.');
-    panel.appendChild(note); panel.appendChild(connectForm(panel));
+    var note = el('p', 'live-note', cfg.compact
+      ? 'Sample data: the counts on this screen are illustrative, not read from Cloud Core.'
+      : 'Not connected — the content below this panel is sample data. Connect to show real Cloud Core data here.');
+    panel.appendChild(note);
+    var form = connectForm(panel), toggle = null;
+    // Compact panels stay one line until the user asks to connect, so the
+    // screen's own content leads the page instead of a configuration form.
+    if (cfg.compact) {
+      panel.classList.add('live-panel--compact');
+      form.id = 'live-connect-' + id; form.hidden = true;
+      form.appendChild(el('p', 'live-hint', 'The token is kept in this page’s memory only and is never saved.'));
+      toggle = el('button', 'btn live-toggle', 'Connect Cloud Core'); toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', 'false'); toggle.setAttribute('aria-controls', form.id);
+      toggle.addEventListener('click', function () {
+        var open = form.hidden; form.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
+        if (open) form.querySelector('.live-base').focus(); else state(panel, 'ready');
+      });
+      panel.appendChild(toggle);
+    }
+    panel.appendChild(form);
     var s = el('div', 'live-state callout'); s.setAttribute('role', 'status'); s.setAttribute('aria-live', 'polite'); s.hidden = true; panel.appendChild(s);
     var st = { offset: 0, search: '', filter: '' };
     if (cfg.search || cfg.filter) {
@@ -9558,6 +9685,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     document.addEventListener('aiol:live', function () {
       note.textContent = 'Connected to ' + LIVE.base + '. Showing real Cloud Core data; the sample content of this screen is hidden.';
       panel.querySelector('.live-connect').hidden = true;
+      if (toggle) toggle.hidden = true;
       var tb = panel.querySelector('.live-toolbar'); if (tb) tb.hidden = false;
       if (cfg.kind === 'overview') overview(panel); else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
@@ -10731,7 +10859,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   /* ---------- page titles (SEO/UX: one descriptive title per auth page) ---------- */
   var TITLES = { 'screen-login': 'Log in · AI Operating Layer', 'screen-signup': 'Create your account · AI Operating Layer', 'screen-login-code': 'Enter your code · AI Operating Layer' };
   var baseTitle = document.title;
-  function syncTitle() { var id = (location.hash || '').slice(1); document.title = TITLES[id] || baseTitle; }
+  function syncTitle() { var id = (location.hash || '').slice(1).split('?')[0]; document.title = TITLES[id] || baseTitle; }
   window.addEventListener('hashchange', syncTitle); syncTitle();
 
   /* ---------- VPN / proxy advisory (never blocks sign-in or sign-up) ---------- */

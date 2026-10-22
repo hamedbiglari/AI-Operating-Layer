@@ -2531,6 +2531,15 @@ body { font-family: var(--font-ui); color: var(--text); }
 </html>
 `;
 
+// index.html has drifted far ahead of this script (see
+// docs/v5/V5_DASHBOARD_AUDIT.md, "Build drift"). Overwriting it would delete
+// the v5 work, so refuse unless the caller explicitly accepts that.
+if (!process.argv.includes('--force-overwrite')) {
+  console.error('Refusing to overwrite visual-harness/index.html: it is ahead of build.js.\n' +
+    'See docs/v5/V5_DASHBOARD_AUDIT.md ("Build drift"). Pass --force-overwrite to write anyway.');
+  process.exit(1);
+}
+
 fs.writeFileSync(path.join(__dirname, 'index.html'), html, 'utf8');
 console.log('visual-harness/index.html written (%d KB), %d icons from the canonical registry',
   Math.round(Buffer.byteLength(html) / 1024), Object.keys(registry.icons).length);

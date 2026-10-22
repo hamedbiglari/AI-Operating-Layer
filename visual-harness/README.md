@@ -11,7 +11,7 @@ to measure.
 
 | File | What it is |
 |---|---|
-| `build.js` | Generates `index.html` by inlining `frontend/design-system/*.css` and rendering icons from `frontend/icons/icon-paths.json`. Never edit `index.html` by hand. |
+| `build.js` | Generates `index.html` by inlining `frontend/design-system/*.css` and rendering icons from `frontend/icons/icon-paths.json`. **Out of date:** `index.html` is now well ahead of it, so edit `index.html` directly until `build.js` is reconciled (see `docs/v5/V5_DASHBOARD_AUDIT.md`, "Build drift"). It refuses to overwrite without `--force-overwrite`. |
 | `index.html` | The generated prototype. Opens from `file://`; no server, no network beyond the web font. |
 | `check.js` | Static conformance checks. No browser needed. **Not** the visual gate. |
 | `measure.js` | Rendered verification across screen × locale × theme × width. **This** is the visual gate. |
@@ -19,7 +19,7 @@ to measure.
 ## Run
 
 ```bash
-node visual-harness/build.js     # regenerate after any token or icon change
+node visual-harness/build.js     # currently refuses to run: it would delete the v5 work (see above)
 node visual-harness/check.js     # 33 source-level checks, exit 0/1
 node visual-harness/measure.js   # exit 0 pass, 1 fail, 2 ENVIRONMENT BLOCKED
 ```
