@@ -3540,8 +3540,8 @@ button.card { color: inherit; font: inherit; }
   <div class="stat-grid">
     <a class="stat stat--link" href="#screen-sources"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">248</span><span class="stat__note">12 added this month</span></a>
     <a class="stat stat--link" href="#screen-sources?status=processing"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg>Processing</span><span class="stat__value">7</span><span class="stat__note">Oldest queued 4 min ago</span></a>
-    <a class="stat stat--link" href="#screen-sources?status=success"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Completed</span><span class="stat__value">231</span><span class="stat__note">10 ended in a failure state</span></a>
-    <a class="stat stat--attention stat--link" href="#waiting-on-person"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Needs human review</span><span class="stat__value">10</span><span class="stat__note">6 conversions, 4 conflicts</span></a>
+    <a class="stat stat--link" href="#screen-sources?status=success"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Succeeded</span><span class="stat__value">221</span><span class="stat__note">10 failed</span></a>
+    <a class="stat stat--attention stat--link" href="#waiting-on-person"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Needs human review</span><span class="stat__value">13</span><span class="stat__note">6 conversions + 7 claims in conflict</span></a>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px, 100%), 1fr));gap:var(--space-4)">
@@ -3549,6 +3549,7 @@ button.card { color: inherit; font: inherit; }
       <h2 class="card__title">Waiting on a person</h2>
       <p style="color:var(--text-muted);margin-top:0">These are not errors the system can clear itself.</p>
       <dl class="kv">
+        <dt>Conversions to review</dt><dd class="num">6</dd>
         <dt>Evidence awaiting review</dt><dd class="num">38</dd>
         <dt>Conflicting claims</dt><dd class="num">7</dd>
         <dt>Knowledge gaps open</dt><dd><a href="#screen-gap" class="num">21</a></dd>
@@ -11912,10 +11913,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "12 added this month": "۱۲ مورد در این ماه اضافه شد",
     "Processing": "در حال پردازش",
     "Oldest queued 4 min ago": "قدیمی‌ترین مورد در صف: ۴ دقیقه پیش",
-    "Completed": "تکمیل‌شده",
-    "10 ended in a failure state": "۱۰ مورد با وضعیت ناموفق پایان یافت",
+    "Succeeded": "موفق",
+    "10 failed": "۱۰ ناموفق",
     "Needs human review": "نیازمند بررسی انسانی",
-    "6 conversions, 4 conflicts": "۶ تبدیل، ۴ تعارض",
+    "6 conversions + 7 claims in conflict": "۶ تبدیل + ۷ ادعای متعارض",
+    "Conversions to review": "تبدیل‌های نیازمند بررسی",
     "Waiting on a person": "در انتظار اقدام شما",
     "These are not errors the system can clear itself.": "این‌ها خطاهایی نیستند که سیستم بتواند خودش برطرف کند.",
     "Evidence awaiting review": "شواهد در انتظار بررسی",
