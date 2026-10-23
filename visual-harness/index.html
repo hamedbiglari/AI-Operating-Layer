@@ -10471,10 +10471,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   }
   /* ---------- preferences: UI -> API -> DB -> reload ---------- */
   var applying = false;
-  function setPicker(id, value) { var sel = $(id); if (!sel || !value || sel.value === value) return;
+  // Pickers the user changed while the saved preferences were still loading:
+  // their choice wins over the late reply (and savePrefs has already stored it).
+  var touched = {};
+  function setPicker(id, value) { var sel = $(id); if (!sel || !value || sel.value === value || touched[id]) return;
     if (!Array.prototype.some.call(sel.options, function (o) { return o.value === value; })) return;
     applying = true; sel.value = value; sel.dispatchEvent(new Event('change', { bubbles: true })); applying = false; }
   function loadPrefs() {
+    touched = {};
     api('/users/me/preferences').then(function (pf) {
       setPicker('pick-lang', pf.language);
       if (pf.theme === 'light' || pf.theme === 'dark') setPicker('pick-theme', pf.theme);
@@ -10489,7 +10493,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       .catch(function (e) { $('pref-status').textContent = 'Not saved: ' + e.message; });
   }
   ['pick-lang', 'pick-theme'].forEach(function (id) { var sel = $(id); if (!sel) return;
-    sel.addEventListener('change', function () { var b = {}; b[id === 'pick-lang' ? 'language' : 'theme'] = sel.value; savePrefs(b); }); });
+    sel.addEventListener('change', function () { if (!applying) touched[id] = true;
+      var b = {}; b[id === 'pick-lang' ? 'language' : 'theme'] = sel.value; savePrefs(b); }); });
   document.querySelectorAll('[data-pref-notif]').forEach(function (c) { c.addEventListener('change', function () { var n = {}; n[c.getAttribute('data-pref-notif')] = c.checked; savePrefs({ notifications: n }); }); });
   document.addEventListener('aiol:live', loadPrefs);
 
