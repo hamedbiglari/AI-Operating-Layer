@@ -38,6 +38,9 @@ jobs:
       - name: Check translation templates
         run: node visual-harness/i18n-coverage.js
 
+      - name: Check source characters
+        run: node visual-harness/check-source-chars.js
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
