@@ -1344,6 +1344,56 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
 .not-available { color: var(--text-subtle); font-style: normal; }
 .not-available::before { content: "—"; margin-inline-end: var(--space-1); }
 
+/* A metric with no data source yet: "—" plus an always-visible badge, and a
+   tooltip that opens on hover and on keyboard focus (CSS only). */
+.kv dd.kv__pending { position: relative; cursor: help; display: inline-flex; align-items: center; gap: 6px; justify-self: start; }
+.kv__pending:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.kv__pending-value { color: var(--text-subtle); }
+.kv__pending-badge {
+  font-size: var(--text-xs); line-height: 1.4;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.kv__pending-tooltip {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  z-index: 10;
+  inline-size: max-content; max-inline-size: min(280px, calc(100vw - 32px));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--text); color: var(--surface);
+  font-size: var(--text-sm); line-height: 1.4; text-align: start; overflow-wrap: normal;
+  box-shadow: var(--shadow-2);
+  opacity: 0; visibility: hidden; pointer-events: auto;
+  transition: opacity 150ms ease, visibility 150ms ease;
+}
+/* Invisible bridge over the 8px gap, so the pointer can move onto the tooltip
+   without it closing (WCAG 1.4.13 Hoverable). */
+.kv__pending-tooltip::before { content: ""; position: absolute; inset-inline: 0; top: 100%; block-size: 8px; }
+.kv__pending-tooltip::after {
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: var(--text);
+}
+/* Only where a real hover exists: touch browsers keep :hover "stuck" after a
+   tap, which would open the tooltip on touch. */
+@media (hover: hover) {
+  .kv__pending:hover .kv__pending-tooltip { opacity: 1; visibility: visible; transition-delay: 300ms; }
+}
+.kv__pending:focus-visible .kv__pending-tooltip { opacity: 1; visibility: visible; transition-delay: 0ms; }
+@media (prefers-reduced-motion: reduce) {
+  .kv__pending-tooltip { transition: none; }
+}
+/* Narrow screens: a centred tooltip would run off the edge, so pin it to the
+   row's inline-end. Logical properties flip this, and the arrow, in RTL.
+   240px is what fits between the badge and the viewport edge at 320-480px. */
+@media (max-width: 480px) {
+  .kv__pending-tooltip { left: auto; inset-inline-end: 0; transform: none; max-inline-size: min(240px, calc(100vw - 24px)); }
+  .kv__pending-tooltip::after { left: auto; inset-inline-end: var(--space-3); transform: none; }
+}
+
 /* ---------- Skeleton ---------- */
 
 .skeleton {
@@ -3553,7 +3603,7 @@ button.card { color: inherit; font: inherit; }
         <dt>Evidence awaiting review</dt><dd class="num">38</dd>
         <dt>Conflicting claims</dt><dd class="num">7</dd>
         <dt>Knowledge gaps open</dt><dd><a href="#screen-gap" class="num">21</a></dd>
-        <dt>Duplicate decisions</dt><dd class="num">2</dd>
+        <dt id="dup-label">Duplicate decisions</dt><dd class="kv__pending" tabindex="0" aria-labelledby="dup-label dup-badge" aria-describedby="dup-tooltip"><span class="kv__pending-value" aria-hidden="true">—</span><span class="kv__pending-badge" id="dup-badge">Coming soon</span><span class="kv__pending-tooltip" id="dup-tooltip" role="tooltip">This metric will appear once duplicate-decision tracking is available.</span></dd>
       </dl>
     </div>
     <div class="card">
@@ -8855,6 +8905,15 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     wrap.addEventListener('pointerleave', function () { tip.hidden = true; });
   })();
 
+  // ---- Pending-metric tooltip: Escape closes it (WCAG 1.4.13) ----------
+  // The tooltip is CSS-only and opens on :focus-visible, so blurring the row
+  // is the smallest way to dismiss it from the keyboard.
+  document.querySelectorAll('.kv__pending').forEach(function (el) {
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') el.blur();
+    });
+  });
+
   // ---- Collapsible submenus: standard click-to-open/close accordion -----
   // Each group has its own independent open/closed state (opening one does
   // not close another) — the request was for the group header to toggle
@@ -11924,6 +11983,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Conflicting claims": "ادعاهای متعارض",
     "Knowledge gaps open": "شکاف‌های باز",
     "Duplicate decisions": "بررسی موارد تکراری",
+    "Coming soon": "به‌زودی",
+    "This metric will appear once duplicate-decision tracking is available.": "این معیار پس از فعال‌شدن ردیابی تصمیم‌های تکراری نمایش داده می‌شود.",
     "Coverage honesty": "شفافیت پوشش",
     "4 of the 7 highest-priority claims rest on sources whose full text was never accessible.": "۴ مورد از ۷ ادعای با بالاترین اولویت به منابعی تکیه دارند که متن کامل آن‌ها هرگز در دسترس نبوده است.",
     "Review which claims": "ببینید کدام ادعاها",
