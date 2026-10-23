@@ -21,11 +21,13 @@ two ways.
 | Version | نسخه |
 | Research | پژوهش |
 | Research again (button) | اجرای مجدد پژوهش |
+| Research workspace (the "Research again" button in live mode) | میز کار پژوهش |
 | Category / Section / Matrix | دسته / بخش / ماتریس |
 | Coverage audit | ممیزی پوشش |
 | Citation / Publication | استناد / انتشار |
 | Full text | متن کامل |
 | Reliability | قابل اعتماد بودن |
+| Editorial assessment | ارزیابی تحریریه |
 
 ## Statuses
 
@@ -37,6 +39,8 @@ two ways.
 | Needs human review / Pending review | نیازمند بررسی انسانی / در انتظار بررسی |
 | Open / Resolved / Dismissed | باز / حل‌شده / ردشده |
 | Sample data / Live data / Not connected | دادهٔ نمونه / دادهٔ زنده / متصل نیست |
+| Finished (nothing left to do) / Show finished | تمام‌شده / نمایش تمام‌شده‌ها |
+| Coming soon | به‌زودی |
 
 ## AI, commerce and account terms
 
@@ -54,6 +58,20 @@ two ways.
 | Product / Offer / SKU | محصول / پیشنهاد فروش / کد کالا (SKU) |
 | Subscriber / Blog post | مشترک / نوشتهٔ وبلاگ |
 
+## Knowledge object types
+
+`object_type` is free text from the backend. These are the approved labels;
+any other value is shown as it is (convention 7).
+
+| object_type | Persian |
+|---|---|
+| `plant` | گیاه |
+| `ingredient` | ماده |
+| `compound` | ترکیب |
+| `topic` | موضوع |
+| `product` | محصول |
+| `concept` | مفهوم |
+
 ## Conventions
 
 1. Persian digits (۰–۹) and the Persian separators in all UI text. Identifiers,
@@ -69,3 +87,6 @@ two ways.
 6. Dynamic text goes through `AIOL_I18N.set(node, template, args)` with a
    template entry in `FA`. Do not build Persian sentences by string
    concatenation in live code.
+7. An `object_type` with no approved label renders as its English value inside
+   `<bdi>`, never machine-translated. CI reports such runtime values but does
+   not fail on them; static strings and code-level templates stay strict.
