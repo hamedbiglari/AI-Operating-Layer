@@ -12,7 +12,7 @@ mutates a KnowledgeObject without leaving a version behind.
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import func, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -61,6 +61,28 @@ def _snapshot_and_bump_version(
     db.add(version_row)
 
 
+def filtered_knowledge_objects(
+    *,
+    organization_id: UUID,
+    search: str | None = None,
+    object_type: str | None = None,
+    status: KnowledgeObjectStatus | None = None,
+) -> Select:
+    """The tenant-scoped, filtered knowledge-object query. Shared by the list
+    and the overview so the two cannot filter differently."""
+    base = select(KnowledgeObject).where(KnowledgeObject.organization_id == organization_id)
+    if search:
+        pattern = f"%{search}%"
+        base = base.where(
+            KnowledgeObject.canonical_name.ilike(pattern) | KnowledgeObject.description.ilike(pattern)
+        )
+    if object_type:
+        base = base.where(KnowledgeObject.object_type == object_type)
+    if status:
+        base = base.where(KnowledgeObject.status == status)
+    return base
+
+
 def list_knowledge_objects(
     db: Session,
     *,
@@ -72,16 +94,9 @@ def list_knowledge_objects(
     status: KnowledgeObjectStatus | None = None,
     sort: SortParams | None = None,
 ) -> tuple[list[KnowledgeObject], int]:
-    base = select(KnowledgeObject).where(KnowledgeObject.organization_id == organization_id)
-    if search:
-        pattern = f"%{search}%"
-        base = base.where(
-            KnowledgeObject.canonical_name.ilike(pattern) | KnowledgeObject.description.ilike(pattern)
-        )
-    if object_type:
-        base = base.where(KnowledgeObject.object_type == object_type)
-    if status:
-        base = base.where(KnowledgeObject.status == status)
+    base = filtered_knowledge_objects(
+        organization_id=organization_id, search=search, object_type=object_type, status=status
+    )
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
     rows = (
