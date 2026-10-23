@@ -15,6 +15,15 @@ to measure.
 | `index.html` | The generated prototype. Opens from `file://`; no server, no network beyond the web font. |
 | `check.js` | Static conformance checks. No browser needed. **Not** the visual gate. |
 | `measure.js` | Rendered verification across screen × locale × theme × width. **This** is the visual gate. |
+| `i18n-glossary.md` | The approved Persian terms and conventions. Every Persian string in `index.html` follows it. |
+
+## Single file, for now
+
+`index.html` is also the only product UI that exists: its live screens talk to
+Cloud Core. Keeping everything in one file is a pragmatic choice, not a
+permanent one. Revisit splitting it into a separate frontend when **either**
+the file passes about 15,000 lines **or** a second frontend consumer needs the
+same screens.
 
 ## Run
 
