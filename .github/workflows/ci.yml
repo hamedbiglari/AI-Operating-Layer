@@ -55,7 +55,7 @@ jobs:
           AIOL_SOURCE_STORE: ${{ runner.temp }}/aiol-sources
         run: |
           cd cloud-core
-          pytest -q --durations=20 --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=91
+          pytest -q --durations=20 --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=92
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v7
