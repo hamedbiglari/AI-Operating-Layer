@@ -4,3 +4,6 @@ __pycache__/
 .env
 .venv/
 .devdb/
+cloud-core/.coverage
+cloud-core/coverage.xml
+.impeccable/
