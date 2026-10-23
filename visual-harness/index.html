@@ -2843,6 +2843,8 @@ tr.is-paged-out { display: none; }
 .kw-list label { display: flex; gap: var(--space-2); align-items: flex-start; overflow-wrap: anywhere; }
 .live-detail dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); }
 .live-panel [hidden] { display: none !important; }
+/* Knowledge "Windowed view": the grid layout must not override [hidden]. */
+.know-grid:not([hidden]) { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel):not([data-live-keep]) { display: none !important; }
 /* Compact live panel (Dashboard): title, note and Connect button share one
@@ -4127,7 +4129,7 @@ button.card { color: inherit; font: inherit; }
     </tr></tbody>
   </table></div>
   </div>
-  <div id="know-view-grid" hidden style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px, 100%), 1fr));gap:var(--space-4);margin-top:var(--space-4)">
+  <div id="know-view-grid" class="know-grid" hidden>
     <div class="card" data-entity="taranjebin" data-version="1" style="display:flex;flex-direction:column;gap:var(--space-2)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2)">
         <div><a href="#screen-knowledge-taranjebin" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)">Toranjebin · Alhagi manna</div></div>
@@ -9124,7 +9126,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function addResearchVersion(entityId) {
     [document.getElementById('know-view-table'), document.getElementById('know-view-grid')].forEach(function (container) {
       if (!container) return;
-      var existing = container.querySelectorAll('[data-entity="' + entityId + '"]');
+      // Rows and cards only: the Research button carries data-entity too.
+      var existing = container.querySelectorAll('tr[data-entity="' + entityId + '"], .card[data-entity="' + entityId + '"]');
       if (!existing.length) return;
       var latest = existing[existing.length - 1];
       var nextVersion = existing.length + 1;
@@ -9541,7 +9544,6 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         box.appendChild(ul);
         box.appendChild(el('p', null, 'Knowledge gaps: ' + r[2].total));
         keywordWorkspace(box, it.id);
-        keywordWorkspace(box, it.id);
       } else {
         box.appendChild(kv([['SKU', x.sku], ['Status', x.status], ['Brand', x.brand], ['Category', x.category], ['Updated', x.updated_at, 'date']]));
         box.appendChild(el('h4', null, 'Offers (' + r[1].total + ')'));
@@ -9551,45 +9553,6 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         box.appendChild(ul2);
       }
     }).catch(function (e) { box.appendChild(el('p', null, 'Could not load detail: ' + e.message)); });
-  }
-  // Keyword & Query Workspace for one Knowledge Object (REQ-KW-001..003).
-  function keywordWorkspace(box, koId) {
-    var wrap = el('div', 'kw-workspace'); box.appendChild(wrap); var lastMsg = '';
-    function draw() {
-      wrap.textContent = '';
-      api('/knowledge/' + koId + '/keywords?limit=100').then(function (page) {
-        wrap.appendChild(el('h4', null, 'Keywords & queries (' + page.total + ')'));
-        var list = el('ul', 'kw-list');
-        page.items.forEach(function (k) {
-          var li = el('li'), lab = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.value = k.id; lab.appendChild(cb);
-          var b = el('bdi'); b.textContent = ' ' + k.keyword + ' — ' + k.kind + (k.intent ? ', ' + k.intent : '') + (k.research_task_ids && k.research_task_ids.length ? ' · research tasks: ' + k.research_task_ids.length : '');
-          lab.appendChild(b); li.appendChild(lab); list.appendChild(li);
-        });
-        if (!page.items.length) wrap.appendChild(el('p', null, 'No keywords yet. Upload a CSV, Excel, TXT or JSON file.'));
-        wrap.appendChild(list);
-        var msg = el('p', 'kw-msg', lastMsg); msg.setAttribute('role', 'status');
-        var bar = el('div', 'live-toolbar');
-        var fl = el('label', 'field'); fl.appendChild(el('span', 'field__label', 'Upload keywords (CSV, XLSX, TXT, JSON)'));
-        var fi = el('input'); fi.type = 'file'; fi.accept = '.csv,.xlsx,.txt,.json'; fl.appendChild(fi); bar.appendChild(fl);
-        var up = el('button', 'btn', 'Upload'); up.type = 'button'; bar.appendChild(up);
-        var ss = el('button', 'btn btn--primary', 'Search new sources for selected'); ss.type = 'button'; bar.appendChild(ss);
-        wrap.appendChild(bar); wrap.appendChild(msg);
-        up.onclick = function () {
-          if (!fi.files[0]) { msg.textContent = 'Choose a file first.'; return; }
-          var fd = new FormData(); fd.append('file', fi.files[0]);
-          fetch(LIVE.base + '/api/v1/knowledge/' + koId + '/keywords/import', { method: 'POST', headers: { Authorization: 'Bearer ' + LIVE.token }, body: fd })
-            .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status)); return d; }); })
-            .then(function (d) { lastMsg = 'Imported: ' + JSON.stringify(d); draw(); }).catch(function (e) { msg.textContent = 'Import failed: ' + e.message; });
-        };
-        ss.onclick = function () {
-          var ids = Array.prototype.map.call(list.querySelectorAll('input:checked'), function (c) { return c.value; });
-          if (!ids.length) { msg.textContent = 'Select at least one keyword.'; return; }
-          api('/knowledge/' + koId + '/keywords/search-sources', { method: 'POST', body: { keyword_ids: ids } })
-            .then(function (d) { lastMsg = 'Research tasks created: ' + ((d && d.research_task_ids) ? d.research_task_ids.length : JSON.stringify(d)); draw(); }).catch(function (e) { msg.textContent = 'Could not start research: ' + e.message; });
-        };
-      }).catch(function (e) { wrap.appendChild(el('p', null, 'Keywords unavailable: ' + e.message)); });
-    }
-    draw();
   }
   /* Keyword & Query Workspace (REQ-KW-001..004): add / upload / search new sources / trace. */
   function keywordWorkspace(box, koId) {
