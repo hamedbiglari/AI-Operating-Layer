@@ -39,7 +39,19 @@ jobs:
         run: node visual-harness/i18n-coverage.js
 
       - name: Check source characters
-        run: node visual-harness/check-source-chars.js
+        run: |
+          node visual-harness/check-source-chars.js
+          node visual-harness/check-source-chars.js visual-harness/e2e
+
+      - name: Install browser for harness checks
+        run: |
+          npm install --no-save --prefix "$RUNNER_TEMP/pw" playwright-core@1.56.1
+          node "$RUNNER_TEMP/pw/node_modules/playwright-core/cli.js" install --with-deps chromium
+
+      - name: Harness browser checks
+        env:
+          PLAYWRIGHT_CORE: ${{ runner.temp }}/pw/node_modules/playwright-core
+        run: node visual-harness/e2e/knowledge-quickfix.js
 
       - name: Set up Python
         uses: actions/setup-python@v7
