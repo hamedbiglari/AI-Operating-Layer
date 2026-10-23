@@ -105,3 +105,7 @@ api_router.include_router(chat_router)
 
 from app.api.v1.knowledge_transfer import router as knowledge_transfer_router  # noqa: E402
 api_router.include_router(knowledge_transfer_router)
+
+# Dashboard count cards in one read.
+from app.api.v1.dashboard import router as dashboard_router  # noqa: E402
+api_router.include_router(dashboard_router)
