@@ -1,0 +1,64 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, v5-implementation ]
+  pull_request:
+    branches: [ main, v5-implementation ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: aiol
+          POSTGRES_PASSWORD: aiol_dev_password
+          POSTGRES_DB: aiol
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+psycopg://aiol:aiol_dev_password@localhost:5432/aiol
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd cloud-core
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Run migrations
+        run: |
+          cd cloud-core
+          alembic upgrade head
+
+      - name: Run tests
+        run: |
+          cd cloud-core
+          pytest -q --durations=20 --cov=app --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: cloud-core/coverage.xml
+          retention-days: 7
