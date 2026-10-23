@@ -32,6 +32,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Check Persian letter order
+        run: node visual-harness/check-persian.js
+
+      - name: Check translation templates
+        run: node visual-harness/i18n-coverage.js
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
