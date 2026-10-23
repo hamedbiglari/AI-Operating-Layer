@@ -7456,6 +7456,53 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 </dialog>
 
 <script>
+/* Shared i18n core. Live code writes messages through
+   AIOL_I18N.set(node, template, args); the template and args stay on the
+   node, so a language switch re-renders it in either direction. The Persian
+   layer at the end of the page registers its catalogue here (one dictionary
+   for static strings and templates, keyed by the English text).
+   Placeholders: {n} formats a number, {d} with { date: iso, style } formats
+   a date, any other value is direction-isolated text. {c|one|other} adds
+   the English plural word; Persian templates use plain {c}, since a counted
+   noun stays singular. Numbers and dates use Intl for the current language:
+   fa-IR gives Persian digits, the Persian separators and the Solar Hijri
+   calendar. Backend values stay ISO 8601 / UTC. */
+(function () {
+  var catalog = {};
+  var DATE_STYLES = { date: { dateStyle: 'medium' }, datetime: { dateStyle: 'medium', timeStyle: 'short' }, time: { timeStyle: 'short' } };
+  function lang() { return document.documentElement.lang === 'fa' ? 'fa' : 'en'; }
+  function locale(l) { return l === 'fa' ? 'fa-IR' : 'en-GB'; }
+  function num(v, l) { return new Intl.NumberFormat(locale(l || lang())).format(v); }
+  function date(iso, style, l) {
+    var d = new Date(iso);
+    return iso && !isNaN(d) ? new Intl.DateTimeFormat(locale(l || lang()), DATE_STYLES[style || 'datetime']).format(d) : '—';
+  }
+  function arg(v, l) {
+    if (v === null || v === undefined || v === '') return '—';
+    if (typeof v === 'number') return isFinite(v) ? num(v, l) : '—';
+    if (typeof v === 'object') return date(v.date, v.style, l);
+    return '\u2068' + String(v) + '\u2069';
+  }
+  function format(tpl, args, l) {
+    // An untranslated template stays wholly English, digits included. One
+    // with no words of its own ('{n}', '{d}') needs no entry.
+    var entry = Object.prototype.hasOwnProperty.call(catalog, tpl), bare = !/[A-Za-z]/.test(tpl.replace(/\{[^}]*\}/g, ''));
+    var fa = l === 'fa' && (entry || bare), use = fa ? 'fa' : 'en';
+    return (fa && entry ? catalog[tpl] : tpl).replace(/\{(\w+)(?:\|([^|}]*)\|([^}]*))?\}/g, function (m, k, one, other) {
+      if (!args || !(k in args)) return m;
+      var s = arg(args[k], use);
+      return one === undefined ? s : s + ' ' + (new Intl.PluralRules('en').select(args[k]) === 'one' ? one : other);
+    });
+  }
+  function render(node) { node.textContent = format(node.__i18n.tpl, node.__i18n.args, lang()); }
+  function set(node, tpl, args) { node.__i18n = { tpl: tpl, args: args || {} }; node.setAttribute('data-i18n', ''); render(node); return node; }
+  function refresh() { document.querySelectorAll('[data-i18n]').forEach(function (n) { if (n.__i18n) render(n); }); }
+  function register(entries) { Object.keys(entries).forEach(function (k) { catalog[k] = entries[k]; }); }
+  window.AIOL_I18N = { lang: lang, num: num, date: date, format: format, set: set, refresh: refresh, register: register };
+})();
+</script>
+
+<script>
 /* ===== Profile completion & identity verification (user + super admin) =====
    Standard account-completion / KYC-KYB data for a merchant account:
    personal identity, contact, address, business entity and an identity
@@ -9444,9 +9491,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function fmt(v, kind) {
     if (v === null || v === undefined || v === '') return '—';
     if (kind === 'bool') return v ? 'Yes' : 'No';
-    if (kind === 'date') return new Date(v).toLocaleString();
     if (kind === 'list') return Array.isArray(v) ? v.join(', ') : String(v);
     return String(v);
+  }
+  // Dates go through the i18n core so they follow the language (Jalali in fa).
+  function cell(node, v, kind) {
+    if (kind === 'date') AIOL_I18N.set(node, '{d}', { d: { date: v } }); else node.textContent = fmt(v, kind);
   }
   function api(path, opts) {
     opts = opts || {};
@@ -9503,7 +9553,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         cfg.cols.forEach(function (c) {
           var td = el('td'); td.setAttribute('data-label', c[0]);
           if (c[2] === 'badge' && it[c[1]]) td.appendChild(el('span', 'badge ' + (BADGE[it[c[1]]] || 'badge--unknown'), it[c[1]]));
-          else { var b = el('bdi'); b.textContent = fmt(it[c[1]], c[2]); td.appendChild(b); }
+          else { var b = el('bdi'); cell(b, it[c[1]], c[2]); td.appendChild(b); }
           r.appendChild(td);
         });
         if (cfg.detail) { r.tabIndex = 0; r.style.cursor = 'pointer';
@@ -9524,7 +9574,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }).catch(function (e) { state(panel, 'error', (e.denied ? '' : 'Could not load: ') + e.message); });
   }
   function kv(pairs) {
-    var dl = el('dl'); pairs.forEach(function (p) { dl.appendChild(el('dt', null, p[0])); var dd = el('dd'); var b = el('bdi'); b.textContent = fmt(p[1], p[2]); dd.appendChild(b); dl.appendChild(dd); });
+    var dl = el('dl'); pairs.forEach(function (p) { dl.appendChild(el('dt', null, p[0])); var dd = el('dd'); var b = el('bdi'); cell(b, p[1], p[2]); dd.appendChild(b); dl.appendChild(dd); });
     return dl;
   }
   function detail(panel, kind, it) {
@@ -9628,38 +9678,36 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     load();
   }
   // The Dashboard's own four cards, filled from one tenant-scoped read
-  // (GET /dashboard/summary). Notes are written in English; the fa layer
-  // translates them through its PATTERNS. Nothing falls back to sample figures.
+  // (GET /dashboard/summary). Values and notes are i18n templates, so they
+  // follow the language. Nothing falls back to sample figures.
   function dashboardCards(panel) {
     var grid = document.getElementById('dash-stats');
-    function card(name, value, note) {
+    function card(name, value, tpl, args) {
       var c = grid.querySelector('[data-stat="' + name + '"]');
-      c.querySelector('.stat__value').textContent = value;
-      c.querySelector('.stat__note').textContent = note;
+      AIOL_I18N.set(c.querySelector('.stat__value'), '{n}', { n: value });
+      AIOL_I18N.set(c.querySelector('.stat__note'), tpl || '', args);
     }
-    function n(v) { return typeof v === 'number' && isFinite(v) ? v.toLocaleString('en-US') : '—'; }
-    function plural(v, one, many) { return n(v) + ' ' + (v === 1 ? one : many); }
     // Measured against the server's generated_at, so the browser clock does not matter.
-    function queuedFor(from, to) {
+    function queued(from, to) {
       var min = Math.floor((new Date(to) - new Date(from)) / 60000);
-      if (min < 1) return 'Oldest queued just now';
-      if (min < 60) return 'Oldest queued ' + min + ' min ago';
-      if (min < 2880) return 'Oldest queued ' + Math.floor(min / 60) + ' h ago';
-      return 'Oldest queued ' + Math.floor(min / 1440) + ' days ago';
+      if (min < 1) return ['Oldest queued just now'];
+      if (min < 60) return ['Oldest queued {n} min ago', { n: min }];
+      if (min < 2880) return ['Oldest queued {n} h ago', { n: Math.floor(min / 60) }];
+      return ['Oldest queued {n} days ago', { n: Math.floor(min / 1440) }];
     }
     // Its target (#waiting-on-person) is hidden in live mode, so it stops being a link.
     var review = grid.querySelector('[data-stat="review"]');
     review.removeAttribute('href'); review.classList.remove('stat--link');
-    ['sources', 'in-progress', 'succeeded', 'review'].forEach(function (k) { card(k, '—', ''); });
+    ['sources', 'in-progress', 'succeeded', 'review'].forEach(function (k) { card(k, null); });
     grid.setAttribute('aria-busy', 'true');
     state(panel, 'loading', 'Loading…');
     return api('/dashboard/summary').then(function (d) {
-      var c = d.conversions, r = d.review;
-      card('sources', n(d.sources.total), n(d.sources.added_last_30d) + ' added in the last 30 days');
-      card('in-progress', n(c.in_progress), c.oldest_queued_at ? queuedFor(c.oldest_queued_at, d.generated_at) : 'Nothing queued');
-      card('succeeded', n(c.succeeded), n(c.failed) + ' failed');
-      card('review', n(r.conversions + r.claims_conflicting),
-        plural(r.conversions, 'conversion', 'conversions') + ' + ' + plural(r.claims_conflicting, 'claim', 'claims') + ' in conflict');
+      var c = d.conversions, r = d.review, q = c.oldest_queued_at ? queued(c.oldest_queued_at, d.generated_at) : ['Nothing queued'];
+      card('sources', d.sources.total, '{n} added in the last 30 days', { n: d.sources.added_last_30d });
+      card('in-progress', c.in_progress, q[0], q[1]);
+      card('succeeded', c.succeeded, '{n} failed', { n: c.failed });
+      card('review', r.conversions + r.claims_conflicting, '{c|conversion|conversions} + {k|claim|claims} in conflict',
+        { c: r.conversions, k: r.claims_conflicting });
       state(panel, 'ready');
     }).catch(function (e) { state(panel, 'error', e.message); })
       .then(function () { grid.removeAttribute('aria-busy'); });
@@ -11946,12 +11994,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 })();
 </script>
 <script>
-/* Persian (fa) UI strings for the Dashboard and the app shell, keyed by the
-   English source text like the plugin's gettext catalogue. A string with no
-   entry stays English rather than ship a guessed translation (DEBT_REGISTER,
-   AAT-i18n). Other screens are not translated yet. Numbers that stand alone
-   (counts, stat figures) switch to Persian digits; identifiers, emails,
-   paths and inputs keep Latin script. */
+/* Persian (fa) UI strings, keyed by the English source text like the
+   plugin's gettext catalogue. Every screen is walked; entries so far cover
+   the Dashboard and the app shell, and each screen group adds its own. A
+   string with no entry stays English rather than ship a guessed translation
+   (DEBT_REGISTER, AAT-i18n). Terms follow visual-harness/i18n-glossary.md.
+   Entries with {placeholders} are templates for AIOL_I18N.set. Numbers that
+   stand alone (counts, stat figures) switch to Persian digits; identifiers,
+   emails, paths and inputs keep Latin script. */
 (function () {
   var FA = {
     "Dashboard": "داشبورد",
@@ -11971,8 +12021,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Succeeded": "موفق",
     "10 failed": "۱۰ ناموفق",
     "Needs human review": "نیازمند بررسی انسانی",
-    "6 conversions + 7 claims in conflict": "۶ تبدیل + ۷ ادعای متعارض",
-    "Conversions to review": "تبدیل‌های نیازمند بررسی",
+    "6 conversions + 7 claims in conflict": "۶ تبدیل سند + ۷ ادعای متعارض",
+    "Conversions to review": "تبدیل‌های سند نیازمند بررسی",
     "Waiting on a person": "در انتظار اقدام شما",
     "These are not errors the system can clear itself.": "این‌ها خطاهایی نیستند که سیستم بتواند خودش برطرف کند.",
     "Evidence awaiting review": "شواهد در انتظار بررسی",
@@ -12007,7 +12057,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Products": "محصولات",
     "Inbox": "صندوق پیام",
     "Knowledge": "دانش",
-    "Knowledge Objects": "موجودیت‌های دانش",
+    "Knowledge Objects": "پرونده‌های دانش",
     "Research": "پژوهش",
     "Categories & matrix": "دسته‌بندی‌ها و ماتریس",
     "Coverage audit": "ممیزی پوشش",
@@ -12046,23 +12096,24 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Both the Cloud Core URL and an access token are required.": "هم آدرس Cloud Core و هم توکن دسترسی لازم است.",
     "Loading…": "در حال بارگذاری…",
     "LIVE DATA": "دادهٔ زنده",
-    "Knowledge objects": "موجودیت‌های دانش",
+    "Knowledge objects": "پرونده‌های دانش",
     "Oldest queued just now": "قدیمی‌ترین مورد در صف: همین حالا",
-    "Nothing queued": "چیزی در صف نیست"
+    "Nothing queued": "چیزی در صف نیست",
+    // Templates for AIOL_I18N.set (Dashboard cards).
+    "{n} added in the last 30 days": "{n} مورد در ۳۰ روز گذشته اضافه شد",
+    "Oldest queued {n} min ago": "قدیمی‌ترین مورد در صف: {n} دقیقه پیش",
+    "Oldest queued {n} h ago": "قدیمی‌ترین مورد در صف: {n} ساعت پیش",
+    "Oldest queued {n} days ago": "قدیمی‌ترین مورد در صف: {n} روز پیش",
+    "{n} failed": "{n} ناموفق",
+    "{c|conversion|conversions} + {k|claim|claims} in conflict": "{c} تبدیل سند + {k} ادعای متعارض"
   };
+  window.AIOL_I18N.register(FA);
   var PATTERNS = [
     [/^Inbox, (\d+) unread messages?$/, "صندوق پیام، $1 پیام خوانده‌نشده"],
     [/^Account menu — signed in as (.+)$/, "منوی حساب — واردشده با $1"],
-    [/^Connected to (.+)\. Showing real Cloud Core data; the sample content of this screen is hidden\.$/, "به $1 متصل است. داده‌های واقعی Cloud Core نمایش داده می‌شود و محتوای نمونهٔ این صفحه پنهان است."],
-    // Live Dashboard card notes (dashboardCards).
-    [/^([\d,]+) added in the last 30 days$/, "$1 مورد در ۳۰ روز گذشته اضافه شد"],
-    [/^Oldest queued (\d+) min ago$/, "قدیمی‌ترین مورد در صف: $1 دقیقه پیش"],
-    [/^Oldest queued (\d+) h ago$/, "قدیمی‌ترین مورد در صف: $1 ساعت پیش"],
-    [/^Oldest queued (\d+) days ago$/, "قدیمی‌ترین مورد در صف: $1 روز پیش"],
-    [/^([\d,]+) failed$/, "$1 ناموفق"],
-    [/^([\d,]+) conversions? \+ ([\d,]+) claims? in conflict$/, "$1 تبدیل + $2 ادعای متعارض"]
+    [/^Connected to (.+)\. Showing real Cloud Core data; the sample content of this screen is hidden\.$/, "به $1 متصل است. داده‌های واقعی Cloud Core نمایش داده می‌شود و محتوای نمونهٔ این صفحه پنهان است."]
   ];
-  var ROOTS = ['.app > .skip-link', 'header.app-topbar', '#sidebar-collapse', '#app-sidebar', '#screen-dashboard'];
+  var ROOTS = ['.app > .skip-link', 'header.app-topbar', '#sidebar-collapse', '#app-sidebar', '#main', '.auth-shell'];
   var ATTRS = ['aria-label', 'title', 'placeholder'];
   var KEEP_LATIN = 'bdi, code, input, textarea, select, .identifier, script, style, svg';
   var DIGITS = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
@@ -12134,6 +12185,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     } else {
       watcher.disconnect(); watcher.takeRecords(); toEn();
     }
+    window.AIOL_I18N.refresh();
   }
   new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   sync();
