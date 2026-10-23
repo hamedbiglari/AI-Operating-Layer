@@ -53,7 +53,7 @@ jobs:
       - name: Run tests
         run: |
           cd cloud-core
-          pytest -q --durations=20 --cov=app --cov-report=term-missing --cov-report=xml
+          pytest -q --durations=20 --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=91
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

@@ -1,0 +1,4 @@
+[run]
+omit =
+    */models/_draft_billing_not_wired/*
+    */ingestion/providers/vision.py
