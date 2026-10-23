@@ -2844,7 +2844,7 @@ tr.is-paged-out { display: none; }
 .live-detail dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); }
 .live-panel [hidden] { display: none !important; }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
-body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel) { display: none !important; }
+body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel):not([data-live-keep]) { display: none !important; }
 /* Compact live panel (Dashboard): title, note and Connect button share one
    line; everything else in the panel takes a full row when shown. Children
    stay direct so the data-state chip still finds `.live-panel > .card__title`. */
@@ -3587,11 +3587,11 @@ button.card { color: inherit; font: inherit; }
     </div>
   </div>
 
-  <div class="stat-grid">
-    <a class="stat stat--link" href="#screen-sources"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">248</span><span class="stat__note">12 added this month</span></a>
-    <a class="stat stat--link" href="#screen-sources?status=processing"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg>Processing</span><span class="stat__value">7</span><span class="stat__note">Oldest queued 4 min ago</span></a>
-    <a class="stat stat--link" href="#screen-sources?status=success"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Succeeded</span><span class="stat__value">221</span><span class="stat__note">10 failed</span></a>
-    <a class="stat stat--attention stat--link" href="#waiting-on-person"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Needs human review</span><span class="stat__value">13</span><span class="stat__note">6 conversions + 7 claims in conflict</span></a>
+  <div class="stat-grid" id="dash-stats" data-live-keep>
+    <a class="stat stat--link" data-stat="sources" href="#screen-sources"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">248</span><span class="stat__note">12 added this month</span></a>
+    <a class="stat stat--link" data-stat="in-progress" href="#screen-sources?status=processing"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg>Processing</span><span class="stat__value">7</span><span class="stat__note">Oldest queued 4 min ago</span></a>
+    <a class="stat stat--link" data-stat="succeeded" href="#screen-sources?status=success"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Succeeded</span><span class="stat__value">221</span><span class="stat__note">10 failed</span></a>
+    <a class="stat stat--attention stat--link" data-stat="review" href="#waiting-on-person"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Needs human review</span><span class="stat__value">13</span><span class="stat__note">6 conversions + 7 claims in conflict</span></a>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px, 100%), 1fr));gap:var(--space-4)">
@@ -9400,7 +9400,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 (function () {
   var LIVE = null;
   var SCREENS = {
-    'screen-dashboard': { kind: 'overview', title: 'Live overview (Cloud Core)', compact: true },
+    'screen-dashboard': { kind: 'cards', title: 'Live overview (Cloud Core)', compact: true },
     'screen-knowledge': { kind: 'table', title: 'Knowledge objects (Cloud Core)', endpoint: '/knowledge', search: 'search',
       cols: [['Name', 'canonical_name'], ['Type', 'object_type'], ['Status', 'status', 'badge'], ['Version', 'version'], ['Updated', 'updated_at', 'date']],
       detail: 'knowledge' },
@@ -9664,21 +9664,42 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         .catch(function (err) { msg.textContent = 'Could not start research: ' + err.message; }); });
     load();
   }
-  function overview(panel) {
-    var body = panel.querySelector('.live-body'); body.textContent = '';
-    var items = [['Knowledge objects', '/knowledge'], ['Sources', '/sources'], ['Documents', '/documents'], ['Products', '/products'],
-      ['Jobs queued / running', ['/sync-jobs?status=queued', '/sync-jobs?status=running']], ['Jobs failed', ['/sync-jobs?status=failed', '/sync-jobs?status=dead_letter']],
-      ['Recommendations', '/recommendations'], ['AI executions', '/ai-executions']];
-    var grid = el('div', 'stat-grid'); body.appendChild(grid);
+  // The Dashboard's own four cards, filled from one tenant-scoped read
+  // (GET /dashboard/summary). Notes are written in English; the fa layer
+  // translates them through its PATTERNS. Nothing falls back to sample figures.
+  function dashboardCards(panel) {
+    var grid = document.getElementById('dash-stats');
+    function card(name, value, note) {
+      var c = grid.querySelector('[data-stat="' + name + '"]');
+      c.querySelector('.stat__value').textContent = value;
+      c.querySelector('.stat__note').textContent = note;
+    }
+    function n(v) { return typeof v === 'number' && isFinite(v) ? v.toLocaleString('en-US') : '—'; }
+    function plural(v, one, many) { return n(v) + ' ' + (v === 1 ? one : many); }
+    // Measured against the server's generated_at, so the browser clock does not matter.
+    function queuedFor(from, to) {
+      var min = Math.floor((new Date(to) - new Date(from)) / 60000);
+      if (min < 1) return 'Oldest queued just now';
+      if (min < 60) return 'Oldest queued ' + min + ' min ago';
+      if (min < 2880) return 'Oldest queued ' + Math.floor(min / 60) + ' h ago';
+      return 'Oldest queued ' + Math.floor(min / 1440) + ' days ago';
+    }
+    // Its target (#waiting-on-person) is hidden in live mode, so it stops being a link.
+    var review = grid.querySelector('[data-stat="review"]');
+    review.removeAttribute('href'); review.classList.remove('stat--link');
+    ['sources', 'in-progress', 'succeeded', 'review'].forEach(function (k) { card(k, '—', ''); });
+    grid.setAttribute('aria-busy', 'true');
     state(panel, 'loading', 'Loading…');
-    return Promise.all(items.map(function (it) {
-      var paths = Array.isArray(it[1]) ? it[1] : [it[1]];
-      return Promise.all(paths.map(function (p) { return api(p + (p.indexOf('?') >= 0 ? '&' : '?') + 'limit=1').then(function (d) { return d.total; }); }))
-        .then(function (t) { return t.reduce(function (a, b) { return a + b; }, 0); });
-    })).then(function (totals) {
-      items.forEach(function (it, i) { var s = el('div', 'stat'); s.appendChild(el('span', 'stat__label', it[0])); s.appendChild(el('span', 'stat__value', String(totals[i]))); grid.appendChild(s); });
+    return api('/dashboard/summary').then(function (d) {
+      var c = d.conversions, r = d.review;
+      card('sources', n(d.sources.total), n(d.sources.added_last_30d) + ' added in the last 30 days');
+      card('in-progress', n(c.in_progress), c.oldest_queued_at ? queuedFor(c.oldest_queued_at, d.generated_at) : 'Nothing queued');
+      card('succeeded', n(c.succeeded), n(c.failed) + ' failed');
+      card('review', n(r.conversions + r.claims_conflicting),
+        plural(r.conversions, 'conversion', 'conversions') + ' + ' + plural(r.claims_conflicting, 'claim', 'claims') + ' in conflict');
       state(panel, 'ready');
-    }).catch(function (e) { state(panel, 'error', e.message); });
+    }).catch(function (e) { state(panel, 'error', e.message); })
+      .then(function () { grid.removeAttribute('aria-busy'); });
   }
   function org(panel) {
     var body = panel.querySelector('.live-body'); body.textContent = '';
@@ -9751,9 +9772,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       panel.querySelector('.live-connect').hidden = true;
       if (toggle) toggle.hidden = true;
       var tb = panel.querySelector('.live-toolbar'); if (tb) tb.hidden = false;
-      if (cfg.kind === 'overview') overview(panel); else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
+      if (cfg.kind === 'cards') dashboardCards(panel); else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
+  // Re-read the Dashboard cards each time the screen is shown again.
+  var dash = document.getElementById('screen-dashboard'), dashWasActive = dash.classList.contains('is-active');
+  new MutationObserver(function () {
+    var active = dash.classList.contains('is-active');
+    if (active && !dashWasActive && LIVE) dashboardCards(document.getElementById('live-screen-dashboard'));
+    dashWasActive = active;
+  }).observe(dash, { attributes: true, attributeFilter: ['class'] });
   // The AI-executions screen's own connection also connects the wired screens.
   var aix = document.getElementById('aix-connect');
   if (aix) aix.addEventListener('submit', function () {
@@ -12051,15 +12079,20 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Loading…": "در حال بارگذاری…",
     "LIVE DATA": "دادهٔ زنده",
     "Knowledge objects": "موجودیت‌های دانش",
-    "Documents": "اسناد",
-    "Jobs queued / running": "کارهای در صف / در حال اجرا",
-    "Jobs failed": "کارهای ناموفق",
-    "Recommendations": "توصیه‌ها"
+    "Oldest queued just now": "قدیمی‌ترین مورد در صف: همین حالا",
+    "Nothing queued": "چیزی در صف نیست"
   };
   var PATTERNS = [
     [/^Inbox, (\d+) unread messages?$/, "صندوق پیام، $1 پیام خوانده‌نشده"],
     [/^Account menu — signed in as (.+)$/, "منوی حساب — واردشده با $1"],
-    [/^Connected to (.+)\. Showing real Cloud Core data; the sample content of this screen is hidden\.$/, "به $1 متصل است. داده‌های واقعی Cloud Core نمایش داده می‌شود و محتوای نمونهٔ این صفحه پنهان است."]
+    [/^Connected to (.+)\. Showing real Cloud Core data; the sample content of this screen is hidden\.$/, "به $1 متصل است. داده‌های واقعی Cloud Core نمایش داده می‌شود و محتوای نمونهٔ این صفحه پنهان است."],
+    // Live Dashboard card notes (dashboardCards).
+    [/^([\d,]+) added in the last 30 days$/, "$1 مورد در ۳۰ روز گذشته اضافه شد"],
+    [/^Oldest queued (\d+) min ago$/, "قدیمی‌ترین مورد در صف: $1 دقیقه پیش"],
+    [/^Oldest queued (\d+) h ago$/, "قدیمی‌ترین مورد در صف: $1 ساعت پیش"],
+    [/^Oldest queued (\d+) days ago$/, "قدیمی‌ترین مورد در صف: $1 روز پیش"],
+    [/^([\d,]+) failed$/, "$1 ناموفق"],
+    [/^([\d,]+) conversions? \+ ([\d,]+) claims? in conflict$/, "$1 تبدیل + $2 ادعای متعارض"]
   ];
   var ROOTS = ['.app > .skip-link', 'header.app-topbar', '#sidebar-collapse', '#app-sidebar', '#screen-dashboard'];
   var ATTRS = ['aria-label', 'title', 'placeholder'];
@@ -12075,7 +12108,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     if (Object.prototype.hasOwnProperty.call(FA, key)) return FA[key];
     for (var i = 0; i < PATTERNS.length; i++) {
       var m = key.match(PATTERNS[i][0]);
-      if (m) return PATTERNS[i][1].replace('$1', /^[0-9]+$/.test(m[1]) ? faDigits(m[1]) : m[1]);
+      if (m) return PATTERNS[i][1].replace(/\$(\d)/g, function (_, k) {
+        return /^[0-9][0-9,]*$/.test(m[k]) ? faDigits(m[k]).replace(/,/g, '٬') : m[k];
+      });
     }
     if (/^[0-9][0-9,.]*$/.test(key)) return faDigits(key).replace(/,/g, '\u066c');
     return null;
