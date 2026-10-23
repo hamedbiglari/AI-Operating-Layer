@@ -2,6 +2,7 @@
 Knowledge Object endpoints (master spec section 50 `/knowledge` group).
 
 GET  /knowledge/search        -- alias of GET /knowledge with ?search=
+GET  /knowledge/overview      -- the Knowledge list's rows with per-object counts
 GET  /knowledge/{id}
 POST /knowledge
 PATCH /knowledge/{id}
@@ -33,11 +34,12 @@ from app.schemas.knowledge_object import (
     KnowledgeObjectRead,
     KnowledgeObjectUpdate,
 )
+from app.schemas.knowledge_overview import KnowledgeOverviewItem, KnowledgeOverviewPage, KnowledgeOverviewSort
 from app.schemas.knowledge_version import KnowledgeVersionRead
 from app.schemas.relationship import RelationshipRead
 from app.security.dependencies import get_current_user, require_roles
 from app.services import entity_service, knowledge_gap_service, knowledge_service, knowledge_representation
-from app.services import claim_service
+from app.services import claim_service, knowledge_overview_service
 from app.services.relationship_service import list_relationships_for_node
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
@@ -87,6 +89,42 @@ def search_knowledge_objects(
         search=q,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
+
+
+# Registered before /{object_id}, which would otherwise match "overview".
+@router.get("/overview", response_model=KnowledgeOverviewPage)
+def knowledge_overview(
+    search: str | None = Query(default=None, max_length=500),
+    object_type: str | None = Query(default=None, max_length=100),
+    status_filter: KnowledgeObjectStatus | None = Query(default=None, alias="status"),
+    sort: KnowledgeOverviewSort = Query(default=KnowledgeOverviewSort.ACTION_NEEDED),
+    include_finished: bool = Query(default=False),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> KnowledgeOverviewPage:
+    """The Knowledge list's rows: the same filters as GET /knowledge, plus the
+    per-object counts, ordered and paged server-side. Archived objects are
+    left out; finished ones only with include_finished=true."""
+    rows, total = knowledge_overview_service.get_overview(
+        db,
+        organization_id=current_user.organization_id,
+        limit=limit,
+        offset=offset,
+        search=search,
+        object_type=object_type,
+        status=status_filter,
+        sort=sort,
+        include_finished=include_finished,
+    )
+    items = [
+        KnowledgeOverviewItem(
+            **KnowledgeObjectRead.model_validate(r["object"]).model_dump(), counts=r["counts"], finished=r["finished"]
+        )
+        for r in rows
+    ]
+    return KnowledgeOverviewPage(items=items, total=total, limit=limit, offset=offset, finished_visible=include_finished)
 
 
 @router.post("", response_model=KnowledgeObjectRead, status_code=status.HTTP_201_CREATED)
