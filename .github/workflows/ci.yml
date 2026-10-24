@@ -51,7 +51,9 @@ jobs:
       - name: Harness browser checks
         env:
           PLAYWRIGHT_CORE: ${{ runner.temp }}/pw/node_modules/playwright-core
-        run: node visual-harness/e2e/knowledge-quickfix.js
+        run: |
+          node visual-harness/e2e/knowledge-quickfix.js
+          node visual-harness/e2e/knowledge-list.js
 
       - name: Set up Python
         uses: actions/setup-python@v7

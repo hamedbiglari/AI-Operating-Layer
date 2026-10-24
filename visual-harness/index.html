@@ -2845,6 +2845,24 @@ tr.is-paged-out { display: none; }
 .live-panel [hidden] { display: none !important; }
 /* Knowledge "Windowed view": the grid layout must not override [hidden]. */
 .know-grid:not([hidden]) { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
+/* Live Knowledge list. The type line keeps its height even when empty, so a
+   Latin-name line can join it later without the rows reflowing. */
+.know-name { font-weight: var(--weight-semibold); text-decoration: none; color: var(--text); }
+.know-type { display: block; min-block-size: 1.25em; color: var(--text-muted); font-size: var(--text-sm); }
+.know-none { color: var(--text-muted); }
+.know-card { display: flex; flex-direction: column; gap: var(--space-2); }
+.know-card__top { display: flex; flex-direction: column; gap: var(--space-1); }
+.know-pop-wrap { position: relative; display: inline-flex; }
+.know-pop { position: absolute; inset-block-start: calc(100% + var(--space-1)); inset-inline-start: 0; z-index: 20; display: grid; gap: var(--space-3);
+  min-inline-size: 16rem; padding: var(--space-3); background: var(--surface-raised); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.know-pop[hidden] { display: none; }
+.know-chips { display: inline-flex; flex-wrap: wrap; gap: var(--space-2); }
+.know-pager { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3); margin-top: var(--space-4); }
+.know-pager__text { flex: 1 1 12rem; color: var(--text-muted); }
+.know-new { display: grid; gap: var(--space-3); max-inline-size: 32rem; padding: var(--space-4); margin-block-end: var(--space-4);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.know-new[hidden] { display: none; }
+.know-new__actions { display: flex; gap: var(--space-2); }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel):not([data-live-keep]) { display: none !important; }
 /* Compact live panel (Dashboard): title, note and Connect button share one
@@ -4037,9 +4055,9 @@ button.card { color: inherit; font: inherit; }
     <div><h1 id="h-know-list"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg> Knowledge Objects</h1></div>
     <div class="page-actions"><a class="btn" href="#screen-sources" data-nav-target="screen-sources"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4" opacity=".6"/></svg>Sources &amp; Documents</a><button class="btn btn--primary"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New knowledge object</button></div>
   </div>
-  <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Every keyword gets a dedicated object — complete with its own sources, claims, evidence, conflicts, gaps, and AI-visibility report. Click any Knowledge object to open its full, standalone management window.</p></div></div>
+  <div class="callout page-intro" role="note" data-live-keep><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Every keyword gets a dedicated object — complete with its own sources, claims, evidence, conflicts, gaps, and AI-visibility report. Click any Knowledge object to open its full, standalone management window.</p></div></div>
 
-  <div class="toolbar" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;margin-block-end:var(--space-4)">
+  <div class="toolbar" data-live-keep style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;margin-block-end:var(--space-4)">
     <label style="flex:1 1 260px;min-width:200px">
       <span class="visually-hidden">Search knowledge objects</span>
       <input type="search" placeholder="Search by keywords - e.g. Toranjebin…" style="width:100%;font:inherit;padding:8px 12px;min-height:36px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text)">
@@ -4051,10 +4069,10 @@ button.card { color: inherit; font: inherit; }
       <button type="button" class="btn view-toggle__btn" data-view="grid" aria-pressed="false" aria-label="Windowed view" style="border:0;border-radius:0;border-inline-start:1px solid var(--border-strong)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button>
     </div>
   </div>
-  <div class="callout"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg></span>
+  <div class="callout" data-live-keep><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg></span>
     <div><p>A knowledge object is created from research or from sources contributing enough claims and evidence to support one — never fabricated because a query volume looked promising. Nothing here caps how many an organization can hold: this screen is built to hold tens, hundreds or thousands of them, searched/filtered/sorted/paginated server-side the same way <a href="#screen-sources">Sources &amp; Documents</a> is — the browser is never handed the whole collection at once. "Research again" on any row starts a new processing run against whatever sources have been added since — it creates a new version alongside the last one, never overwrites it.</p></div>
   </div>
-  <div id="know-view-table">
+  <div id="know-view-table" data-live-keep>
   <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table sortable" style="margin-top:var(--space-4)">
     <caption class="visually-hidden">Knowledge objects, one row per keyword/entity, newest version first within each entity</caption>
     <thead><tr>
@@ -4129,7 +4147,7 @@ button.card { color: inherit; font: inherit; }
     </tr></tbody>
   </table></div>
   </div>
-  <div id="know-view-grid" class="know-grid" hidden>
+  <div id="know-view-grid" class="know-grid" data-live-keep hidden>
     <div class="card" data-entity="taranjebin" data-version="1" style="display:flex;flex-direction:column;gap:var(--space-2)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2)">
         <div><a href="#screen-knowledge-taranjebin" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)">Toranjebin · Alhagi manna</div></div>
@@ -9451,9 +9469,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var LIVE = null;
   var SCREENS = {
     'screen-dashboard': { kind: 'cards', title: 'Live overview (Cloud Core)', compact: true },
-    'screen-knowledge': { kind: 'table', title: 'Knowledge objects (Cloud Core)', endpoint: '/knowledge', search: 'search',
-      cols: [['Name', 'canonical_name'], ['Type', 'object_type'], ['Status', 'status', 'badge'], ['Version', 'version'], ['Updated', 'updated_at', 'date']],
-      detail: 'knowledge' },
+    'screen-knowledge': { kind: 'knowledge', title: 'Knowledge objects (Cloud Core)', compact: true },
     'screen-sources': { kind: 'table', title: 'Sources (Cloud Core)', endpoint: '/sources',
       cols: [['Title', 'title'], ['Type', 'source_type'], ['URL', 'url'], ['Created', 'created_at', 'date']] },
     'screen-processing': { kind: 'table', title: 'Processing jobs (Cloud Core)', endpoint: '/sync-jobs',
@@ -9677,6 +9693,300 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         .catch(function (err) { msg.textContent = 'Could not start research: ' + err.message; }); });
     load();
   }
+  // Knowledge list (Step 6): the designed table and card grid, filled from
+  // GET /knowledge/overview. Ordering, paging and hiding finished objects all
+  // happen on the server; the browser never re-sorts or drops rows. The
+  // header row is rebuilt, so the generic client-side sorter (bound to the
+  // sample headers at load) never reorders a live page.
+  var KNOWLEDGE_TYPES = { plant: 'Plant', ingredient: 'Ingredient', compound: 'Compound', topic: 'Topic', product: 'Product', concept: 'Concept' };
+  var KNOWLEDGE_STATUS = { draft: ['Draft', 'badge--warning'], in_review: ['In review', 'badge--warning'], published: ['Published', 'badge--success'] };
+  // [server sort, its fixed direction, the Sort button's label]
+  var KNOWLEDGE_SORTS = { name: ['ascending', 'Sort: Name'], action_needed: ['descending', 'Sort: Action needed'], updated: ['descending', 'Sort: Recently updated'] };
+  var KNOWLEDGE_COLS = [['Knowledge object', 'name'], ['Sources', null, 'num'], ['Approval'], ['Action needed', 'action_needed'],
+    ['Updated', 'updated'], ['Research workspace', null, 'th--center']];
+  function knowledgeList(panel) {
+    // Wired once; a later connect only reloads.
+    if (panel.__knowledgeLoad) return panel.__knowledgeLoad();
+    var screen = document.getElementById('screen-knowledge');
+    var table = screen.querySelector('#know-view-table table'), grid = document.getElementById('know-view-grid');
+    // The toolbar's own buttons, by position: Filter, then Sort.
+    var sortBtn = screen.querySelectorAll('.toolbar > .btn')[1];
+    var st = { sort: 'action_needed', limit: 50, offset: 0, search: '', type: '', other: '', status: '', finished: false, seq: 0 };
+    function typeLine(t) {
+      var line = el('span', 'know-type');
+      if (KNOWLEDGE_TYPES[t]) AIOL_I18N.set(line, KNOWLEDGE_TYPES[t]);
+      else { var b = el('bdi', null, t); b.dir = 'ltr'; line.appendChild(b); }   // unknown type: English as sent, never translated
+      return line;
+    }
+    function approval(s) {
+      var a = KNOWLEDGE_STATUS[s] || [s, 'badge--unknown'], b = el('span', 'badge ' + a[1]);
+      if (KNOWLEDGE_STATUS[s]) AIOL_I18N.set(b, a[0]); else b.appendChild(el('bdi', null, s));
+      return b;
+    }
+    // One task phrase when one kind of work is open, short counts joined by " · " when several are.
+    function action(node, c) {
+      var parts = [];
+      if (c.claims_conflicting) parts.push(['{n|conflict|conflicts} to resolve', '{n|conflict|conflicts}', c.claims_conflicting]);
+      if (c.gaps_open) parts.push(['{n|gap|gaps} open', '{n|gap|gaps}', c.gaps_open]);
+      if (c.evidence_pending_review) parts.push(['{n} evidence to review', '{n} evidence', c.evidence_pending_review]);
+      if (!parts.length) { var none = node.appendChild(el('span', 'know-none')); AIOL_I18N.set(none, 'None'); return; }
+      var badge = node.appendChild(el('span', 'badge badge--warning'));
+      parts.forEach(function (p, i) {
+        if (i) badge.appendChild(document.createTextNode(' \u00b7 '));
+        var seg = badge.appendChild(el('span'));
+        AIOL_I18N.set(seg, parts.length === 1 ? p[0] : p[1], { n: p[2] });
+      });
+    }
+    function openDetail(it, toWorkspace) {
+      detail(panel, 'knowledge', it);
+      var box = panel.querySelector('.live-detail');
+      box.scrollIntoView({ block: 'start' });
+      if (!toWorkspace) return;
+      // The workspace arrives after the detail's own reads; wait for it, then bring it into view.
+      var found = function () { var w = box.querySelector('.kw-workspace'); if (w) { w.scrollIntoView({ block: 'start' }); return true; } return false; };
+      if (found()) return;
+      var mo = new MutationObserver(function () { if (found()) mo.disconnect(); });
+      mo.observe(box, { childList: true, subtree: true });
+      setTimeout(function () { mo.disconnect(); }, 10000);
+    }
+    function head() {
+      var tr = el('tr');
+      KNOWLEDGE_COLS.forEach(function (c) {
+        var th = el('th'); th.scope = 'col'; if (c[2]) th.className = c[2];
+        if (!c[1]) { th.textContent = c[0]; tr.appendChild(th); return; }
+        th.setAttribute('aria-sort', st.sort === c[1] ? KNOWLEDGE_SORTS[c[1]][0] : 'none');
+        var b = el('button', 'th-sort-btn'); b.type = 'button';
+        b.appendChild(el('span', null, c[0]));
+        var caret = b.appendChild(el('span', 'th-sort-caret')); caret.setAttribute('aria-hidden', 'true');
+        b.addEventListener('click', function () { if (st.sort !== c[1]) { st.sort = c[1]; reset(); } });
+        th.appendChild(b); tr.appendChild(th);
+      });
+      var thead = table.querySelector('thead'); thead.textContent = ''; thead.appendChild(tr);
+      if (sortBtn) AIOL_I18N.set(sortBtn, KNOWLEDGE_SORTS[st.sort][1]);
+    }
+    function row(it) {
+      var tr = el('tr'); tr.dataset.knowledgeId = it.id;
+      var name = el('td'); name.dataset.label = 'Knowledge object';
+      var a = el('a', 'know-name'); a.href = '#screen-knowledge';
+      var n = a.appendChild(el('bdi', null, it.canonical_name)); n.dir = 'auto';
+      a.addEventListener('click', function (e) { e.preventDefault(); openDetail(it, false); });
+      name.appendChild(a); name.appendChild(typeLine(it.object_type));
+      var sources = el('td', 'num'); sources.dataset.label = 'Sources'; AIOL_I18N.set(sources, '{n}', { n: it.counts.sources });
+      var appr = el('td'); appr.dataset.label = 'Approval'; appr.appendChild(approval(it.status));
+      var act = el('td'); act.dataset.label = 'Action needed'; action(act, it.counts);
+      var upd = el('td', 'updated-cell'); upd.dataset.label = 'Updated'; AIOL_I18N.set(upd, '{d}', { d: { date: it.updated_at, style: 'date' } });
+      var res = el('td', 'td--center'); res.dataset.label = 'Research workspace';
+      res.appendChild(workspaceButton(it));
+      [name, sources, appr, act, upd, res].forEach(function (td) { tr.appendChild(td); });
+      return tr;
+    }
+    function card(it) {
+      var c = el('div', 'card know-card'); c.dataset.knowledgeId = it.id;
+      var top = c.appendChild(el('div', 'know-card__top'));
+      var a = top.appendChild(el('a', 'know-name')); a.href = '#screen-knowledge';
+      var n = a.appendChild(el('bdi', null, it.canonical_name)); n.dir = 'auto';
+      a.addEventListener('click', function (e) { e.preventDefault(); openDetail(it, false); });
+      top.appendChild(typeLine(it.object_type));
+      var dl = c.appendChild(el('dl', 'kv'));
+      [['Sources', function (dd) { AIOL_I18N.set(dd, '{n}', { n: it.counts.sources }); }],
+       ['Approval', function (dd) { dd.appendChild(approval(it.status)); }],
+       ['Action needed', function (dd) { action(dd, it.counts); }],
+       ['Updated', function (dd) { AIOL_I18N.set(dd, '{d}', { d: { date: it.updated_at, style: 'date' } }); }]].forEach(function (p) {
+        dl.appendChild(el('dt', null, p[0])); var dd = dl.appendChild(el('dd')); p[1](dd);
+      });
+      c.appendChild(workspaceButton(it));
+      return c;
+    }
+    // Same visible label on every row, so the accessible name carries the object's name too.
+    function workspaceButton(it) {
+      var b = el('button', 'btn research-workspace-btn'); b.type = 'button';
+      var shown = b.appendChild(el('span')), spoken = b.appendChild(el('span', 'visually-hidden'));
+      shown.setAttribute('aria-hidden', 'true');
+      AIOL_I18N.set(shown, 'Research workspace');
+      AIOL_I18N.set(spoken, 'Research workspace for {name}', { name: it.canonical_name });
+      b.addEventListener('click', function () { openDetail(it, true); });
+      return b;
+    }
+    function render(page) {
+      var tbody = table.querySelector('tbody'); tbody.textContent = '';
+      page.items.forEach(function (it) { tbody.appendChild(row(it)); });
+      grid.textContent = '';
+      page.items.forEach(function (it) { grid.appendChild(card(it)); });
+    }
+    // Part B: the controls. Every change goes back to page 1, and only the
+    // newest request may render: a slower reply to an older request is dropped.
+    var OTHER = '__other';
+    var toolbar = screen.querySelector('.toolbar'), search = toolbar.querySelector('input[type=search]');
+    var filterBtn = screen.querySelectorAll('.toolbar > .btn')[0];
+    var finBtn, pagerText, prevBtn, nextBtn, sizeSel, typeSel, otherField, otherInput, statusSel, chips, sortOpts = {};
+    function option(value, label) { var o = el('option'); o.value = value; AIOL_I18N.set(o, label); return o; }
+    function field(label, control) {
+      var f = el('label', 'field'), t = el('span', 'field__label');
+      AIOL_I18N.set(t, label); f.appendChild(t); f.appendChild(control); return f;
+    }
+    function typeSelect() {
+      var s = el('select'); s.appendChild(option('', 'All'));
+      Object.keys(KNOWLEDGE_TYPES).forEach(function (k) { s.appendChild(option(k, KNOWLEDGE_TYPES[k])); });
+      s.appendChild(option(OTHER, 'Other type')); return s;
+    }
+    // A disclosure panel under its button: Escape or a click elsewhere closes it.
+    function popover(btn, id) {
+      var wrap = el('span', 'know-pop-wrap'); btn.parentNode.insertBefore(wrap, btn); wrap.appendChild(btn);
+      var pop = el('div', 'know-pop'); pop.id = id; pop.hidden = true; wrap.appendChild(pop);
+      btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', id);
+      function show(open) { pop.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
+      btn.addEventListener('click', function () { show(pop.hidden); });
+      wrap.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pop.hidden) { show(false); btn.focus(); } });
+      document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) show(false); });
+      pop.close = function () { show(false); };
+      return pop;
+    }
+    function debounced(fn) { var t = null; return { run: function () { clearTimeout(t); t = setTimeout(fn, 300); }, now: function () { clearTimeout(t); fn(); } }; }
+    function wire() {
+      // Search: 300 ms after the last keystroke; Enter at once; Escape clears.
+      var typed = debounced(function () { var v = search.value.trim(); if (v !== st.search) { st.search = v; reset(); } });
+      search.addEventListener('input', typed.run);
+      search.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); typed.now(); }
+        else if (e.key === 'Escape' && search.value) { search.value = ''; typed.now(); }
+      });
+      // Filter: type (the approved types, or an exact other name) and status.
+      var fPop = popover(filterBtn, 'know-filter-panel');
+      typeSel = typeSelect(); otherInput = el('input'); otherInput.type = 'text'; otherInput.dir = 'ltr'; otherInput.maxLength = 100;
+      otherField = field('Exact type name', otherInput); otherField.hidden = true;
+      statusSel = el('select');
+      [['', 'All'], ['draft', 'Draft'], ['in_review', 'In review'], ['published', 'Published']].forEach(function (s) { statusSel.appendChild(option(s[0], s[1])); });
+      fPop.appendChild(field('Type', typeSel)); fPop.appendChild(otherField); fPop.appendChild(field('Status', statusSel));
+      typeSel.addEventListener('change', function () {
+        otherField.hidden = typeSel.value !== OTHER;
+        if (typeSel.value === OTHER) { otherInput.focus(); if (!otherInput.value.trim()) return; }
+        st.type = typeSel.value; st.other = typeSel.value === OTHER ? otherInput.value.trim() : ''; reset();
+      });
+      var otherTyped = debounced(function () { var v = otherInput.value.trim(); if (v !== st.other) { st.type = OTHER; st.other = v; reset(); } });
+      otherInput.addEventListener('input', otherTyped.run);
+      statusSel.addEventListener('change', function () { st.status = statusSel.value; reset(); });
+      chips = el('span', 'know-chips'); filterBtn.parentNode.insertAdjacentElement('afterend', chips);
+      // Sort: the three server orders.
+      var sPop = popover(sortBtn, 'know-sort-panel');
+      Object.keys(KNOWLEDGE_SORTS).forEach(function (k) {
+        var b = el('button', 'btn know-sort-opt'); b.type = 'button'; AIOL_I18N.set(b, KNOWLEDGE_SORTS[k][1]);
+        b.addEventListener('click', function () { sPop.close(); sortBtn.focus(); if (st.sort !== k) { st.sort = k; reset(); } });
+        sortOpts[k] = b; sPop.appendChild(b);
+      });
+      // Show finished: its pressed state comes from the response, never from the click.
+      finBtn = el('button', 'btn know-finished'); finBtn.type = 'button'; finBtn.setAttribute('aria-pressed', 'false');
+      AIOL_I18N.set(finBtn, 'Show finished');
+      finBtn.addEventListener('click', function () { st.finished = finBtn.getAttribute('aria-pressed') !== 'true'; reset(); });
+      toolbar.insertBefore(finBtn, toolbar.querySelector('.view-toggle'));
+      // Pager and page size.
+      var pg = el('div', 'know-pager'); pg.setAttribute('data-live-keep', '');
+      pagerText = pg.appendChild(el('span', 'know-pager__text')); pagerText.setAttribute('aria-live', 'polite');
+      prevBtn = pg.appendChild(el('button', 'btn')); prevBtn.type = 'button'; AIOL_I18N.set(prevBtn, 'Previous');
+      nextBtn = pg.appendChild(el('button', 'btn')); nextBtn.type = 'button'; AIOL_I18N.set(nextBtn, 'Next');
+      sizeSel = el('select'); [25, 50, 100].forEach(function (n) { var o = el('option'); o.value = String(n); AIOL_I18N.set(o, '{n}', { n: n }); sizeSel.appendChild(o); });
+      sizeSel.value = String(st.limit); pg.appendChild(field('Rows per page', sizeSel));
+      prevBtn.addEventListener('click', function () { st.offset = Math.max(0, st.offset - st.limit); load(); });
+      nextBtn.addEventListener('click', function () { st.offset += st.limit; load(); });
+      sizeSel.addEventListener('change', function () { st.limit = Number(sizeSel.value); reset(); });
+      grid.insertAdjacentElement('afterend', pg);
+      wireCreate();
+    }
+    function chip(label, value, clear) {
+      var b = el('button', 'btn know-chip'); b.type = 'button';
+      var hint = el('span', 'visually-hidden'); AIOL_I18N.set(hint, 'Remove filter'); b.appendChild(hint);
+      var l = el('span'); AIOL_I18N.set(l, label); b.appendChild(l); b.appendChild(document.createTextNode(': '));
+      if (KNOWLEDGE_TYPES[value] || KNOWLEDGE_STATUS[value]) { var v = el('span'); AIOL_I18N.set(v, KNOWLEDGE_TYPES[value] || KNOWLEDGE_STATUS[value][0]); b.appendChild(v); }
+      else { var raw = el('bdi', null, value); raw.dir = 'ltr'; b.appendChild(raw); }
+      b.addEventListener('click', function () { clear(); reset(); });
+      return b;
+    }
+    // Controls always show the state the next request will use.
+    function sync() {
+      Object.keys(sortOpts).forEach(function (k) { sortOpts[k].setAttribute('aria-pressed', String(st.sort === k)); });
+      typeSel.value = st.type; statusSel.value = st.status; otherField.hidden = st.type !== OTHER;
+      if (st.type !== OTHER) otherInput.value = '';
+      chips.textContent = '';
+      var type = st.type === OTHER ? st.other : st.type;
+      if (type) chips.appendChild(chip('Type', type, function () { st.type = ''; st.other = ''; }));
+      if (st.status) chips.appendChild(chip('Status', st.status, function () { st.status = ''; }));
+    }
+    function pager(page) {
+      var to = Math.min(page.offset + page.items.length, page.total);
+      AIOL_I18N.set(pagerText, 'Showing {from} to {to} of {total}', { from: page.total ? page.offset + 1 : 0, to: to, total: page.total });
+      prevBtn.disabled = page.offset <= 0; nextBtn.disabled = to >= page.total;
+    }
+    // New knowledge object: name and type; the new row gets focus when it is on this page.
+    function wireCreate() {
+      var newBtn = screen.querySelector('.page-actions .btn--primary');
+      var form = el('form', 'know-new'); form.id = 'know-new-form'; form.hidden = true; form.noValidate = true; form.setAttribute('data-live-keep', '');
+      var name = el('input'); name.type = 'text'; name.required = true; name.maxLength = 500; name.dir = 'auto';
+      var type = typeSelect(); type.firstChild.remove();
+      var other = el('input'); other.type = 'text'; other.dir = 'ltr'; other.maxLength = 100;
+      var otherF = field('Exact type name', other); otherF.hidden = true;
+      var create = el('button', 'btn btn--primary'); create.type = 'submit'; AIOL_I18N.set(create, 'Create');
+      var cancel = el('button', 'btn'); cancel.type = 'button'; AIOL_I18N.set(cancel, 'Cancel');
+      var msg = el('p', 'know-new__msg'); msg.setAttribute('role', 'status');
+      var actions = el('div', 'know-new__actions'); actions.appendChild(create); actions.appendChild(cancel);
+      [field('Name', name), field('Type', type), otherF, actions, msg].forEach(function (n) { form.appendChild(n); });
+      screen.querySelector('.page-header').insertAdjacentElement('afterend', form);
+      newBtn.disabled = false; newBtn.removeAttribute('title');
+      newBtn.setAttribute('aria-expanded', 'false'); newBtn.setAttribute('aria-controls', form.id);
+      function show(open) { form.hidden = !open; newBtn.setAttribute('aria-expanded', String(open)); if (open) name.focus(); }
+      newBtn.addEventListener('click', function () { show(form.hidden); });
+      cancel.addEventListener('click', function () { show(false); newBtn.focus(); });
+      type.addEventListener('change', function () { otherF.hidden = type.value !== OTHER; });
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var objectType = type.value === OTHER ? other.value.trim() : type.value;
+        if (!name.value.trim() || !objectType) { AIOL_I18N.set(msg, 'Enter a name and a type.'); return; }
+        create.disabled = true; AIOL_I18N.set(msg, 'Creating...');
+        api('/knowledge', { method: 'POST', body: { canonical_name: name.value.trim(), object_type: objectType } }).then(function (made) {
+          name.value = ''; other.value = ''; show(false);
+          return load().then(function () {
+            var link = table.querySelector('tr[data-knowledge-id="' + made.id + '"] .know-name');
+            var note = screen.querySelector('#know-created');
+            if (!note) { note = el('p', 'know-created'); note.id = 'know-created'; note.setAttribute('role', 'status'); note.setAttribute('data-live-keep', ''); form.insertAdjacentElement('afterend', note); }
+            note.textContent = '';
+            var text = note.appendChild(el('span'));
+            if (link) { AIOL_I18N.set(text, 'Created {name}.', { name: made.canonical_name }); link.focus(); return; }
+            AIOL_I18N.set(text, '{name} was created; it is not on this page.', { name: made.canonical_name });
+            var open = note.appendChild(el('button', 'btn')); open.type = 'button'; AIOL_I18N.set(open, 'Open');
+            open.addEventListener('click', function () { openDetail(made, false); });
+          });
+        }).catch(function (err) { AIOL_I18N.set(msg, 'Could not create: {error}', { error: err.message }); })
+          .then(function () { create.disabled = false; });
+      });
+    }
+    function params() {
+      var q = ['sort=' + st.sort, 'limit=' + st.limit, 'offset=' + st.offset];
+      var type = st.type === OTHER ? st.other : st.type;
+      if (st.search) q.push('search=' + encodeURIComponent(st.search));
+      if (type) q.push('object_type=' + encodeURIComponent(type));
+      if (st.status) q.push('status=' + st.status);
+      if (st.finished) q.push('include_finished=true');
+      return q.join('&');
+    }
+    function reset() { st.offset = 0; return load(); }
+    function load() {
+      head(); sync();
+      var seq = ++st.seq, busy = function (on) { [table, grid].forEach(function (n) { if (on) n.setAttribute('aria-busy', 'true'); else n.removeAttribute('aria-busy'); }); };
+      busy(true);
+      // No paging while a request is out: pager() turns the buttons back on.
+      prevBtn.disabled = nextBtn.disabled = true;
+      state(panel, 'loading', 'Loading…');
+      return api('/knowledge/overview?' + params()).then(function (page) {
+        if (seq !== st.seq) return null;        // a newer request owns the screen
+        render(page); pager(page);
+        finBtn.setAttribute('aria-pressed', String(!!page.finished_visible));
+        state(panel, 'ready');
+        return page;
+      }).catch(function (e) { if (seq === st.seq) state(panel, 'error', e.message); return null; })
+        .then(function (page) { if (seq === st.seq) busy(false); return page; });
+    }
+    wire();
+    panel.__knowledgeLoad = load;
+    return load();
+  }
   // The Dashboard's own four cards, filled from one tenant-scoped read
   // (GET /dashboard/summary). Values and notes are i18n templates, so they
   // follow the language. Nothing falls back to sample figures.
@@ -9783,9 +10093,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       panel.querySelector('.live-connect').hidden = true;
       if (toggle) toggle.hidden = true;
       var tb = panel.querySelector('.live-toolbar'); if (tb) tb.hidden = false;
-      if (cfg.kind === 'cards') dashboardCards(panel); else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
+      if (cfg.kind === 'cards') dashboardCards(panel); else if (cfg.kind === 'knowledge') knowledgeList(panel);
+      else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
+  // Creating needs Cloud Core: the sample screen says so instead of doing nothing.
+  var knowNew = document.querySelector('#screen-knowledge .page-actions .btn--primary');
+  if (knowNew) { knowNew.disabled = true; knowNew.title = 'Connect Cloud Core to create'; }
   // Re-read the Dashboard cards each time the screen is shown again.
   var dash = document.getElementById('screen-dashboard'), dashWasActive = dash.classList.contains('is-active');
   new MutationObserver(function () {
@@ -12105,7 +12419,56 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Oldest queued {n} h ago": "قدیمی‌ترین مورد در صف: {n} ساعت پیش",
     "Oldest queued {n} days ago": "قدیمی‌ترین مورد در صف: {n} روز پیش",
     "{n} failed": "{n} ناموفق",
-    "{c|conversion|conversions} + {k|claim|claims} in conflict": "{c} تبدیل سند + {k} ادعای متعارض"
+    "{c|conversion|conversions} + {k|claim|claims} in conflict": "{c} تبدیل سند + {k} ادعای متعارض",
+    // Knowledge list (live).
+    "Knowledge object": "پرونده دانش",
+    "Approval": "تأیید",
+    "Action needed": "اقدام لازم",
+    "Updated": "به‌روزرسانی",
+    "Research workspace": "میز کار پژوهش",
+    "Research workspace for {name}": "میز کار پژوهش برای {name}",
+    "Plant": "گیاه",
+    "Ingredient": "ماده",
+    "Compound": "ترکیب",
+    "Topic": "موضوع",
+    "Product": "محصول",
+    "Concept": "مفهوم",
+    "Draft": "پیش‌نویس",
+    "In review": "در حال بررسی",
+    "Published": "منتشرشده",
+    "None": "هیچ",
+    "{n|conflict|conflicts} to resolve": "{n} تعارض برای رفع",
+    "{n|conflict|conflicts}": "{n} تعارض",
+    "{n|gap|gaps} open": "{n} شکاف باز",
+    "{n|gap|gaps}": "{n} شکاف",
+    "{n} evidence to review": "{n} شاهد برای بررسی",
+    "{n} evidence": "{n} شاهد",
+    "Sort: Name": "مرتب‌سازی: نام",
+    "Sort: Action needed": "مرتب‌سازی: اقدام لازم",
+    "Sort: Recently updated": "مرتب‌سازی: تازه‌ترین به‌روزرسانی",
+    "Filter": "فیلتر",
+    "All": "همه",
+    "Type": "نوع",
+    "Other type": "نوع دیگر",
+    "Exact type name": "نام دقیق نوع",
+    "Status": "وضعیت",
+    "Show finished": "نمایش تمام‌شده‌ها",
+    "Previous": "قبلی",
+    "Next": "بعدی",
+    "Rows per page": "ردیف در هر صفحه",
+    "Remove filter": "حذف فیلتر",
+    "Showing {from} to {to} of {total}": "نمایش {from} تا {to} از {total}",
+    "Name": "نام",
+    "Create": "ایجاد",
+    "Cancel": "انصراف",
+    "Enter a name and a type.": "نام و نوع را وارد کنید.",
+    "Creating...": "در حال ایجاد...",
+    "Created {name}.": "{name} ایجاد شد.",
+    "{name} was created; it is not on this page.": "{name} ایجاد شد؛ در این صفحه نیست.",
+    "Open": "باز کردن",
+    "Could not create: {error}": "ایجاد نشد: {error}",
+    "Connect Cloud Core to create": "برای ایجاد، به Cloud Core متصل شوید",
+    "New knowledge object": "پرونده دانش جدید"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

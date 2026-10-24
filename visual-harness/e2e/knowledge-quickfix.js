@@ -73,17 +73,18 @@ function check(name, got, want) {
   await page.evaluate(() => {
     const ko = { id: 'k1', canonical_name: 'Toranjebin', object_type: 'plant', status: 'draft', version: 1, slug: 'toranjebin',
       language: 'fa', updated_at: '2026-10-23T10:00:00Z', created_at: '2026-10-23T10:00:00Z' };
+    const counts = { sources: 0, claims: 0, claims_conflicting: 0, evidence: 0, evidence_verified: 0, evidence_pending_review: 0, gaps_open: 0 };
     window.fetch = (u) => {
       u = String(u);
-      const body = /\/knowledge\/k1(\?|$)/.test(u) ? ko
-        : /\/knowledge(\?|$)/.test(u) ? { items: [ko], total: 1, limit: 20, offset: 0 }
+      const body = /\/knowledge\/overview\?/.test(u) ? { items: [Object.assign({ counts, finished: false }, ko)], total: 1, limit: 50, offset: 0, finished_visible: false }
+        : /\/knowledge\/k1(\?|$)/.test(u) ? ko
         : { items: [], total: 0, limit: 20, offset: 0 };
       return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
     };
     window.AIOL_LIVE_CONNECT('http://core.test', 'tok');
   });
-  await page.waitForSelector('#live-screen-knowledge .live-body tbody tr', { timeout: 10000 });
-  await page.click('#live-screen-knowledge .live-body tbody tr');
+  await page.waitForSelector('#know-view-table tbody .know-name', { timeout: 10000 });
+  await page.click('#know-view-table tbody .know-name');
   await page.waitForSelector('#live-screen-knowledge .kw-workspace', { timeout: 10000 });
   await page.waitForTimeout(500);
   check('detail shows exactly one keyword workspace',
