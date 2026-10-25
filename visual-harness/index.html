@@ -1658,8 +1658,16 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
   .otp-box { inline-size: 38px; block-size: 46px; }
 }
 
+/* Placeholders use the subtle text token, not the browser's grey (3.7:1 on the dark surface). */
+::placeholder { color: var(--text-subtle); opacity: 1; }
+
 /* ===== harness chrome (NOT part of the design system) ===== */
 html, body { margin: 0; background: var(--canvas); }
+/* Anything scrolled to the top (a focused heading, a detail panel) stops below
+   the sticky harness bar, whose height (--harness-bar-h, measured in script)
+   grows when it wraps. On the page, not the heading: .main is itself a scroll
+   container, so a heading's scroll-margin would not reach the window. */
+html { scroll-padding-block-start: calc(var(--harness-bar-h, 0px) + var(--space-3)); }
 body { font-family: var(--font-ui); color: var(--text); }
 :is([lang="fa"], [lang^="fa-"], [lang="ar"], [lang^="ar-"]) :is(body, .app) { font-family: var(--font-fa); }
 .harness-bar {
@@ -2843,12 +2851,15 @@ tr.is-paged-out { display: none; }
 .kw-list label { display: flex; gap: var(--space-2); align-items: flex-start; overflow-wrap: anywhere; }
 .live-detail dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); }
 .live-panel [hidden] { display: none !important; }
-/* Knowledge "Windowed view": the grid layout must not override [hidden]. */
+/* Knowledge "Cards" view: the grid layout must not override [hidden]. */
 .know-grid:not([hidden]) { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
 /* Live Knowledge list. The type line keeps its height even when empty, so a
    Latin-name line can join it later without the rows reflowing. */
 .know-name { font-weight: var(--weight-semibold); text-decoration: none; color: var(--text); }
 .know-type { display: block; min-block-size: 1.25em; color: var(--text-muted); font-size: var(--text-sm); }
+/* Sample Knowledge rows at phone width: the cell is a flex row that squeezed the
+   name and its version tag until they broke mid-word. Keep each one whole. */
+#know-view-table td > a:not(.know-name), #know-view-table .version-tag { white-space: nowrap; }
 .know-none { color: var(--text-muted); }
 .know-card { display: flex; flex-direction: column; gap: var(--space-2); }
 .know-card__top { display: flex; flex-direction: column; gap: var(--space-1); }
@@ -4076,7 +4087,7 @@ button.card { color: inherit; font: inherit; }
     <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Sort: Open conflicts</button>
     <div class="view-toggle" role="group" aria-label="Display mode" style="display:flex;border:1px solid var(--border-strong);border-radius:var(--radius-sm);overflow:hidden">
       <button type="button" class="btn view-toggle__btn" data-view="table" aria-pressed="true" aria-label="Rows view" style="border:0;border-radius:0"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="3" height="3" rx="0.6"/><rect x="3" y="10.5" width="3" height="3" rx="0.6"/><rect x="3" y="16" width="3" height="3" rx="0.6"/><path d="M9 6.5h12M9 12h12M9 17.5h12"/></svg></button>
-      <button type="button" class="btn view-toggle__btn" data-view="grid" aria-pressed="false" aria-label="Windowed view" style="border:0;border-radius:0;border-inline-start:1px solid var(--border-strong)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button>
+      <button type="button" class="btn view-toggle__btn" data-view="grid" aria-pressed="false" aria-label="Cards" style="border:0;border-radius:0;border-inline-start:1px solid var(--border-strong)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button>
     </div>
   </div>
   <div class="callout" data-live-keep><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg></span>
@@ -7870,6 +7881,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1');
     h.focus({ preventScroll: true });
   }
+  // The sticky harness bar wraps to several lines on narrow screens; its height
+  // feeds the CSS that keeps anything scrolled to the top clear of it.
+  var harnessBar = document.querySelector('.harness-bar');
+  if (harnessBar && window.ResizeObserver) new ResizeObserver(function () {
+    document.documentElement.style.setProperty('--harness-bar-h', harnessBar.offsetHeight + 'px');
+  }).observe(harnessBar);
   window.addEventListener('hashchange', function () { routeFromHash(true); });
   if (location.hash) routeFromHash(); else show('screen-dashboard');
 

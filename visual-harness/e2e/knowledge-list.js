@@ -14,6 +14,9 @@
  *           in place, move nothing above the list and keep focus on the
  *           control used (or its replacement); the first load says Loading
  *           where the rows go.
+ *   C5:     the Cards toggle label, placeholder contrast in both themes, a
+ *           heading scrolled to the top clears the sticky bar (1440 and 390
+ *           px), and whole words in the sample name cells at 390 px.
  * Runs on file:// with GET /knowledge/overview mocked in the page and every
  * request recorded. Persian expectations are built from code points, so this
  * file stays ASCII and no rendering can reverse them.
@@ -481,6 +484,56 @@ function installMock(items) {
   await page.evaluate(() => { window.__fail = 0; });
   await page.focus(statusBtn); await page.keyboard.press('Enter'); await settle();
   check('Retry succeeds: focus goes to the table, not the page', await page.evaluate(() => document.activeElement.classList.contains('table-wrap')), true);
+
+  // ---------- Part C5: accessibility ----------
+  // A fresh page in sample mode (the critique's findings were on the sample rows).
+  const p5 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  p5.on('pageerror', (e) => { failures++; console.log('PAGE ERROR ' + e.message); });
+  await p5.goto(pageUrl);
+  check('the view toggle reads "Cards", not "Windowed view"', await p5.$eval('#screen-knowledge .view-toggle__btn[data-view="grid"]',
+    (b) => b.getAttribute('aria-label')), 'Cards');
+  // WCAG contrast of the search placeholder against the input, in both themes.
+  const placeholderContrast = () => p5.evaluate(() => {
+    const rgb = (c) => c.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number);
+    const lum = (c) => { const [r, g, b] = rgb(c).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const i = document.querySelector('#screen-knowledge .toolbar input[type=search]');
+    const a = lum(getComputedStyle(i, '::placeholder').color), b = lum(getComputedStyle(i).backgroundColor);
+    return Math.round(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) * 100) / 100 >= 4.5;
+  });
+  await p5.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  check('dark: search placeholder contrast is at least 4.5:1', await placeholderContrast(), true);
+  await p5.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+  check('light: search placeholder contrast is at least 4.5:1', await placeholderContrast(), true);
+  // The heading scrolled to the top stops below the sticky bar, which is 3 lines tall at 390px.
+  // Both ways a heading reaches the top: scrollIntoView, and a focus() that has to scroll.
+  const headingClear = () => p5.evaluate(() => {
+    const h = document.querySelector('#screen-knowledge h1'), bar = () => document.querySelector('.harness-bar').getBoundingClientRect().bottom;
+    window.scrollTo(0, 800); h.scrollIntoView();
+    const viaScroll = h.getBoundingClientRect().top >= bar();
+    window.scrollTo(0, 1600); h.setAttribute('tabindex', '-1'); h.blur(); h.focus();   // focus() on the focused element would not scroll
+    return [viaScroll, h.getBoundingClientRect().top >= bar()];
+  });
+  check('1440px: a heading scrolled or focused to the top is not under the sticky bar', await headingClear(), [true, true]);
+  await p5.setViewportSize({ width: 390, height: 900 }); await p5.waitForTimeout(150);
+  check('390px: the same with the bar wrapped to several lines', await headingClear(), [true, true]);
+  // No word in a sample name cell is split across lines at 390px, and nothing overflows the page.
+  check('390px: sample names and version tags keep whole words, no sideways scroll', await p5.evaluate(() => {
+    const split = [];
+    document.querySelectorAll('#know-view-table tbody td:first-child').forEach((td) => {
+      const walk = document.createTreeWalker(td, NodeFilter.SHOW_TEXT); let n;
+      while ((n = walk.nextNode())) {
+        let i = 0;
+        for (const w of n.textContent.split(/(\s+)/)) {
+          if (w.trim()) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + w.length);
+            if (new Set([...r.getClientRects()].map((x) => Math.round(x.top))).size > 1) split.push(w); }
+          i += w.length;
+        }
+      }
+    });
+    return [split, document.documentElement.scrollWidth > window.innerWidth];
+  }), [[], false]);
+  await p5.close();
 
   await browser.close();
   console.log(failures ? failures + ' FAILED' : 'ALL PASSED');
