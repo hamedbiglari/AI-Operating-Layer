@@ -2869,6 +2869,10 @@ tr.is-paged-out { display: none; }
 .know-status.callout { display: grid; gap: var(--space-3); justify-items: start; }
 .know-status p { margin: 0; }
 .know-status [hidden] { display: none; }
+/* A reload keeps the rows in place, dimmed, until the reply replaces them. */
+#know-view-table table[aria-busy="true"] tbody, .know-grid[aria-busy="true"] { opacity: 0.55; }
+/* The pager while it is off: looks disabled but stays focusable, so focus never drops to the page. */
+.know-pager .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; background: var(--surface-sunken); color: var(--text-subtle); border-color: var(--border); }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel):not([data-live-keep]) { display: none !important; }
 /* Compact live panel (Dashboard): title, note and Connect button share one
@@ -9756,6 +9760,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       setTimeout(function () { mo.disconnect(); }, 10000);
     }
     function head() {
+      // A focused sort header is rebuilt below; focus moves to its replacement.
+      var focused = document.activeElement, col = -1;
+      if (focused && focused.classList.contains('th-sort-btn') && table.contains(focused)) col = [].indexOf.call(focused.closest('tr').children, focused.closest('th'));
       var tr = el('tr');
       KNOWLEDGE_COLS.forEach(function (c) {
         var th = el('th'); th.scope = 'col'; if (c[2]) th.className = c[2];
@@ -9768,6 +9775,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         th.appendChild(b); tr.appendChild(th);
       });
       var thead = table.querySelector('thead'); thead.textContent = ''; thead.appendChild(tr);
+      if (col >= 0) tr.children[col].querySelector('button').focus();
       if (sortBtn) AIOL_I18N.set(sortBtn, KNOWLEDGE_SORTS[st.sort][1]);
     }
     function row(it) {
@@ -9898,11 +9906,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       nextBtn = pg.appendChild(el('button', 'btn')); nextBtn.type = 'button'; AIOL_I18N.set(nextBtn, 'Next');
       sizeSel = el('select'); [25, 50, 100].forEach(function (n) { var o = el('option'); o.value = String(n); AIOL_I18N.set(o, '{n}', { n: n }); sizeSel.appendChild(o); });
       sizeSel.value = String(st.limit); pg.appendChild(field('Rows per page', sizeSel));
-      prevBtn.addEventListener('click', function () { st.offset = Math.max(0, st.offset - st.limit); load(); });
-      nextBtn.addEventListener('click', function () { st.offset += st.limit; load(); });
+      prevBtn.addEventListener('click', function () { if (!pagerOn) return; st.offset = Math.max(0, st.offset - st.limit); load(); });
+      nextBtn.addEventListener('click', function () { if (!pagerOn) return; st.offset += st.limit; load(); });
       sizeSel.addEventListener('change', function () { st.limit = Number(sizeSel.value); reset(); });
       grid.insertAdjacentElement('afterend', pg);
       wireCreate();
+      // The sample rows never sit under the live headers, not even during the first load.
+      render({ items: [] });
     }
     function chip(label, value, clear) {
       var b = el('button', 'btn know-chip'); b.type = 'button';
@@ -9918,15 +9928,25 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       Object.keys(sortOpts).forEach(function (k) { sortOpts[k].setAttribute('aria-pressed', String(st.sort === k)); });
       typeSel.value = st.type; statusSel.value = st.status; otherField.hidden = st.type !== OTHER;
       if (st.type !== OTHER) otherInput.value = '';
+      var chipAt = [].indexOf.call(chips.children, document.activeElement);
       chips.textContent = '';
       var type = st.type === OTHER ? st.other : st.type;
       if (type) chips.appendChild(chip('Type', type, function () { st.type = ''; st.other = ''; }));
       if (st.status) chips.appendChild(chip('Status', st.status, function () { st.status = ''; }));
+      // A removed chip had focus: the next chip takes it, or Filter when none is left.
+      if (chipAt >= 0) (chips.children[Math.min(chipAt, chips.children.length - 1)] || filterBtn).focus();
     }
+    // While a request is out, or after one failed, the pager is off. It uses
+    // aria-disabled, not disabled, so a focused button keeps focus.
+    var pagerOn = false;
+    function pagerOff() { pagerOn = false; [prevBtn, nextBtn].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); }
     function pager(page) {
-      var to = Math.min(page.offset + page.items.length, page.total);
+      var to = Math.min(page.offset + page.items.length, page.total), had = document.activeElement;
       AIOL_I18N.set(pagerText, 'Showing {from} to {to} of {total}', { from: page.total ? page.offset + 1 : 0, to: to, total: page.total });
+      pagerOn = true; [prevBtn, nextBtn].forEach(function (b) { b.removeAttribute('aria-disabled'); });
       prevBtn.disabled = page.offset <= 0; nextBtn.disabled = to >= page.total;
+      // Reaching the first or last page turns the used button off: focus moves to the other one.
+      if ((had === prevBtn || had === nextBtn) && had.disabled) { var other = had === prevBtn ? nextBtn : prevBtn; if (!other.disabled) other.focus(); }
     }
     // New knowledge object: name and type; the new row gets focus when it is on this page.
     function wireCreate() {
@@ -9983,11 +10003,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     // Part C: what the list says when it has no rows to show. The text is
     // plain English until its Persian is approved in the glossary.
     function status(kind, text, action, fn) {
+      var hadFocus = document.activeElement === statusAct;
       statusBox.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
       statusBox.dataset.state = kind || '';
       statusMsg.textContent = text || '';
       statusAct.textContent = action || ''; statusAct.hidden = !action; statusFn = fn || null;
       statusAct.removeAttribute('aria-controls'); statusAct.removeAttribute('aria-expanded');
+      // Its action had focus and is gone: focus goes to the list, not the page.
+      if (hadFocus && !action) (grid.hidden ? table.closest('.table-wrap') : grid.querySelector('.know-name') || filterBtn).focus();
     }
     function empty(page) {
       if (page.total) { status(''); return; }
@@ -10022,8 +10045,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var seq = ++st.seq, busy = function (on) { [table, grid].forEach(function (n) { if (on) n.setAttribute('aria-busy', 'true'); else n.removeAttribute('aria-busy'); }); };
       busy(true);
       // No paging while a request is out: pager() turns the buttons back on.
-      prevBtn.disabled = nextBtn.disabled = true;
-      state(panel, 'loading', 'Loading…');
+      pagerOff();
+      // A reload dims the rows in place (CSS on aria-busy). Only an empty list says
+      // Loading, and it says it where the rows go, so nothing above the list moves.
+      if (!table.querySelector('tbody tr') && !statusBox.dataset.state) status('loading','Loading…');
       return api('/knowledge/overview?' + params()).then(function (page) {
         if (seq !== st.seq) return null;        // a newer request owns the screen
         render(page); pager(page);

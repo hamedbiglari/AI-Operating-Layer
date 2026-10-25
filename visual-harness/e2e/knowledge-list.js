@@ -10,7 +10,10 @@
  *           control, reconnecting (wired once), and New knowledge object.
  *   Part C: a failed request leaves no rows and no pager, Retry repeats it, a
  *           slow failure that lost the race is ignored, 401/403 offer Reconnect,
- *           and the two empty states with their actions.
+ *           and the two empty states with their actions. Reloads dim the rows
+ *           in place, move nothing above the list and keep focus on the
+ *           control used (or its replacement); the first load says Loading
+ *           where the rows go.
  * Runs on file:// with GET /knowledge/overview mocked in the page and every
  * request recorded. Persian expectations are built from code points, so this
  * file stays ASCII and no rendering can reverse them.
@@ -116,8 +119,16 @@ function installMock(items) {
     (b) => [b.disabled, b.title]), [true, 'Connect Cloud Core to create']);
 
   await page.evaluate(installMock, ITEMS);
-  await page.evaluate(() => window.AIOL_LIVE_CONNECT('http://core.test', 'tok'));
+  await page.evaluate(() => { window.__delay = 300; window.AIOL_LIVE_CONNECT('http://core.test', 'tok'); });
+  await settle(100);
+  check('first load: no sample rows under live headers; Loading where the rows go, not in the panel', await page.evaluate(() => {
+    const s = document.querySelector('#screen-knowledge .know-status');
+    return [document.querySelectorAll('#know-view-table tbody tr').length, document.querySelectorAll('#know-view-grid > *').length,
+      s.dataset.state, s.querySelector('p').textContent, document.querySelector('#live-screen-knowledge .live-state').hidden];
+  }), [0, 0, 'loading', 'Loading' + String.fromCharCode(0x2026), true]);
+  await page.evaluate(() => { window.__delay = 0; });
   await page.waitForSelector('#know-view-table tbody tr .know-name');
+  check('first load: Loading clears with the reply', await page.$eval('#screen-knowledge .know-status', (s) => [s.dataset.state, s.querySelector('p').textContent]), ['', '']);
 
   // ---------- Part A ----------
   const head = () => page.$$eval('#know-view-table thead th', (ths) => ths.map((th) => [th.textContent.trim(), th.getAttribute('aria-sort'), !!th.querySelector('button')]));
@@ -246,8 +257,11 @@ function installMock(items) {
   // Paging.
   await page.evaluate(() => { window.__total = 120; });
   await page.selectOption('#screen-knowledge .know-pager select', '25'); await settle();
-  const pager = () => page.$eval('#screen-knowledge .know-pager', (p) => [p.querySelector('.know-pager__text').textContent,
-    p.querySelectorAll('.btn')[0].disabled, p.querySelectorAll('.btn')[1].disabled]);
+  // A pager button is off when disabled (first/last page) or aria-disabled (request out, or failed).
+  const pager = () => page.$eval('#screen-knowledge .know-pager', (p) => {
+    const off = (b) => b.disabled || b.getAttribute('aria-disabled') === 'true';
+    return [p.querySelector('.know-pager__text').textContent, off(p.querySelectorAll('.btn')[0]), off(p.querySelectorAll('.btn')[1])];
+  });
   check('page size 25: limit=25, page 1', [param(await last(), 'limit'), param(await last(), 'offset')], ['25', '0']);
   check('pager text and buttons on page 1', await pager(), ['Showing 1 to 25 of 120', true, false]);
   await page.click('#screen-knowledge .know-pager .btn >> nth=1'); await settle();
@@ -428,6 +442,45 @@ function installMock(items) {
   await page.click(fin); await settle();
   check('with finished objects shown, the empty state does not mention them', (await statusOf())[1], 'No knowledge objects yet.');
   await page.evaluate(() => { window.__empty = false; window.__forceFinished = null; });
+
+  // ---------- Part C3: quiet reloads ----------
+  // A reload dims the rows in place; nothing above the list moves and focus stays put.
+  await page.evaluate(() => { window.__total = 120; window.__delay = 300; });
+  await page.selectOption('#screen-knowledge .know-pager select', '25'); await settle(450);
+  const nextSel = '#screen-knowledge .know-pager .btn >> nth=1';
+  const tableTop = () => page.$eval('#know-view-table', (t) => Math.round(t.getBoundingClientRect().top));
+  await page.focus(nextSel);                       // focusing scrolls the pager into view; measure after that
+  const topBefore = await tableTop();
+  await page.keyboard.press('Enter'); await settle(100);
+  check('reload: the rows stay, dimmed and busy, while the request is out', await page.evaluate(() => {
+    const t = document.querySelector('#know-view-table table');
+    return [t.querySelectorAll('tbody tr').length, t.getAttribute('aria-busy'), getComputedStyle(t.tBodies[0]).opacity];
+  }), [25, 'true', '0.55']);
+  check('reload: no Loading message anywhere, the table does not move', [await page.$eval('#live-screen-knowledge .live-state', (s) => s.hidden),
+    (await statusOf())[0], await tableTop()], [true, '', topBefore]);
+  check('reload: focus stays on Next, which is off but still focusable', await page.evaluate(() => {
+    const b = document.activeElement; return [b.textContent, b.getAttribute('aria-disabled'), b.disabled]; }), ['Next', 'true', false]);
+  await settle(450);
+  check('reply: rows at full strength, focus still on Next', [await page.$eval('#know-view-table tbody', (b) => getComputedStyle(b).opacity),
+    await page.evaluate(() => document.activeElement.textContent), (await pager())[0]], ['1', 'Next', 'Showing 26 to 50 of 120']);
+  for (let i = 0; i < 3; i++) { await page.keyboard.press('Enter'); await settle(450); }
+  check('last page: Next turns off and focus moves to Previous', [(await pager())[0], await page.evaluate(() => document.activeElement.textContent)],
+    ['Showing 101 to 120 of 120', 'Previous']);
+  await page.focus('#know-view-table thead th:nth-child(5) button'); await page.keyboard.press('Enter'); await settle(450);
+  check('a header sort keeps focus on that header after the rebuild', await page.evaluate(() => [document.activeElement.classList.contains('th-sort-btn'),
+    document.activeElement.closest('th').getAttribute('aria-sort'), document.activeElement.textContent]), [true, 'descending', 'Updated']);
+  await openFilter(); await page.selectOption(typeSel, 'plant'); await settle(450);
+  await page.selectOption(statusSel, 'draft'); await settle(450); await page.keyboard.press('Escape');
+  await page.focus('#screen-knowledge .know-chip >> nth=0'); await page.keyboard.press('Enter'); await settle(450);
+  check('removing a chip moves focus to the next chip', await page.evaluate(() => [document.activeElement.classList.contains('know-chip'),
+    document.querySelectorAll('#screen-knowledge .know-chip').length]), [true, 1]);
+  await page.keyboard.press('Enter'); await settle(450);
+  check('removing the last chip moves focus to Filter', await page.evaluate(() => document.activeElement.getAttribute('aria-controls')), 'know-filter-panel');
+  await page.evaluate(() => { window.__fail = 500; window.__delay = 0; });
+  await page.selectOption('#screen-knowledge .know-pager select', '50'); await settle();
+  await page.evaluate(() => { window.__fail = 0; });
+  await page.focus(statusBtn); await page.keyboard.press('Enter'); await settle();
+  check('Retry succeeds: focus goes to the table, not the page', await page.evaluate(() => document.activeElement.classList.contains('table-wrap')), true);
 
   await browser.close();
   console.log(failures ? failures + ' FAILED' : 'ALL PASSED');
