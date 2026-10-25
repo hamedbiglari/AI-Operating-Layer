@@ -14,6 +14,8 @@
  *           in place, move nothing above the list and keep focus on the
  *           control used (or its replacement); the first load says Loading
  *           where the rows go.
+ *   C4:     sample counts, dates and button names come from templates and
+ *           switch to Persian; the error state in Persian.
  *   C5:     the Cards toggle label, placeholder contrast in both themes, a
  *           heading scrolled to the top clears the sticky bar (1440 and 390
  *           px), and whole words in the sample name cells at 390 px.
@@ -44,6 +46,14 @@ const FA = {
   thousands: fa(0x6F1, 0x66C, 0x6F2, 0x6F3, 0x6F4),
   all: fa(0x647, 0x645, 0x647),
   showFinished: fa(0x646, 0x645, 0x627, 0x6CC, 0x634, 0x20, 0x62A, 0x645, 0x627, 0x645, 0x200C, 0x634, 0x62F, 0x647, 0x200C, 0x647, 0x627),
+  open21: fa(0x6F2, 0x6F1, 0x20, 0x628, 0x627, 0x632),
+  sampleDate: fa(0x6F1, 0x6F3, 0x20, 0x634, 0x647, 0x631, 0x6CC, 0x648, 0x631, 0x20, 0x6F1, 0x6F4, 0x6F0, 0x6F5),
+  researchAgainFor: fa(0x627, 0x62C, 0x631, 0x627, 0x6CC, 0x20, 0x645, 0x62C, 0x62F, 0x62F, 0x20, 0x67E, 0x698, 0x648, 0x647, 0x634, 0x20, 0x628, 0x631, 0x627, 0x6CC, 0x20),
+  displayMode: fa(0x62D, 0x627, 0x644, 0x62A, 0x20, 0x646, 0x645, 0x627, 0x6CC, 0x634),
+  retry: fa(0x62A, 0x644, 0x627, 0x634, 0x20, 0x645, 0x62C, 0x62F, 0x62F),
+  loadFailed: (error) => fa(0x628, 0x627, 0x631, 0x6AF, 0x630, 0x627, 0x631, 0x6CC, 0x20, 0x67E, 0x631, 0x648, 0x646, 0x62F, 0x647, 0x200C, 0x647, 0x627, 0x6CC, 0x20, 0x62F, 0x627, 0x646, 0x634, 0x20, 0x646, 0x627, 0x645, 0x648, 0x641, 0x642, 0x20, 0x628, 0x648, 0x62F, 0x20, 0x28) + FSI + error + PDI + fa(0x29, 0x2E),
+  reconnect: fa(0x627, 0x62A, 0x635, 0x627, 0x644, 0x20, 0x62F, 0x648, 0x628, 0x627, 0x631, 0x647),
+  denied401: fa(0x43, 0x6C, 0x6F, 0x75, 0x64, 0x20, 0x43, 0x6F, 0x72, 0x65, 0x20, 0x62A, 0x648, 0x6A9, 0x646, 0x20, 0x62F, 0x633, 0x62A, 0x631, 0x633, 0x6CC, 0x20, 0x631, 0x627, 0x20, 0x646, 0x67E, 0x630, 0x6CC, 0x631, 0x641, 0x62A, 0x20, 0x28) + FSI + 'HTTP 401' + PDI + fa(0x29, 0x2E, 0x20, 0x645, 0x645, 0x6A9, 0x646, 0x20, 0x627, 0x633, 0x62A, 0x20, 0x645, 0x646, 0x642, 0x636, 0x6CC, 0x20, 0x634, 0x62F, 0x647, 0x20, 0x628, 0x627, 0x634, 0x62F, 0x2E),
   pager: fa(0x646, 0x645, 0x627, 0x6CC, 0x634, 0x20, 0x6F1, 0x20, 0x62A, 0x627, 0x20, 0x6F2, 0x6F5, 0x20, 0x627, 0x632, 0x20, 0x6F1, 0x6F2, 0x6F0),
 };
 
@@ -120,6 +130,22 @@ function installMock(items) {
   // Before connecting: creating needs Cloud Core.
   check('sample mode: New knowledge object is disabled and says why', await page.$eval('#screen-knowledge .page-actions .btn--primary',
     (b) => [b.disabled, b.title]), [true, 'Connect Cloud Core to create']);
+  const sampleRow = () => page.evaluate(() => {
+    const r = document.querySelector('#know-view-table tbody tr[data-entity="taranjebin"]');
+    return [r.querySelector('[data-sample-open]').textContent, r.querySelector('[data-label="Action needed"]').textContent,
+      r.querySelector('.updated-cell').textContent, r.querySelector('[data-sample-name]').textContent, r.querySelector('bdi[dir="ltr"]').textContent,
+      document.querySelector('#screen-knowledge .view-toggle').getAttribute('aria-label')];
+  });
+  const latin = 'Toranjebin' + DOT + 'Alhagi manna';
+  check('sample row: counts, date and button name from templates, Latin subtitle in <bdi>', await sampleRow(),
+    ['21 open', '7 conflicts to resolve', '4 Sept 2026', 'Research again for ' + FSI + latin + PDI, latin, 'Display mode']);
+  await page.selectOption('#pick-lang', 'fa'); await settle();
+  check('fa sample row: Persian counts, Jalali date, Latin name kept', await sampleRow(),
+    [FA.open21, FA.sevenConflicts, FA.sampleDate, FA.researchAgainFor + FSI + latin + PDI, latin, FA.displayMode]);
+  check('fa policy note: the semicolon follows the link with no space', await page.$eval('#screen-knowledge .callout a[href="#screen-sources"]',
+    (a) => a.nextSibling.nodeValue.slice(0, 2)), fa(0x61B, 0x20));
+  await page.selectOption('#pick-lang', 'en'); await settle();
+  check('en sample row restored', (await sampleRow())[0], '21 open');
 
   await page.evaluate(installMock, ITEMS);
   await page.evaluate(() => { window.__delay = 300; window.AIOL_LIVE_CONNECT('http://core.test', 'tok'); });
@@ -372,7 +398,10 @@ function installMock(items) {
   check('failed sort: no rows or cards left under the new headers', await shown(), [0, 0]);
   check('failed sort: headers and Sort label show the request', [(await head())[0][1], await sortLabel()], ['ascending', 'Sort: Name']);
   check('failed sort: an error with Retry, and no second message in the panel', [await statusOf(),
-    await page.$eval('#live-screen-knowledge .live-state', (s) => s.hidden)], [['error', 'Could not load knowledge objects (HTTP 500).', 'Retry'], true]);
+    await page.$eval('#live-screen-knowledge .live-state', (s) => s.hidden)], [['error', 'Could not load knowledge objects (' + FSI + 'HTTP 500' + PDI + ').', 'Retry'], true]);
+  await page.selectOption('#pick-lang', 'fa'); await settle();
+  check('fa: the error and its action in Persian, the error text left as sent', await statusOf(), ['error', FA.loadFailed('HTTP 500'), FA.retry]);
+  await page.selectOption('#pick-lang', 'en'); await settle();
   check('failed sort: pager blank and off', await pager(), ['', true, true]);
   const failedQuery = await last();
   await page.evaluate(() => { window.__fail = 0; });
@@ -404,6 +433,9 @@ function installMock(items) {
   await page.fill(search, ''); await page.press(search, 'Enter'); await settle();
   check('401: the token was not accepted, Reconnect offered', await statusOf(),
     ['denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.', 'Reconnect']);
+  await page.selectOption('#pick-lang', 'fa'); await settle();
+  check('fa 401: Persian message, HTTP 401 isolated', await statusOf(), ['denied', FA.denied401, FA.reconnect]);
+  await page.selectOption('#pick-lang', 'en'); await settle();
   check('Reconnect controls the collapsed connect form', await page.$eval(statusBtn, (b) => [b.getAttribute('aria-controls'),
     b.getAttribute('aria-expanded'), document.getElementById(b.getAttribute('aria-controls')).hidden]), ['live-connect-screen-knowledge', 'false', true]);
   await page.evaluate(() => { document.querySelector('#live-connect-screen-knowledge .live-token').value = 'stale'; window.scrollTo(0, 0); });
