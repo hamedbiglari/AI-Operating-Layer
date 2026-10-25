@@ -450,3 +450,35 @@ def test_new_lists_sort_and_refuse_unknown_fields(client: TestClient, register_o
         assert client.get(f"{path}?sort_by=created_at&sort_dir=asc", headers=org["headers"]).status_code == 200
         bad = client.get(f"{path}?sort_by=password_hash", headers=org["headers"])
         assert bad.status_code == 422 and "Allowed values" in bad.text
+
+
+@pytest.mark.parametrize("model", sorted(SORTABLE_FIELDS))
+def test_every_allow_listed_sort_column_exists_on_its_model(model: str) -> None:
+    """A SORTABLE_FIELDS name that is not a mapped column passes validation and then crashes
+    apply_sort (500, not 422). Source once listed `published_at`; its column is `publication_date`.
+    Checked against the mapper's column attributes, the names apply_sort's getattr resolves:
+    relationships, properties and hybrids are rejected, and an attribute like Source.metadata_
+    (DB column "metadata") is matched by its attribute name, as getattr needs."""
+    from sqlalchemy import inspect
+
+    from app.db.base import Base
+
+    models = {m.class_.__name__: m.class_ for m in Base.registry.mappers}
+    assert model in models, f"SORTABLE_FIELDS key {model!r} (common.py) does not match any imported model class"
+    columns = {attr.key for attr in inspect(models[model]).column_attrs}
+    bad = [f"{model}.{column!r} (sort_by={key!r}, allow-list SORTABLE_FIELDS[{model!r}] in common.py) "
+           f"— not a mapped column attribute" for key, column in SORTABLE_FIELDS[model].items() if column not in columns]
+    assert len(bad) == 0, "; ".join(bad)
+
+
+def test_source_sort_fields_work_and_published_at_is_refused(client: TestClient, register_org) -> None:
+    org = register_org()
+    for title, published in (("B", "2026-02-01"), ("A", "2026-01-01")):
+        client.post("/api/v1/sources", json={"source_type": "website", "title": title, "publication_date": published},
+                    headers=org["headers"])
+    for field in ("publication_date", "created_at", "updated_at", "title"):
+        assert client.get(f"/api/v1/sources?sort_by={field}", headers=org["headers"]).status_code == 200, field
+    body = client.get("/api/v1/sources?sort_by=publication_date&sort_dir=asc", headers=org["headers"]).json()
+    assert [s["title"] for s in body["items"]] == ["A", "B"]
+    bad = client.get("/api/v1/sources?sort_by=published_at", headers=org["headers"])
+    assert bad.status_code == 422 and "publication_date" in bad.text

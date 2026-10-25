@@ -115,7 +115,7 @@ SORTABLE_FIELDS: dict[str, dict[str, str]] = {
                      "status": "status"},
     # --- Phase 3
     "Source": {**_TIMESTAMPS, "title": "title", "source_type": "source_type",
-               "reliability_score": "reliability_score", "published_at": "published_at"},
+               "reliability_score": "reliability_score", "publication_date": "publication_date"},
     "Document": {**_TIMESTAMPS, "title": "title", "extraction_status": "extraction_status"},
     # chunk_index is the natural reading order of a document, so it is both
     # sortable and the default.
