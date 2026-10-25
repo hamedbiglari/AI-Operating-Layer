@@ -2863,6 +2863,12 @@ tr.is-paged-out { display: none; }
   border: 1px solid var(--border); border-radius: var(--radius-sm); }
 .know-new[hidden] { display: none; }
 .know-new__actions { display: flex; gap: var(--space-2); }
+/* Knowledge empty and error states. The message stays in the page when empty,
+   so a screen reader announces it when it changes. */
+.know-status { margin-top: var(--space-4); }
+.know-status.callout { display: grid; gap: var(--space-3); justify-items: start; }
+.know-status p { margin: 0; }
+.know-status [hidden] { display: none; }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel):not([data-live-keep]) { display: none !important; }
 /* Compact live panel (Dashboard): title, note and Connect button share one
@@ -9519,7 +9525,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var h = { Authorization: 'Bearer ' + LIVE.token }; if (opts.body) h['Content-Type'] = 'application/json';
     return fetch(LIVE.base + '/api/v1' + path, { method: opts.method || 'GET', headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined })
       .then(function (r) {
-        if (r.status === 401 || r.status === 403) { var e = new Error('Permission denied (HTTP ' + r.status + ')'); e.denied = true; throw e; }
+        if (r.status === 401 || r.status === 403) { var e = new Error('Permission denied (HTTP ' + r.status + ')'); e.denied = r.status; throw e; }
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.status === 204 ? null : r.json();
       });
@@ -9819,6 +9825,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var toolbar = screen.querySelector('.toolbar'), search = toolbar.querySelector('input[type=search]');
     var filterBtn = screen.querySelectorAll('.toolbar > .btn')[0];
     var finBtn, pagerText, prevBtn, nextBtn, sizeSel, typeSel, otherField, otherInput, statusSel, chips, sortOpts = {};
+    var statusBox, statusMsg, statusAct, statusFn = null;
     function option(value, label) { var o = el('option'); o.value = value; AIOL_I18N.set(o, label); return o; }
     function field(label, control) {
       var f = el('label', 'field'), t = el('span', 'field__label');
@@ -9866,6 +9873,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       otherInput.addEventListener('input', otherTyped.run);
       statusSel.addEventListener('change', function () { st.status = statusSel.value; reset(); });
       chips = el('span', 'know-chips'); filterBtn.parentNode.insertAdjacentElement('afterend', chips);
+      // Empty and error states: one message and at most one action, where the rows would be.
+      statusBox = el('div', 'know-status'); statusBox.setAttribute('data-live-keep', '');
+      statusMsg = statusBox.appendChild(el('p')); statusMsg.setAttribute('role', 'status');
+      statusAct = statusBox.appendChild(el('button', 'btn')); statusAct.type = 'button'; statusAct.hidden = true;
+      statusAct.addEventListener('click', function () { if (statusFn) statusFn(); });
+      document.getElementById('know-view-table').insertAdjacentElement('beforebegin', statusBox);
       // Sort: the three server orders.
       var sPop = popover(sortBtn, 'know-sort-panel');
       Object.keys(KNOWLEDGE_SORTS).forEach(function (k) {
@@ -9967,6 +9980,43 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       return q.join('&');
     }
     function reset() { st.offset = 0; return load(); }
+    // Part C: what the list says when it has no rows to show. The text is
+    // plain English until its Persian is approved in the glossary.
+    function status(kind, text, action, fn) {
+      statusBox.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
+      statusBox.dataset.state = kind || '';
+      statusMsg.textContent = text || '';
+      statusAct.textContent = action || ''; statusAct.hidden = !action; statusFn = fn || null;
+      statusAct.removeAttribute('aria-controls'); statusAct.removeAttribute('aria-expanded');
+    }
+    function empty(page) {
+      if (page.total) { status(''); return; }
+      var hidden = page.finished_visible ? '' : ' Finished objects are hidden; turn on Show finished to include them.';
+      if (st.search || st.type || st.status) status('empty', 'No knowledge objects match this search and these filters.' + hidden, 'Clear filters', clearFilters);
+      else status('empty', 'No knowledge objects yet.' + hidden, 'New knowledge object', openNew);
+    }
+    function clearFilters() { search.value = ''; st.search = ''; st.type = ''; st.other = ''; st.status = ''; reset(); }
+    function openNew() { if (document.getElementById('know-new-form').hidden) screen.querySelector('.page-actions .btn--primary').click(); }
+    // Reconnect: this panel's connect form, opened again with the URL in use and
+    // an empty token. Focus goes to the token; the page scrolls only if the form is out of view.
+    function reconnect() {
+      var form = panel.querySelector('.live-connect'), token = form.querySelector('.live-token');
+      form.querySelector('.live-base').value = LIVE.base; token.value = '';
+      form.hidden = false; statusAct.setAttribute('aria-expanded', 'true');
+      token.focus({ preventScroll: true }); form.scrollIntoView({ block: 'nearest' });
+    }
+    // A failed request leaves no rows behind: old rows under new headers or chips
+    // would claim an order or filter they were not read with. The controls keep
+    // showing the request, the pager stays off, and Retry sends the same request again.
+    function failed(e) {
+      render({ items: [] }); AIOL_I18N.set(pagerText, '');
+      state(panel, 'ready');
+      if (!e.denied) { status('error', 'Could not load knowledge objects (' + e.message + ').', 'Retry', load); return; }
+      status('denied', e.denied === 401
+        ? 'Cloud Core did not accept the access token (HTTP 401). It may have expired.'
+        : 'This access token is not allowed to read knowledge objects (HTTP 403).', 'Reconnect', reconnect);
+      statusAct.setAttribute('aria-controls', panel.querySelector('.live-connect').id); statusAct.setAttribute('aria-expanded', 'false');
+    }
     function load() {
       head(); sync();
       var seq = ++st.seq, busy = function (on) { [table, grid].forEach(function (n) { if (on) n.setAttribute('aria-busy', 'true'); else n.removeAttribute('aria-busy'); }); };
@@ -9978,9 +10028,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         if (seq !== st.seq) return null;        // a newer request owns the screen
         render(page); pager(page);
         finBtn.setAttribute('aria-pressed', String(!!page.finished_visible));
-        state(panel, 'ready');
+        state(panel, 'ready'); empty(page);
         return page;
-      }).catch(function (e) { if (seq === st.seq) state(panel, 'error', e.message); return null; })
+      }).catch(function (e) { if (seq === st.seq) failed(e); return null; })
         .then(function (page) { if (seq === st.seq) busy(false); return page; });
     }
     wire();

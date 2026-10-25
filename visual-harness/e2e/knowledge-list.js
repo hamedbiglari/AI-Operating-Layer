@@ -8,6 +8,9 @@
  *           sort panel, Show finished (state from the response, search kept),
  *           paging (no second request while one is out), page 1 after every
  *           control, reconnecting (wired once), and New knowledge object.
+ *   Part C: a failed request leaves no rows and no pager, Retry repeats it, a
+ *           slow failure that lost the race is ignored, 401/403 offer Reconnect,
+ *           and the two empty states with their actions.
  * Runs on file:// with GET /knowledge/overview mocked in the page and every
  * request recorded. Persian expectations are built from code points, so this
  * file stays ASCII and no rendering can reverse them.
@@ -58,9 +61,12 @@ const ITEMS = [
 // "<search>-result" row; window.__total fakes a long list; search=slow answers
 // late, window.__delay holds every other overview reply back), echoes
 // include_finished as finished_visible unless window.__forceFinished is set, and
-// records every overview query and every POST body.
+// records every overview query and every POST body. window.__fail answers every
+// overview request with that HTTP status, search=boom fails late, and
+// window.__empty returns no rows.
 function installMock(items) {
   window.__requests = []; window.__posts = []; window.__total = 0; window.__forceFinished = null; window.__created = null; window.__delay = 0;
+  window.__fail = 0; window.__empty = false;
   const respond = (body, status, delay) => new Promise((ok) => setTimeout(() => ok(new Response(JSON.stringify(body), { status: status || 200 })), delay || 0));
   window.fetch = (u, opts) => {
     u = String(u); opts = opts || {};
@@ -72,11 +78,14 @@ function installMock(items) {
     if (u.includes('/knowledge/overview?')) {
       const q = new URLSearchParams(u.slice(u.indexOf('?') + 1)); window.__requests.push(q.toString());
       const limit = Number(q.get('limit')), offset = Number(q.get('offset')), search = q.get('search');
+      if (search === 'boom') return respond({}, 500, 400);
+      if (window.__fail) return respond({}, window.__fail, window.__delay);
       let list = items.slice();
       if (window.__created && window.__created.showOnPage !== false) {
         list = [Object.assign({ counts: items[2].counts }, window.__created)].concat(list);
       }
       if (search) list = [Object.assign({}, items[0], { id: 's-' + search, canonical_name: search + '-result' })];
+      if (window.__empty) list = [];
       let total = list.length;
       if (window.__total) {
         total = window.__total;
@@ -331,6 +340,94 @@ function installMock(items) {
   check('when the new object is not on this page, it says so and offers Open', await page.evaluate(() => [
     document.getElementById('know-created').textContent.replace('Open', ''), !!document.querySelector('#know-created .btn')]),
     [FSI + 'Garlic' + PDI + ' was created; it is not on this page.', true]);
+
+  // ---------- Part C ----------
+  const statusOf = () => page.$eval('#screen-knowledge .know-status', (s) => [s.dataset.state, s.querySelector('p').textContent,
+    s.querySelector('.btn').hidden ? null : s.querySelector('.btn').textContent]);
+  const shown = () => page.evaluate(() => [document.querySelectorAll('#know-view-table tbody tr').length, document.querySelectorAll('#know-view-grid .know-card').length]);
+  const statusBtn = '#screen-knowledge .know-status .btn';
+  await page.evaluate(() => { window.__created = null; window.__total = 120; });
+  while ((await chips()).length) { await page.click('#screen-knowledge .know-chip >> nth=0'); await settle(); }
+
+  // A failed sort, page and filter: nothing left over, Retry repeats the request.
+  await page.evaluate(() => { window.__fail = 500; });
+  await page.click('#know-view-table thead th:first-child button'); await settle();
+  check('failed sort: no rows or cards left under the new headers', await shown(), [0, 0]);
+  check('failed sort: headers and Sort label show the request', [(await head())[0][1], await sortLabel()], ['ascending', 'Sort: Name']);
+  check('failed sort: an error with Retry, and no second message in the panel', [await statusOf(),
+    await page.$eval('#live-screen-knowledge .live-state', (s) => s.hidden)], [['error', 'Could not load knowledge objects (HTTP 500).', 'Retry'], true]);
+  check('failed sort: pager blank and off', await pager(), ['', true, true]);
+  const failedQuery = await last();
+  await page.evaluate(() => { window.__fail = 0; });
+  await page.click(statusBtn); await settle();
+  check('Retry sends the same request again', await last(), failedQuery);
+  check('Retry: rows, pager and status back', [(await shown())[0], await pager(), (await statusOf())[0]], [50, ['Showing 1 to 50 of 120', true, false], '']);
+  await page.evaluate(() => { window.__fail = 500; });
+  await page.click('#screen-knowledge .know-pager .btn >> nth=1'); await settle();
+  check('failed Next: asked for offset 50, no rows, pager off', [param(await last(), 'offset'), await shown(), await pager()], ['50', [0, 0], ['', true, true]]);
+  await page.evaluate(() => { window.__fail = 0; });
+  await page.click(statusBtn); await settle();
+  check('Retry after a failed Next stays on that page', [param(await last(), 'offset'), (await pager())[0]], ['50', 'Showing 51 to 100 of 120']);
+  await page.evaluate(() => { window.__fail = 500; });
+  await openFilter(); await page.selectOption(statusSel, 'published'); await page.keyboard.press('Escape'); await settle();
+  check('failed filter: its chip stays, no rows', [await chips(), await shown()], [[['Remove filter', 'Status: Published']], [0, 0]]);
+  await page.evaluate(() => { window.__fail = 0; });
+  await page.click(statusBtn); await settle();
+  check('Retry keeps the filter', [param(await last(), 'status'), (await shown())[0]], ['published', 50]);
+  await page.click('#screen-knowledge .know-chip >> nth=0'); await settle();
+
+  // A slow failure that lost to a newer request changes nothing.
+  await page.evaluate(() => { window.__total = 0; });
+  await page.fill(search, 'boom'); await page.press(search, 'Enter'); await settle(50);
+  await page.fill(search, 'fast'); await page.press(search, 'Enter'); await settle(700);
+  check('a slow failure that lost to a newer request is ignored', [await names(), (await statusOf())[0]], [['fast-result'], '']);
+
+  // 401 and 403: Reconnect reopens this panel's connect form.
+  await page.evaluate(() => { window.__fail = 401; });
+  await page.fill(search, ''); await page.press(search, 'Enter'); await settle();
+  check('401: the token was not accepted, Reconnect offered', await statusOf(),
+    ['denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.', 'Reconnect']);
+  check('Reconnect controls the collapsed connect form', await page.$eval(statusBtn, (b) => [b.getAttribute('aria-controls'),
+    b.getAttribute('aria-expanded'), document.getElementById(b.getAttribute('aria-controls')).hidden]), ['live-connect-screen-knowledge', 'false', true]);
+  await page.evaluate(() => { document.querySelector('#live-connect-screen-knowledge .live-token').value = 'stale'; window.scrollTo(0, 0); });
+  await page.$eval(statusBtn, (b) => b.click());
+  check('Reconnect: form open, URL in use kept, token cleared and focused, no scroll', await page.evaluate(() => {
+    const f = document.getElementById('live-connect-screen-knowledge');
+    return [f.hidden, f.querySelector('.live-base').value, f.querySelector('.live-token').value,
+      document.activeElement === f.querySelector('.live-token'), window.scrollY, document.querySelector('#screen-knowledge .know-status .btn').getAttribute('aria-expanded')];
+  }), [false, 'http://core.test', '', true, 0, 'true']);
+  await page.evaluate(() => { window.__fail = 0; });
+  await page.fill('#live-connect-screen-knowledge .live-token', 'tok3');
+  await page.press('#live-connect-screen-knowledge .live-token', 'Enter'); await settle();
+  check('a new token hides the form and loads the list', [await page.$eval('#live-connect-screen-knowledge', (f) => f.hidden),
+    (await shown())[0], (await statusOf())[0], await page.evaluate(() => window.AIOL_LIVE_STATE().token)], [true, 3, '', 'tok3']);
+  await page.evaluate(() => { window.__fail = 403; });
+  await page.selectOption('#screen-knowledge .know-pager select', '25'); await settle();
+  check('403: the token may not read knowledge objects, Reconnect offered', await statusOf(),
+    ['denied', 'This access token is not allowed to read knowledge objects (HTTP 403).', 'Reconnect']);
+  await page.evaluate(() => { window.__fail = 0; });
+
+  // Empty: nothing at all, or nothing matching; hidden finished objects are mentioned.
+  const hiddenNote = ' Finished objects are hidden; turn on Show finished to include them.';
+  await page.evaluate(() => { window.__empty = true; window.__forceFinished = false; });
+  await page.selectOption('#screen-knowledge .know-pager select', '50'); await settle();
+  check('empty, no filters: says so and offers New knowledge object', await statusOf(),
+    ['empty', 'No knowledge objects yet.' + hiddenNote, 'New knowledge object']);
+  await page.click(statusBtn);
+  check('its action opens the new-object form', await page.evaluate(() => [document.getElementById('know-new-form').hidden,
+    document.activeElement === document.querySelector('#know-new-form input')]), [false, true]);
+  await page.click('#know-new-form .know-new__actions .btn:not(.btn--primary)');
+  await page.fill(search, 'zzz'); await page.press(search, 'Enter'); await settle();
+  check('empty with a search: nothing matches, Clear filters offered', await statusOf(),
+    ['empty', 'No knowledge objects match this search and these filters.' + hiddenNote, 'Clear filters']);
+  await openFilter(); await page.selectOption(statusSel, 'draft'); await page.keyboard.press('Escape'); await settle();
+  await page.click(statusBtn); await settle();
+  check('Clear filters drops search, type and status', [param(await last(), 'search'), param(await last(), 'status'),
+    param(await last(), 'object_type'), await page.$eval(search, (i) => i.value), (await chips()).length], [null, null, null, '', 0]);
+  await page.evaluate(() => { window.__forceFinished = true; });
+  await page.click(fin); await settle();
+  check('with finished objects shown, the empty state does not mention them', (await statusOf())[1], 'No knowledge objects yet.');
+  await page.evaluate(() => { window.__empty = false; window.__forceFinished = null; });
 
   await browser.close();
   console.log(failures ? failures + ' FAILED' : 'ALL PASSED');
