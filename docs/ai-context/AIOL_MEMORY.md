@@ -8,17 +8,34 @@
 
 ## 0. How to use this file (read first)
 
-You are the planning/review assistant. You do NOT see the code. The user
-pastes your prompts into Claude Code and pastes Claude Code's replies back.
-You have zero memory between sessions. This file IS your memory.
+You are the planning/review assistant. You do NOT see the code. You have
+zero memory between sessions. This file IS your memory.
 
 On load:
-1. Verify the SHA: run the command in the HTML comment at top. Compare to
-   `sha:` below. If they differ → say "STATE DRIFT", list what differs,
-   wait for the user to reconcile. Do not proceed.
-2. If in sync → summarize current state in 2–3 sentences.
-3. Wait for the user's "go" before proposing anything.
-4. Never say "I remember" — read from this file or what the user pastes.
+1. Trust this file (it was committed at the end of the previous session).
+   Do NOT ask the user for git output directly.
+2. Your FIRST reply is a short drift-check prompt for the user to paste
+   into Claude Code. Output ONLY this text, nothing else:
+
+       Run and report exactly:
+         git rev-parse HEAD
+         git status --short
+         git log --oneline -3
+
+       Report only those three outputs, no commentary.
+
+3. When the user pastes Claude Code's reply back, compare
+   `git rev-parse HEAD` to the "last non-docs commit" rule below.
+   - Match → say "state in sync", give a 2–3 sentence summary, wait for "go".
+   - Mismatch → say "STATE DRIFT", list the differences, wait for the user's
+     decision. Do not guess, do not proceed.
+4. Only after "go", proceed per §6.
+5. Never say "I remember". Never propose work before drift check completes.
+
+Drift anchor rule (this is what §3's `sha:` refers to):
+  A "docs commit" is any commit whose subject starts with "docs: ".
+  Every non-docs commit moves the anchor. Docs commits (this file's own
+  updates) do NOT move it.
 
 End of session: user invokes end ritual. Regenerate this ENTIRE file from
 scratch (do not diff). Output only the file content.
@@ -28,7 +45,7 @@ scratch (do not diff). Output only the file content.
 - Repo: C:\Users\Hamed\Downloads\1- AI-Operating-Layer\graphify-src\02-core-tool-full-repo
 - Branch: v5-implementation
 - Stack: FastAPI backend (cloud-core/app) + single-page HTML harness
-  (visual-harness/index.html, ~12,300 lines, edited directly)
+  (visual-harness/index.html, 13,054 lines, edited directly)
 - Goal: wire 52 mock screens to real backend, translate to Persian,
   lock translation coverage in CI.
 - Language: Persian for explanation, English for code/commits.
@@ -60,7 +77,7 @@ scratch (do not diff). Output only the file content.
 - branch: v5-implementation
 - working_tree: dirty — 7B1 code+tests uncommitted (see §5)
 - last_ci: green @ 97325af
-- last code commit: "7A4: Sources screen fully translated, locked in CI"
+- last code commit: "feat(i18n): Sources screen fully translated, locked in CI"
 
 ## 4. Completed steps (compact)
 
@@ -91,11 +108,13 @@ Step 7B — Source detail (minimal), sub-step 7B1 only.
      protection (tenant filter already protects).
   e. Backend-only; still run check-persian.js and i18n-coverage.js
      --require, report exit codes.
-- Awaiting from Claude Code before commit approval:
-  diff snippets (router, service, test), pre-fix FAIL output, post-fix
-  PASS output, full-file pytest exit code, both Persian CI exit codes,
-  proposed commit subject.
-- Commit subject proposal: `7B1: id filter on GET /sources/overview + tests`
+- Evidence returned by Claude Code; awaiting user's verdict before "commit".
+  Required deliverables (all 7 must be present and correct):
+  diff snippets (router, service, test), pre-fix FAIL output, post-fix PASS
+  output, full-file pytest exit code, both Persian CI exit codes, and the
+  proposed commit subject below.
+- Proposed commit subject (repo style):
+    feat(sources): id filter on GET /sources/overview (7B1)
 
 ## 6. Next action
 
@@ -124,9 +143,13 @@ Case C — STATE DRIFT detected:
 - Wants explicit "decision needed" lists over assumptions.
 - Commits only after explicit approval.
 - No "waiting for CI" filler — report progress only.
-- GitHub API rate-limited; user checks UI manually.
+- GitHub API works without a token in this setup; user checks UI
+  manually when needed.
 
 ## 9. Changelog
 
 - v1 — created from a fresh chat. Captures 7B1 in-progress, decisions a–e
   locked, three next-action cases. sha: 97325af.
+- v2 — §0 rewritten: drift check offloaded to Claude Code (user pastes only
+  this file). Fixed: §3 subject, §5 evidence status + commit subject, §1
+  index.html line count, §8 GitHub API note. Anchor unchanged: 97325af.
