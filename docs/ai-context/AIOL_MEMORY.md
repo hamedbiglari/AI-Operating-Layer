@@ -155,16 +155,19 @@ file from scratch (do not diff). Output only the file content.
   innerHTML — XSS); Reprocess button visible for owner / admin /
   researcher / editor (role from GET /auth/me on load; 403 handled
   mid-session); handle no-id, 404, 403. Hide all 6 mock tabs in 7B2b:
-  Knowledge, Claims, History, Artifacts, Evidence, Provenance. None have
-  backend in 7B. The last three (Artifacts, Evidence, Provenance) also
-  get DEBT_REGISTER entries in 7B2b so they are not lost.
+  Knowledge, Claims, History, Artifacts, Evidence, Provenance. Scope
+  discipline: 7B is minimal (header + documents + preview + reprocess).
+  Note: GET /documents/{id}/artifacts already exists, so Artifacts could
+  be built later without new backend. The 5 tabs without backend
+  (Knowledge, Claims, History, Evidence, Provenance) and Artifacts (has
+  backend, out of scope) all get DEBT_REGISTER entries in 7B2b.
 - 7B2c: translate static sample + add screen-detail to --require +
   Persian browser check.
 
-7B debt entries. None of the 8 debt entries are committed yet. All go in
-with 7B2b:
+11 debt entries, none committed yet; all go in with 7B2b:
 Archive, Delete, version badge, Knowledge tab, Claims tab, History tab,
-research projects, gaps affected.
+Artifacts tab, Evidence tab, Provenance tab, research projects,
+gaps affected.
 
 7B error semantics (locked): ?id unknown OR cross-org → 404 with same
 {"error":{"message":...}} text as get_source_or_404 helper. No existence
@@ -194,7 +197,8 @@ Prompt to Claude Code (7B2a — glossary for source detail):
       4. Markdown preview: heading, controls, empty state
       5. Reprocess button + confirm dialog + success/error messages
       6. Error states: no-id, 404, 403, network error
-      7. Note: hidden tabs (Knowledge/Claims/History) need NO strings.
+      7. Hidden tabs need NO strings: Knowledge, Claims, History, Artifacts,
+         Evidence, Provenance (all 6).
 
     Verify all proposed Persian strings round-trip via check-persian.js.
     If any string fails round-trip, report it and stop.
@@ -236,6 +240,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   CI status, Reprocess roles (backend-authoritative), debt count 8→11
   (adds Artifacts/Evidence/Provenance tabs), hidden-tabs expanded to 6,
   §2 rule 12 reworded to match code. Anchor unchanged.
+- v4b @ 8072ead — three consistency fixes before v5: debt count unified
+  to 11, §6 prompt item 7 lists all 6 hidden tabs, Artifacts rationale
+  corrected (backend exists; hidden for scope). Anchor unchanged.
 
 ## 10. Historical context (from two prior sessions)
 
