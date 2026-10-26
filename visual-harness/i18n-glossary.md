@@ -283,6 +283,48 @@ sentences. «پردازش مجدد» is the locked term for Reprocess; Retry kee
 | No source selected. Open one from Sources & Documents. (opened without ?id=) | هیچ منبعی انتخاب نشده است. یکی را از «منابع و اسناد» باز کنید. |
 | This source was not found. (unknown id, or another organization's) | این منبع پیدا نشد. |
 | Could not load this source ({error}). | بارگذاری این منبع ناموفق بود ({error}). |
+| Source detail (screen heading when no source is shown) | جزئیات منبع |
+
+## Source detail sample (Step 7B2c)
+
+These translate the static sample markup of #screen-detail. The live
+equivalent renders from backend fields instead, so these are sample-only.
+Latin words inside a Persian value (Markdown, OCR, PDF) stay as written.
+FSI/PDI around Latin words inside Persian values are added at render
+time (7B2c-2).
+
+### Labels
+
+| English | Persian |
+|---|---|
+| Identity (card title) | مشخصات |
+| Original file | فایل اصلی |
+| Full text (as in Core knowledge terms) | متن کامل |
+| Accessible (full-text badge) | در دسترس |
+| Rights | حقوق |
+| Unknown (rights badge) | نامشخص |
+| What this source contributed (card title) | سهم این منبع |
+| Canonical representation (card title) | بازنمایی مرجع |
+| Converter | مبدل |
+| Extraction level | سطح استخراج |
+| Vision model | مدل بینایی |
+| View Markdown (button) | مشاهدهٔ Markdown |
+| Source detail sections (the tab list's accessible name) | بخش‌های جزئیات منبع |
+
+### Values
+
+| English | Persian |
+|---|---|
+| 3 — OCR (extraction level value) | ۳ — OCR |
+| Level 4 not run | سطح ۴ اجرا نشد |
+| Scientific paper · uploaded by Hamed · 2 Sep 2026 · processing version v3 (sample metadata line; live path uses separate fields) | مقاله علمی · بارگذاری‌شده توسط Hamed · ۱۱ شهریور ۱۴۰۵ · نسخهٔ پردازش v3 |
+
+### Sentences
+
+| English | Persian |
+|---|---|
+| 31 evidence records exist. 19 are verified; 12 are still pending review and count toward nothing. | ۳۱ شاهد ثبت شده است. ۱۹ مورد تأییدشده است؛ ۱۲ مورد هنوز در انتظار بررسی است و در هیچ شماری حساب نمی‌شود. |
+| The original PDF stays authoritative. Markdown is derived, and is not knowledge. | PDF اصلی همچنان مرجع است. Markdown از آن برگرفته شده و دانش نیست. |
 
 ## Theme toggle (V5-theme-toggle-ui)
 
