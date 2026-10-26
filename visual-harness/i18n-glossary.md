@@ -284,6 +284,19 @@ sentences. «پردازش مجدد» is the locked term for Reprocess; Retry kee
 | This source was not found. (unknown id, or another organization's) | این منبع پیدا نشد. |
 | Could not load this source ({error}). | بارگذاری این منبع ناموفق بود ({error}). |
 
+## Theme toggle (V5-theme-toggle-ui)
+
+The topbar theme button follows the toggle-button pattern: its name stays
+"Dark theme" and `aria-pressed` carries the state; the tooltip names what a
+click will do. They replace the earlier single label "Toggle dark/light
+theme". Theme is «تم».
+
+| English | Persian |
+|---|---|
+| Dark theme (the button's fixed accessible name) | تم تاریک |
+| Switch to dark theme (tooltip in the light theme) | تغییر به تم تاریک |
+| Switch to light theme (tooltip in the dark theme) | تغییر به تم روشن |
+
 ## Conventions
 
 1. Persian digits (۰–۹) and the Persian separators in all UI text. Identifiers,
