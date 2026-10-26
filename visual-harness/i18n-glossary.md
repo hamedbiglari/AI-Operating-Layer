@@ -155,6 +155,27 @@ message is the Knowledge sentence above, reused as written.
 | Could not load sources ({error}). | بارگذاری منابع ناموفق بود ({error}). |
 | This access token is not allowed to read sources (HTTP 403). | این توکن دسترسی اجازهٔ خواندن منابع را ندارد (HTTP 403). |
 
+## Sources list controls (Step 7A2b)
+
+Approved for search, the filter panel and sort (7A3b). Filter, Clear filters,
+Type, Status, All, Remove filter, Other type, Exact type name, Sort: Name and
+Sort: Recently updated are the Knowledge rows above, reused as written. "Most"
+marks the two sorts that put the largest count first.
+
+| English | Persian |
+|---|---|
+| Search sources (search field label) | جست‌وجوی منابع |
+| Search by title, DOI, PMID or URL… (placeholder) | جست‌وجو با عنوان، DOI، PMID یا نشانی وب… |
+| Sort: Most claims | مرتب‌سازی: بیشترین ادعا |
+| Sort: Most evidence | مرتب‌سازی: بیشترین شواهد |
+| No sources match this search and these filters. | هیچ منبعی با این جست‌وجو و فیلترها مطابقت ندارد. |
+| All ({n}) (status option with its count) | همه ({n}) |
+| Failed ({n}) | ناموفق ({n}) |
+| Processing ({n}) | در حال پردازش ({n}) |
+| Completed ({n}) | تکمیل‌شده ({n}) |
+| Abstract only ({n}) | فقط چکیده ({n}) |
+| Reference only ({n}) | فقط ارجاع ({n}) |
+
 ## Source types
 
 `source_type` is free text from the backend. These are the approved labels;
