@@ -148,3 +148,5 @@ not on preference.
 | **V5-source-archive-state** | Source has no archive state. The Sources screen "Archived" badge is removed in Step 7A. Not a bug; a missing feature. | **OPEN** | Backend / Sources |
 | **V5-dataset-card-not-real** | CSV/XLSX upload produces a converted document, not structured records. The Add source "Dataset" card is removed in Step 7E. Structured-record ingestion is not implemented. | **OPEN** | Backend / Sources |
 | **V5-site-article-no-path** | The Add source "Site article" card is removed in Step 7E. No integration or endpoint creates a source from a post URL. | **OPEN** | Backend / Sources |
+| **V5-source-export** | The Sources screen design has an Export button; no endpoint exports sources. The button is removed in Step 7A2a. Not a bug; a missing feature. | **OPEN** | Backend / Sources |
+| **V5-source-row-actions** | The Sources screen design has a "More actions" menu on every row; no per-source action exists yet (archive, delete, re-run). The menu is removed in Step 7A2a. | **OPEN** | Backend / Sources |

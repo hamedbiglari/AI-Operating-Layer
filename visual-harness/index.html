@@ -2882,6 +2882,9 @@ tr.is-paged-out { display: none; }
 .know-status [hidden] { display: none; }
 /* A reload keeps the rows in place, dimmed, until the reply replaces them. */
 #know-view-table table[aria-busy="true"] tbody, .know-grid[aria-busy="true"] { opacity: 0.55; }
+#screen-sources .table-wrap table[aria-busy="true"] tbody { opacity: 0.55; }
+/* Step 7A2a: the live Sources list has no search, filter or sort yet (7A2b). */
+body[data-live="on"] #src-filter, body[data-live="on"] #src-sort { display: none; }
 /* The pager while it is off: looks disabled but stays focusable, so focus never drops to the page. */
 .know-pager .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; background: var(--surface-sunken); color: var(--text-subtle); border-color: var(--border); }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
@@ -3674,9 +3677,8 @@ button.card { color: inherit; font: inherit; }
         <button type="button" class="btn btn--icon" id="src-view-list" data-view="list" aria-label="List view" aria-pressed="true"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round"><rect x="3" y="5" width="3" height="3" rx="0.6"/><rect x="3" y="10.5" width="3" height="3" rx="0.6"/><rect x="3" y="16" width="3" height="3" rx="0.6"/><path d="M9 6.5h12M9 12h12M9 17.5h12"/></svg></button>
         <button type="button" class="btn btn--icon" id="src-view-grid" data-view="grid" aria-label="Grid view" aria-pressed="false"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)"><rect x="3" y="3" width="8" height="8" rx="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.6"/></svg></button>
       </div>
-      <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h17l-6.5 7.4V20l-4-2.2v-4.9z"/></svg>Filter</button>
+      <button class="btn" id="src-filter"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h17l-6.5 7.4V20l-4-2.2v-4.9z"/></svg>Filter</button>
       <button class="btn" id="src-sort" aria-label="Sort by name, ascending" title="Sort by name (A–Z)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg><span id="src-sort-label">Sort</span></button>
-      <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 19h16"/></svg>Export</button>
       <a class="btn btn--primary" href="#screen-add"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add source</a>
     </div>
   </div>
@@ -3691,7 +3693,7 @@ button.card { color: inherit; font: inherit; }
       </label>
       <p id="src-search-count" class="src-search-count" role="status">Showing all 8 sources.</p>
     </div>
-<div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it">
+<div class="table-wrap" data-live-keep tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it">
     <table class="table sortable">
       <caption class="visually-hidden">Sources, with processing status and what each has contributed to the knowledge layer</caption>
       <thead><tr>
@@ -3718,7 +3720,6 @@ button.card { color: inherit; font: inherit; }
       <td data-label="">
         <span style="display:flex;gap:4px">
           <a class="btn btn--quiet" href="#screen-detail">Open</a>
-          <button type="button" class="icon-button" aria-label="More actions for this source" title="More actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
         </span>
       </td>
     </tr>
@@ -3732,7 +3733,7 @@ button.card { color: inherit; font: inherit; }
           </span>
         </div>
       </td>
-      <td data-label="Status"><span class="badge badge--processing"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg><span>Evidence extraction</span></span></td>
+      <td data-label="Status"><span class="badge badge--processing"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg><span>Processing</span></span></td>
       <td data-label="Knowledge" class="num"><span class="num">1</span></td>
       <td data-label="Claims" class="num"><span class="not-available">Not available</span></td>
       <td data-label="Evidence" class="num"><span class="not-available">Not available</span></td>
@@ -3740,7 +3741,6 @@ button.card { color: inherit; font: inherit; }
       <td data-label="">
         <span style="display:flex;gap:4px">
           <a class="btn btn--quiet" href="#screen-detail">Open</a>
-          <button type="button" class="icon-button" aria-label="More actions for this source" title="More actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
         </span>
       </td>
     </tr>
@@ -3762,7 +3762,6 @@ button.card { color: inherit; font: inherit; }
       <td data-label="">
         <span style="display:flex;gap:4px">
           <a class="btn btn--quiet" href="#screen-detail">Open</a>
-          <button type="button" class="icon-button" aria-label="More actions for this source" title="More actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
         </span>
       </td>
     </tr>
@@ -3784,7 +3783,6 @@ button.card { color: inherit; font: inherit; }
       <td data-label="">
         <span style="display:flex;gap:4px">
           <a class="btn btn--quiet" href="#screen-detail">Open</a>
-          <button type="button" class="icon-button" aria-label="More actions for this source" title="More actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
         </span>
       </td>
     </tr>
@@ -3806,7 +3804,6 @@ button.card { color: inherit; font: inherit; }
       <td data-label="">
         <span style="display:flex;gap:4px">
           <a class="btn btn--quiet" href="#screen-detail">Open</a>
-          <button type="button" class="icon-button" aria-label="More actions for this source" title="More actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
         </span>
       </td>
     </tr>
@@ -3820,7 +3817,7 @@ button.card { color: inherit; font: inherit; }
           </span>
         </div>
       </td>
-      <td data-label="Status"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.8 9.2 9.2 14.8M9.2 9.2l5.6 5.6"/></svg><span>Conversion failed</span></span></td>
+      <td data-label="Status"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.8 9.2 9.2 14.8M9.2 9.2l5.6 5.6"/></svg><span>Failed</span></span></td>
       <td data-label="Knowledge" class="num"><span class="num">0</span></td>
       <td data-label="Claims" class="num"><span class="num">0</span></td>
       <td data-label="Evidence" class="num"><span class="num">0</span></td>
@@ -3828,7 +3825,6 @@ button.card { color: inherit; font: inherit; }
       <td data-label="">
         <span style="display:flex;gap:4px">
           <a class="btn btn--quiet" href="#screen-detail">Open</a>
-          <button type="button" class="icon-button" aria-label="More actions for this source" title="More actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
         </span>
       </td>
     </tr>
@@ -3842,7 +3838,7 @@ button.card { color: inherit; font: inherit; }
           </span>
         </div>
       </td>
-      <td data-label="Status"><span class="badge badge--archived"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17v4h-17zM5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M9.5 12.5h5"/></svg><span>Archived</span></span></td>
+      <td data-label="Status"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>Reference only</span></span></td>
       <td data-label="Knowledge" class="num"><span class="num">1</span></td>
       <td data-label="Claims" class="num"><span class="num">4</span></td>
       <td data-label="Evidence" class="num"><span class="num">2</span></td>
@@ -3850,7 +3846,6 @@ button.card { color: inherit; font: inherit; }
       <td data-label="">
         <span style="display:flex;gap:4px">
           <a class="btn btn--quiet" href="#screen-detail">Open</a>
-          <button type="button" class="icon-button" aria-label="More actions for this source" title="More actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
         </span>
       </td>
     </tr></tbody>
@@ -8908,6 +8903,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }
 
     function apply() {
+      // Live mode owns the rows; re-inserting the sample rows would mix them in.
+      if (document.body.dataset.live === 'on') return;
       var rows = original.slice();
       if (sortDir !== 0) {
         rows.sort(function (a, b) {
@@ -9509,8 +9506,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var SCREENS = {
     'screen-dashboard': { kind: 'cards', title: 'Live overview (Cloud Core)', compact: true },
     'screen-knowledge': { kind: 'knowledge', title: 'Knowledge objects (Cloud Core)', compact: true },
-    'screen-sources': { kind: 'table', title: 'Sources (Cloud Core)', endpoint: '/sources',
-      cols: [['Title', 'title'], ['Type', 'source_type'], ['URL', 'url'], ['Created', 'created_at', 'date']] },
+    'screen-sources': { kind: 'sources', title: 'Sources (Cloud Core)', compact: true },
     'screen-processing': { kind: 'table', title: 'Processing jobs (Cloud Core)', endpoint: '/sync-jobs',
       cols: [['Job', 'job_type'], ['Status', 'status', 'badge'], ['Attempts', 'attempts'], ['Error', 'error_message'], ['Created', 'created_at', 'date']],
       filter: ['status', ['', 'queued', 'running', 'retrying', 'succeeded', 'failed', 'dead_letter', 'cancelled']] },
@@ -10093,6 +10089,196 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__knowledgeLoad = load;
     return load();
   }
+  // Sources list (Step 7A2a): the designed table and its grid view, filled from
+  // GET /sources/overview. Order and paging happen on the server. Search, the
+  // filter panel and sort arrive in 7A2b; until then the sample Filter and Sort
+  // buttons are hidden in live mode (CSS) rather than left doing nothing.
+  var SOURCE_TYPES = { scientific_paper: 'Scientific paper', review: 'Review article', book: 'Book', pdf: 'PDF file',
+    website: 'Website', government: 'Government source', dataset: 'Dataset', supplier_document: 'Supplier document',
+    lab_report: 'Lab report', user_upload: 'User uploaded', first_party: 'First-party source', news: 'News' };
+  // [label, badge class, icon]
+  var SOURCE_STATUS = { failed: ['Failed', 'badge--danger', 'failed'], processing: ['Processing', 'badge--processing', 'processing'],
+    completed: ['Completed', 'badge--success', 'completed'], abstract_only: ['Abstract only', 'badge--warning', 'warning'],
+    reference_only: ['Reference only', 'badge--unknown', 'link'] };
+  // The same paths as the sample rows' icons.
+  var SOURCE_ICONS = {
+    file: 'M7 3h7l4 4v14H7zM14 3v4h4M9.5 11.5h5M9.5 14.5h5M9.5 17.5h3',
+    paper: 'M7 3h7l4 4v14H7zM14 3v4h4M11 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM12.8 13.8 15 16',
+    link: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+    completed: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4',
+    processing: 'M12 3a9 9 0 1 0 9 9M21 3v6h-6',
+    warning: 'M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+    failed: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.8 9.2 9.2 14.8M9.2 9.2l5.6 5.6'
+  };
+  // [header, data-label, cell class]; the last header is for screen readers only.
+  var SOURCE_COLS = [['Source', 'Source'], ['Status', 'Status'], ['Knowledge', 'Knowledge', 'num'], ['Claims', 'Claims', 'num'],
+    ['Evidence', 'Evidence', 'num'], ['Updated', 'Updated', 'num'], ['Open', '']];
+  function sourcesList(panel) {
+    // Wired once; a later connect only reloads.
+    if (panel.__sourcesLoad) return panel.__sourcesLoad();
+    var screen = document.getElementById('screen-sources');
+    var wrap = screen.querySelector('.table-wrap'), table = wrap.querySelector('table');
+    var st = { limit: 50, offset: 0, seq: 0 };
+    var statusBox, statusText, statusAct, statusFn = null, pagerText, prevBtn, nextBtn, sizeSel, pagerOn = false;
+    function icon(kind, size) {
+      var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), p = document.createElementNS(ns, 'path');
+      [['class', 'icon'], ['aria-hidden', 'true'], ['focusable', 'false'], ['viewBox', '0 0 24 24'], ['fill', 'none'], ['stroke', 'currentColor'],
+       ['stroke-width', 'var(--icon-stroke,1.75)'], ['stroke-linecap', 'round'], ['stroke-linejoin', 'round']].forEach(function (a) { svg.setAttribute(a[0], a[1]); });
+      if (size) { svg.setAttribute('width', size); svg.setAttribute('height', size); }
+      p.setAttribute('d', SOURCE_ICONS[kind]); svg.appendChild(p);
+      return svg;
+    }
+    function badge(s) {
+      var a = SOURCE_STATUS[s], b = el('span', 'badge ' + (a ? a[1] : 'badge--unknown'));
+      if (!a) { b.appendChild(el('bdi', null, s)); return b; }
+      b.appendChild(icon(a[2]));
+      AIOL_I18N.set(b.appendChild(el('span')), a[0]);
+      return b;
+    }
+    function identifier(text) { var b = el('bdi', 'identifier', text); b.dir = 'ltr'; return b; }
+    // Type, then what the source holds: document count, size and file type, or
+    // its DOI/PMID, or its URL. Parts are joined by " · ".
+    function meta(it) {
+      var line = el('span', 'source-cell__meta'), parts = [], docs = it.counts.documents;
+      var type = el('span');
+      if (SOURCE_TYPES[it.source_type]) AIOL_I18N.set(type, SOURCE_TYPES[it.source_type]);
+      else type.appendChild(identifier(it.source_type));   // unknown type: as sent, never translated
+      parts.push(type);
+      if (docs > 1) parts.push(AIOL_I18N.set(el('span'), '{n|document|documents}', { n: docs }));
+      if (docs && it.file_size !== null) {
+        var kb = it.file_size < 1048576;
+        parts.push(AIOL_I18N.set(el('span'), kb ? '{n} KB' : '{n} MB',
+          { n: kb ? Math.max(1, Math.round(it.file_size / 1024)) : Math.round(it.file_size / 104857.6) / 10 }));
+      }
+      if (docs && it.mime_type) parts.push(identifier(it.mime_type));
+      if (!docs) {
+        [['DOI', it.doi], ['PMID', it.pmid]].forEach(function (id) {
+          if (!id[1]) return;
+          var s = el('span', null, id[0] + ' '); s.appendChild(identifier(id[1])); parts.push(s);
+        });
+        if (!it.doi && !it.pmid && it.url) parts.push(identifier(it.url));
+      }
+      parts.forEach(function (p, i) { if (i) line.appendChild(document.createTextNode(' · ')); line.appendChild(p); });
+      return line;
+    }
+    function row(it) {
+      var tr = el('tr'); tr.dataset.sourceId = it.id;
+      var cells = SOURCE_COLS.map(function (c) { var td = el('td', c[2]); td.dataset.label = c[1]; tr.appendChild(td); return td; });
+      var cell = cells[0].appendChild(el('div', 'source-cell'));
+      cell.appendChild(el('span', 'source-cell__icon')).appendChild(icon(it.counts.documents ? 'file' : (it.doi || it.pmid) ? 'paper' : it.url ? 'link' : 'file', '20px'));
+      var text = cell.appendChild(el('span')); text.style.minInlineSize = '0';
+      var title = text.appendChild(el('span', 'source-cell__title')).appendChild(el('bdi', null, it.title)); title.dir = 'auto';
+      text.appendChild(el('br')); text.appendChild(meta(it));
+      cells[1].appendChild(badge(it.derived_status));
+      [it.counts.knowledge_objects, it.counts.claims, it.counts.evidence].forEach(function (n, i) { AIOL_I18N.set(cells[2 + i], '{n}', { n: n }); });
+      AIOL_I18N.set(cells[5], '{d}', { d: { date: it.last_activity_at, style: 'date' } });
+      // Same visible label on every row, so the accessible name carries the title too.
+      var open = cells[6].appendChild(el('a', 'btn btn--quiet')); open.href = '#screen-detail';
+      var shown = open.appendChild(el('span')), spoken = open.appendChild(el('span', 'visually-hidden'));
+      shown.setAttribute('aria-hidden', 'true');
+      AIOL_I18N.set(shown, 'Open');
+      AIOL_I18N.set(spoken, 'Open {name}', { name: it.title });
+      return tr;
+    }
+    function render(page) {
+      var tbody = table.querySelector('tbody'); tbody.textContent = '';
+      page.items.forEach(function (it) { tbody.appendChild(row(it)); });
+    }
+    function field(label, control) {
+      var f = el('label', 'field'), t = el('span', 'field__label');
+      AIOL_I18N.set(t, label); f.appendChild(t); f.appendChild(control); return f;
+    }
+    function wire() {
+      // The header is rebuilt, so the generic sorter bound to the sample headers never reorders a live page.
+      var tr = el('tr');
+      SOURCE_COLS.forEach(function (c, i) {
+        var th = tr.appendChild(el('th', c[2])); th.scope = 'col';
+        var label = i === SOURCE_COLS.length - 1 ? th.appendChild(el('span', 'visually-hidden')) : th;
+        AIOL_I18N.set(label, c[0]);
+      });
+      var thead = table.querySelector('thead'); thead.textContent = ''; thead.appendChild(tr);
+      statusBox = el('div', 'know-status'); statusBox.setAttribute('data-live-keep', '');
+      var msg = statusBox.appendChild(el('p')); msg.setAttribute('role', 'status');
+      statusText = msg.appendChild(el('span'));
+      statusAct = statusBox.appendChild(el('button', 'btn')); statusAct.type = 'button'; statusAct.hidden = true;
+      statusAct.addEventListener('click', function () { if (statusFn) statusFn(); });
+      wrap.insertAdjacentElement('beforebegin', statusBox);
+      var pg = el('div', 'know-pager'); pg.setAttribute('data-live-keep', '');
+      pagerText = pg.appendChild(el('span', 'know-pager__text')); pagerText.setAttribute('aria-live', 'polite');
+      prevBtn = pg.appendChild(el('button', 'btn')); prevBtn.type = 'button'; AIOL_I18N.set(prevBtn, 'Previous');
+      nextBtn = pg.appendChild(el('button', 'btn')); nextBtn.type = 'button'; AIOL_I18N.set(nextBtn, 'Next');
+      sizeSel = el('select'); [25, 50, 100].forEach(function (n) { var o = el('option'); o.value = String(n); AIOL_I18N.set(o, '{n}', { n: n }); sizeSel.appendChild(o); });
+      sizeSel.value = String(st.limit); pg.appendChild(field('Rows per page', sizeSel));
+      prevBtn.addEventListener('click', function () { if (!pagerOn) return; st.offset = Math.max(0, st.offset - st.limit); load(); });
+      nextBtn.addEventListener('click', function () { if (!pagerOn) return; st.offset += st.limit; load(); });
+      sizeSel.addEventListener('change', function () { st.limit = Number(sizeSel.value); st.offset = 0; load(); });
+      wrap.insertAdjacentElement('afterend', pg);
+      // The sample rows never sit under the live headers, not even during the first load.
+      render({ items: [] });
+    }
+    // While a request is out, or after one failed, the pager is off. It uses
+    // aria-disabled, not disabled, so a focused button keeps focus.
+    function pagerOff() { pagerOn = false; [prevBtn, nextBtn].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); }
+    function pager(page) {
+      var to = Math.min(page.offset + page.items.length, page.total), had = document.activeElement;
+      AIOL_I18N.set(pagerText, 'Showing {from} to {to} of {total}', { from: page.total ? page.offset + 1 : 0, to: to, total: page.total });
+      pagerOn = true; [prevBtn, nextBtn].forEach(function (b) { b.removeAttribute('aria-disabled'); });
+      prevBtn.disabled = page.offset <= 0; nextBtn.disabled = to >= page.total;
+      // Reaching the first or last page turns the used button off: focus moves to the other one.
+      if ((had === prevBtn || had === nextBtn) && had.disabled) { var other = had === prevBtn ? nextBtn : prevBtn; if (!other.disabled) other.focus(); }
+    }
+    // What the list says when it has no rows to show: a message and at most one action.
+    function status(kind, text, args, action, fn) {
+      var hadFocus = document.activeElement === statusAct;
+      statusBox.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
+      statusBox.dataset.state = kind || '';
+      AIOL_I18N.set(statusText, text || '', args);
+      AIOL_I18N.set(statusAct, action || ''); statusAct.hidden = !action; statusFn = fn || null;
+      statusAct.removeAttribute('aria-controls'); statusAct.removeAttribute('aria-expanded');
+      // Its action had focus and is gone: focus goes to the list, not the page.
+      if (hadFocus && !action) wrap.focus();
+    }
+    function empty(page) {
+      if (page.total) status('');
+      else status('empty', 'No sources yet.', null, 'Add source', function () { location.hash = '#screen-add'; });
+    }
+    // Reconnect: this panel's connect form, opened again with the URL in use and
+    // an empty token. Focus goes to the token; the page scrolls only if the form is out of view.
+    function reconnect() {
+      var form = panel.querySelector('.live-connect'), token = form.querySelector('.live-token');
+      form.querySelector('.live-base').value = LIVE.base; token.value = '';
+      form.hidden = false; statusAct.setAttribute('aria-expanded', 'true');
+      token.focus({ preventScroll: true }); form.scrollIntoView({ block: 'nearest' });
+    }
+    // A failed request leaves no rows behind, the pager stays off, and Retry sends the same request again.
+    function failed(e) {
+      render({ items: [] }); AIOL_I18N.set(pagerText, '');
+      state(panel, 'ready');
+      if (!e.denied) { status('error', 'Could not load sources ({error}).', { error: e.message }, 'Retry', load); return; }
+      status('denied', e.denied === 401
+        ? 'Cloud Core did not accept the access token (HTTP 401). It may have expired.'
+        : 'This access token is not allowed to read sources (HTTP 403).', null, 'Reconnect', reconnect);
+      statusAct.setAttribute('aria-controls', panel.querySelector('.live-connect').id); statusAct.setAttribute('aria-expanded', 'false');
+    }
+    function load() {
+      var seq = ++st.seq;
+      table.setAttribute('aria-busy', 'true');
+      pagerOff();
+      // A reload dims the rows in place (CSS on aria-busy). Only an empty list says
+      // Loading, and it says it where the rows go, so nothing above the list moves.
+      if (!table.querySelector('tbody tr') && !statusBox.dataset.state) status('loading', 'Loading…');
+      return api('/sources/overview?sort=updated&limit=' + st.limit + '&offset=' + st.offset).then(function (page) {
+        if (seq !== st.seq) return null;        // a newer request owns the screen
+        render(page); pager(page);
+        state(panel, 'ready'); empty(page);
+        return page;
+      }).catch(function (e) { if (seq === st.seq) failed(e); return null; })
+        .then(function (page) { if (seq === st.seq) table.removeAttribute('aria-busy'); return page; });
+    }
+    wire();
+    panel.__sourcesLoad = load;
+    return load();
+  }
   // The Dashboard's own four cards, filled from one tenant-scoped read
   // (GET /dashboard/summary). Values and notes are i18n templates, so they
   // follow the language. Nothing falls back to sample figures.
@@ -10200,6 +10386,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (toggle) toggle.hidden = true;
       var tb = panel.querySelector('.live-toolbar'); if (tb) tb.hidden = false;
       if (cfg.kind === 'cards') dashboardCards(panel); else if (cfg.kind === 'knowledge') knowledgeList(panel);
+      else if (cfg.kind === 'sources') sourcesList(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
@@ -12596,6 +12783,32 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Could not load knowledge objects ({error}).": "بارگذاری پرونده‌های دانش ناموفق بود ({error}).",
     "Cloud Core did not accept the access token (HTTP 401). It may have expired.": "Cloud Core توکن دسترسی را نپذیرفت (\u2068HTTP 401\u2069). ممکن است منقضی شده باشد.",
     "This access token is not allowed to read knowledge objects (HTTP 403).": "این توکن دسترسی اجازهٔ خواندن پرونده‌های دانش را ندارد (\u2068HTTP 403\u2069).",
+    // Sources list (Step 7A2a; glossary 7A3a)
+    "Failed": "ناموفق",
+    "Source": "منبع",
+    "Completed": "تکمیل‌شده",
+    "Abstract only": "فقط چکیده",
+    "Reference only": "فقط ارجاع",
+    "Claims": "ادعاها",
+    "Open {name}": "باز کردن {name}",
+    "No sources yet.": "هنوز منبعی وجود ندارد.",
+    "Add source": "افزودن منبع",
+    "Could not load sources ({error}).": "بارگذاری منابع ناموفق بود ({error}).",
+    "{n|document|documents}": "{n} سند",
+    "{n} KB": "{n} کیلوبایت",
+    "{n} MB": "{n} مگابایت",
+    "This access token is not allowed to read sources (HTTP 403).": "این توکن دسترسی اجازهٔ خواندن منابع را ندارد (\u2068HTTP 403\u2069).",
+    "Scientific paper": "مقاله علمی",
+    "Review article": "مقاله مروری",
+    "Book": "کتاب",
+    "PDF file": "فایل PDF",
+    "Government source": "منبع دولتی",
+    "Dataset": "مجموعه‌داده",
+    "Supplier document": "سند تأمین‌کننده",
+    "Lab report": "گزارش آزمایشگاه",
+    "User uploaded": "بارگذاری‌شده توسط کاربر",
+    "First-party source": "منبع خود سازمان",
+    "News": "خبر",
     "Sort: Open conflicts": "مرتب‌سازی: تعارض‌های باز",
     "Conflicts": "تعارض‌ها",
     "Re-run research on new/updated sources — creates a new version, never overwrites this one": "اجرای مجدد پژوهش روی منابع جدید/به‌روزشده — نسخهٔ جدیدی می‌سازد و هرگز این نسخه را بازنویسی نمی‌کند",

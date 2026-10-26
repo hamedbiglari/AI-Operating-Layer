@@ -54,6 +54,7 @@ jobs:
         run: |
           node visual-harness/e2e/knowledge-quickfix.js
           node visual-harness/e2e/knowledge-list.js
+          node visual-harness/e2e/sources-list.js
 
       - name: Set up Python
         uses: actions/setup-python@v7
