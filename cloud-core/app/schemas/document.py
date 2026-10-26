@@ -34,6 +34,35 @@ class DocumentRead(BaseModel):
     updated_at: datetime
 
 
+class CurrentConversionRead(BaseModel):
+    id: uuid.UUID
+    status: DocumentConversionStatus
+    needs_review: bool
+
+
+class DocumentWithConversion(BaseModel):
+    """A row of GET /sources/{id}/documents: the document without its text
+    (the list never shows it; GET /documents/{id}/markdown serves it) and
+    with its current conversion, None when it has none."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    organization_id: uuid.UUID
+    source_id: uuid.UUID
+    title: str
+    language: str
+    content_hash: str | None
+    version: int
+    mime_type: str
+    file_size: int | None
+    storage_path: str | None
+    extraction_status: DocumentExtractionStatus
+    created_at: datetime
+    updated_at: datetime
+    current_conversion: CurrentConversionRead | None = None
+
+
 class DocumentCreate(BaseModel):
     title: str = Field(min_length=1, max_length=500)
     content: str | None = Field(default=None, max_length=2_000_000)

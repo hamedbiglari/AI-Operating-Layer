@@ -12,7 +12,7 @@ from app.models.enums import KNOWLEDGE_EDITOR_ROLES
 from app.models.source import Source
 from app.models.user import User
 from app.schemas.common import Page, PaginationParams, SortParams
-from app.schemas.document import DocumentRead
+from app.schemas.document import DocumentWithConversion
 from app.schemas.source import SourceCreate, SourceRead, SourceUpdate
 from app.schemas.source_overview import (
     SourceDerivedStatus,
@@ -148,18 +148,20 @@ def update_source(
     )
 
 
-@router.get("/{source_id}/documents", response_model=Page[DocumentRead])
+@router.get("/{source_id}/documents", response_model=Page[DocumentWithConversion])
 def list_documents_for_source(
     source_id: UUID,
     pagination: PaginationParams = Depends(),
     sort: SortParams = Depends(),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> Page[DocumentRead]:
+) -> Page[DocumentWithConversion]:
+    """The Source detail's documents, each with its current conversion, so the
+    list needs no call per document."""
     source_service.get_source_or_404(
         db, source_id=source_id, organization_id=current_user.organization_id
     )
-    items, total = document_service.list_documents(
+    rows, total = document_service.list_documents_with_conversion(
         db,
         organization_id=current_user.organization_id,
         source_id=source_id,
@@ -167,4 +169,11 @@ def list_documents_for_source(
         limit=pagination.limit,
         offset=pagination.offset,
     )
+    items = [
+        DocumentWithConversion(
+            **DocumentWithConversion.model_validate(r["document"]).model_dump(exclude={"current_conversion"}),
+            current_conversion=r["current_conversion"],
+        )
+        for r in rows
+    ]
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)

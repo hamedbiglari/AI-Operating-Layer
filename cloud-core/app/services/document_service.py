@@ -11,12 +11,13 @@ Evidence/Source/Document/Graph in later phases).
 import hashlib
 from uuid import UUID
 
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, func, select
+from sqlalchemy.orm import Session, defer
 
 from app.schemas.common import SortDirection, SortParams, apply_sort
 
 from app.models.document import Document
+from app.models.document_artifact import DocumentConversion
 from app.models.document_chunk import DocumentChunk
 from app.models.enums import DocumentExtractionStatus
 from app.security.tenant import get_tenant_scoped_or_404
@@ -50,6 +51,35 @@ def list_documents(
         .all()
     )
     return list(rows), total
+
+
+def list_documents_with_conversion(
+    db: Session,
+    *,
+    organization_id: UUID,
+    source_id: UUID,
+    sort: SortParams | None = None,
+    limit: int,
+    offset: int,
+) -> tuple[list[dict], int]:
+    """A source's documents, each with its current conversion, in one query.
+    At most one current conversion per document (uq_document_conversions_one_current),
+    so the outer join cannot duplicate rows. `content` is not loaded."""
+    where = (Document.organization_id == organization_id, Document.source_id == source_id)
+    total = db.execute(select(func.count()).select_from(Document).where(*where)).scalar_one()
+    stmt = (
+        select(Document, DocumentConversion.id, DocumentConversion.conversion_status, DocumentConversion.needs_review)
+        .outerjoin(DocumentConversion, and_(DocumentConversion.document_id == Document.id,
+                                            DocumentConversion.is_current))
+        .where(*where)
+        .options(defer(Document.content))
+    )
+    rows = db.execute(apply_sort(stmt, Document, sort, "created_at", SortDirection.DESC).limit(limit).offset(offset)).all()
+    return [
+        {"document": doc,
+         "current_conversion": {"id": cid, "status": status, "needs_review": review} if cid else None}
+        for doc, cid, status, review in rows
+    ], total
 
 
 def get_document_or_404(db: Session, *, document_id: UUID, organization_id: UUID) -> Document:
