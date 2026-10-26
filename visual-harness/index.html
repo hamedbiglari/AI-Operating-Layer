@@ -2883,8 +2883,9 @@ tr.is-paged-out { display: none; }
 /* A reload keeps the rows in place, dimmed, until the reply replaces them. */
 #know-view-table table[aria-busy="true"] tbody, .know-grid[aria-busy="true"] { opacity: 0.55; }
 #screen-sources .table-wrap table[aria-busy="true"] tbody { opacity: 0.55; }
-/* Step 7A2a: the live Sources list has no search, filter or sort yet (7A2b). */
-body[data-live="on"] #src-filter, body[data-live="on"] #src-sort { display: none; }
+/* Live Sources: the pager gives the count, so the sample search counter goes; the panels open inward from the header. */
+body[data-live="on"] #src-search-count { display: none; }
+#screen-sources .page-actions .know-pop { inset-inline-start: auto; inset-inline-end: 0; }
 /* The pager while it is off: looks disabled but stays focusable, so focus never drops to the page. */
 .know-pager .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; background: var(--surface-sunken); color: var(--text-subtle); border-color: var(--border); }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
@@ -3634,7 +3635,7 @@ button.card { color: inherit; font: inherit; }
   <div class="stat-grid" id="dash-stats" data-live-keep>
     <a class="stat stat--link" data-stat="sources" href="#screen-sources"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">248</span><span class="stat__note">12 added this month</span></a>
     <a class="stat stat--link" data-stat="in-progress" href="#screen-sources?status=processing"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg>Processing</span><span class="stat__value">7</span><span class="stat__note">Oldest queued 4 min ago</span></a>
-    <a class="stat stat--link" data-stat="succeeded" href="#screen-sources?status=success"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Succeeded</span><span class="stat__value">221</span><span class="stat__note">10 failed</span></a>
+    <a class="stat stat--link" data-stat="succeeded" href="#screen-sources?status=completed"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg>Succeeded</span><span class="stat__value">221</span><span class="stat__note">10 failed</span></a>
     <a class="stat stat--attention stat--link" data-stat="review" href="#waiting-on-person"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Needs human review</span><span class="stat__value">13</span><span class="stat__note">6 conversions + 7 claims in conflict</span></a>
   </div>
 
@@ -3686,10 +3687,10 @@ button.card { color: inherit; font: inherit; }
 
 
   
-    <div class="src-search-row">
+    <div class="src-search-row" data-live-keep>
       <label class="src-search" for="src-search">
         <svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
-        <input type="search" id="src-search" placeholder="Search sources by title, type or date…" aria-describedby="src-search-count" autocomplete="off">
+        <input type="search" id="src-search" aria-label="Search sources" placeholder="Search by title, DOI, PMID or URL…" aria-describedby="src-search-count" autocomplete="off">
       </label>
       <p id="src-search-count" class="src-search-count" role="status">Showing all 8 sources.</p>
     </div>
@@ -7848,7 +7849,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   // cross-links) now works, because they all already point at real
   // section ids; they just needed something listening.
   function routeFromHash(moveFocus) {
-    // A hash may carry a query (#screen-sources?status=success) and may name
+    // A hash may carry a query (#screen-sources?status=completed) and may name
     // an element inside a screen (#waiting-on-person): show the screen that
     // owns it, then bring that element into view.
     var id = location.hash.replace(/^#/, '').split('?')[0];
@@ -8917,8 +8918,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       rows.forEach(function (tr) { tbody.appendChild(tr); });
 
       var q = (input && input.value || '').trim().toLowerCase();
-      // Status filter from a link such as #screen-sources?status=success:
-      // keeps rows whose Status badge carries badge--<status>.
+      // Status filter from a link such as #screen-sources?status=completed:
+      // keeps rows whose Status badge carries that status's badge class.
       var status = statusFromHash();
       var shown = 0;
       rows.forEach(function (tr) {
@@ -8944,8 +8945,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }
 
     function statusFromHash() {
-      var m = location.hash.match(/^#screen-sources\?(?:.*&)?status=([a-z-]+)/);
-      return m ? m[1] : '';
+      var m = location.hash.match(/^#screen-sources\?(?:.*&)?status=([a-z_]+)/);
+      var badge = { completed: 'success', failed: 'danger', abstract_only: 'warning', reference_only: 'unknown', processing: 'processing' };
+      return m ? badge[m[1]] || m[1] : '';
     }
     document.addEventListener('aiol:screenchange', function (e) {
       if (e.detail.id === 'screen-sources') apply();
@@ -8954,6 +8956,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 
     if (sortBtn) {
       sortBtn.addEventListener('click', function () {
+        if (document.body.dataset.live === 'on') return;   // live mode has its own Sort panel
         // Three-state cycle: A–Z, Z–A, then back to the original order.
         // Returning to "as loaded" matters because that order carries
         // meaning here (most recently updated first) that neither
@@ -9172,7 +9175,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var a = e.target.closest('a[href^="#screen-"]');
     if (!a) return;
     var href = a.getAttribute('href');
-    // A link carrying a filter (#screen-sources?status=success) goes
+    // A link carrying a filter (#screen-sources?status=completed) goes
     // through the hash router so the target screen can read it.
     if (href.indexOf('?') !== -1) return;
     e.preventDefault();
@@ -9739,6 +9742,19 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var KNOWLEDGE_SORTS = { name: ['ascending', 'Sort: Name'], action_needed: ['descending', 'Sort: Action needed'], updated: ['descending', 'Sort: Recently updated'] };
   var KNOWLEDGE_COLS = [['Knowledge object', 'name'], ['Sources', null, 'num'], ['Approval'], ['Action needed', 'action_needed'],
     ['Updated', 'updated'], ['Research workspace', null, 'th--center']];
+  // Shared by the Knowledge and Sources lists. A disclosure panel under its button: Escape or a click elsewhere closes it.
+  function popover(btn, id) {
+    var wrap = el('span', 'know-pop-wrap'); btn.parentNode.insertBefore(wrap, btn); wrap.appendChild(btn);
+    var pop = el('div', 'know-pop'); pop.id = id; pop.hidden = true; wrap.appendChild(pop);
+    btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', id);
+    function show(open) { pop.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
+    btn.addEventListener('click', function () { show(pop.hidden); });
+    wrap.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pop.hidden) { show(false); btn.focus(); } });
+    document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) show(false); });
+    pop.close = function () { show(false); };
+    return pop;
+  }
+  function debounced(fn) { var t = null; return { run: function () { clearTimeout(t); t = setTimeout(fn, 300); }, now: function () { clearTimeout(t); fn(); } }; }
   function knowledgeList(panel) {
     // Wired once; a later connect only reloads.
     if (panel.__knowledgeLoad) return panel.__knowledgeLoad();
@@ -9869,19 +9885,6 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       Object.keys(KNOWLEDGE_TYPES).forEach(function (k) { s.appendChild(option(k, KNOWLEDGE_TYPES[k])); });
       s.appendChild(option(OTHER, 'Other type')); return s;
     }
-    // A disclosure panel under its button: Escape or a click elsewhere closes it.
-    function popover(btn, id) {
-      var wrap = el('span', 'know-pop-wrap'); btn.parentNode.insertBefore(wrap, btn); wrap.appendChild(btn);
-      var pop = el('div', 'know-pop'); pop.id = id; pop.hidden = true; wrap.appendChild(pop);
-      btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', id);
-      function show(open) { pop.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
-      btn.addEventListener('click', function () { show(pop.hidden); });
-      wrap.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pop.hidden) { show(false); btn.focus(); } });
-      document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) show(false); });
-      pop.close = function () { show(false); };
-      return pop;
-    }
-    function debounced(fn) { var t = null; return { run: function () { clearTimeout(t); t = setTimeout(fn, 300); }, now: function () { clearTimeout(t); fn(); } }; }
     function wire() {
       // Search: 300 ms after the last keystroke; Enter at once; Escape clears.
       var typed = debounced(function () { var v = search.value.trim(); if (v !== st.search) { st.search = v; reset(); } });
@@ -10090,9 +10093,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return load();
   }
   // Sources list (Step 7A2a): the designed table and its grid view, filled from
-  // GET /sources/overview. Order and paging happen on the server. Search, the
-  // filter panel and sort arrive in 7A2b; until then the sample Filter and Sort
-  // buttons are hidden in live mode (CSS) rather than left doing nothing.
+  // GET /sources/overview. Search, filters, order and paging all happen on the
+  // server: every change goes back to page 1, and only the newest request may
+  // render, so a slower reply to an older request is dropped.
   var SOURCE_TYPES = { scientific_paper: 'Scientific paper', review: 'Review article', book: 'Book', pdf: 'PDF file',
     website: 'Website', government: 'Government source', dataset: 'Dataset', supplier_document: 'Supplier document',
     lab_report: 'Lab report', user_upload: 'User uploaded', first_party: 'First-party source', news: 'News' };
@@ -10113,13 +10116,22 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   // [header, data-label, cell class]; the last header is for screen readers only.
   var SOURCE_COLS = [['Source', 'Source'], ['Status', 'Status'], ['Knowledge', 'Knowledge', 'num'], ['Claims', 'Claims', 'num'],
     ['Evidence', 'Evidence', 'num'], ['Updated', 'Updated', 'num'], ['Open', '']];
+  // Server sort -> the Sort button's label. "Most" marks the sorts that put the largest count first.
+  var SOURCE_SORTS = { updated: 'Sort: Recently updated', name: 'Sort: Name', claims: 'Sort: Most claims', evidence: 'Sort: Most evidence' };
+  // Status filter options, each with the count it would return (counts_by_status).
+  var SOURCE_STATUS_OPTIONS = { '': 'All ({n})', failed: 'Failed ({n})', processing: 'Processing ({n})', completed: 'Completed ({n})',
+    abstract_only: 'Abstract only ({n})', reference_only: 'Reference only ({n})' };
   function sourcesList(panel) {
     // Wired once; a later connect only reloads.
     if (panel.__sourcesLoad) return panel.__sourcesLoad();
     var screen = document.getElementById('screen-sources');
     var wrap = screen.querySelector('.table-wrap'), table = wrap.querySelector('table');
-    var st = { limit: 50, offset: 0, seq: 0 };
+    var OTHER = '__other';
+    var st = { sort: 'updated', limit: 50, offset: 0, search: '', type: '', other: '', status: '', seq: 0 };
+    var search = document.getElementById('src-search'), filterBtn = document.getElementById('src-filter');
+    var sortBtn = document.getElementById('src-sort'), sortLabel = document.getElementById('src-sort-label');
     var statusBox, statusText, statusAct, statusFn = null, pagerText, prevBtn, nextBtn, sizeSel, pagerOn = false;
+    var typeSel, otherField, otherInput, statusSel, chips, sortOpts = {}, statusOpts = {};
     function icon(kind, size) {
       var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), p = document.createElementNS(ns, 'path');
       [['class', 'icon'], ['aria-hidden', 'true'], ['focusable', 'false'], ['viewBox', '0 0 24 24'], ['fill', 'none'], ['stroke', 'currentColor'],
@@ -10188,6 +10200,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var f = el('label', 'field'), t = el('span', 'field__label');
       AIOL_I18N.set(t, label); f.appendChild(t); f.appendChild(control); return f;
     }
+    function option(value, label) { var o = el('option'); o.value = value; AIOL_I18N.set(o, label); return o; }
+    // A link such as #screen-sources?status=completed (the Dashboard's cards) sets the status filter.
+    function hashStatus() {
+      var m = location.hash.match(/^#screen-sources\?(?:.*&)?status=([a-z_]+)/);
+      return m && SOURCE_STATUS[m[1]] ? m[1] : '';
+    }
     function wire() {
       // The header is rebuilt, so the generic sorter bound to the sample headers never reorders a live page.
       var tr = el('tr');
@@ -10211,11 +10229,91 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       sizeSel.value = String(st.limit); pg.appendChild(field('Rows per page', sizeSel));
       prevBtn.addEventListener('click', function () { if (!pagerOn) return; st.offset = Math.max(0, st.offset - st.limit); load(); });
       nextBtn.addEventListener('click', function () { if (!pagerOn) return; st.offset += st.limit; load(); });
-      sizeSel.addEventListener('change', function () { st.limit = Number(sizeSel.value); st.offset = 0; load(); });
+      sizeSel.addEventListener('change', function () { st.limit = Number(sizeSel.value); reset(); });
       wrap.insertAdjacentElement('afterend', pg);
+      // Search: 300 ms after the last keystroke; Enter at once; Escape clears.
+      // The sample counter it pointed to is hidden in live mode, so it no longer describes the field.
+      search.removeAttribute('aria-describedby');
+      var typed = debounced(function () { var v = search.value.trim(); if (v !== st.search) { st.search = v; reset(); } });
+      search.addEventListener('input', typed.run);
+      search.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); typed.now(); }
+        else if (e.key === 'Escape' && search.value) { search.value = ''; typed.now(); }
+      });
+      // Filter: status, with what each choice would return, and type (the approved types, or an exact other name).
+      var fPop = popover(filterBtn, 'src-filter-panel');
+      statusSel = el('select');
+      Object.keys(SOURCE_STATUS_OPTIONS).forEach(function (k) { var o = el('option'); o.value = k; statusOpts[k] = o; statusSel.appendChild(o); });
+      statusCounts(null);
+      typeSel = el('select'); typeSel.appendChild(option('', 'All'));
+      Object.keys(SOURCE_TYPES).forEach(function (k) { typeSel.appendChild(option(k, SOURCE_TYPES[k])); });
+      typeSel.appendChild(option(OTHER, 'Other type'));
+      otherInput = el('input'); otherInput.type = 'text'; otherInput.dir = 'ltr'; otherInput.maxLength = 100;
+      otherField = field('Exact type name', otherInput); otherField.hidden = true;
+      fPop.appendChild(field('Status', statusSel)); fPop.appendChild(field('Type', typeSel)); fPop.appendChild(otherField);
+      statusSel.addEventListener('change', function () { st.status = statusSel.value; reset(); });
+      typeSel.addEventListener('change', function () {
+        otherField.hidden = typeSel.value !== OTHER;
+        if (typeSel.value === OTHER) { otherInput.focus(); if (!otherInput.value.trim()) return; }
+        st.type = typeSel.value; st.other = typeSel.value === OTHER ? otherInput.value.trim() : ''; reset();
+      });
+      var otherTyped = debounced(function () { var v = otherInput.value.trim(); if (v !== st.other) { st.type = OTHER; st.other = v; reset(); } });
+      otherInput.addEventListener('input', otherTyped.run);
+      chips = screen.querySelector('.src-search-row').appendChild(el('span', 'know-chips'));
+      // Sort: the four server orders. The sample button's own name and tooltip describe its A-Z sort, so they go.
+      sortBtn.removeAttribute('aria-label'); sortBtn.removeAttribute('title');
+      var sPop = popover(sortBtn, 'src-sort-panel');
+      Object.keys(SOURCE_SORTS).forEach(function (k) {
+        var b = el('button', 'btn know-sort-opt'); b.type = 'button'; AIOL_I18N.set(b, SOURCE_SORTS[k]);
+        b.addEventListener('click', function () { sPop.close(); sortBtn.focus(); if (st.sort !== k) { st.sort = k; reset(); } });
+        sortOpts[k] = b; sPop.appendChild(b);
+      });
+      st.status = hashStatus();
+      document.addEventListener('aiol:screenchange', function (e) {
+        var s = hashStatus();
+        if (e.detail.id === 'screen-sources' && s && s !== st.status) { st.status = s; reset(); }
+      });
       // The sample rows never sit under the live headers, not even during the first load.
       render({ items: [] });
     }
+    function chip(label, value, clear) {
+      var b = el('button', 'btn know-chip'); b.type = 'button';
+      var hint = el('span', 'visually-hidden'); AIOL_I18N.set(hint, 'Remove filter'); b.appendChild(hint);
+      var l = el('span'); AIOL_I18N.set(l, label); b.appendChild(l); b.appendChild(document.createTextNode(': '));
+      var known = label === 'Type' ? SOURCE_TYPES[value] : SOURCE_STATUS[value] && SOURCE_STATUS[value][0];
+      if (known) AIOL_I18N.set(b.appendChild(el('span')), known); else b.appendChild(identifier(value));
+      b.addEventListener('click', function () { clear(); reset(); });
+      return b;
+    }
+    // Controls always show the state the next request will use.
+    function sync() {
+      Object.keys(sortOpts).forEach(function (k) { sortOpts[k].setAttribute('aria-pressed', String(st.sort === k)); });
+      AIOL_I18N.set(sortLabel, SOURCE_SORTS[st.sort]);
+      typeSel.value = st.type; statusSel.value = st.status; otherField.hidden = st.type !== OTHER;
+      if (st.type !== OTHER) otherInput.value = '';
+      var chipAt = [].indexOf.call(chips.children, document.activeElement);
+      chips.textContent = '';
+      var type = st.type === OTHER ? st.other : st.type;
+      if (type) chips.appendChild(chip('Type', type, function () { st.type = ''; st.other = ''; }));
+      if (st.status) chips.appendChild(chip('Status', st.status, function () { st.status = ''; }));
+      // A removed chip had focus: the next chip takes it, or Filter when none is left.
+      if (chipAt >= 0) (chips.children[Math.min(chipAt, chips.children.length - 1)] || filterBtn).focus();
+    }
+    // Each status option says how many sources it would return; "All" is their sum.
+    function statusCounts(c) {
+      var all = c ? Object.keys(c).reduce(function (n, k) { return n + c[k]; }, 0) : null;
+      Object.keys(statusOpts).forEach(function (k) { AIOL_I18N.set(statusOpts[k], SOURCE_STATUS_OPTIONS[k], { n: c ? (k ? c[k] || 0 : all) : null }); });
+    }
+    function params() {
+      var q = ['sort=' + st.sort, 'limit=' + st.limit, 'offset=' + st.offset];
+      var type = st.type === OTHER ? st.other : st.type;
+      if (st.search) q.push('search=' + encodeURIComponent(st.search));
+      if (type) q.push('source_type=' + encodeURIComponent(type));
+      if (st.status) q.push('status=' + st.status);
+      return q.join('&');
+    }
+    function reset() { st.offset = 0; return load(); }
+    function clearFilters() { search.value = ''; st.search = ''; st.type = ''; st.other = ''; st.status = ''; reset(); }
     // While a request is out, or after one failed, the pager is off. It uses
     // aria-disabled, not disabled, so a focused button keeps focus.
     function pagerOff() { pagerOn = false; [prevBtn, nextBtn].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); }
@@ -10240,6 +10338,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }
     function empty(page) {
       if (page.total) status('');
+      else if (st.search || st.type || st.status) status('empty', 'No sources match this search and these filters.', null, 'Clear filters', clearFilters);
       else status('empty', 'No sources yet.', null, 'Add source', function () { location.hash = '#screen-add'; });
     }
     // Reconnect: this panel's connect form, opened again with the URL in use and
@@ -10261,15 +10360,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       statusAct.setAttribute('aria-controls', panel.querySelector('.live-connect').id); statusAct.setAttribute('aria-expanded', 'false');
     }
     function load() {
+      sync();
       var seq = ++st.seq;
       table.setAttribute('aria-busy', 'true');
       pagerOff();
       // A reload dims the rows in place (CSS on aria-busy). Only an empty list says
       // Loading, and it says it where the rows go, so nothing above the list moves.
       if (!table.querySelector('tbody tr') && !statusBox.dataset.state) status('loading', 'Loading…');
-      return api('/sources/overview?sort=updated&limit=' + st.limit + '&offset=' + st.offset).then(function (page) {
+      return api('/sources/overview?' + params()).then(function (page) {
         if (seq !== st.seq) return null;        // a newer request owns the screen
-        render(page); pager(page);
+        render(page); pager(page); statusCounts(page.counts_by_status);
         state(panel, 'ready'); empty(page);
         return page;
       }).catch(function (e) { if (seq === st.seq) failed(e); return null; })
@@ -12809,6 +12909,18 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "User uploaded": "بارگذاری‌شده توسط کاربر",
     "First-party source": "منبع خود سازمان",
     "News": "خبر",
+    // Sources list controls (Step 7A2b; glossary 7A3b)
+    "Search sources": "جست‌وجوی منابع",
+    "Search by title, DOI, PMID or URL…": "جست‌وجو با عنوان، DOI، PMID یا نشانی وب…",
+    "Sort: Most claims": "مرتب‌سازی: بیشترین ادعا",
+    "Sort: Most evidence": "مرتب‌سازی: بیشترین شواهد",
+    "No sources match this search and these filters.": "هیچ منبعی با این جست‌وجو و فیلترها مطابقت ندارد.",
+    "All ({n})": "همه ({n})",
+    "Failed ({n})": "ناموفق ({n})",
+    "Processing ({n})": "در حال پردازش ({n})",
+    "Completed ({n})": "تکمیل‌شده ({n})",
+    "Abstract only ({n})": "فقط چکیده ({n})",
+    "Reference only ({n})": "فقط ارجاع ({n})",
     "Sort: Open conflicts": "مرتب‌سازی: تعارض‌های باز",
     "Conflicts": "تعارض‌ها",
     "Re-run research on new/updated sources — creates a new version, never overwrites this one": "اجرای مجدد پژوهش روی منابع جدید/به‌روزشده — نسخهٔ جدیدی می‌سازد و هرگز این نسخه را بازنویسی نمی‌کند",

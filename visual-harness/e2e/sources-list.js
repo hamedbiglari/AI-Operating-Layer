@@ -9,6 +9,10 @@
  *   States: Loading on the first load, empty with Add source, an error with
  *           Retry repeating the request, 401/403 with Reconnect.
  *   Pager and the grid view.
+ *   Controls (7A2b): search (debounce, Enter, Escape, stale replies dropped),
+ *           the filter panel with status counts, type and an exact other type,
+ *           chips, the sort panel, no matches with Clear filters, status links
+ *           (#screen-sources?status=...) in sample and live mode, Persian labels.
  * Runs on file:// with GET /sources/overview mocked in the page and every
  * request recorded. Persian expectations are built from code points, so this
  * file stays ASCII and no rendering can reverse them.
@@ -32,6 +36,10 @@ const FA = {
   referenceOnly: fa(0x641, 0x642, 0x637, 0x20, 0x627, 0x631, 0x62C, 0x627, 0x639),
   scientificPaper: fa(0x645, 0x642, 0x627, 0x644, 0x647, 0x20, 0x639, 0x644, 0x645, 0x6CC),
   seventyFour: fa(0x6F7, 0x6F4),
+  sortMostClaims: fa(0x645, 0x631, 0x62A, 0x628, 0x200C, 0x633, 0x627, 0x632, 0x6CC, 0x3A, 0x20, 0x628, 0x6CC, 0x634, 0x62A, 0x631, 0x6CC, 0x646, 0x20, 0x627, 0x62F, 0x639, 0x627),
+  failedOne: fa(0x646, 0x627, 0x645, 0x648, 0x641, 0x642, 0x20, 0x28, 0x6F1, 0x29),
+  placeholder: fa(0x62C, 0x633, 0x62A, 0x200C, 0x648, 0x62C, 0x648, 0x20, 0x628, 0x627, 0x20, 0x639, 0x646, 0x648, 0x627, 0x646, 0x60C, 0x20) + 'DOI' +
+    fa(0x60C, 0x20) + 'PMID' + fa(0x20, 0x6CC, 0x627, 0x20, 0x646, 0x634, 0x627, 0x646, 0x6CC, 0x20, 0x648, 0x628, 0x2026),
 };
 
 let failures = 0;
@@ -67,13 +75,17 @@ function installMock(items) {
       const q = new URLSearchParams(u.slice(u.indexOf('?') + 1)); window.__requests.push(q.toString());
       const limit = Number(q.get('limit')), offset = Number(q.get('offset'));
       if (window.__fail) return respond({}, window.__fail, window.__delay);
+      const search = q.get('search');
       let list = window.__empty ? [] : items.slice(), total = list.length;
       if (window.__total) {
         total = window.__total;
         list = Array.from({ length: Math.max(0, Math.min(limit, total - offset)) }, (_, i) =>
           Object.assign({}, items[i % items.length], { id: 'p' + (offset + i), title: 'Item ' + (offset + i) }));
       }
-      return respond({ items: list, total, limit, offset, counts_by_status: {} }, 200, window.__delay);
+      // A search returns one "<search>-result" row; search=slow answers late.
+      if (search && !window.__empty) { list = [Object.assign({}, items[0], { id: 's-' + search, title: search + '-result' })]; total = 1; }
+      const byStatus = { failed: 1, processing: 1, completed: 1, abstract_only: 1, reference_only: 1 };
+      return respond({ items: list, total, limit, offset, counts_by_status: byStatus }, 200, search === 'slow' ? 600 : window.__delay);
     }
     return respond({ items: [], total: 0, limit: 20, offset: 0 }, u.includes('/users/me/preferences') ? 404 : 200);
   };
@@ -108,6 +120,14 @@ function installMock(items) {
   check('fa sample: the same 7 rows, statuses in Persian', (await badges()).map((b) => b[0]),
     [FA.completed, FA.processing, FA.abstractOnly, FA.completed, FA.completed, FA.failed, FA.referenceOnly]);
   await lang('en');
+  // A status link in sample mode keeps the sample rows with that status.
+  await page.evaluate(() => { location.hash = '#screen-sources?status=completed'; }); await settle();
+  check('sample: a status link keeps the rows with that status', await page.$$eval('#screen-sources tbody tr:not(.is-filtered) td[data-label="Status"] .badge',
+    (b) => b.map((x) => x.textContent.trim())), ['Completed', 'Completed', 'Completed']);
+  await page.evaluate(() => { location.hash = '#screen-dashboard'; }); await settle();
+  check('Dashboard: the Succeeded card links to completed sources', await page.$eval('#dash-stats a[data-stat="succeeded"]', (a) => a.getAttribute('href')),
+    '#screen-sources?status=completed');
+  await page.evaluate(() => { location.hash = '#screen-sources'; }); await settle();
 
   // ---------- First load ----------
   await page.evaluate(installMock, ITEMS);
@@ -146,7 +166,10 @@ function installMock(items) {
     ['Abstract only', 'badge--warning'], ['Reference only', 'badge--unknown'], ['Failed', 'badge--danger']]);
   check('counts and date', [en[0].counts, en[0].updated], [['3', '74', '31'], '23 Oct 2026']);
   check('Open: the detail screen, named after the source', en[0].open, ['#screen-detail', 'Open ' + FSI + 'Toranjebin review' + PDI]);
-  check('Filter and Sort hidden until 7A2b', [await shown('#src-filter'), await shown('#src-sort')], [false, false]);
+  check('live: Filter, Sort and search shown; the sample counter hidden and no longer describing search', await page.evaluate(() => [
+    document.getElementById('src-sort-label').textContent, document.getElementById('src-search').getAttribute('aria-describedby'),
+    document.getElementById('src-sort').getAttribute('aria-label')]).then(async (r) => [await shown('#src-filter'), await shown('#src-sort'),
+    await shown('#src-search'), await shown('#src-search-count')].concat(r)), [true, true, true, false, 'Sort: Recently updated', null, null]);
   await lang('fa');
   const faRow = (await rows())[0];
   check('fa: badge, type label and digits in Persian', [(await badges())[0][0], faRow.meta.split(DOT)[0], faRow.counts[1]],
@@ -211,6 +234,78 @@ function installMock(items) {
   await page.evaluate(() => { window.__fail = 403; }); await connect(); await settle();
   check('403: sources may not be read, Reconnect offered', await statusOf(),
     ['denied', 'This access token is not allowed to read sources (HTTP 403).', 'Reconnect']);
+
+
+  // ---------- Controls (7A2b) ----------
+  await page.evaluate(() => { window.__fail = 0; }); await connect(); await settle();
+  const titles = async () => (await rows()).map((r) => r.title);
+  const param = (q, k) => new URLSearchParams(q).get(k);
+  const count = async () => (await requests()).length;
+  let before = await count();
+  await page.fill('#src-search', 'saf'); await settle(100);
+  check('search: nothing sent while typing', await count(), before);
+  await settle(350);
+  check('search: one request 300 ms after the last keystroke, page 1', (await requests()).slice(before), ['sort=updated&limit=25&offset=0&search=saf']);
+  await page.fill('#src-search', 'saff'); await page.press('#src-search', 'Enter'); await settle(400);
+  check('search: Enter sends at once, the debounced copy sends nothing more', (await requests()).filter((q) => q.includes('search=saff')).length, 1);
+  await page.press('#src-search', 'Escape'); await settle();
+  check('search: Escape clears it', [await page.$eval('#src-search', (i) => i.value), param(await last(), 'search')], ['', null]);
+  await page.fill('#src-search', 'slow'); await page.press('#src-search', 'Enter');
+  await page.fill('#src-search', 'fast'); await page.press('#src-search', 'Enter'); await settle(800);
+  check('stale reply dropped: the slower, older request does not overwrite the newer one', await titles(), ['fast-result']);
+  await page.press('#src-search', 'Escape'); await settle();
+
+  await page.click('#src-filter'); await settle();
+  check('Filter opens its panel; each status says what it would return', await page.evaluate(() => [
+    document.getElementById('src-filter').getAttribute('aria-expanded'), document.getElementById('src-filter-panel').hidden,
+    [...document.querySelectorAll('#src-filter-panel select')[0].options].map((o) => o.textContent)]),
+  ['true', false, ['All (5)', 'Failed (1)', 'Processing (1)', 'Completed (1)', 'Abstract only (1)', 'Reference only (1)']]);
+  const chips = () => page.$$eval('#screen-sources .know-chip', (c) => c.map((x) => [x.querySelector('.visually-hidden').textContent,
+    x.textContent.replace(x.querySelector('.visually-hidden').textContent, '')]));
+  await page.selectOption('#src-filter-panel select >> nth=0', 'failed'); await settle();
+  check('status filter sends status, page 1; a chip shows it', [param(await last(), 'status'), param(await last(), 'offset'), await chips()],
+    ['failed', '0', [['Remove filter', 'Status: Failed']]]);
+  await page.selectOption('#src-filter-panel select >> nth=1', 'lab_report'); await settle();
+  check('type filter sends source_type, status kept', [param(await last(), 'source_type'), param(await last(), 'status')], ['lab_report', 'failed']);
+  before = await count();
+  await page.selectOption('#src-filter-panel select >> nth=1', '__other'); await settle();
+  check('Other type asks for a name and sends nothing yet', await count(), before);
+  await page.fill('#src-filter-panel input', 'web_page'); await settle(450);
+  check('other type filters by the exact name; its chip shows it in <bdi>', [param(await last(), 'source_type'),
+    await page.$$eval('#screen-sources .know-chip bdi', (b) => b.map((x) => x.textContent))], ['web_page', ['web_page']]);
+  await page.click('#screen-sources .know-chip >> nth=0'); await settle();
+  check('removing the type chip drops source_type and keeps status', [param(await last(), 'source_type'), param(await last(), 'status'),
+    (await chips()).length], [null, 'failed', 1]);
+  await page.keyboard.press('Escape');
+
+  await page.click('#src-sort'); await settle();
+  check('Sort opens four server orders', await page.$$eval('#src-sort-panel button', (b) => b.map((x) => x.textContent)),
+    ['Sort: Recently updated', 'Sort: Name', 'Sort: Most claims', 'Sort: Most evidence']);
+  await page.click('#src-sort-panel button >> nth=2'); await settle();
+  check('Most claims: sort=claims, page 1; the button and the pressed option follow', [param(await last(), 'sort'), param(await last(), 'offset'),
+    await page.$eval('#src-sort-label', (l) => l.textContent), await page.$$eval('#src-sort-panel button', (b) => b.map((x) => x.getAttribute('aria-pressed')))],
+  ['claims', '0', 'Sort: Most claims', ['false', 'false', 'true', 'false']]);
+
+  await page.evaluate(() => { window.__empty = true; });
+  await page.fill('#src-search', 'nothing'); await page.press('#src-search', 'Enter'); await settle();
+  check('no matches: the message and Clear filters', await statusOf(), ['empty', 'No sources match this search and these filters.', 'Clear filters']);
+  await page.evaluate(() => { window.__empty = false; });
+  await page.click('#screen-sources .know-status button'); await settle();
+  check('Clear filters drops search, type and status, keeps the sort', [await last(), await page.$eval('#src-search', (i) => i.value), (await chips()).length],
+    ['sort=claims&limit=25&offset=0', '', 0]);
+
+  await page.evaluate(() => { location.hash = '#screen-dashboard'; }); await settle();
+  await page.evaluate(() => { location.hash = '#screen-sources?status=completed'; }); await settle();
+  check('a status link sets the live status filter', [param(await last(), 'status'), await chips()], ['completed', [['Remove filter', 'Status: Completed']]]);
+  before = await count();
+  await page.evaluate(() => { location.hash = '#screen-sources'; }); await settle();
+  check('the screen shown without a link keeps the filter and sends nothing', await count(), before);
+
+  await lang('fa');
+  check('fa: placeholder, Sort label and status counts', [await page.$eval('#src-search', (i) => i.placeholder),
+    await page.$eval('#src-sort-label', (l) => l.textContent), await page.$eval('#src-filter-panel select', (s) => s.options[1].textContent)],
+  [FA.placeholder, FA.sortMostClaims, FA.failedOne]);
+  await lang('en');
 
   await browser.close();
   console.log(failures ? failures + ' FAILED' : 'ALL PASSED');
