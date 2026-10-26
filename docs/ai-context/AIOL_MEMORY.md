@@ -121,12 +121,11 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 8072ead
+- sha (last non-docs commit): a9839dd
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ d555048 (7B1); @ 8072ead in_progress at time of v4
-- last code commit: "chore(debt): add theme-toggle row to DEBT_REGISTER"
-- last feature commit: "feat(sources): id filter on GET /sources/overview (7B1)" @ d555048
+- last_ci: green @ 757128d (7B2c-1); @ a9839dd in_progress at time of v5
+- last code commit: "feat(sources): close source detail sample and CI gate (7B2c)" @ a9839dd
 
 ## 4. Completed steps (compact)
 
@@ -138,76 +137,84 @@ file from scratch (do not diff). Output only the file content.
 - Step 7A — Sources list: live, bilingual, 64 browser checks, CI-locked
   100%. Backend /sources/overview with counts + derived_status.
   Sub-commits 7A1..7A4a.
-- Step 7B1 — id filter on GET /sources/overview: ?id=<uuid> returns
-  0/1 row, 404 for unknown/cross-org, filters ignored when id present.
-  4 tests fail-before/pass-after. Green @ d555048.
-- Debt row: V5-theme-toggle-ui added @ 8072ead.
+- Step 7B — Source detail (#screen-detail), CLOSED @ a9839dd:
+  - 7B1 @ d555048 — ?id= on GET /sources/overview: 0/1 row, 404 for
+    unknown/cross-org, list filters ignored when id is present.
+  - 7B2a @ dc046fa (docs) — Source detail glossary, 34 rows, 28 KNOWN
+    words; Reprocess has its own locked term, Retry keeps its own.
+  - 7B2b-1 @ 71b9822 — 11 V5-source-detail-* debt rows; the 6 mock tabs
+    hidden with data-debt-hidden (markup kept).
+  - 7B2b-2 @ d4e1192 — live header from /sources/overview?id=; role read
+    once per connection from GET /auth/me; no-id / 404 / 422 / network
+    states; Sources list Open links carry ?id=.
+  - 7B2b-3a @ 9eef37d — backend: /sources/{id}/documents rows are
+    DocumentWithConversion (current_conversion {id, status,
+    needs_review}; no `content`). No migration.
+  - 7B2b-3b @ cff4166 — documents card: Status (extraction) and
+    Conversion columns, needs-review badge, Sources-style pager.
+  - 7B2b-4 @ 06d315c — per-row text preview (GET /documents/{id}/markdown
+    as text, <pre> textContent, read once); Reprocess for owner / admin /
+    researcher / editor via window.confirm + POST; list re-read after
+    success; a 403 keeps the button.
+  - 7B2c-1 @ 757128d (docs) — sample glossary: "Source detail" heading +
+    18 sample rows, 26 KNOWN words.
+  - 7B2c-2 @ a9839dd — i18n-coverage.js skips [data-debt-hidden] (D6);
+    6 sample debt items hidden; 5 identifiers wrapped; empty-state
+    heading "Source detail"; screen-detail added to the CI --require.
+- Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
+  repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
+- Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
+  change on #pick-lang). V5-source-detail-empty-a11y-name CLOSED
+  (Step 7B2c-2). 7B source-detail debt: 11 rows from 7B2b-1 plus
+  V5-source-detail-more-actions from 7B2c-2, all OPEN.
+- CI now runs i18n-coverage.js --require
+  screen-knowledge,screen-sources,screen-detail and 8 browser suites.
 
-## 5. In progress — Step 7B, sub-step 7B2a
+## 5. In progress — Step 7C (Processing)
 
-7B spec (locked, do NOT re-derive):
-- 7B1 ✓ done @ d555048.
-- 7B2a (next): docs(i18n) — Source detail glossary for review.
-- 7B2b: live detail — #screen-detail becomes data-live-wired; header
-  (title, badge, counts, metadata) from /sources/overview?id=; documents
-  list from /sources/{id}/documents; per-doc conversion status from
-  /documents/{id}/conversions; markdown preview in <pre> (never
-  innerHTML — XSS); Reprocess button visible for owner / admin /
-  researcher / editor (role from GET /auth/me on load; 403 handled
-  mid-session); handle no-id, 404, 403. Hide all 6 mock tabs in 7B2b:
-  Knowledge, Claims, History, Artifacts, Evidence, Provenance. Scope
-  discipline: 7B is minimal (header + documents + preview + reprocess).
-  Note: GET /documents/{id}/artifacts already exists, so Artifacts could
-  be built later without new backend. The 5 tabs without backend
-  (Knowledge, Claims, History, Evidence, Provenance) and Artifacts (has
-  backend, out of scope) all get DEBT_REGISTER entries in 7B2b.
-- 7B2c: translate static sample + add screen-detail to --require +
-  Persian browser check.
-
-11 debt entries, none committed yet; all go in with 7B2b:
-Archive, Delete, version badge, Knowledge tab, Claims tab, History tab,
-Artifacts tab, Evidence tab, Provenance tab, research projects,
-gaps affected.
-
-7B error semantics (locked): ?id unknown OR cross-org → 404 with same
-{"error":{"message":...}} text as get_source_or_404 helper. No existence
-leak.
+Brief (from §10.5; not yet investigated):
+- A 4-stage pipeline view per document — Upload, Conversion, OCR,
+  Chunking — plus "Evidence found: N".
+- Needs a backend endpoint first: GET /documents/{id}/ingestion-jobs
+  does not exist today (GET /documents/ingestion-jobs/{job_id} and
+  POST .../retry do). Backend commit before frontend (rule 2); the list
+  must not need a call per row (rule 17).
+- Glossary rows for the screen go in their own docs(i18n) commit before
+  any FA is written (the 7B2a / 7B2c-1 pattern).
+Status: not started. The next action is an investigation, no code.
 
 ## 6. Next action
 
-State in sync → user says "go" → send 7B2a prompt.
+State in sync → user says "go" → send the 7C investigation prompt.
 
-Prompt to Claude Code (7B2a — glossary for source detail):
+Prompt to Claude Code (7C — investigation, no code):
 
-    Prepare the Persian glossary for the Source detail screen
-    (#screen-detail) per the locked 7B spec. Do NOT translate yet.
-    Do NOT touch code. Only produce a glossary candidate list for user
-    review.
+    Step 7C investigation — Processing screen. Do NOT write code. Do NOT
+    touch any file.
 
-    For each new FA string, provide a table row:
-      - English source string (exact)
-      - Persian translation built from explicit codepoints (chr())
-      - Context / where used
-      - Notes (plural, formal/informal, RTL gotchas)
+    Answer with exact file:line references and short quotes:
+    1. #screen-processing today: what the sample markup shows (stages,
+       labels, counts), and what its live registry entry does now
+       ('screen-processing' in SCREENS). List the strings
+       i18n-coverage.js --screen screen-processing reports.
+    2. Backend: what exists for ingestion jobs (GET
+       /documents/ingestion-jobs/{job_id}, POST .../retry, the
+       DocumentIngestionJobStatus schema, the job / conversion / chunk
+       models). Which of Upload, Conversion, OCR and Chunking can be
+       derived per document from existing tables, and from which columns?
+    3. "Evidence found: N": which table and column give it per document
+       or per job, and can it come from the same query?
+    4. Rule 17: the minimal backend endpoint shape (path, params,
+       response) so the Processing view needs one call per page, not one
+       per row. Cost estimate, tests needed, migration yes/no.
+    5. Commit structure: backend commit(s), glossary docs commit,
+       frontend commit(s), in order.
 
-    Coverage:
-      1. Header: title, badge, counts, metadata labels
-      2. Documents list: column headers, empty state, pagination if any
-      3. Conversion status labels (per document)
-      4. Markdown preview: heading, controls, empty state
-      5. Reprocess button + confirm dialog + success/error messages
-      6. Error states: no-id, 404, 403, network error
-      7. Hidden tabs need NO strings: Knowledge, Claims, History, Artifacts,
-         Evidence, Provenance (all 6).
-
-    Verify all proposed Persian strings round-trip via check-persian.js.
-    If any string fails round-trip, report it and stop.
-
-    Output format: markdown table, ready for user to review row-by-row.
-    Do not commit anything.
+    Where a decision is needed, list it under "Decision needed"; do not
+    pick for the user.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report differences, wait.
-Case B — user says "go": send the 7B2a prompt above.
+Case B — user says "go": send the 7C prompt above.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -243,6 +250,9 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v4b @ 8072ead — three consistency fixes before v5: debt count unified
   to 11, §6 prompt item 7 lists all 6 hidden tabs, Artifacts rationale
   corrected (backend exists; hidden for scope). Anchor unchanged.
+- v5 @ a9839dd — session closed Step 7B (7B2a, 7B2b-1..4, 7B2c-1/2) and
+  the V5-theme-toggle-ui repair; §3/§4/§5/§6 rewritten; Step 7C is next.
+  CI on a9839dd was still running when this was written. Anchor now a9839dd.
 
 ## 10. Historical context (from two prior sessions)
 
