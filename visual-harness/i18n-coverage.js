@@ -4,7 +4,8 @@
  *
  *   Per screen: English UI strings (text, aria-label, title, placeholder)
  *   with no entry in the FA dictionary. Text inside <bdi>, <code>, <svg>,
- *   <script> and <style> is skipped, as the Persian layer skips it.
+ *   <script>, <style> and any class="identifier" element is skipped, as the
+ *   Persian layer skips it.
  *   Templates: every literal template passed to AIOL_I18N.set must have an
  *   FA entry, unless it has no words of its own ('{n}').
  *
@@ -15,6 +16,7 @@
  *   node visual-harness/i18n-coverage.js                  per-screen table
  *   node visual-harness/i18n-coverage.js --screen ID      list that screen's untranslated strings
  *   node visual-harness/i18n-coverage.js --require A,B    exit 1 unless screens A and B are complete
+ *                                       (--require A --require B is the same)
  * Exit: 1 if a template has no entry or a required screen is incomplete, else 0.
  */
 const fs = require('fs');
@@ -22,6 +24,8 @@ const path = require('path');
 
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const arg = (name) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : null; };
+// Every value of a flag that may repeat (--require A --require B).
+const args = (name) => process.argv.flatMap((a, i) => (a === name && i + 1 < process.argv.length ? [process.argv[i + 1]] : []));
 
 const faStart = html.indexOf('var FA = {');
 const faBlock = html.slice(faStart, html.indexOf('};', faStart));
@@ -38,7 +42,8 @@ const screens = [];
 const starts = [...html.matchAll(/<section class="screen[^"]*" id="(screen-[^"]+)"/g)];
 starts.forEach((m, i) => {
   const end = i + 1 < starts.length ? starts[i + 1].index : html.indexOf('<script', m.index);
-  const body = html.slice(m.index, end).replace(/<(script|style|svg|code|bdi)\b[\s\S]*?<\/\1>/g, ' ');
+  const body = html.slice(m.index, end).replace(/<(script|style|svg|code|bdi)\b[\s\S]*?<\/\1>/g, ' ')
+    .replace(/<(\w+)\b[^>]*\bclass="(?:[^"]*\s)?identifier(?:\s[^"]*)?"[^>]*>[\s\S]*?<\/\1>/g, ' ');
   const found = new Set();
   for (const t of body.matchAll(/>([^<>]+)</g)) found.add(norm(t[1]));
   for (const a of body.matchAll(/\b(?:aria-label|title|placeholder)="([^"]*)"/g)) found.add(norm(a[1]));
@@ -61,7 +66,7 @@ if (only) {
   console.log(`\nAll screens: ${total - missing} of ${total} strings translated. Templates without an entry: ${badTemplates.length}.`);
 }
 badTemplates.forEach((t) => console.log('FAIL  template has no FA entry: ' + t));
-const required = (arg('--require') || '').split(',').filter(Boolean);
+const required = [...new Set(args('--require').join(',').split(',').filter(Boolean))];
 const incomplete = required.filter((id) => { const s = screens.find((x) => x.id === id); return !s || s.missing.length > 0; });
 incomplete.forEach((id) => console.log('FAIL  screen missing or not fully translated: ' + id));
 process.exit(badTemplates.length || incomplete.length ? 1 : 0);
