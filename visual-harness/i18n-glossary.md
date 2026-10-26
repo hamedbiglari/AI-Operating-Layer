@@ -238,6 +238,52 @@ entry.
 | `first_party` | First-party source | منبع خود سازمان |
 | `news` | News | خبر |
 
+## Source detail (Step 7B2a)
+
+Approved for the live Source detail screen (7B2b). Strings already in `FA` are
+reused as written: the status badges, Knowledge objects, Claims, Evidence,
+Status, Updated, Loading…, Open {name}, the file sizes and the 401/403
+sentences. «پردازش مجدد» is the locked term for Reprocess; Retry keeps
+«تلاش دوباره». The DOI, PMID, ISBN and URL labels stay Latin as identifiers
+(convention 1) and have no rows.
+
+| English | Persian |
+|---|---|
+| Documents (count label, card heading) | اسناد |
+| Source type (metadata label) | نوع منبع |
+| Author (metadata label) | نویسنده |
+| Publisher (metadata label) | ناشر |
+| Publication date (metadata label; not "Published", the status) | تاریخ انتشار |
+| Last activity (metadata label) | آخرین فعالیت |
+| Document (column header) | سند |
+| Conversion (column header) | تبدیل سند |
+| Size (column header) | اندازه |
+| This source has no documents yet. | این منبع هنوز سندی ندارد. |
+| Showing the first {n} of {total} documents. (only when more than one page) | نمایش {n} سند اول از {total} سند. |
+| Could not load documents ({error}). | بارگذاری اسناد ناموفق بود ({error}). |
+| Pending (extraction and conversion status) | در انتظار |
+| Extracting (extraction status) | در حال استخراج |
+| Extracted (extraction status) | استخراج‌شده |
+| Empty (conversion status: the converter returned no text) | بدون متن |
+| Unsupported (conversion status) | پشتیبانی‌نشده |
+| No conversion (document has no conversion record) | بدون تبدیل |
+| Could not load conversions ({error}). | بارگذاری تبدیل‌های سند ناموفق بود ({error}). |
+| Show text (per-document toggle) | نمایش متن |
+| Hide text (per-document toggle) | پنهان کردن متن |
+| Show text of {name} (toggle's accessible name) | نمایش متن {name} |
+| Hide text of {name} (toggle's accessible name) | پنهان کردن متن {name} |
+| This document has no text yet. | این سند هنوز متنی ندارد. |
+| Could not load the text ({error}). | بارگذاری متن ناموفق بود ({error}). |
+| Reprocess (button; never used for Retry) | پردازش مجدد |
+| Reprocess {name} (button's accessible name) | پردازش مجدد {name} |
+| Reprocess this document? The current extraction stays in force until the new one succeeds. (confirmation) | پردازش مجدد این سند انجام شود؟ استخراج فعلی تا زمانی معتبر است که استخراج جدید موفق شود. |
+| Reprocessing queued (job {id}). ({id} is the job id) | پردازش مجدد در صف قرار گرفت (شناسهٔ کار: {id}). |
+| Could not start reprocessing ({error}). | شروع پردازش مجدد ناموفق بود ({error}). |
+| Your role is not allowed to reprocess documents (HTTP 403). | نقش شما اجازهٔ پردازش مجدد اسناد را ندارد (HTTP 403). |
+| No source selected. Open one from Sources & Documents. (opened without ?id=) | هیچ منبعی انتخاب نشده است. یکی را از «منابع و اسناد» باز کنید. |
+| This source was not found. (unknown id, or another organization's) | این منبع پیدا نشد. |
+| Could not load this source ({error}). | بارگذاری این منبع ناموفق بود ({error}). |
+
 ## Conventions
 
 1. Persian digits (۰–۹) and the Persian separators in all UI text. Identifiers,
