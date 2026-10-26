@@ -92,7 +92,7 @@ function installMock(item) {
     return {
       sampleHeader: shown(document.getElementById('h-detail')), liveTitle: shown(h1) ? h1.textContent : null,
       crumb: h1 ? s.querySelector('[data-live-keep] .breadcrumbs').lastElementChild.textContent : null,
-      badge: shown(h1) ? s.querySelector('#h-detail-live + p .badge').textContent : null,
+      badge: shown(h1) && s.querySelector('#h-detail-live + p .badge') ? s.querySelector('#h-detail-live + p .badge').textContent : null,
       counts: dls[0] && shown(dls[0]) ? pairs(dls[0]) : null, about: dls[1] && shown(dls[1]) ? pairs(dls[1]).map((p) => p[0]) : null,
       aboutValues: dls[1] && shown(dls[1]) ? pairs(dls[1]).slice(0, 3).map((p) => p[1]) : null,
       state: box ? box.dataset.state : null, message: box ? box.querySelector('p').textContent : null,
@@ -123,11 +123,11 @@ function installMock(item) {
   // States
   await go('#screen-detail');
   v = await view();
-  check('no id: the message, no header, nothing requested', [v.state, v.message, v.liveTitle, v.counts, v.action],
-    ['empty', 'No source selected. Open one from Sources & Documents.', null, null, null]);
+  check('no id: the message, the generic heading, no facts', [v.state, v.message, v.liveTitle, v.counts, v.action],
+    ['empty', 'No source selected. Open one from Sources & Documents.', 'Source detail', null, null]);   // 7B2c: the heading still names the section
   await go('#screen-detail?id=missing');
   v = await view();
-  check('404: one sentence, no header', [v.state, v.message, v.liveTitle, v.action], ['empty', 'This source was not found.', null, null]);
+  check('404: one sentence, the generic heading', [v.state, v.message, v.liveTitle, v.action], ['empty', 'This source was not found.', 'Source detail', null]);
   check('404: the server message is not shown', (await page.$eval('#screen-detail', (s) => s.textContent)).includes('Source not found'), false);
   await go('#screen-detail?id=boom');
   v = await view();
