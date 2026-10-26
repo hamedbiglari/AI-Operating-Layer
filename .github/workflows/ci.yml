@@ -55,6 +55,7 @@ jobs:
           node visual-harness/e2e/knowledge-quickfix.js
           node visual-harness/e2e/knowledge-list.js
           node visual-harness/e2e/sources-list.js
+          node visual-harness/e2e/source-detail.js
           node visual-harness/e2e/theme-toggle.js
 
       - name: Set up Python

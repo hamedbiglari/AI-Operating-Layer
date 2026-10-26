@@ -222,7 +222,7 @@ function installMock(items) {
   check('status badges', await badges(), [['Completed', 'badge--success'], ['Processing', 'badge--processing'],
     ['Abstract only', 'badge--warning'], ['Reference only', 'badge--unknown'], ['Failed', 'badge--danger']]);
   check('counts and date', [en[0].counts, en[0].updated], [['3', '74', '31'], '23 Oct 2026']);
-  check('Open: the detail screen, named after the source', en[0].open, ['#screen-detail', 'Open ' + FSI + 'Toranjebin review' + PDI]);
+  check('Open: the detail screen, named after the source', en[0].open, ['#screen-detail?id=a', 'Open ' + FSI + 'Toranjebin review' + PDI]);
   check('live: Filter, Sort and search shown; the sample counter hidden and no longer describing search', await page.evaluate(() => [
     document.getElementById('src-sort-label').textContent, document.getElementById('src-search').getAttribute('aria-describedby'),
     document.getElementById('src-sort').getAttribute('aria-label')]).then(async (r) => [await shown('#src-filter'), await shown('#src-sort'),

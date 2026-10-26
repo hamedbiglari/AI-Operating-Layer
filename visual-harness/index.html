@@ -2893,6 +2893,9 @@ body[data-live="on"] #src-search-count { display: none; }
 .know-pager .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; background: var(--surface-sunken); color: var(--text-subtle); border-color: var(--border); }
 .live-panel dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
 body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel):not([data-live-keep]) { display: none !important; }
+/* Source detail: in live mode its own breadcrumbs and header replace the sample ones. */
+body[data-live="on"] #screen-detail > .breadcrumbs, body[data-live="on"] #screen-detail > .page-header { display: none !important; }
+.src-detail-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
 /* Compact live panel (Dashboard): title, note and Connect button share one
    line; everything else in the panel takes a full row when shown. Children
    stay direct so the data-state chip still finds `.live-panel > .card__title`. */
@@ -9543,6 +9546,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-dashboard': { kind: 'cards', title: 'Live overview (Cloud Core)', compact: true },
     'screen-knowledge': { kind: 'knowledge', title: 'Knowledge objects (Cloud Core)', compact: true },
     'screen-sources': { kind: 'sources', title: 'Sources (Cloud Core)', compact: true },
+    'screen-detail': { kind: 'detail', title: 'Source detail (Cloud Core)', compact: true },
     'screen-processing': { kind: 'table', title: 'Processing jobs (Cloud Core)', endpoint: '/sync-jobs',
       cols: [['Job', 'job_type'], ['Status', 'status', 'badge'], ['Attempts', 'attempts'], ['Error', 'error_message'], ['Created', 'created_at', 'date']],
       filter: ['status', ['', 'queued', 'running', 'retrying', 'succeeded', 'failed', 'dead_letter', 'cancelled']] },
@@ -9591,7 +9595,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return fetch(LIVE.base + '/api/v1' + path, { method: opts.method || 'GET', headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined })
       .then(function (r) {
         if (r.status === 401 || r.status === 403) { var e = new Error('Permission denied (HTTP ' + r.status + ')'); e.denied = r.status; throw e; }
-        if (!r.ok) throw new Error('HTTP ' + r.status);
+        if (!r.ok) { var x = new Error('HTTP ' + r.status); x.status = r.status; throw x; }
         return r.status === 204 ? null : r.json();
       });
   }
@@ -10154,6 +10158,23 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   // Status filter options, each with the count it would return (counts_by_status).
   var SOURCE_STATUS_OPTIONS = { '': 'All ({n})', failed: 'Failed ({n})', processing: 'Processing ({n})', completed: 'Completed ({n})',
     abstract_only: 'Abstract only ({n})', reference_only: 'Reference only ({n})' };
+  // Shared by the Sources list and Source detail.
+  function icon(kind, size) {
+    var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), p = document.createElementNS(ns, 'path');
+    [['class', 'icon'], ['aria-hidden', 'true'], ['focusable', 'false'], ['viewBox', '0 0 24 24'], ['fill', 'none'], ['stroke', 'currentColor'],
+     ['stroke-width', 'var(--icon-stroke,1.75)'], ['stroke-linecap', 'round'], ['stroke-linejoin', 'round']].forEach(function (a) { svg.setAttribute(a[0], a[1]); });
+    if (size) { svg.setAttribute('width', size); svg.setAttribute('height', size); }
+    p.setAttribute('d', SOURCE_ICONS[kind]); svg.appendChild(p);
+    return svg;
+  }
+  function badge(s) {
+    var a = SOURCE_STATUS[s], b = el('span', 'badge ' + (a ? a[1] : 'badge--unknown'));
+    if (!a) { b.appendChild(el('bdi', null, s)); return b; }
+    b.appendChild(icon(a[2]));
+    AIOL_I18N.set(b.appendChild(el('span')), a[0]);
+    return b;
+  }
+  function identifier(text) { var b = el('bdi', 'identifier', text); b.dir = 'ltr'; return b; }
   function sourcesList(panel) {
     // Wired once; a later connect only reloads.
     if (panel.__sourcesLoad) return panel.__sourcesLoad();
@@ -10165,22 +10186,6 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var sortBtn = document.getElementById('src-sort'), sortLabel = document.getElementById('src-sort-label');
     var statusBox, statusText, statusAct, statusFn = null, pagerText, prevBtn, nextBtn, sizeSel, pagerOn = false;
     var typeSel, otherField, otherInput, statusSel, chips, sortOpts = {}, statusOpts = {};
-    function icon(kind, size) {
-      var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), p = document.createElementNS(ns, 'path');
-      [['class', 'icon'], ['aria-hidden', 'true'], ['focusable', 'false'], ['viewBox', '0 0 24 24'], ['fill', 'none'], ['stroke', 'currentColor'],
-       ['stroke-width', 'var(--icon-stroke,1.75)'], ['stroke-linecap', 'round'], ['stroke-linejoin', 'round']].forEach(function (a) { svg.setAttribute(a[0], a[1]); });
-      if (size) { svg.setAttribute('width', size); svg.setAttribute('height', size); }
-      p.setAttribute('d', SOURCE_ICONS[kind]); svg.appendChild(p);
-      return svg;
-    }
-    function badge(s) {
-      var a = SOURCE_STATUS[s], b = el('span', 'badge ' + (a ? a[1] : 'badge--unknown'));
-      if (!a) { b.appendChild(el('bdi', null, s)); return b; }
-      b.appendChild(icon(a[2]));
-      AIOL_I18N.set(b.appendChild(el('span')), a[0]);
-      return b;
-    }
-    function identifier(text) { var b = el('bdi', 'identifier', text); b.dir = 'ltr'; return b; }
     // Type, then what the source holds: document count, size and file type, or
     // its DOI/PMID, or its URL. Parts are joined by " · ".
     function meta(it) {
@@ -10218,7 +10223,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       [it.counts.knowledge_objects, it.counts.claims, it.counts.evidence].forEach(function (n, i) { AIOL_I18N.set(cells[2 + i], '{n}', { n: n }); });
       AIOL_I18N.set(cells[5], '{d}', { d: { date: it.last_activity_at, style: 'date' } });
       // Same visible label on every row, so the accessible name carries the title too.
-      var open = cells[6].appendChild(el('a', 'btn btn--quiet')); open.href = '#screen-detail';
+      var open = cells[6].appendChild(el('a', 'btn btn--quiet')); open.href = '#screen-detail?id=' + encodeURIComponent(it.id);
       var shown = open.appendChild(el('span')), spoken = open.appendChild(el('span', 'visually-hidden'));
       shown.setAttribute('aria-hidden', 'true');
       AIOL_I18N.set(shown, 'Open');
@@ -10415,6 +10420,98 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   // The Dashboard's own four cards, filled from one tenant-scoped read
   // (GET /dashboard/summary). Values and notes are i18n templates, so they
   // follow the language. Nothing falls back to sample figures.
+  // Source detail header (7B2b-2): the same row GET /sources/overview?id= gives
+  // the list, so both show one status and one set of counts. The id comes from
+  // the hash, #screen-detail?id=<uuid>.
+  function sourceDetail(panel) {
+    // Wired once; a later connect reads the role again and reloads.
+    if (panel.__detailLoad) return panel.__detailLoad();
+    var screen = document.getElementById('screen-detail');
+    var st = { seq: 0, role: null };   // role gates Reprocess (7B2b-4)
+    // In live mode these replace the sample breadcrumbs and header (CSS).
+    var top = el('div'); top.setAttribute('data-live-keep', '');
+    var crumbs = top.appendChild(screen.querySelector(':scope > .breadcrumbs').cloneNode(true)), crumbTitle = crumbs.lastElementChild;
+    var head = top.appendChild(el('div', 'page-header')), titles = head.appendChild(el('div'));
+    var h1 = titles.appendChild(el('h1')); h1.id = 'h-detail-live';
+    var badgeLine = titles.appendChild(el('p')); badgeLine.style.marginTop = 'var(--space-2)';
+    screen.insertBefore(top, screen.firstChild);
+    screen.setAttribute('aria-labelledby', 'h-detail-live');
+    var body = el('div'); body.setAttribute('data-live-keep', '');
+    var statusBox = body.appendChild(el('div', 'know-status')), msg = statusBox.appendChild(el('p'));
+    msg.setAttribute('role', 'status');
+    var statusText = msg.appendChild(el('span')), statusAct = statusBox.appendChild(el('button', 'btn')), statusFn = null;
+    statusAct.type = 'button'; statusAct.hidden = true;
+    statusAct.addEventListener('click', function () { if (statusFn) statusFn(); });
+    var facts = body.appendChild(el('div', 'src-detail-facts'));
+    var counts = facts.appendChild(el('div', 'card')).appendChild(el('dl', 'kv'));
+    var about = facts.appendChild(el('div', 'card')).appendChild(el('dl', 'kv'));
+    panel.insertAdjacentElement('afterend', body);
+
+    function status(kind, text, args, action, fn) {
+      statusBox.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
+      statusBox.dataset.state = kind || '';
+      AIOL_I18N.set(statusText, text || '', args);
+      AIOL_I18N.set(statusAct, action || ''); statusAct.hidden = !action; statusFn = fn || null;
+    }
+    // .page-header and the facts grid set display, so [hidden] would not hide them.
+    function shown(on) { head.style.display = facts.style.display = on ? '' : 'none'; if (!on) crumbTitle.textContent = ''; }
+    function text(v) { var t = el('bdi', null, v); t.dir = 'auto'; return t; }
+    function fact(dl, label, value) { AIOL_I18N.set(dl.appendChild(el('dt')), label); dl.appendChild(el('dd')).appendChild(value); }
+    function day(iso) { return AIOL_I18N.set(el('span'), '{d}', { d: { date: iso, style: 'date' } }); }
+    function render(it) {
+      crumbTitle.textContent = ''; crumbTitle.appendChild(text(it.title));
+      h1.textContent = ''; h1.appendChild(text(it.title));
+      badgeLine.textContent = ''; badgeLine.appendChild(badge(it.derived_status));
+      counts.textContent = ''; about.textContent = '';
+      [['Documents', it.counts.documents], ['Knowledge objects', it.counts.knowledge_objects], ['Claims', it.counts.claims],
+       ['Evidence', it.counts.evidence]].forEach(function (c) { var n = el('span', 'num'); fact(counts, c[0], AIOL_I18N.set(n, '{n}', { n: c[1] })); });
+      var type = el('span');
+      if (SOURCE_TYPES[it.source_type]) AIOL_I18N.set(type, SOURCE_TYPES[it.source_type]);
+      else type.appendChild(identifier(it.source_type));   // unknown type: as sent, never translated
+      fact(about, 'Source type', type);
+      if (it.author) fact(about, 'Author', text(it.author));
+      if (it.publisher) fact(about, 'Publisher', text(it.publisher));
+      if (it.publication_date) fact(about, 'Publication date', day(it.publication_date));
+      fact(about, 'Last activity', day(it.last_activity_at));
+      shown(true);
+    }
+    function reconnect() {
+      var form = panel.querySelector('.live-connect'), token = form.querySelector('.live-token');
+      form.querySelector('.live-base').value = LIVE.base; token.value = '';
+      form.hidden = false; token.focus({ preventScroll: true }); form.scrollIntoView({ block: 'nearest' });
+    }
+    function hashId() {
+      var h = location.hash;
+      return h.indexOf('#screen-detail?') === 0 ? new URLSearchParams(h.slice(h.indexOf('?') + 1)).get('id') : null;
+    }
+    function load() {
+      var seq = ++st.seq, id = hashId();
+      shown(false);
+      if (!id) { status('empty', 'No source selected. Open one from Sources & Documents.'); return Promise.resolve(null); }
+      status('loading', 'Loading…');
+      return api('/sources/overview?id=' + encodeURIComponent(id)).then(function (page) {
+        if (seq !== st.seq) return null;        // a newer request owns the screen
+        state(panel, 'ready');
+        if (!page.items.length) { status('empty', 'This source was not found.'); return null; }
+        status(''); render(page.items[0]); return page;
+      }).catch(function (e) {
+        if (seq !== st.seq) return null;
+        state(panel, 'ready');
+        // An unknown id, another organization's (404) or a malformed one (422):
+        // one sentence, and nothing from the server's reply.
+        if (e.status === 404 || e.status === 422) status('empty', 'This source was not found.');
+        else if (e.denied) status('denied', e.denied === 401
+          ? 'Cloud Core did not accept the access token (HTTP 401). It may have expired.'
+          : 'This access token is not allowed to read sources (HTTP 403).', null, 'Reconnect', reconnect);
+        else status('error', 'Could not load this source ({error}).', { error: e.message }, 'Retry', load);
+        return null;
+      });
+    }
+    function role() { api('/auth/me').then(function (me) { st.role = me.user ? me.user.role : null; }).catch(function () { st.role = null; }); }
+    document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-detail' && LIVE) load(); });
+    panel.__detailLoad = function () { role(); return load(); };
+    return panel.__detailLoad();
+  }
   function dashboardCards(panel) {
     var grid = document.getElementById('dash-stats');
     function card(name, value, tpl, args) {
@@ -10520,6 +10617,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var tb = panel.querySelector('.live-toolbar'); if (tb) tb.hidden = false;
       if (cfg.kind === 'cards') dashboardCards(panel); else if (cfg.kind === 'knowledge') knowledgeList(panel);
       else if (cfg.kind === 'sources') sourcesList(panel);
+      else if (cfg.kind === 'detail') sourceDetail(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
@@ -12928,6 +13026,15 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Open {name}": "باز کردن {name}",
     "No sources yet.": "هنوز منبعی وجود ندارد.",
     "Add source": "افزودن منبع",
+    "Documents": "اسناد",
+    "Source type": "نوع منبع",
+    "Author": "نویسنده",
+    "Publisher": "ناشر",
+    "Publication date": "تاریخ انتشار",
+    "Last activity": "آخرین فعالیت",
+    "No source selected. Open one from Sources & Documents.": "هیچ منبعی انتخاب نشده است. یکی را از «منابع و اسناد» باز کنید.",
+    "This source was not found.": "این منبع پیدا نشد.",
+    "Could not load this source ({error}).": "بارگذاری این منبع ناموفق بود ({error}).",
     "Could not load sources ({error}).": "بارگذاری منابع ناموفق بود ({error}).",
     "{n|document|documents}": "{n} سند",
     "{n} KB": "{n} کیلوبایت",
