@@ -78,6 +78,7 @@ def create_ingestion_job(
     job = SyncJob(
         organization_id=organization_id,
         site_id=site_id,
+        document_id=document_id,
         job_type=SyncJobType.DOCUMENT_INGESTION,
         status=SyncJobStatus.QUEUED,
         payload={

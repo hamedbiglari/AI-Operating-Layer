@@ -56,6 +56,10 @@ class SyncJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     # Nullable: an organization-wide job need not belong to one site.
     site_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
+    # Document-ingestion jobs only (migration 0047); payload["document_id"] still carries it too.
+    document_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True, index=True,
+    )
 
     job_type: Mapped[SyncJobType] = mapped_column(
         SAEnum(SyncJobType, name="sync_job_type", values_callable=lambda e: [m.value for m in e]),
