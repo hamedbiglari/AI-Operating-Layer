@@ -135,6 +135,46 @@ any other value is shown as it is (convention 7).
 | `product` | محصول |
 | `concept` | مفهوم |
 
+## Sources list (Step 7A2a)
+
+Approved for the live Sources list (7A3a). Badge labels for the five derived
+statuses; Failed and Processing are the existing statuses above. The 401
+message is the Knowledge sentence above, reused as written.
+
+| English | Persian |
+|---|---|
+| Completed (badge) | تکمیل‌شده |
+| Abstract only (badge) | فقط چکیده |
+| Reference only (badge: a citation, no document) | فقط ارجاع |
+| Claims (column header) | ادعاها |
+| {n\|document\|documents} (meta line) | {n} سند |
+| {n} KB / {n} MB (file size) | {n} کیلوبایت / {n} مگابایت |
+| Open {name} (the Open link's accessible name) | باز کردن {name} |
+| No sources yet. | هنوز منبعی وجود ندارد. |
+| Add source (button) | افزودن منبع |
+| Could not load sources ({error}). | بارگذاری منابع ناموفق بود ({error}). |
+| This access token is not allowed to read sources (HTTP 403). | این توکن دسترسی اجازهٔ خواندن منابع را ندارد (HTTP 403). |
+
+## Source types
+
+`source_type` is free text from the backend. These are the approved labels;
+any other value is shown as it is (convention 7). `website` keeps its existing
+entry.
+
+| source_type | English | Persian |
+|---|---|---|
+| `scientific_paper` | Scientific paper | مقاله علمی |
+| `review` | Review article | مقاله مروری |
+| `book` | Book | کتاب |
+| `pdf` | PDF file | فایل PDF |
+| `government` | Government source | منبع دولتی |
+| `dataset` | Dataset | مجموعه‌داده |
+| `supplier_document` | Supplier document | سند تأمین‌کننده |
+| `lab_report` | Lab report | گزارش آزمایشگاه |
+| `user_upload` | User uploaded | بارگذاری‌شده توسط کاربر |
+| `first_party` | First-party source | منبع خود سازمان |
+| `news` | News | خبر |
+
 ## Conventions
 
 1. Persian digits (۰–۹) and the Persian separators in all UI text. Identifiers,
