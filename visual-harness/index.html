@@ -1245,6 +1245,8 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
   font-weight: var(--weight-medium);
   border-block-end-color: var(--primary);
 }
+/* Designed but not built yet: the value names its DEBT_REGISTER row. */
+[data-debt-hidden] { display: none !important; }
 
 /* ---------- ProcessingStage ---------- */
 
@@ -3965,12 +3967,12 @@ button.card { color: inherit; font: inherit; }
 
   <div class="tabs" role="tablist" aria-label="Source detail sections">
     <button role="tab" aria-selected="true">Overview</button>
-    <button role="tab" aria-selected="false">Artifacts</button>
-    <button role="tab" aria-selected="false">Knowledge</button>
-    <button role="tab" aria-selected="false">Claims</button>
-    <button role="tab" aria-selected="false">Evidence</button>
-    <button role="tab" aria-selected="false">Provenance</button>
-    <button role="tab" aria-selected="false">History</button>
+    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-artifacts">Artifacts</button>
+    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-knowledge">Knowledge</button>
+    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-claims">Claims</button>
+    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-evidence">Evidence</button>
+    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-provenance">Provenance</button>
+    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-history">History</button>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px, 100%), 1fr));gap:var(--space-4)">
