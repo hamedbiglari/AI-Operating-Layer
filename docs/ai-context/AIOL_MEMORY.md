@@ -1,10 +1,12 @@
 # AIOL MEMORY — single source of truth
 
 <!-- This file is the only memory. Any other handoff is stale.
-     AUTHORITATIVE ONLY IF `sha:` below matches:
-       git log --oneline -1 --grep='^docs: AIOL_MEMORY' --invert-grep | cut -c1-7
-     i.e. the last NON-docs commit. Docs commits (this file's own updates)
-     never move `sha:`. -->
+     AUTHORITATIVE ONLY IF `sha:` below equals the last commit whose
+     subject does NOT start with "docs". Any commit starting with "docs"
+     (docs:, docs(i18n):, docs(debt):, docs: AIOL_MEMORY, ...) does NOT
+     move `sha:`. All other commits do.
+     Anchor command:
+       git log --oneline -1 --grep='^docs' --invert-grep | cut -c1-7 -->
 
 ## 0. How to use this file (read first)
 
@@ -17,25 +19,36 @@ On load:
 2. Your FIRST reply is a short drift-check prompt for the user to paste
    into Claude Code. Output ONLY this text, nothing else:
 
-       Run and report exactly:
+       Run and report exactly these four commands, in order, with their
+       raw output, no commentary:
          git rev-parse HEAD
+         git log --oneline -1 --grep='^docs' --invert-grep | cut -c1-7
          git status --short
-         git log --oneline -3
+         git log --oneline -5
 
-       Report only those three outputs, no commentary.
+       Label the second output "ANCHOR:".
 
-3. When the user pastes Claude Code's reply back, compare
-   `git rev-parse HEAD` to the "last non-docs commit" rule below.
-   - Match → say "state in sync", give a 2–3 sentence summary, wait for "go".
-   - Mismatch → say "STATE DRIFT", list the differences, wait for the user's
-     decision. Do not guess, do not proceed.
+3. When the user pastes Claude Code's reply back, extract the line
+   labeled "ANCHOR:" and compare it to the `sha:` value in §3.
+   - ANCHOR equals `sha:` → say "state in sync", give a 2–3 sentence
+     summary, wait for "go".
+   - ANCHOR differs from `sha:` → say "STATE DRIFT", list:
+     (a) the anchor value the repo reports,
+     (b) the sha: value in §3,
+     (c) any unexpected entries in `git status --short`,
+     then wait for the user's decision. Do not guess, do not proceed.
+   Note: HEAD may be a docs commit (docs: AIOL_MEMORY vN ...). That is
+   normal and is NOT drift. Only the ANCHOR matters for the comparison.
 4. Only after "go", proceed per §6.
 5. Never say "I remember". Never propose work before drift check completes.
 
 Drift anchor rule (this is what §3's `sha:` refers to):
-  A "docs commit" is any commit whose subject starts with "docs: ".
-  Every non-docs commit moves the anchor. Docs commits (this file's own
-  updates) do NOT move it.
+  Any commit whose subject starts with "docs" (whether "docs: ",
+  "docs(i18n): ", "docs(debt): ", or "docs: AIOL_MEMORY ...") does
+  NOT move the anchor.
+  Every other commit DOES move the anchor.
+  The anchor is computed with:
+    git log --oneline -1 --grep='^docs' --invert-grep | cut -c1-7
 
 End of session: user invokes end ritual. Regenerate this ENTIRE file from
 scratch (do not diff). Output only the file content.
@@ -153,3 +166,9 @@ Case C — STATE DRIFT detected:
 - v2 — §0 rewritten: drift check offloaded to Claude Code (user pastes only
   this file). Fixed: §3 subject, §5 evidence status + commit subject, §1
   index.html line count, §8 GitHub API note. Anchor unchanged: 97325af.
+- v3 — Drift-check mechanics fixed per Claude Code's report. (1) HTML comment
+  and §0 now use one rule: any commit starting with "docs" does NOT move the
+  anchor. (2) Drift-check prompt now asks for the anchor directly
+  (git log -1 --grep='^docs' --invert-grep). (3) §0 step 3 compares ANCHOR to
+  `sha:`, not HEAD to `sha:`, so normal docs commits no longer trigger a
+  false STATE DRIFT. Anchor unchanged: 97325af.
