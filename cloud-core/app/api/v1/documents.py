@@ -44,6 +44,7 @@ from app.schemas.document import (
     DocumentRead,
     DocumentTableRead,
     DocumentUpdate,
+    ProcessingRead,
     UrlIngestionRequest,
 )
 from app.schemas.document_chunk import (
@@ -59,6 +60,7 @@ from app.services import (
     document_service,
     ingestion_job_service,
     ingestion_service,
+    processing_service,
     source_service,
 )
 
@@ -331,6 +333,18 @@ def get_document_markdown(
             detail="No canonical Markdown artifact exists for this document.",
         )
     return PlainTextResponse(content=document.content, media_type="text/markdown; charset=utf-8")
+
+
+@router.get("/{document_id}/processing", response_model=ProcessingRead)
+def get_document_processing(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ProcessingRead:
+    """The Processing view: each pipeline stage's state as far as the backend
+    records it, and what the document has produced. One call per document."""
+    return ProcessingRead(**processing_service.get_processing(
+        db, document_id=document_id, organization_id=current_user.organization_id))
 
 
 @router.get("/{document_id}/artifacts", response_model=DocumentArtifactsResponse)

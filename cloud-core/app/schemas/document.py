@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime
+from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -61,6 +62,39 @@ class DocumentWithConversion(BaseModel):
     created_at: datetime
     updated_at: datetime
     current_conversion: CurrentConversionRead | None = None
+
+
+class StageState(str, Enum):
+    DONE = "done"
+    ACTIVE = "active"
+    PENDING = "pending"
+    FAILED = "failed"
+    NOT_TRACKED = "not_tracked"   # the backend keeps no record of this stage
+
+
+class StageRead(BaseModel):
+    key: str   # upload | security | conversion | structure | ocr | chunking | evidence | knowledge
+    state: StageState
+    detail: str | None = None
+
+
+class ProcessingMetrics(BaseModel):
+    pages: int | None
+    tables: int | None
+    images: int | None
+    ocr_blocks: int | None
+    chunks: int
+    claims: int
+    evidence: int
+
+
+class ProcessingRead(BaseModel):
+    """GET /documents/{id}/processing: the document's pipeline as far as the
+    backend records it, and what it has produced so far. No job object."""
+
+    document_id: uuid.UUID
+    stages: list[StageRead]
+    metrics: ProcessingMetrics
 
 
 class DocumentCreate(BaseModel):
