@@ -14,8 +14,14 @@ from app.models.user import User
 from app.schemas.common import Page, PaginationParams, SortParams
 from app.schemas.document import DocumentRead
 from app.schemas.source import SourceCreate, SourceRead, SourceUpdate
+from app.schemas.source_overview import (
+    SourceDerivedStatus,
+    SourceOverviewItem,
+    SourceOverviewPage,
+    SourceOverviewSort,
+)
 from app.security.dependencies import get_current_user, require_roles
-from app.services import document_service, source_service
+from app.services import document_service, source_overview_service, source_service
 
 router = APIRouter(prefix="/sources", tags=["sources"])
 
@@ -37,6 +43,46 @@ def list_sources(
         offset=pagination.offset,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
+
+
+# Registered before /{source_id}, which would otherwise match "overview".
+@router.get("/overview", response_model=SourceOverviewPage)
+def sources_overview(
+    search: str | None = Query(default=None, max_length=500),
+    source_type: str | None = Query(default=None, max_length=100),
+    status_filter: SourceDerivedStatus | None = Query(default=None, alias="status"),
+    sort: SourceOverviewSort = Query(default=SourceOverviewSort.UPDATED),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> SourceOverviewPage:
+    """The Sources list's rows: each source with its derived status, counts
+    and last activity, filtered, ordered and paged server-side."""
+    rows, total, counts_by_status = source_overview_service.get_overview(
+        db,
+        organization_id=current_user.organization_id,
+        limit=limit,
+        offset=offset,
+        search=search,
+        source_type=source_type,
+        status=status_filter,
+        sort=sort,
+    )
+    items = [
+        SourceOverviewItem(
+            **SourceRead.model_validate(r["source"]).model_dump(),
+            counts=r["counts"],
+            derived_status=r["derived_status"],
+            last_activity_at=r["last_activity_at"],
+            file_size=r["file_size"],
+            mime_type=r["mime_type"],
+        )
+        for r in rows
+    ]
+    return SourceOverviewPage(
+        items=items, total=total, limit=limit, offset=offset, counts_by_status=counts_by_status
+    )
 
 
 @router.post("", response_model=SourceRead, status_code=201)
