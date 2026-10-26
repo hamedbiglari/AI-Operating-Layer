@@ -43,6 +43,7 @@ def get_overview(
     organization_id: UUID,
     limit: int,
     offset: int,
+    source_id: UUID | None = None,
     search: str | None = None,
     source_type: str | None = None,
     status: SourceDerivedStatus | None = None,
@@ -117,6 +118,8 @@ def get_overview(
             mime_type.label("mime_type"),
         )
     )
+    if source_id:
+        query = query.where(Source.id == source_id)
     if search:
         pattern = f"%{search}%"
         query = query.where(

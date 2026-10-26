@@ -48,6 +48,7 @@ def list_sources(
 # Registered before /{source_id}, which would otherwise match "overview".
 @router.get("/overview", response_model=SourceOverviewPage)
 def sources_overview(
+    source_id: UUID | None = Query(default=None, alias="id"),
     search: str | None = Query(default=None, max_length=500),
     source_type: str | None = Query(default=None, max_length=100),
     status_filter: SourceDerivedStatus | None = Query(default=None, alias="status"),
@@ -58,12 +59,19 @@ def sources_overview(
     db: Session = Depends(get_db),
 ) -> SourceOverviewPage:
     """The Sources list's rows: each source with its derived status, counts
-    and last activity, filtered, ordered and paged server-side."""
+    and last activity, filtered, ordered and paged server-side. With ?id= it
+    is the Source detail header's one row, whatever filters the list had, and
+    an unknown id is a 404."""
+    if source_id:
+        source_service.get_source_or_404(db, source_id=source_id, organization_id=current_user.organization_id)
+        search = source_type = status_filter = None
+        offset = 0
     rows, total, counts_by_status = source_overview_service.get_overview(
         db,
         organization_id=current_user.organization_id,
         limit=limit,
         offset=offset,
+        source_id=source_id,
         search=search,
         source_type=source_type,
         status=status_filter,

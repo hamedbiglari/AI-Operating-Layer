@@ -240,7 +240,44 @@ def test_other_organizations_sources_never_appear(client: TestClient, register_o
     assert body["counts_by_status"] == {**NO_STATUSES, "completed": 1}
 
 
-@pytest.mark.parametrize("query", ["?sort=published_at", "?status=archived", "?limit=0", "?limit=101"])
+def test_id_returns_that_source_row_only(client: TestClient, register_org, db_session) -> None:
+    headers = register_org()["headers"]
+    _source(client, headers, "Other")
+    wanted = _source(client, headers, "Wanted")
+    _doc(client, headers, db_session, wanted, "failed")
+    _evidence(client, headers, wanted, _claim(client, headers, "X"))
+    list_row = next(item for item in _overview(client, headers)["items"] if item["id"] == wanted["id"])
+
+    # The list's filters and paging do not reach the detail header's row.
+    for query in (f"?id={wanted['id']}", f"?id={wanted['id']}&search=nomatch&status=completed&offset=5"):
+        body = _overview(client, headers, query)
+        assert (body["items"], body["total"]) == ([list_row], 1)
+        assert body["counts_by_status"] == {**NO_STATUSES, "failed": 1}
+
+
+def test_unknown_id_is_404(client: TestClient, register_org) -> None:
+    headers = register_org()["headers"]
+    response = client.get(f"{OVERVIEW}?id={uuid.uuid4()}", headers=headers)
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Source not found"
+
+
+def test_other_organizations_id_is_404(client: TestClient, register_org) -> None:
+    mine, theirs = register_org()["headers"], register_org()["headers"]
+    their_source = _source(client, theirs, "Theirs")
+    assert client.get(f"{OVERVIEW}?id={their_source['id']}", headers=mine).status_code == 404
+
+
+def test_without_id_the_list_is_unchanged(client: TestClient, register_org) -> None:
+    # Regression guard for the id filter: passes before and after it by design.
+    headers = register_org()["headers"]
+    _source(client, headers, "A")
+    _source(client, headers, "B")
+    body = _overview(client, headers, "?sort=name")
+    assert (_titles(body), body["total"], body["offset"]) == (["A", "B"], 2, 0)
+
+
+@pytest.mark.parametrize("query", ["?sort=published_at", "?status=archived", "?limit=0", "?limit=101", "?id=not-a-uuid"])
 def test_invalid_parameters_are_rejected(client: TestClient, register_org, query: str) -> None:
     headers = register_org()["headers"]
     assert client.get(OVERVIEW + query, headers=headers).status_code == 422
