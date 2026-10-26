@@ -2896,6 +2896,8 @@ body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcru
 /* Source detail: in live mode its own breadcrumbs and header replace the sample ones. */
 body[data-live="on"] #screen-detail > .breadcrumbs, body[data-live="on"] #screen-detail > .page-header { display: none !important; }
 .src-detail-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
+.src-doc-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.src-doc-text pre { margin: 0; max-block-size: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 /* Compact live panel (Dashboard): title, note and Connect button share one
    line; everything else in the panel takes a full row when shown. Children
    stay direct so the data-state chip still finds `.live-panel > .card__title`. */
@@ -9596,7 +9598,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       .then(function (r) {
         if (r.status === 401 || r.status === 403) { var e = new Error('Permission denied (HTTP ' + r.status + ')'); e.denied = r.status; throw e; }
         if (!r.ok) { var x = new Error('HTTP ' + r.status); x.status = r.status; throw x; }
-        return r.status === 204 ? null : r.json();
+        return r.status === 204 ? null : opts.text ? r.text() : r.json();
       });
   }
   function state(panel, kind, text) {
@@ -10451,7 +10453,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var dst = { id: null, limit: 50, offset: 0, seq: 0 };
     var docs = body.appendChild(el('section', 'card src-detail-docs')), docsTitle = docs.appendChild(el('h2', 'card__title'));
     AIOL_I18N.set(docsTitle, 'Documents');
-    var docsSay = messageBox(docs);
+    var docsSay = messageBox(docs), actionSay = messageBox(docs);   // the list's state; what Reprocess did
     var docsWrap = docs.appendChild(el('div', 'table-wrap')), docsTable = docsWrap.appendChild(el('table'));
     var docsHead = docsTable.appendChild(el('thead')).appendChild(el('tr')), docsBody = docsTable.appendChild(el('tbody'));
     ['Document', 'Status', 'Conversion', 'Size', 'Updated'].forEach(function (c) {
@@ -10516,9 +10518,70 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var kb = bytes < 1048576, s = el('span');
       return AIOL_I18N.set(s, kb ? '{n} KB' : '{n} MB', { n: kb ? Math.max(1, Math.round(bytes / 1024)) : Math.round(bytes / 104857.6) / 10 });
     }
+    var EDIT_ROLES = ['owner', 'admin', 'researcher', 'editor'];   // KNOWLEDGE_EDITOR_ROLES on the backend
+    // A button whose visible label is the same on every row; the spoken name carries the title.
+    function rowButton(label, spokenLabel, name) {
+      var btn = el('button', 'btn btn--quiet'), shown = btn.appendChild(el('span')), spoken = btn.appendChild(el('span', 'visually-hidden'));
+      btn.type = 'button'; shown.setAttribute('aria-hidden', 'true');
+      btn.relabel = function (l, s) { AIOL_I18N.set(shown, l); AIOL_I18N.set(spoken, s, { name: name }); };
+      btn.relabel(label, spokenLabel);
+      return btn;
+    }
+    // The text opens in a row under the document, read once from GET /documents/{id}/markdown
+    // and shown with textContent in a <pre>: never parsed, never HTML.
+    function textToggle(d, tr) {
+      var btn = rowButton('Show text', 'Show text of {name}', d.title), row = null, say = null, pre = null, loaded = false;
+      btn.setAttribute('aria-expanded', 'false');
+      function read() {
+        say('loading', 'Loading…');
+        api('/documents/' + encodeURIComponent(d.id) + '/markdown', { text: true }).then(function (t) {
+          loaded = true;
+          if (!t) { say('empty', 'This document has no text yet.'); return; }
+          say(''); pre.textContent = t; pre.hidden = false;
+        }).catch(function (e) {
+          // 404: the document has no text yet. Anything else can be tried again.
+          if (e.status === 404) { loaded = true; say('empty', 'This document has no text yet.'); }
+          else say('error', 'Could not load the text ({error}).', { error: e.message }, 'Retry', read);
+        });
+      }
+      btn.addEventListener('click', function () {
+        var open = !row || row.hidden;
+        if (open && !row) {
+          row = el('tr', 'src-doc-text'); row.id = 'src-doc-text-' + d.id;
+          var td = row.appendChild(el('td')); td.colSpan = 5;
+          say = messageBox(td); pre = td.appendChild(el('pre')); pre.hidden = true;
+          tr.insertAdjacentElement('afterend', row); btn.setAttribute('aria-controls', row.id);
+        }
+        row.hidden = !open;
+        btn.setAttribute('aria-expanded', String(open));
+        btn.relabel(open ? 'Hide text' : 'Show text', open ? 'Hide text of {name}' : 'Show text of {name}');
+        if (open && !loaded) read();
+      });
+      return btn;
+    }
+    function reprocessButton(d) {
+      var btn = rowButton('Reprocess', 'Reprocess {name}', d.title);
+      btn.addEventListener('click', function () {
+        var ask = 'Reprocess this document? The current extraction stays in force until the new one succeeds.';
+        if (!window.confirm(AIOL_I18N.format(ask, null, AIOL_I18N.lang()))) return;
+        btn.disabled = true;
+        api('/documents/' + encodeURIComponent(d.id) + '/reprocess', { method: 'POST' }).then(function (job) {
+          actionSay('done', 'Reprocessing queued (job {id}).', { id: job.job_id });
+          showDocs(dst.id);   // the list is the source of truth for the new conversion
+        }).catch(function (e) {
+          // A role changed mid-session: say so and leave the button where it is.
+          if (e.denied === 403) actionSay('denied', 'Your role is not allowed to reprocess documents (HTTP 403).');
+          else actionSay('error', 'Could not start reprocessing ({error}).', { error: e.message });
+        }).then(function () { btn.disabled = false; });
+      });
+      return btn;
+    }
     function docRow(d) {
       var tr = el('tr'), c = [0, 1, 2, 3, 4].map(function () { return tr.appendChild(el('td')); }), conv = d.current_conversion;
       c[0].appendChild(text(d.title));
+      var actions = c[0].appendChild(el('div', 'src-doc-actions'));
+      actions.appendChild(textToggle(d, tr));
+      if (EDIT_ROLES.indexOf(st.role) !== -1) actions.appendChild(reprocessButton(d));
       c[1].appendChild(badge(d.extraction_status, EXTRACTION_STATUS));
       if (conv) c[2].appendChild(badge(conv.status, CONVERSION_STATUS));
       else { var none = el('span', 'badge badge--unknown'); AIOL_I18N.set(none, 'No conversion'); c[2].appendChild(none); }
@@ -10589,9 +10652,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         return null;
       });
     }
-    function role() { api('/auth/me').then(function (me) { st.role = me.user ? me.user.role : null; }).catch(function () { st.role = null; }); }
+    function role() { return api('/auth/me').then(function (me) { st.role = me.user ? me.user.role : null; }).catch(function () { st.role = null; }); }
     document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-detail' && LIVE) load(); });
-    panel.__detailLoad = function () { role(); return load(); };
+    // The role decides whether rows offer Reprocess, so it is read before they are drawn.
+    panel.__detailLoad = function () { return role().then(load); };
     return panel.__detailLoad();
   }
   function dashboardCards(panel) {
@@ -13128,6 +13192,18 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Empty": "بدون متن",
     "Unsupported": "پشتیبانی‌نشده",
     "No conversion": "بدون تبدیل",
+    "Show text": "نمایش متن",
+    "Hide text": "پنهان کردن متن",
+    "Show text of {name}": "نمایش متن {name}",
+    "Hide text of {name}": "پنهان کردن متن {name}",
+    "This document has no text yet.": "این سند هنوز متنی ندارد.",
+    "Could not load the text ({error}).": "بارگذاری متن ناموفق بود ({error}).",
+    "Reprocess": "پردازش مجدد",
+    "Reprocess {name}": "پردازش مجدد {name}",
+    "Reprocess this document? The current extraction stays in force until the new one succeeds.": "پردازش مجدد این سند انجام شود؟ استخراج فعلی تا زمانی معتبر است که استخراج جدید موفق شود.",
+    "Reprocessing queued (job {id}).": "پردازش مجدد در صف قرار گرفت (شناسهٔ کار: {id}).",
+    "Could not start reprocessing ({error}).": "شروع پردازش مجدد ناموفق بود ({error}).",
+    "Your role is not allowed to reprocess documents (HTTP 403).": "نقش شما اجازهٔ پردازش مجدد اسناد را ندارد (\u2068HTTP 403\u2069).",
     "Could not load sources ({error}).": "بارگذاری منابع ناموفق بود ({error}).",
     "{n|document|documents}": "{n} سند",
     "{n} KB": "{n} کیلوبایت",

@@ -107,7 +107,7 @@ function installMock(docs) {
       title: card.querySelector('.card__title').textContent,
       head: Array.from(card.querySelectorAll('thead th')).map((th) => th.textContent),
       rows: on(card.querySelector('.table-wrap')) ? Array.from(card.querySelectorAll('tbody tr')).map((tr) =>
-        [tr.cells[0].textContent, tr.cells[1].textContent].concat(Array.from(tr.cells[2].querySelectorAll('.badge')).map((b) => b.textContent))) : null,
+        [tr.cells[0].querySelector('bdi').textContent, tr.cells[1].textContent].concat(Array.from(tr.cells[2].querySelectorAll('.badge')).map((b) => b.textContent))) : null,
       state: box.dataset.state, message: box.querySelector('p').textContent, action: act.hidden ? null : act.textContent,
       pager: on(card.querySelector('.know-pager')) ? card.querySelector('.know-pager__text').textContent : null,
       prevDisabled: prev ? prev.disabled : null, nextDisabled: next ? next.disabled : null,
