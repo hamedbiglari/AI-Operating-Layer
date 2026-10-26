@@ -10140,6 +10140,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var SOURCE_STATUS = { failed: ['Failed', 'badge--danger', 'failed'], processing: ['Processing', 'badge--processing', 'processing'],
     completed: ['Completed', 'badge--success', 'completed'], abstract_only: ['Abstract only', 'badge--warning', 'warning'],
     reference_only: ['Reference only', 'badge--unknown', 'link'] };
+  // Source detail documents: extraction is the text, conversion is the file (7B2b-3b).
+  var EXTRACTION_STATUS = { pending: ['Pending', 'badge--processing', 'processing'], extracting: ['Extracting', 'badge--processing', 'processing'],
+    extracted: ['Extracted', 'badge--success', 'completed'], failed: ['Failed', 'badge--danger', 'failed'] };
+  var CONVERSION_STATUS = { pending: ['Pending', 'badge--processing', 'processing'], succeeded: ['Succeeded', 'badge--success', 'completed'],
+    empty: ['Empty', 'badge--warning', 'warning'], unsupported: ['Unsupported', 'badge--warning', 'warning'], failed: ['Failed', 'badge--danger', 'failed'] };
   // The same paths as the sample rows' icons.
   var SOURCE_ICONS = {
     file: 'M7 3h7l4 4v14H7zM14 3v4h4M9.5 11.5h5M9.5 14.5h5M9.5 17.5h3',
@@ -10167,8 +10172,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     p.setAttribute('d', SOURCE_ICONS[kind]); svg.appendChild(p);
     return svg;
   }
-  function badge(s) {
-    var a = SOURCE_STATUS[s], b = el('span', 'badge ' + (a ? a[1] : 'badge--unknown'));
+  function badge(s, map) {
+    var a = (map || SOURCE_STATUS)[s], b = el('span', 'badge ' + (a ? a[1] : 'badge--unknown'));
     if (!a) { b.appendChild(el('bdi', null, s)); return b; }
     b.appendChild(icon(a[2]));
     AIOL_I18N.set(b.appendChild(el('span')), a[0]);
@@ -10437,24 +10442,50 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     screen.insertBefore(top, screen.firstChild);
     screen.setAttribute('aria-labelledby', 'h-detail-live');
     var body = el('div'); body.setAttribute('data-live-keep', '');
-    var statusBox = body.appendChild(el('div', 'know-status')), msg = statusBox.appendChild(el('p'));
-    msg.setAttribute('role', 'status');
-    var statusText = msg.appendChild(el('span')), statusAct = statusBox.appendChild(el('button', 'btn')), statusFn = null;
-    statusAct.type = 'button'; statusAct.hidden = true;
-    statusAct.addEventListener('click', function () { if (statusFn) statusFn(); });
+    var status = messageBox(body);
     var facts = body.appendChild(el('div', 'src-detail-facts'));
     var counts = facts.appendChild(el('div', 'card')).appendChild(el('dl', 'kv'));
     var about = facts.appendChild(el('div', 'card')).appendChild(el('dl', 'kv'));
+    // Documents (7B2b-3b): one GET /sources/{id}/documents per page, each row with its
+    // current conversion, paged like the Sources list.
+    var dst = { id: null, limit: 50, offset: 0, seq: 0 };
+    var docs = body.appendChild(el('section', 'card src-detail-docs')), docsTitle = docs.appendChild(el('h2', 'card__title'));
+    AIOL_I18N.set(docsTitle, 'Documents');
+    var docsSay = messageBox(docs);
+    var docsWrap = docs.appendChild(el('div', 'table-wrap')), docsTable = docsWrap.appendChild(el('table'));
+    var docsHead = docsTable.appendChild(el('thead')).appendChild(el('tr')), docsBody = docsTable.appendChild(el('tbody'));
+    ['Document', 'Status', 'Conversion', 'Size', 'Updated'].forEach(function (c) {
+      var th = docsHead.appendChild(el('th')); th.scope = 'col'; AIOL_I18N.set(th, c);
+    });
+    var pg = docs.appendChild(el('div', 'know-pager')), pagerText = pg.appendChild(el('span', 'know-pager__text')), pagerOn = false;
+    pagerText.setAttribute('aria-live', 'polite');
+    var prevBtn = pg.appendChild(el('button', 'btn')), nextBtn = pg.appendChild(el('button', 'btn'));
+    prevBtn.type = nextBtn.type = 'button'; AIOL_I18N.set(prevBtn, 'Previous'); AIOL_I18N.set(nextBtn, 'Next');
+    var sizeSel = el('select'), sizeField = pg.appendChild(el('label', 'field')), sizeLabel = el('span', 'field__label');
+    [25, 50, 100].forEach(function (n) { var o = el('option'); o.value = String(n); AIOL_I18N.set(o, '{n}', { n: n }); sizeSel.appendChild(o); });
+    sizeSel.value = String(dst.limit); AIOL_I18N.set(sizeLabel, 'Rows per page');
+    sizeField.appendChild(sizeLabel); sizeField.appendChild(sizeSel);
+    prevBtn.addEventListener('click', function () { if (!pagerOn) return; dst.offset = Math.max(0, dst.offset - dst.limit); loadDocs(); });
+    nextBtn.addEventListener('click', function () { if (!pagerOn) return; dst.offset += dst.limit; loadDocs(); });
+    sizeSel.addEventListener('change', function () { dst.limit = Number(sizeSel.value); dst.offset = 0; loadDocs(); });
     panel.insertAdjacentElement('afterend', body);
 
-    function status(kind, text, args, action, fn) {
-      statusBox.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
-      statusBox.dataset.state = kind || '';
-      AIOL_I18N.set(statusText, text || '', args);
-      AIOL_I18N.set(statusAct, action || ''); statusAct.hidden = !action; statusFn = fn || null;
+    // A message with at most one action; returns the function that sets it.
+    function messageBox(parent) {
+      var box = parent.appendChild(el('div', 'know-status')), msg = box.appendChild(el('p')), fn = null;
+      msg.setAttribute('role', 'status');
+      var line = msg.appendChild(el('span')), act = box.appendChild(el('button', 'btn'));
+      act.type = 'button'; act.hidden = true;
+      act.addEventListener('click', function () { if (fn) fn(); });
+      return function (kind, text, args, action, then) {
+        box.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
+        box.dataset.state = kind || '';
+        AIOL_I18N.set(line, text || '', args);
+        AIOL_I18N.set(act, action || ''); act.hidden = !action; fn = then || null;
+      };
     }
-    // .page-header and the facts grid set display, so [hidden] would not hide them.
-    function shown(on) { head.style.display = facts.style.display = on ? '' : 'none'; if (!on) crumbTitle.textContent = ''; }
+    // .page-header, the facts grid and the cards set display, so [hidden] would not hide them.
+    function shown(on) { head.style.display = facts.style.display = docs.style.display = on ? '' : 'none'; if (!on) crumbTitle.textContent = ''; }
     function text(v) { var t = el('bdi', null, v); t.dir = 'auto'; return t; }
     function fact(dl, label, value) { AIOL_I18N.set(dl.appendChild(el('dt')), label); dl.appendChild(el('dd')).appendChild(value); }
     function day(iso) { return AIOL_I18N.set(el('span'), '{d}', { d: { date: iso, style: 'date' } }); }
@@ -10480,12 +10511,63 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       form.querySelector('.live-base').value = LIVE.base; token.value = '';
       form.hidden = false; token.focus({ preventScroll: true }); form.scrollIntoView({ block: 'nearest' });
     }
+    function fileSize(bytes) {
+      if (bytes === null) return el('span', null, '—');
+      var kb = bytes < 1048576, s = el('span');
+      return AIOL_I18N.set(s, kb ? '{n} KB' : '{n} MB', { n: kb ? Math.max(1, Math.round(bytes / 1024)) : Math.round(bytes / 104857.6) / 10 });
+    }
+    function docRow(d) {
+      var tr = el('tr'), c = [0, 1, 2, 3, 4].map(function () { return tr.appendChild(el('td')); }), conv = d.current_conversion;
+      c[0].appendChild(text(d.title));
+      c[1].appendChild(badge(d.extraction_status, EXTRACTION_STATUS));
+      if (conv) c[2].appendChild(badge(conv.status, CONVERSION_STATUS));
+      else { var none = el('span', 'badge badge--unknown'); AIOL_I18N.set(none, 'No conversion'); c[2].appendChild(none); }
+      if (conv && conv.needs_review) {
+        var review = el('span', 'badge badge--warning'); AIOL_I18N.set(review, 'Needs human review');
+        c[2].appendChild(document.createTextNode(' ')); c[2].appendChild(review);
+      }
+      c[3].appendChild(fileSize(d.file_size));
+      c[4].appendChild(day(d.updated_at));
+      return tr;
+    }
+    function pagerOff() { pagerOn = false; [prevBtn, nextBtn].forEach(function (x) { x.setAttribute('aria-disabled', 'true'); }); }
+    function pager(page) {
+      var to = Math.min(page.offset + page.items.length, page.total), had = document.activeElement;
+      AIOL_I18N.set(pagerText, 'Showing {from} to {to} of {total}', { from: page.total ? page.offset + 1 : 0, to: to, total: page.total });
+      pagerOn = true; [prevBtn, nextBtn].forEach(function (x) { x.removeAttribute('aria-disabled'); });
+      prevBtn.disabled = page.offset <= 0; nextBtn.disabled = to >= page.total;
+      // Reaching the first or last page turns the used button off: focus moves to the other one.
+      if ((had === prevBtn || had === nextBtn) && had.disabled) { var other = had === prevBtn ? nextBtn : prevBtn; if (!other.disabled) other.focus(); }
+    }
+    function loadDocs() {
+      var seq = ++dst.seq;
+      docsTable.setAttribute('aria-busy', 'true'); pagerOff();
+      if (!docsBody.rows.length) docsSay('loading', 'Loading…');
+      return api('/sources/' + encodeURIComponent(dst.id) + '/documents?limit=' + dst.limit + '&offset=' + dst.offset).then(function (page) {
+        if (seq !== dst.seq) return null;        // a newer request owns the list
+        docsBody.textContent = ''; page.items.forEach(function (d) { docsBody.appendChild(docRow(d)); });
+        docsWrap.style.display = pg.style.display = page.total ? '' : 'none';
+        if (page.total) { docsSay(''); pager(page); } else docsSay('empty', 'This source has no documents yet.');
+        return page;
+      }).catch(function (e) {
+        if (seq !== dst.seq) return null;
+        docsBody.textContent = ''; docsWrap.style.display = pg.style.display = 'none';
+        docsSay('error', 'Could not load documents ({error}).', { error: e.message }, 'Retry', loadDocs);
+        return null;
+      }).then(function (p) { if (seq === dst.seq) docsTable.removeAttribute('aria-busy'); return p; });
+    }
+    // Another source starts on its first page with no rows from the last one.
+    function showDocs(id) {
+      if (dst.id !== id) { dst.id = id; dst.offset = 0; docsBody.textContent = ''; }
+      return loadDocs();
+    }
     function hashId() {
       var h = location.hash;
       return h.indexOf('#screen-detail?') === 0 ? new URLSearchParams(h.slice(h.indexOf('?') + 1)).get('id') : null;
     }
     function load() {
       var seq = ++st.seq, id = hashId();
+      dst.seq++;                                // the documents of the last source are no longer wanted
       shown(false);
       if (!id) { status('empty', 'No source selected. Open one from Sources & Documents.'); return Promise.resolve(null); }
       status('loading', 'Loading…');
@@ -10493,7 +10575,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         if (seq !== st.seq) return null;        // a newer request owns the screen
         state(panel, 'ready');
         if (!page.items.length) { status('empty', 'This source was not found.'); return null; }
-        status(''); render(page.items[0]); return page;
+        status(''); render(page.items[0]); showDocs(id); return page;
       }).catch(function (e) {
         if (seq !== st.seq) return null;
         state(panel, 'ready');
@@ -13035,6 +13117,17 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "No source selected. Open one from Sources & Documents.": "هیچ منبعی انتخاب نشده است. یکی را از «منابع و اسناد» باز کنید.",
     "This source was not found.": "این منبع پیدا نشد.",
     "Could not load this source ({error}).": "بارگذاری این منبع ناموفق بود ({error}).",
+    "Document": "سند",
+    "Conversion": "تبدیل سند",
+    "Size": "اندازه",
+    "This source has no documents yet.": "این منبع هنوز سندی ندارد.",
+    "Could not load documents ({error}).": "بارگذاری اسناد ناموفق بود ({error}).",
+    "Pending": "در انتظار",
+    "Extracting": "در حال استخراج",
+    "Extracted": "استخراج‌شده",
+    "Empty": "بدون متن",
+    "Unsupported": "پشتیبانی‌نشده",
+    "No conversion": "بدون تبدیل",
     "Could not load sources ({error}).": "بارگذاری منابع ناموفق بود ({error}).",
     "{n|document|documents}": "{n} سند",
     "{n} KB": "{n} کیلوبایت",
