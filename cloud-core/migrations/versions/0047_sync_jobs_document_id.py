@@ -28,7 +28,7 @@ depends_on: Union[str, Sequence[str], None] = None
 BACKFILL_SQL = (
     "UPDATE sync_jobs "
     "SET document_id = (payload->>'document_id')::uuid "
-    "WHERE job_type = 'document_ingestion' "
+    "WHERE job_type::text = 'document_ingestion' "
     "  AND document_id IS NULL "
     "  AND payload ? 'document_id' "
     "  AND EXISTS (SELECT 1 FROM documents d "
