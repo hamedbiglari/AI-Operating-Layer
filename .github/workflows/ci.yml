@@ -36,7 +36,7 @@ jobs:
         run: node visual-harness/check-persian.js
 
       - name: Check translation templates
-        run: node visual-harness/i18n-coverage.js --require screen-knowledge
+        run: node visual-harness/i18n-coverage.js --require screen-knowledge,screen-sources
 
       - name: Check source characters
         run: |

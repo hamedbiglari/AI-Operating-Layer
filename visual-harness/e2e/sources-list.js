@@ -13,6 +13,8 @@
  *           the filter panel with status counts, type and an exact other type,
  *           chips, the sort panel, no matches with Clear filters, status links
  *           (#screen-sources?status=...) in sample and live mode, Persian labels.
+ *   Sample text (7A4): the counter, sizes, titles, the view group and the
+ *           A-Z sort in English and Persian, across language switches.
  * Runs on file:// with GET /sources/overview mocked in the page and every
  * request recorded. Persian expectations are built from code points, so this
  * file stays ASCII and no rendering can reverse them.
@@ -40,6 +42,20 @@ const FA = {
   failedOne: fa(0x646, 0x627, 0x645, 0x648, 0x641, 0x642, 0x20, 0x28, 0x6F1, 0x29),
   placeholder: fa(0x62C, 0x633, 0x62A, 0x200C, 0x648, 0x62C, 0x648, 0x20, 0x628, 0x627, 0x20, 0x639, 0x646, 0x648, 0x627, 0x646, 0x60C, 0x20) + 'DOI' +
     fa(0x60C, 0x20) + 'PMID' + fa(0x20, 0x6CC, 0x627, 0x20, 0x646, 0x634, 0x627, 0x646, 0x6CC, 0x20, 0x648, 0x628, 0x2026),
+  // Sample text (7A4)
+  showingAll7: fa(0x646, 0x645, 0x627, 0x6CC, 0x634, 0x20, 0x647, 0x645, 0x647, 0x654, 0x20, 0x6F7, 0x20, 0x645, 0x646, 0x628, 0x639, 0x2E),
+  showing3of7: fa(0x646, 0x645, 0x627, 0x6CC, 0x634, 0x20, 0x6F3, 0x20, 0x627, 0x632, 0x20, 0x6F7, 0x20, 0x645, 0x646, 0x628, 0x639, 0x2E),
+  noMatch: fa(0x647, 0x6CC, 0x686, 0x20, 0x645, 0x646, 0x628, 0x639, 0x6CC, 0x20, 0x628, 0x627, 0x20, 0x627, 0x6CC, 0x646, 0x20, 0x62C, 0x633, 0x62A, 0x200C, 0x648, 0x62C, 0x648, 0x20, 0x645, 0x637, 0x627, 0x628, 0x642, 0x62A, 0x20, 0x646, 0x62F, 0x627, 0x631, 0x62F, 0x2E),
+  status: fa(0x648, 0x636, 0x639, 0x6CC, 0x62A),
+  showAll: fa(0x646, 0x645, 0x627, 0x6CC, 0x634, 0x20, 0x647, 0x645, 0x647, 0x654, 0x20, 0x645, 0x646, 0x627, 0x628, 0x639),
+  mb28: fa(0x6F2, 0x66B, 0x6F8, 0x20, 0x645, 0x6AF, 0x627, 0x628, 0x627, 0x6CC, 0x62A),
+  displayMode: fa(0x62D, 0x627, 0x644, 0x62A, 0x20, 0x646, 0x645, 0x627, 0x6CC, 0x634),
+  sort: fa(0x645, 0x631, 0x62A, 0x628, 0x200C, 0x633, 0x627, 0x632, 0x6CC),
+  nameAZ: fa(0x646, 0x627, 0x645, 0x20, 0x28, 0x627, 0x644, 0x641, 0x20, 0x62A, 0x627, 0x20, 0x6CC, 0x29),
+  nameZA: fa(0x646, 0x627, 0x645, 0x20, 0x28, 0x6CC, 0x20, 0x62A, 0x627, 0x20, 0x627, 0x644, 0x641, 0x29),
+  sortedAZ: fa(0x645, 0x631, 0x62A, 0x628, 0x200C, 0x634, 0x62F, 0x647, 0x20, 0x628, 0x631, 0x20, 0x627, 0x633, 0x627, 0x633, 0x20, 0x646, 0x627, 0x645, 0x20, 0x28, 0x627, 0x644, 0x641, 0x20, 0x62A, 0x627, 0x20, 0x6CC, 0x29),
+  sortedZA: fa(0x645, 0x631, 0x62A, 0x628, 0x200C, 0x634, 0x62F, 0x647, 0x20, 0x628, 0x631, 0x20, 0x627, 0x633, 0x627, 0x633, 0x20, 0x646, 0x627, 0x645, 0x20, 0x28, 0x6CC, 0x20, 0x62A, 0x627, 0x20, 0x627, 0x644, 0x641, 0x29),
+  sortByNameAsc: fa(0x645, 0x631, 0x62A, 0x628, 0x200C, 0x633, 0x627, 0x632, 0x6CC, 0x20, 0x628, 0x631, 0x20, 0x627, 0x633, 0x627, 0x633, 0x20, 0x646, 0x627, 0x645, 0x60C, 0x20, 0x635, 0x639, 0x648, 0x62F, 0x6CC),
 };
 
 let failures = 0;
@@ -128,6 +144,47 @@ function installMock(items) {
   check('Dashboard: the Succeeded card links to completed sources', await page.$eval('#dash-stats a[data-stat="succeeded"]', (a) => a.getAttribute('href')),
     '#screen-sources?status=completed');
   await page.evaluate(() => { location.hash = '#screen-sources'; }); await settle();
+
+  // Sample text in both languages (7A4): the counter, sizes, titles, the view
+  // group and the A-Z sort, each following a language switch.
+  const counter = () => page.$eval('#src-search-count', (p) => p.textContent);
+  const sizes = () => page.$$eval('#screen-sources [data-sample-mb], #screen-sources [data-sample-kb]', (s) => s.map((x) => x.textContent));
+  const sortState = () => page.evaluate(() => [document.getElementById('src-sort-label').textContent, document.getElementById('src-sort').getAttribute('aria-label')]);
+  const isolated = async () => (await counter() + (await sizes()).join('')).split('').some((c) => c === FSI || c === PDI);
+  const viewGroup = () => page.$eval('#screen-sources .page-actions [role="group"]', (g) => g.getAttribute('aria-label'));
+  check('sample: counter, sizes and the view group in English', [await counter(), await sizes(), await viewGroup()],
+    ['Showing all 7 sources.', ['2.8 MB', '1.1 MB', '640 KB', '88 KB', '14.2 MB'], 'Display mode']);
+  check('sample: titles in <bdi dir=ltr>, DOI and PMID in bdi.identifier', await page.evaluate(() => [
+    document.querySelectorAll('#screen-sources .source-cell__title > bdi[dir="ltr"]').length,
+    [...document.querySelectorAll('#screen-sources .source-cell__meta bdi.identifier')].map((b) => b.textContent).filter((t) => /^(DOI|PMID) /.test(t))]),
+    [6, ['DOI 10.1016/j.jep.2024.118233', 'PMID 39214477']]);
+  await lang('fa');
+  check('fa sample: counter, first size and the view group in Persian', [await counter(), (await sizes())[0], await viewGroup()],
+    [FA.showingAll7, FA.mb28, FA.displayMode]);
+  await page.fill('#src-search', 'zzz'); await settle();
+  check('fa sample: a search with no match', await counter(), FA.noMatch);
+  await page.fill('#src-search', ''); await settle();
+  await page.evaluate(() => { location.hash = '#screen-sources?status=completed'; }); await settle();
+  check('fa sample: a status link: count, Status, the badge label and Show all sources', await counter(),
+    FA.showing3of7 + ' ' + FA.status + ': ' + FA.completed + '. ' + FA.showAll);
+  check('no isolate marks in the counter or sizes (fa)', await isolated(), false);
+  await lang('en');
+  check('back to English: the whole counter, badge label included', await counter(), 'Showing 3 of 7 sources. Status: Completed. Show all sources');
+  check('no isolate marks in the counter or sizes (en)', await isolated(), false);
+  await page.evaluate(() => { location.hash = '#screen-sources'; }); await settle();
+  await lang('fa');
+  await page.click('#src-sort'); await settle();
+  const az = await sortState();
+  await page.click('#src-sort'); await settle();
+  const za = await sortState();
+  await lang('en'); await lang('fa');
+  check('fa sample Sort: A-Z, Z-A, and Z-A again after a switch to English and back', [az, za, await sortState()],
+    [[FA.nameAZ, FA.sortedAZ], [FA.nameZA, FA.sortedZA], [FA.nameZA, FA.sortedZA]]);
+  await page.click('#src-sort'); await settle();
+  const back = await sortState();
+  await lang('en');
+  check('Sort back to the original order: Sort by name, ascending', [back, await sortState()],
+    [[FA.sort, FA.sortByNameAsc], ['Sort', 'Sort by name, ascending']]);
 
   // ---------- First load ----------
   await page.evaluate(installMock, ITEMS);
