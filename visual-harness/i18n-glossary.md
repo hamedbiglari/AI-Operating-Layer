@@ -176,6 +176,48 @@ marks the two sorts that put the largest count first.
 | Abstract only ({n}) | فقط چکیده ({n}) |
 | Reference only ({n}) | فقط ارجاع ({n}) |
 
+## Sources sample rows and counter (Step 7A3c)
+
+Sample-only markup, hidden or replaced in live mode, translated so the screen
+is complete in both modes. The table caption is also shown in live mode. The
+sample counter is written by script every time the screen is shown, so its
+rows are templates; "Status: Completed." is two nodes, the "Status" row above
+and the status badge label, so both follow a language switch.
+
+| English | Persian |
+|---|---|
+| Sort (sample Sort button, before a sort is chosen) | مرتب‌سازی |
+| Everything the knowledge layer is allowed to derive truth from. 248 sources, 7 processing. | همهٔ آنچه لایهٔ دانش مجاز است حقیقت را از آن استخراج کند. ۲۴۸ منبع، ۷ در حال پردازش. |
+| Sources, with processing status and what each has contributed to the knowledge layer (table caption) | منابع، همراه با وضعیت پردازش و آنچه هر یک به لایهٔ دانش افزوده است |
+| Actions (hidden header of the Open column) | اقدامات |
+| Not available (count cell) | در دسترس نیست |
+| Paywalled (source meta line) | دسترسی پولی |
+| Showing 7 of 248. Filtering and sorting run on the server; the browser never holds the whole collection. | نمایش ۷ از ۲۴۸. فیلتر و مرتب‌سازی در سمت سرور انجام می‌شود؛ مرورگر هرگز کل مجموعه را در اختیار ندارد. |
+| List view | نمای فهرستی |
+| Grid view | نمای شبکه‌ای |
+| Sort by name, ascending (sample Sort button name) | مرتب‌سازی بر اساس نام، صعودی |
+| Sort by name (A–Z) (its tooltip) | مرتب‌سازی بر اساس نام (الف تا ی) |
+| Name A–Z (sample Sort button after one click) | نام (الف تا ی) |
+| Name Z–A (after two clicks) | نام (ی تا الف) |
+| Sorted by Name A–Z (its name after one click) | مرتب‌شده بر اساس نام (الف تا ی) |
+| Sorted by Name Z–A (after two clicks) | مرتب‌شده بر اساس نام (ی تا الف) |
+| Showing all {n} sources. (sample search counter) | نمایش همهٔ {n} منبع. |
+| Showing {shown} of {n} sources. | نمایش {shown} از {n} منبع. |
+| No sources match this search. | هیچ منبعی با این جست‌وجو مطابقت ندارد. |
+| No sources with this status. | هیچ منبعی با این وضعیت وجود ندارد. |
+| Show all sources (link in the counter) | نمایش همهٔ منابع |
+
+Reused, no new row: Display mode (the List/Grid toggle group, as on Knowledge),
+User uploaded, Supplier document and Lab report (source types), {n} KB and
+{n} MB (file sizes), Status and the five status badge labels.
+
+Not translated: sample source titles and file names (Toranjebin (Alhagi manna)
+— Scientific Review 2025, the Mannitol paper, the supplier certificate, the
+saffron lab report, the Persian Herbal Medicine Review .docx, and the
+toranjebin.ir page title) are data and stay as written inside `<bdi dir="ltr">`,
+with no FA entry. DOI, PMID, URLs and MIME types stay Latin inside
+`<bdi class="identifier">` (convention 1).
+
 ## Source types
 
 `source_type` is free text from the backend. These are the approved labels;
