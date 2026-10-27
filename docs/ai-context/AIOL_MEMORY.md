@@ -121,11 +121,11 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 62768d7
+- sha (last non-docs commit): 1191934
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ 16bb9d1 (7C-4); in_progress @ 62768d7 (7C-5)
-- last code commit: "feat(processing): job object and stage-events merge (7C-5)" @ 62768d7
+- last_ci: green @ 62768d7 (7C-5); in_progress @ 1191934 (7C end-to-end suite)
+- last code commit: "test(processing): 7C end-to-end suite (A-J)" @ 1191934
 - last feature commit: "feat(processing): job object and stage-events
   merge (7C-5)" @ 62768d7
 - last fix commit: "fix(processing): cast to text in 0047 backfill
@@ -204,6 +204,9 @@ file from scratch (do not diff). Output only the file content.
     reprocess/URL naturally derived.
     11 tests (T-A..T-H, T-J, T-K + pluralization); stash proof: 11 fail
     pre-fix. No migration.
+  - Test suite: test_7c_end_to_end.py @ 1191934 — scenarios A-J cover
+    real flows (upload, reprocess, URL, cross-org, idempotency).
+    10 tests, all pass. Validates 7C-1..7C-5 end-to-end.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -228,9 +231,9 @@ file from scratch (do not diff). Output only the file content.
     «در این نسخهٔ سامانه ردیابی نمی‌شود»);
   * not render "0 seconds" for upload/security (start time not
     captured);
-  * label the failed-reprocess state clearly (e.g. "last attempt
-    failed; data from previous run");
-  * handle job=None (URL jobs, no-job docs) gracefully;
+  * label the failed-reprocess state: "last attempt failed; data from
+    previous run" (proven by test E);
+  * handle job=None (URL jobs, no-job docs) gracefully (proven by C, D);
   * FA + add to --require + Persian browser test.
 Notes:
 - 2 stages (evidence extraction, knowledge contribution) have no backend
@@ -289,6 +292,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   Two debt rows added. 7 tests. CI green.
 - v8 @ 62768d7 — 7C-5 shipped (job object + merge, 11 tests).
   D20/D21/D22/D26 documented.
+- v9 @ 1191934 — 7C end-to-end suite added. 7C-5 complete. Ready for
+  7C-6.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -408,6 +413,10 @@ Session / memory:
   initial uploads (D15), so reprocess and URL jobs naturally stay
   derived. The unique constraint on (sync_job_id, stage_key)
   guarantees one row per stage.
+- Memory commit ordering: when a step's memory (vN) is written before
+  CI completes, §3 records "in_progress". vN+1 updates it to green. Do
+  not amend a docs commit for one line; do not create a standalone
+  docs commit just for a CI status change.
 
 ### 10.3 Reversals and abandoned approaches
 
