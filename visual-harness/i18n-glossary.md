@@ -387,6 +387,24 @@ identifiers and have no rows.
 | This document was not found. (unknown id, or another organization's) | این سند پیدا نشد. |
 | Could not load processing ({error}). | بارگذاری پردازش ناموفق بود ({error}). |
 
+## Processing sample and screen title (Step 7C-6a2)
+
+The screen is labelled "Document processing" (E1): the FA key "Processing"
+is the status «در حال پردازش», so the 7C-6a row "Processing (screen title and
+breadcrumb)" is not used as a key. The sample strings below are the static
+text nodes of the rewritten #screen-processing sample (D32); the job line's
+id and the DOCX label are identifiers inside <bdi> and have no rows. Queued,
+Retrying and Cancelled reuse the Statuses row above.
+
+| English | Persian |
+|---|---|
+| Document processing (screen label: breadcrumb and screen picker; E1) | پردازش سند |
+| · added 2 Sep 2026 (sample subtitle, after the DOCX label) | · افزوده‌شده در ۱۱ شهریور ۱۴۰۵ |
+| 9 tables (sample structure detail) | ۹ جدول |
+| 211 OCR blocks (sample OCR detail) | ۲۱۱ بلوک OCR |
+| Job (sample job line, before the id) | کار |
+| · Succeeded · attempt 1 (sample job line, after the id) | · موفق · تلاش ۱ |
+
 ## Conventions
 
 1. Persian digits (۰–۹) and the Persian separators in all UI text. Identifiers,

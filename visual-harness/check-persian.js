@@ -119,6 +119,8 @@ const KNOWN = [
   '06330627062e062a0647200c0634062f0647 0627062f063906270647062706cc 0646062706450632062f 06450631062d06440647 06460631063306cc062f0647',
   '06280644064806a9 063306270645062706460647 0631062f06cc0627062806cc 06460647062706cc06cc 06a90627063106cc',
   '062f0627062f0647200c06470627',
+  // Processing sample (Step 7C-6a2)
+  '06f206f106f1',
 ].join(' ').split(' ').map((h) => String.fromCodePoint(...h.match(/.{4}/g).map((x) => parseInt(x, 16))));
 
 // Persian comma, semicolon and question mark separate words; they are not part of one.
