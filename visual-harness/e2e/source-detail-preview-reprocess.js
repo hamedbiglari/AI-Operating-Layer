@@ -110,7 +110,7 @@ function installMock(arg) {
   });
   const press = async (i, which) => {
     const b = await page.$$('#screen-detail .src-detail-docs tbody tr:not(.src-doc-text)');
-    const btn = b[i] && await b[i].$('.src-doc-actions button' + (which === 'reprocess' ? ':nth-child(2)' : ':nth-child(1)'));
+    const btn = b[i] && await b[i].$('.src-doc-actions button' + (which === 'reprocess' ? ':nth-of-type(2)' : ':nth-of-type(1)'));
     if (btn) await btn.click();
     await settle();
   };

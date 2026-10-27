@@ -1264,6 +1264,9 @@ a.stat--link.stat--attention:hover { border-color: var(--warning); }
 .stages li[data-state="active"]  { background: var(--processing-tint); color: var(--processing); font-weight: var(--weight-medium); }
 .stages li[data-state="pending"] { color: var(--text-subtle); }
 .stages li[data-state="failed"]  { background: var(--danger-tint); color: var(--danger); font-weight: var(--weight-medium); }
+/* No record of the stage (7C-6c, D30): muted; "not run" after a failed conversion is a warning. */
+.stages li[data-state="not_tracked"] { color: var(--text-subtle); }
+.stages li[data-state="not_tracked"] .stages__detail--warning { color: var(--warning); opacity: 1; }
 .stages__name { flex: 1 1 auto; }
 .stages__detail { font-size: var(--text-sm); color: inherit; opacity: 0.85; }
 
@@ -2895,6 +2898,7 @@ body[data-live="on"] #src-search-count { display: none; }
 body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcrumbs):not(.live-panel):not([data-live-keep]) { display: none !important; }
 /* Source detail: in live mode its own breadcrumbs and header replace the sample ones. */
 body[data-live="on"] #screen-detail > .breadcrumbs, body[data-live="on"] #screen-detail > .page-header { display: none !important; }
+body[data-live="on"] #screen-processing > .breadcrumbs, body[data-live="on"] #screen-processing > .page-header { display: none !important; }
 .src-detail-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
 .src-doc-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 .src-doc-text pre { margin: 0; max-block-size: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -3403,7 +3407,7 @@ button.card { color: inherit; font: inherit; }
 <div class="harness-bar">
   <strong>UX prototype harness</strong>
   <label>Screen
-    <select id="pick-screen"><option value="screen-dashboard">Dashboard</option><option value="screen-sources">Sources</option><option value="screen-add">Add source</option><option value="screen-processing">Processing</option><option value="screen-detail">Source detail</option><option value="screen-provenance">Provenance</option><option value="screen-knowledge">Knowledge</option><option value="screen-knowledge-taranjebin">ترنجبین</option><option value="screen-knowledge-saffron">زعفران</option><option value="screen-knowledge-garlic">سیر</option><option value="screen-knowledge-thyme">آویشن</option><option value="screen-gap">Knowledge gap</option><option value="screen-visibility">AI Visibility</option><option value="screen-visibility-detail">Visibility detail</option><option value="screen-ai-executions">AI executions (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-ai-catalog">AI Catalog (live)</option><option value="screen-memory">Memory Center (live)</option><option value="screen-matrix">Categories &amp; matrix (live)</option><option value="screen-coverage">Coverage audit (live)</option><option value="screen-publications">Publications &amp; citations (live)</option><option value="screen-site-blog">Website: blog (live)</option><option value="screen-site-sections">Website: page sections (live)</option><option value="screen-site-subscribers">Website: subscribers (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-analytics">Analytics & demand</option><option value="screen-access">AI access</option><option value="screen-chat-settings">Chat settings (live)</option><option value="screen-operations">Connection & logs</option><option value="screen-states">Edge states</option><option value="screen-settings">Settings</option><option value="screen-chat">Command workspace (live)</option><option value="screen-products">Products</option><option value="screen-product-taranjebin-grade-a">ترنجبین درجه یک — ۱۰۰ گرم</option><option value="screen-product-saffron-negin-5g">زعفران نگین — ۵ گرم</option><option value="screen-product-garlic-oil-30ml">روغن سیر — ۳۰ میلی‌لیتر</option><option value="screen-admin-overview">Admin — overview</option><option value="screen-admin-users">Admin — users</option><option value="screen-admin-billing">Admin — billing &amp; wallets</option><option value="screen-statistics">Statistics</option><option value="screen-payment">Payment</option><option value="screen-transactions">Transactions</option><option value="screen-traffic">Traffic &amp; content</option><option value="screen-research">Research</option><option value="screen-admin-user-u1">Admin — Hamed Biglari</option><option value="screen-admin-user-u2">Admin — <span lang="fa" dir="rtl">مریم سلیمانی</span></option><option value="screen-admin-user-u3">Admin — Reza Kiani</option><option value="screen-admin-user-u4">Admin — Sahar Ahmadi</option><option value="screen-admin-user-u5">Admin — Unknown applicant</option><option value="screen-login">Login</option><option value="screen-signup">Sign up</option><option value="screen-login-code">Login — enter code</option></select>
+    <select id="pick-screen"><option value="screen-dashboard">Dashboard</option><option value="screen-sources">Sources</option><option value="screen-add">Add source</option><option value="screen-processing">Document processing</option><option value="screen-detail">Source detail</option><option value="screen-provenance">Provenance</option><option value="screen-knowledge">Knowledge</option><option value="screen-knowledge-taranjebin">ترنجبین</option><option value="screen-knowledge-saffron">زعفران</option><option value="screen-knowledge-garlic">سیر</option><option value="screen-knowledge-thyme">آویشن</option><option value="screen-gap">Knowledge gap</option><option value="screen-visibility">AI Visibility</option><option value="screen-visibility-detail">Visibility detail</option><option value="screen-ai-executions">AI executions (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-ai-catalog">AI Catalog (live)</option><option value="screen-memory">Memory Center (live)</option><option value="screen-matrix">Categories &amp; matrix (live)</option><option value="screen-coverage">Coverage audit (live)</option><option value="screen-publications">Publications &amp; citations (live)</option><option value="screen-site-blog">Website: blog (live)</option><option value="screen-site-sections">Website: page sections (live)</option><option value="screen-site-subscribers">Website: subscribers (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-analytics">Analytics & demand</option><option value="screen-access">AI access</option><option value="screen-chat-settings">Chat settings (live)</option><option value="screen-operations">Connection & logs</option><option value="screen-states">Edge states</option><option value="screen-settings">Settings</option><option value="screen-chat">Command workspace (live)</option><option value="screen-products">Products</option><option value="screen-product-taranjebin-grade-a">ترنجبین درجه یک — ۱۰۰ گرم</option><option value="screen-product-saffron-negin-5g">زعفران نگین — ۵ گرم</option><option value="screen-product-garlic-oil-30ml">روغن سیر — ۳۰ میلی‌لیتر</option><option value="screen-admin-overview">Admin — overview</option><option value="screen-admin-users">Admin — users</option><option value="screen-admin-billing">Admin — billing &amp; wallets</option><option value="screen-statistics">Statistics</option><option value="screen-payment">Payment</option><option value="screen-transactions">Transactions</option><option value="screen-traffic">Traffic &amp; content</option><option value="screen-research">Research</option><option value="screen-admin-user-u1">Admin — Hamed Biglari</option><option value="screen-admin-user-u2">Admin — <span lang="fa" dir="rtl">مریم سلیمانی</span></option><option value="screen-admin-user-u3">Admin — Reza Kiani</option><option value="screen-admin-user-u4">Admin — Sahar Ahmadi</option><option value="screen-admin-user-u5">Admin — Unknown applicant</option><option value="screen-login">Login</option><option value="screen-signup">Sign up</option><option value="screen-login-code">Login — enter code</option></select>
   </label>
   <label>Language
     <select id="pick-lang"><option value="en">English (LTR)</option><option value="fa">فارسی (RTL)</option></select>
@@ -3904,26 +3908,26 @@ button.card { color: inherit; font: inherit; }
 </section>
 
 <section class="screen" id="screen-processing" aria-labelledby="h-proc">
-  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-sources">Sources &amp; Documents</a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span>Processing</span></nav>
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-sources">Sources &amp; Documents</a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span>Document processing</span></nav>
   <div class="page-header">
     <div>
-      <h1 id="h-proc"><span lang="fa" dir="rtl">مروری بر طب سنتی ایران — ترنجبین و کاربردهای گوارشی</span></h1><div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Persian Traditional Medicine Review · DOCX · added 4 minutes ago</p></div></div>
+      <h1 id="h-proc"><span lang="fa" dir="rtl">مروری بر طب سنتی ایران — ترنجبین و کاربردهای گوارشی</span></h1><div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p><bdi class="identifier">DOCX</bdi> · added 2 Sep 2026</p></div></div>
     </div>
-    <div class="page-actions"><span class="badge badge--processing"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg><span>Evidence extraction</span></span></div>
+    <div class="page-actions"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Succeeded</span></span></div>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px, 100%), 1fr));gap:var(--space-4)">
     <div class="card">
       <h2 class="card__title">Pipeline</h2>
       <ol class="stages">
-        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Upload</span><span class="stages__detail">11.2 MB retained</span></li>
-        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Security validation</span><span class="stages__detail">Type allowed</span></li>
-        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">MarkItDown conversion</span><span class="stages__detail">0.1.7</span></li>
+        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Upload</span></li>
+        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Security validation</span></li>
+        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Conversion</span></li>
         <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Structure detection</span><span class="stages__detail">9 tables</span></li>
-        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">OCR</span><span class="stages__detail">18 pages, <span lang="fa">فارسی</span>+eng</span></li>
-        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Semantic chunking</span><span class="stages__detail">342 chunks</span></li>
-        <li data-state="active"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6" opacity=".45"/></svg></span><span class="stages__name">Evidence extraction</span><span class="stages__detail">Stage in progress</span></li>
-        <li data-state="pending"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 1.8"/></svg></span><span class="stages__name">Knowledge contribution</span><span class="stages__detail">Not started</span></li>
+        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name"><bdi class="identifier">OCR</bdi></span><span class="stages__detail">211 OCR blocks</span></li>
+        <li data-state="done"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg></span><span class="stages__name">Semantic chunking</span></li>
+        <li data-state="not_tracked"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 1.8"/></svg></span><span class="stages__name">Evidence extraction</span><span class="stages__detail">Not tracked in this backend version</span></li>
+        <li data-state="not_tracked"><span class="stages__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 1.8"/></svg></span><span class="stages__name">Knowledge contribution</span><span class="stages__detail">Not tracked in this backend version</span></li>
       </ol>
       <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-bottom:0">
         No percentage is shown, because the worker does not report one. The stage is the truth available.
@@ -3938,13 +3942,12 @@ button.card { color: inherit; font: inherit; }
         <dt>Images detected</dt><dd class="num">12</dd>
         <dt>OCR blocks</dt><dd class="num">211</dd>
         <dt>Chunks created</dt><dd class="num">342</dd>
-        <dt>Claims extracted</dt><dd><span class="not-available">Stage not reached</span></dd>
-        <dt>Evidence candidates</dt><dd><span class="not-available">Stage not reached</span></dd>
+        <dt>Claims extracted</dt><dd class="num">14</dd>
+        <dt>Evidence candidates</dt><dd class="num">38</dd>
       </dl>
       <div class="callout" style="margin-top:var(--space-4)"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h16v12H4zM8.5 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5v2M4 12.5h16"/></svg></span>
         <div>
-          <p>Job <bdi class="identifier">9f2c41ae-6b0d-4d71-9a18-2c5e0f3b77d4</bdi> · queued 4 min ago · attempt 1</p>
-          <p><a href="#screen-processing">View job</a></p>
+          <p><span>Job</span> <bdi class="identifier">9f2c41ae-6b0d-4d71-9a18-2c5e0f3b77d4</bdi> <span>· Succeeded · attempt 1</span></p>
         </div>
       </div>
     </div>
@@ -9549,9 +9552,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-knowledge': { kind: 'knowledge', title: 'Knowledge objects (Cloud Core)', compact: true },
     'screen-sources': { kind: 'sources', title: 'Sources (Cloud Core)', compact: true },
     'screen-detail': { kind: 'detail', title: 'Source detail (Cloud Core)', compact: true },
-    'screen-processing': { kind: 'table', title: 'Processing jobs (Cloud Core)', endpoint: '/sync-jobs',
-      cols: [['Job', 'job_type'], ['Status', 'status', 'badge'], ['Attempts', 'attempts'], ['Error', 'error_message'], ['Created', 'created_at', 'date']],
-      filter: ['status', ['', 'queued', 'running', 'retrying', 'succeeded', 'failed', 'dead_letter', 'cancelled']] },
+    'screen-processing': { kind: 'processing', title: 'Document processing (Cloud Core)', compact: true },
     'screen-visibility': { kind: 'table', title: 'AI visibility projects (Cloud Core)', endpoint: '/visibility/projects',
       cols: [['Project', 'name'], ['Platforms', 'platforms', 'list'], ['Target brand', 'target_brand'], ['Created', 'created_at', 'date']] },
     'screen-products': { kind: 'table', title: 'Products (Cloud Core)', endpoint: '/products',
@@ -10155,7 +10156,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     completed: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4',
     processing: 'M12 3a9 9 0 1 0 9 9M21 3v6h-6',
     warning: 'M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
-    failed: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.8 9.2 9.2 14.8M9.2 9.2l5.6 5.6'
+    failed: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.8 9.2 9.2 14.8M9.2 9.2l5.6 5.6',
+    queued: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 1.8'
   };
   // [header, data-label, cell class]; the last header is for screen readers only.
   var SOURCE_COLS = [['Source', 'Source'], ['Status', 'Status'], ['Knowledge', 'Knowledge', 'num'], ['Claims', 'Claims', 'num'],
@@ -10182,6 +10184,21 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return b;
   }
   function identifier(text) { var b = el('bdi', 'identifier', text); b.dir = 'ltr'; return b; }
+  // A message with at most one action; returns the function that sets it.
+  // Shared by Source detail and Document processing.
+  function messageBox(parent) {
+    var box = parent.appendChild(el('div', 'know-status')), msg = box.appendChild(el('p')), fn = null;
+    msg.setAttribute('role', 'status');
+    var line = msg.appendChild(el('span')), act = box.appendChild(el('button', 'btn'));
+    act.type = 'button'; act.hidden = true;
+    act.addEventListener('click', function () { if (fn) fn(); });
+    return function (kind, text, args, action, then) {
+      box.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
+      box.dataset.state = kind || '';
+      AIOL_I18N.set(line, text || '', args);
+      AIOL_I18N.set(act, action || ''); act.hidden = !action; fn = then || null;
+    };
+  }
   function sourcesList(panel) {
     // Wired once; a later connect only reloads.
     if (panel.__sourcesLoad) return panel.__sourcesLoad();
@@ -10472,20 +10489,6 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     sizeSel.addEventListener('change', function () { dst.limit = Number(sizeSel.value); dst.offset = 0; loadDocs(); });
     panel.insertAdjacentElement('afterend', body);
 
-    // A message with at most one action; returns the function that sets it.
-    function messageBox(parent) {
-      var box = parent.appendChild(el('div', 'know-status')), msg = box.appendChild(el('p')), fn = null;
-      msg.setAttribute('role', 'status');
-      var line = msg.appendChild(el('span')), act = box.appendChild(el('button', 'btn'));
-      act.type = 'button'; act.hidden = true;
-      act.addEventListener('click', function () { if (fn) fn(); });
-      return function (kind, text, args, action, then) {
-        box.className = 'know-status' + (kind ? ' callout' : '') + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
-        box.dataset.state = kind || '';
-        AIOL_I18N.set(line, text || '', args);
-        AIOL_I18N.set(act, action || ''); act.hidden = !action; fn = then || null;
-      };
-    }
     // .page-header, the facts grid and the cards set display, so [hidden] would not hide them.
     // With no source the header stays, holding the generic heading, so the section keeps a name.
     function shown(on) {
@@ -10563,6 +10566,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       });
       return btn;
     }
+    // Opens the document's processing screen (7C-6c). A link, since it navigates; like
+    // rowButton, the visible label is the same on every row and the spoken name carries the title.
+    function processingLink(d) {
+      var a = el('a', 'btn btn--quiet'), shown = a.appendChild(el('span')), spoken = a.appendChild(el('span', 'visually-hidden'));
+      a.href = '#screen-processing?id=' + encodeURIComponent(d.id); shown.setAttribute('aria-hidden', 'true');
+      AIOL_I18N.set(shown, 'Processing details'); AIOL_I18N.set(spoken, 'Processing details of {name}', { name: d.title });
+      return a;
+    }
     function reprocessButton(d) {
       var btn = rowButton('Reprocess', 'Reprocess {name}', d.title);
       btn.addEventListener('click', function () {
@@ -10585,6 +10596,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       c[0].appendChild(text(d.title));
       var actions = c[0].appendChild(el('div', 'src-doc-actions'));
       actions.appendChild(textToggle(d, tr));
+      actions.appendChild(processingLink(d));
       if (EDIT_ROLES.indexOf(st.role) !== -1) actions.appendChild(reprocessButton(d));
       c[1].appendChild(badge(d.extraction_status, EXTRACTION_STATUS));
       if (conv) c[2].appendChild(badge(conv.status, CONVERSION_STATUS));
@@ -10661,6 +10673,134 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     // The role decides whether rows offer Reprocess, so it is read before they are drawn.
     panel.__detailLoad = function () { return role().then(load); };
     return panel.__detailLoad();
+  }
+  // Document processing (7C-6c): one GET /documents/{id}/processing per document. The backend
+  // already prefers stage rows over derived stages (7C-5); this only renders what it says.
+  var JOB_STATUS = { queued: ['Queued', 'badge--processing', 'processing'], running: ['Running', 'badge--processing', 'processing'],
+    retrying: ['Retrying', 'badge--processing', 'processing'], succeeded: ['Succeeded', 'badge--success', 'completed'],
+    failed: ['Failed', 'badge--danger', 'failed'], dead_letter: ['Dead letter', 'badge--danger', 'failed'],
+    cancelled: ['Cancelled', 'badge--unknown', 'warning'] };
+  var STAGE_LABELS = { upload: 'Upload', security: 'Security validation', conversion: 'Conversion', structure: 'Structure detection',
+    chunking: 'Semantic chunking', evidence: 'Evidence extraction', knowledge: 'Knowledge contribution' };
+  var STAGE_ICONS = { done: 'completed', active: 'processing', failed: 'failed', pending: 'queued', not_tracked: 'queued' };
+  // D27: the backend sends mime_type as stored; anything unlisted is shown as sent.
+  var MIME_LABELS = { 'application/pdf': 'PDF', 'text/plain': 'TXT',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX' };
+  var METRICS = [['pages', 'Pages'], ['tables', 'Tables detected'], ['images', 'Images detected'], ['ocr_blocks', 'OCR blocks'],
+    ['chunks', 'Chunks created'], ['claims', 'Claims extracted'], ['evidence', 'Evidence candidates']];
+  function processingScreen(panel) {
+    // Wired once; a later connect only reloads.
+    if (panel.__procLoad) return panel.__procLoad();
+    var screen = document.getElementById('screen-processing');
+    var st = { seq: 0, job: null };
+    // In live mode these replace the sample breadcrumbs and header (CSS).
+    var top = el('div'); top.setAttribute('data-live-keep', '');
+    top.appendChild(screen.querySelector(':scope > .breadcrumbs').cloneNode(true));
+    var head = top.appendChild(el('div', 'page-header')), titles = head.appendChild(el('div'));
+    var h1 = titles.appendChild(el('h1')); h1.id = 'h-proc-live';
+    var meta = titles.appendChild(el('p', 'proc-meta')), actions = head.appendChild(el('div', 'page-actions'));
+    screen.insertBefore(top, screen.firstChild);
+    screen.setAttribute('aria-labelledby', 'h-proc-live');
+    var body = el('div'); body.setAttribute('data-live-keep', '');
+    var status = messageBox(body);
+    // E6: the last attempt failed while an older conversion is still current.
+    var banner = body.appendChild(el('div', 'callout callout--warning proc-banner')); banner.setAttribute('role', 'note');
+    banner.appendChild(el('span', 'callout__icon')).appendChild(icon('warning'));
+    AIOL_I18N.set(banner.appendChild(el('div')).appendChild(el('p')), 'Last attempt failed; data from previous run');
+    var grid = body.appendChild(el('div', 'proc-grid'));
+    grid.style.cssText = 'grid-template-columns:repeat(auto-fit,minmax(min(300px, 100%), 1fr));gap:var(--space-4)';
+    var pipe = grid.appendChild(el('div', 'card'));
+    var pipeTitle = pipe.appendChild(el('h2', 'card__title')); AIOL_I18N.set(pipeTitle, 'Pipeline');
+    var stages = pipe.appendChild(el('ol', 'stages')), note = pipe.appendChild(el('p'));
+    note.style.cssText = 'color:var(--text-subtle);font-size:var(--text-sm);margin-bottom:0';
+    AIOL_I18N.set(note, 'No percentage is shown, because the worker does not report one. The stage is the truth available.');
+    var found = grid.appendChild(el('div', 'card'));
+    var foundTitle = found.appendChild(el('h2', 'card__title')); AIOL_I18N.set(foundTitle, 'What has been found so far');
+    var kv = found.appendChild(el('dl', 'kv'));
+    var jobBox = found.appendChild(el('div', 'callout proc-job')), jobLine = jobBox.appendChild(el('div')).appendChild(el('p'));
+    jobBox.style.marginTop = 'var(--space-4)';
+    panel.insertAdjacentElement('afterend', body);
+
+    // .page-header, .callout and the grid set display, so [hidden] would not hide them.
+    function show(node, on, display) { node.style.display = on ? display || '' : 'none'; }
+    function shown(on) {
+      show(grid, on, 'grid'); show(banner, false);
+      if (!on) { meta.textContent = ''; actions.textContent = ''; h1.textContent = ''; h1.appendChild(AIOL_I18N.set(el('span'), 'Document processing')); }
+    }
+    // A backend detail rebuilt from the glossary; anything else is an error message, shown as sent (E4).
+    function detail(s) {
+      var d = s.detail, span = el('span', 'stages__detail'), m;
+      if (d === null || d === undefined) return s.state === 'not_tracked' ? AIOL_I18N.set(span, 'Not tracked in this backend version') : null;
+      if ((m = /^(\d+) tables?$/.exec(d))) return AIOL_I18N.set(span, '{n|table|tables}', { n: Number(m[1]) });
+      if ((m = /^(\d+) OCR blocks?$/.exec(d))) return AIOL_I18N.set(span, '{n|OCR block|OCR blocks}', { n: Number(m[1]) });
+      if (d === 'not run (conversion failed)') { span.className += ' stages__detail--warning'; return AIOL_I18N.set(span, 'Not run (conversion failed)'); }
+      if (d === 'no usable text') return AIOL_I18N.set(span, 'Empty');
+      span.appendChild(el('bdi', null, d)).dir = 'ltr';
+      return span;
+    }
+    function stageRow(s) {
+      var li = el('li'); li.dataset.state = s.state;
+      li.appendChild(el('span', 'stages__icon')).appendChild(icon(STAGE_ICONS[s.state] || 'queued'));
+      var name = li.appendChild(el('span', 'stages__name'));
+      // OCR is a Latin acronym, never translated (7C-6a); an identity FA entry would loop the Persian observer.
+      if (s.key === 'ocr') name.appendChild(identifier('OCR'));
+      else if (STAGE_LABELS[s.key]) AIOL_I18N.set(name, STAGE_LABELS[s.key]); else name.appendChild(identifier(s.key));
+      var d = detail(s); if (d) li.appendChild(d);
+      return li;
+    }
+    // The status is a word inside the template, so it is translated here and again on a language switch.
+    function jobText() {
+      var j = st.job;
+      jobLine.style.color = j ? '' : 'var(--text-subtle)';
+      if (!j) { AIOL_I18N.set(jobLine, 'No job record for this document.'); return; }
+      var label = JOB_STATUS[j.status] ? AIOL_I18N.format(JOB_STATUS[j.status][0], null, AIOL_I18N.lang()) : j.status;
+      AIOL_I18N.set(jobLine, 'Job {id} · {status} · attempt {n}', { id: j.id, status: label, n: j.attempts });
+    }
+    new MutationObserver(function () { if (st.seq) jobText(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    function render(p) {
+      h1.textContent = ''; h1.appendChild(el('bdi', null, p.document_title)).dir = 'auto';
+      var format = MIME_LABELS[p.mime_type] || p.mime_type;
+      if (p.job) AIOL_I18N.set(meta, '{format} · added {date}', { format: format, date: { date: p.job.created_at, style: 'date' } });
+      else { meta.textContent = ''; meta.appendChild(identifier(format)); }
+      actions.textContent = ''; if (p.job) actions.appendChild(badge(p.job.status, JOB_STATUS));
+      stages.textContent = ''; p.stages.forEach(function (s) { stages.appendChild(stageRow(s)); });
+      kv.textContent = '';
+      METRICS.forEach(function (m) {
+        var v = p.metrics[m[0]];
+        AIOL_I18N.set(kv.appendChild(el('dt')), m[1]);
+        var dd = kv.appendChild(el('dd'));
+        if (v === null || v === undefined) { var na = dd.appendChild(el('span', 'not-available')); AIOL_I18N.set(na, 'Stage not reached'); }
+        else { dd.className = 'num'; AIOL_I18N.set(dd, '{n}', { n: v }); }
+      });
+      st.job = p.job; jobText();
+      shown(true);
+      show(banner, !!p.job && p.job.status === 'failed' && p.metrics.pages !== null);
+    }
+    function hashId() {
+      var h = location.hash;
+      return h.indexOf('#screen-processing?') === 0 ? new URLSearchParams(h.slice(h.indexOf('?') + 1)).get('id') : null;
+    }
+    function load() {
+      var seq = ++st.seq, id = hashId();
+      shown(false);
+      if (!id) { status('empty', 'No document selected. Open one from Source detail.'); return Promise.resolve(null); }
+      status('loading', 'Loading…');
+      return api('/documents/' + encodeURIComponent(id) + '/processing').then(function (p) {
+        if (seq !== st.seq) return null;        // a newer request owns the screen
+        state(panel, 'ready'); status(''); render(p); return p;
+      }).catch(function (e) {
+        if (seq !== st.seq) return null;
+        state(panel, 'ready');
+        // An unknown id, another organization's (404) or a malformed one (422): one sentence.
+        if (e.status === 404 || e.status === 422) status('empty', 'This document was not found.');
+        else if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else status('error', 'Could not load processing ({error}).', { error: e.message }, 'Retry', load);
+        return null;
+      });
+    }
+    document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-processing' && LIVE) load(); });
+    panel.__procLoad = load;
+    return load();
   }
   function dashboardCards(panel) {
     var grid = document.getElementById('dash-stats');
@@ -10768,6 +10908,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (cfg.kind === 'cards') dashboardCards(panel); else if (cfg.kind === 'knowledge') knowledgeList(panel);
       else if (cfg.kind === 'sources') sourcesList(panel);
       else if (cfg.kind === 'detail') sourceDetail(panel);
+      else if (cfg.kind === 'processing') processingScreen(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
@@ -13285,6 +13426,48 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Needs review": "نیازمند بررسی",
     "{n|gap|gaps}, evidence needs review": "{n} شکاف، شواهد نیازمند بررسی",
     "Research again for {name}": "اجرای مجدد پژوهش برای {name}",
+    // Document processing (Step 7C-6)
+    "Document processing": "پردازش سند",
+    "Processing details": "جزئیات پردازش",
+    "Processing details of {name}": "جزئیات پردازش {name}",
+    "{format} · added {date}": "{format} · افزوده‌شده در {date}",
+    "Pipeline": "مراحل پردازش",
+    "Upload": "بارگذاری",
+    "Security validation": "اعتبارسنجی امنیتی",
+    "Structure detection": "تشخیص ساختار",
+    "Semantic chunking": "قطعه‌بندی معنایی",
+    "Evidence extraction": "استخراج شواهد",
+    "Knowledge contribution": "افزودن به لایهٔ دانش",
+    "What has been found so far": "آنچه تاکنون یافت شده است",
+    "Pages": "صفحه‌ها",
+    "Tables detected": "جدول‌های شناسایی‌شده",
+    "Images detected": "تصویرهای شناسایی‌شده",
+    "OCR blocks": "بلوک‌های OCR",
+    "Chunks created": "قطعه‌های ساخته‌شده",
+    "Claims extracted": "ادعاهای استخراج‌شده",
+    "Evidence candidates": "شواهد نامزد",
+    "Stage not reached": "هنوز به این مرحله نرسیده است",
+    "Not run (conversion failed)": "اجرا نشد (تبدیل سند ناموفق بود)",
+    "Not tracked in this backend version": "در این نسخهٔ سامانه ردیابی نمی‌شود",
+    "Running": "در حال اجرا",
+    "Dead letter": "ناموفق نهایی",
+    "Job {id} · {status} · attempt {n}": "کار {id} · {status} · تلاش {n}",
+    "No job record for this document.": "هیچ کاری برای این سند ثبت نشده است.",
+    "Last attempt failed; data from previous run": "آخرین تلاش ناموفق بود؛ داده‌ها از اجرای قبلی است",
+    "No document selected. Open one from Source detail.": "هیچ سندی انتخاب نشده است. یکی را از «جزئیات منبع» باز کنید.",
+    "This document was not found.": "این سند پیدا نشد.",
+    "Could not load processing ({error}).": "بارگذاری پردازش ناموفق بود ({error}).",
+    "· added 2 Sep 2026": "· افزوده‌شده در ۱۱ شهریور ۱۴۰۵",
+    "9 tables": "۹ جدول",
+    "211 OCR blocks": "۲۱۱ بلوک OCR",
+    "Job": "کار",
+    "· Succeeded · attempt 1": "· موفق · تلاش ۱",
+    "No percentage is shown, because the worker does not report one. The stage is the truth available.": "درصد پیشرفت نمایش داده نمی‌شود، چون پردازشگر آن را گزارش نمی‌کند. مرحلهٔ فعلی تنها اطلاع موجود است.",
+    "{n|table|tables}": "{n} جدول",
+    "{n|OCR block|OCR blocks}": "{n} بلوک OCR",
+    "Queued": "در صف",
+    "Retrying": "تلاش دوباره",
+    "Cancelled": "لغوشده",
     "Evidence": "شواهد",
     "Approved": "تأییدشده"
   };
