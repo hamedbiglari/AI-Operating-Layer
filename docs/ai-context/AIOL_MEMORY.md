@@ -57,7 +57,7 @@ file from scratch (do not diff). Output only the file content.
 - Repo: C:\Users\Hamed\Downloads\1- AI-Operating-Layer\graphify-src\02-core-tool-full-repo
 - Branch: v5-implementation
 - Stack: FastAPI backend (cloud-core/app) + single-page HTML harness
-  (visual-harness/index.html, 13,054 lines, edited directly)
+  (visual-harness/index.html, 13,377 lines, edited directly)
 - Goal: wire 52 mock screens to real backend, translate to Persian,
   lock translation coverage in CI.
 - Language: Persian for explanation, English for code/commits.
@@ -121,11 +121,15 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): a9839dd
+- sha (last non-docs commit): b6d98f4
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ 757128d (7B2c-1); @ a9839dd in_progress at time of v5
-- last code commit: "feat(sources): close source detail sample and CI gate (7B2c)" @ a9839dd
+- last_ci: green @ b6d98f4 (7C-3)
+- last code commit: "feat(processing): add sync_job_stages table (7C-3)" @ b6d98f4
+- last feature commit: "feat(processing): add sync_jobs.document_id
+  with backfill (7C-2)" @ b13d7cc
+- last fix commit: "fix(processing): cast to text in 0047 backfill
+  (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
 ## 4. Completed steps (compact)
 
@@ -161,60 +165,129 @@ file from scratch (do not diff). Output only the file content.
   - 7B2c-2 @ a9839dd — i18n-coverage.js skips [data-debt-hidden] (D6);
     6 sample debt items hidden; 5 identifiers wrapped; empty-state
     heading "Source detail"; screen-detail added to the CI --require.
+- Step 7C — Processing (in progress, see §5):
+  - 7C-1 @ 522c7f3 — GET /documents/{id}/processing.
+  - 7C-2 @ b13d7cc — sync_jobs.document_id column + backfill with EXISTS
+    guard + org-match. Migration 0047.
+  - fix 0047 @ f32a80a — WHERE job_type::text = 'document_ingestion'
+    because 0014 adds the enum value in the same transaction and
+    PostgreSQL raises UnsafeNewEnumValueUsage.
+  - 7C-3 @ b6d98f4 — sync_job_stages table + SyncJobStageKey /
+    SyncJobStageState enums + organization_id (Decision A). Migration 0048.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
   change on #pick-lang). V5-source-detail-empty-a11y-name CLOSED
   (Step 7B2c-2). 7B source-detail debt: 11 rows from 7B2b-1 plus
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
+- Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
   screen-knowledge,screen-sources,screen-detail and 8 browser suites.
 
 ## 5. In progress — Step 7C (Processing)
 
-Brief (from §10.5; not yet investigated):
-- A 4-stage pipeline view per document — Upload, Conversion, OCR,
-  Chunking — plus "Evidence found: N".
-- Needs a backend endpoint first: GET /documents/{id}/ingestion-jobs
-  does not exist today (GET /documents/ingestion-jobs/{job_id} and
-  POST .../retry do). Backend commit before frontend (rule 2); the list
-  must not need a call per row (rule 17).
-- Glossary rows for the screen go in their own docs(i18n) commit before
-  any FA is written (the 7B2a / 7B2c-1 pattern).
-Status: not started. The next action is an investigation, no code.
+- 7C-1 ✓ @ 522c7f3
+- 7C-2 ✓ @ b13d7cc (fix @ f32a80a)
+- 7C-3 ✓ @ b6d98f4
+- 7C-4 (next): orchestrator wiring with feature flag
+  AIOL_EMIT_STAGE_EVENTS (default false); MarkItDown provider only;
+  integration test proving stage rows written when flag=true and none
+  when flag=false.
+- 7C-5: extend /documents/{id}/processing with job object (job_id,
+  status, attempts from SyncJob.document_id) and prefer stage-events
+  when present, derive otherwise.
+- 7C-6: frontend #screen-processing live-wired, 8-stage pipeline +
+  metrics card + "Not tracked" for evidence/knowledge, FA + add to
+  --require + Persian browser test.
+
+Notes:
+- 2 stages (evidence extraction, knowledge contribution) have no backend
+  signal; 7C-6 renders them as "Not tracked in this backend version"
+  («در این نسخهٔ سامانه ردیابی نمی‌شود»; KNOWN word «ردیابی»).
+- 7C-6 must rebuild the endpoint's English `detail` field from metrics
+  with FA templates.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 7C investigation prompt.
+State in sync → user says "go" → send the 7C-4 prompt below.
 
-Prompt to Claude Code (7C — investigation, no code):
+Prompt to Claude Code (7C-4 — orchestrator wiring + feature flag):
 
-    Step 7C investigation — Processing screen. Do NOT write code. Do NOT
-    touch any file.
+    Step 7C-4 — orchestrator wiring with feature flag. This is the
+    riskiest commit in 7C: it touches the ingestion path that
+    everything else depends on.
 
-    Answer with exact file:line references and short quotes:
-    1. #screen-processing today: what the sample markup shows (stages,
-       labels, counts), and what its live registry entry does now
-       ('screen-processing' in SCREENS). List the strings
-       i18n-coverage.js --screen screen-processing reports.
-    2. Backend: what exists for ingestion jobs (GET
-       /documents/ingestion-jobs/{job_id}, POST .../retry, the
-       DocumentIngestionJobStatus schema, the job / conversion / chunk
-       models). Which of Upload, Conversion, OCR and Chunking can be
-       derived per document from existing tables, and from which columns?
-    3. "Evidence found: N": which table and column give it per document
-       or per job, and can it come from the same query?
-    4. Rule 17: the minimal backend endpoint shape (path, params,
-       response) so the Processing view needs one call per page, not one
-       per row. Cost estimate, tests needed, migration yes/no.
-    5. Commit structure: backend commit(s), glossary docs commit,
-       frontend commit(s), in order.
+    Scope (locked per §5):
+    - Feature flag AIOL_EMIT_STAGE_EVENTS (env var, default false).
+      When off, zero stage rows written; ingestion behaves exactly
+      as before.
+    - When on: emit stage events from the ingestion path for stages
+      that have real signals.
+    - Start with MarkItDown converter only (other converters later).
+    - Integration test proving flag=false → no stage rows (guard),
+      flag=true → stage rows exist after full ingestion.
 
-    Where a decision is needed, list it under "Decision needed"; do not
-    pick for the user.
+    Part A — investigation (report first, no code):
+    Read the ingestion path and answer with file:line quotes:
+    1. Where does orchestrator.run() (or equivalent) execute each
+       stage: upload, security validation, conversion (MarkItDown),
+       structure analysis, OCR?
+    2. Which stages share a single signal (like upload+security, or
+       conversion+structure+OCR per 7C-3's Part 1)?
+    3. Where should each INSERT/UPDATE sync_job_stages go? One line
+       per stage (before / after).
+    4. Does chunking happen in the same run or in a separate POST
+       /documents/{id}/process? If separate, is it in 7C-4 or
+       7C-4b?
+    5. Can stage events be emitted atomically with the transaction
+       that writes SyncJob? Or does partial state need to survive
+       a mid-run failure?
+    6. Where does the SyncJob id live in the ingestion flow? It is
+       needed as sync_job_id FK.
+    Report Part A before writing any code.
 
-Case A — anchor mismatch (STATE DRIFT): stop, report differences, wait.
-Case B — user says "go": send the 7C prompt above.
+    Part B — after my OK on Part A, implement:
+    - Read flag from env, default false.
+    - Helper checks flag; if false, no-op (only the check is added).
+    - Stage start: INSERT row state=active, started_at=now.
+    - Stage success: UPDATE state=done, completed_at=now, detail
+      (e.g. "3 tables").
+    - Stage fail: UPDATE state=failed, detail=error message.
+    - Stages with no signal (evidence, knowledge): NO emission;
+      leave for derived fallback in 7C-5.
+
+    Tests (rule 5, fail-before / pass-after via stash):
+    1. flag=false: full ingestion, zero sync_job_stages rows (guard).
+    2. flag=true, happy path: rows exist for upload, security,
+       conversion, structure, ocr; all done.
+    3. flag=true, conversion fails: conversion state=failed; earlier
+       stages done.
+    4. Multiple jobs for same document: each job has its own stage
+       rows (unique constraint allows per-job).
+    5. Existing ingestion tests still pass (flag=false default).
+
+    CI:
+    - Default AIOL_EMIT_STAGE_EVENTS=false in CI env.
+    - One CI test with flag=true to exercise the new path.
+
+    Constraints:
+    - Rule 1: show diff before commit.
+    - Rule 21: targeted tests with DATABASE_URL as in 7C-1..3.
+    - No new migration.
+    - No changes to provider logic beyond the emission hooks.
+    - One commit, subject:
+      feat(processing): emit stage events from ingestion (7C-4)
+      Not a docs commit; anchor moves from b6d98f4.
+    - Pre-push fresh-DB upgrade-head check (new routine from v6
+      §10.2) before pushing.
+
+    Report:
+    - Part A investigation with file:line quotes first.
+    - After my OK: diff, test results (flag=false and flag=true),
+      git status --short.
+
+Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
+Case B — user says "go": send the 7C-4 prompt above.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -253,6 +326,8 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v5 @ a9839dd — session closed Step 7B (7B2a, 7B2b-1..4, 7B2c-1/2) and
   the V5-theme-toggle-ui repair; §3/§4/§5/§6 rewritten; Step 7C is next.
   CI on a9839dd was still running when this was written. Anchor now a9839dd.
+- v6 @ b6d98f4 — 7C-1, 7C-2, fix 0047, 7C-3 committed. New lessons
+  recorded in §10.2.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -336,6 +411,20 @@ CI:
 - Sample mode content display:none until .is-active; static never paints.
   Use dynamic counter templates only.
 
+Migrations / hooks:
+- PostgreSQL UnsafeNewEnumValueUsage: when a migration compares an enum
+  column to a value added in the same transaction (e.g. 0014 adds
+  'document_ingestion'; 0047 uses it in a WHERE, and env.py runs all
+  migrations in one transaction), the migration fails on a fresh DB.
+  Cast to ::text or use autocommit_block(). Local dev never catches
+  this; only CI's fresh-DB run does. Pre-push fresh-DB upgrade-head
+  check is now routine.
+- Pre-commit hook runs pytest against the WORKING TREE, not staged
+  content. Any uncommitted file (e.g. half-built model) can block an
+  unrelated commit. For multi-file sub-steps, either finish the whole
+  set before committing or stash the in-progress files (byte-check the
+  restore).
+
 ### 10.3 Reversals and abandoned approaches
 
 - sudo mkdir /var/lib/aiol && chmod 777 → security anti-pattern. Replaced
@@ -386,8 +475,7 @@ CI:
 - 7B2 full detail with backend for Archive/Delete/version/tabs — needs
   backend design for source archive state + per-source tabs filter +
   version history.
-- 7C Processing (4-stage pipeline, Upload/Conversion/OCR/Chunking +
-  "Evidence found: N") — needs GET /documents/{id}/ingestion-jobs first.
+- 7C Processing — 7C-4, 7C-5, 7C-6 remain (see §5).
 - 7D Provenance (frontend only, 3+3N calls).
 - 7E Add source (Upload + URL only, ~1h).
 - Steps 8–14 (Knowledge tools, AI, Visibility, Commerce, Website+Auth,
