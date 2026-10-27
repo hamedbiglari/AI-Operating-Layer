@@ -339,6 +339,54 @@ theme". Theme is «تم».
 | Switch to dark theme (tooltip in the light theme) | تغییر به تم تاریک |
 | Switch to light theme (tooltip in the dark theme) | تغییر به تم روشن |
 
+## Processing screen (Step 7C-6)
+
+Approved for the live Processing screen (7C-6), reached from a Source detail
+document row as #screen-processing?id=<document_id>. Strings already in `FA`
+are reused as written: Sources & Documents, Loading…, Queued, Retrying,
+Succeeded, Failed, Cancelled, and Conversion («تبدیل سند», the 7B2a column
+header, also the conversion stage name; D28). «پردازش» names the screen; the
+status keeps «در حال پردازش». The backend's English stage details are rebuilt
+from the templates below, never shown as sent. Format labels (DOCX, PDF) are
+identifiers and have no rows.
+
+| English | Persian |
+|---|---|
+| Processing (screen title and breadcrumb; not the status «در حال پردازش») | پردازش |
+| Processing details (link in a Source detail document row) | جزئیات پردازش |
+| Processing details of {name} (the link's accessible name) | جزئیات پردازش {name} |
+| {format} · added {date} (document metadata line; {format} is a short label such as DOCX) | {format} · افزوده‌شده در {date} |
+| Pipeline (card title) | مراحل پردازش |
+| Upload (stage) | بارگذاری |
+| Security validation (stage) | اعتبارسنجی امنیتی |
+| Structure detection (stage) | تشخیص ساختار |
+| OCR (stage; Latin acronym, as in 7B2c) | OCR |
+| Semantic chunking (stage) | قطعه‌بندی معنایی |
+| Evidence extraction (stage) | استخراج شواهد |
+| Knowledge contribution (stage) | افزودن به لایهٔ دانش |
+| No percentage is shown, because the worker does not report one. The stage is the truth available. | درصد پیشرفت نمایش داده نمی‌شود، چون پردازشگر آن را گزارش نمی‌کند. مرحلهٔ فعلی تنها اطلاع موجود است. |
+| What has been found so far (card title) | آنچه تاکنون یافت شده است |
+| Pages (metric) | صفحه‌ها |
+| Tables detected (metric) | جدول‌های شناسایی‌شده |
+| Images detected (metric) | تصویرهای شناسایی‌شده |
+| OCR blocks (metric) | بلوک‌های OCR |
+| Chunks created (metric) | قطعه‌های ساخته‌شده |
+| Claims extracted (metric) | ادعاهای استخراج‌شده |
+| Evidence candidates (metric) | شواهد نامزد |
+| Stage not reached (metric with no value yet) | هنوز به این مرحله نرسیده است |
+| {n} table / {n} tables (stage detail; a counted noun stays singular) | {n} جدول |
+| {n} OCR block / {n} OCR blocks (stage detail) | {n} بلوک OCR |
+| Not run (conversion failed) (structure or OCR after a failed conversion) | اجرا نشد (تبدیل سند ناموفق بود) |
+| Not tracked in this backend version (evidence and knowledge; no backend signal) | در این نسخهٔ سامانه ردیابی نمی‌شود |
+| Running (job status) | در حال اجرا |
+| Dead letter (job status: failed for good, no more retries) | ناموفق نهایی |
+| Job {id} · {status} · attempt {n} (job line) | کار {id} · {status} · تلاش {n} |
+| No job record for this document. (job is None: URL jobs, documents with no job) | هیچ کاری برای این سند ثبت نشده است. |
+| Last attempt failed; data from previous run (banner after a failed reprocess) | آخرین تلاش ناموفق بود؛ داده‌ها از اجرای قبلی است |
+| No document selected. Open one from Source detail. (opened without ?id=) | هیچ سندی انتخاب نشده است. یکی را از «جزئیات منبع» باز کنید. |
+| This document was not found. (unknown id, or another organization's) | این سند پیدا نشد. |
+| Could not load processing ({error}). | بارگذاری پردازش ناموفق بود ({error}). |
+
 ## Conventions
 
 1. Persian digits (۰–۹) and the Persian separators in all UI text. Identifiers,
