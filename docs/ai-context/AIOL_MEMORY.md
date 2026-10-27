@@ -121,13 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 16bb9d1
+- sha (last non-docs commit): 62768d7
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ 16bb9d1 (7C-4)
-- last code commit: "feat(processing): emit stage events from ingestion (7C-4)" @ 16bb9d1
-- last feature commit: "feat(processing): emit stage events from
-  ingestion (7C-4)" @ 16bb9d1
+- last_ci: green @ 16bb9d1 (7C-4); in_progress @ 62768d7 (7C-5)
+- last code commit: "feat(processing): job object and stage-events merge (7C-5)" @ 62768d7
+- last feature commit: "feat(processing): job object and stage-events
+  merge (7C-5)" @ 62768d7
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -191,6 +191,19 @@ file from scratch (do not diff). Output only the file content.
     "N tables", "1 OCR block" / "N OCR blocks".
     7 tests: flag-off guard, happy path, crashed run,
     FAILED+UNSUPPORTED, EMPTY, retry, flag turned off after upload.
+  - 7C-5 @ 62768d7 — extend GET /documents/{id}/processing with
+    job: JobRead | None (id, status, attempts, created_at, started_at,
+    completed_at) and merge stage-events.
+    D20: URL jobs (document_id NULL) and no-job docs -> job=None.
+    D21: latest SyncJob by created_at DESC; semantics = "latest
+    attempt".
+    D22: format_count(n, singular, plural) extracted from
+    stage_events._count, imported by processing_service ("1 table" /
+    "N tables", "1 OCR block" / "N OCR blocks").
+    D26: upload/security rows win when present (Section 4 was right);
+    reprocess/URL naturally derived.
+    11 tests (T-A..T-H, T-J, T-K + pluralization); stash proof: 11 fail
+    pre-fix. No migration.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -207,19 +220,18 @@ file from scratch (do not diff). Output only the file content.
 - 7C-2 ✓ @ b13d7cc (fix 0047 @ f32a80a)
 - 7C-3 ✓ @ b6d98f4
 - 7C-4 ✓ @ 16bb9d1
-- 7C-5 (next): extend GET /documents/{id}/processing with job object
-  (job_id, status, attempts from SyncJob.document_id). Prefer
-  stage-events when present, derive otherwise (for URL jobs D19,
-  reprocess jobs, and chunking). Align processing_service.py's
-  "N tables" wording with the pluralized form from R3.
-- 7C-6: frontend #screen-processing live-wired, 8-stage pipeline +
-  metrics card. UI must:
+- 7C-5 ✓ @ 62768d7
+- 7C-6 (next): frontend #screen-processing live-wired. 8-stage
+  pipeline + metrics card + job object. UI must:
   * render NOT_TRACKED-with-detail ("not run (conversion failed)")
     differently from NOT_TRACKED-without-detail (evidence/knowledge =
     «در این نسخهٔ سامانه ردیابی نمی‌شود»);
   * not render "0 seconds" for upload/security (start time not
     captured);
-  * FA + --require + Persian browser test.
+  * label the failed-reprocess state clearly (e.g. "last attempt
+    failed; data from previous run");
+  * handle job=None (URL jobs, no-job docs) gracefully;
+  * FA + add to --require + Persian browser test.
 Notes:
 - 2 stages (evidence extraction, knowledge contribution) have no backend
   signal; 7C-6 renders them as "Not tracked in this backend version"
@@ -229,10 +241,10 @@ Notes:
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 7C-5 investigation prompt.
+State in sync → user says "go" → send the 7C-6 investigation prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 7C-5 investigation prompt.
+Case B — user says "go": send the 7C-6 investigation prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -275,6 +287,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   recorded in §10.2.
 - v7 @ 16bb9d1 — 7C-4 shipped (flag-gated stage events, D15-D19).
   Two debt rows added. 7 tests. CI green.
+- v8 @ 62768d7 — 7C-5 shipped (job object + merge, 11 tests).
+  D20/D21/D22/D26 documented.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -383,6 +397,17 @@ Session / memory:
   all" (evidence, knowledge) when detail is null, and "didn't run
   because conversion failed" (structure, ocr on FAILED/UNSUPPORTED)
   when detail says so. UI must disambiguate by detail.
+- Rule 1 discipline in check messages: when approving a plan, do not
+  override it in a later check message. If a check contradicts
+  Section 4/D21 (e.g. "upload/security must always stay derived"),
+  that contradicts the approved plan. Either amend the plan
+  explicitly or accept it. This session had one such contradiction:
+  D26 corrected my message, not the code.
+- Merge semantics: stage-rows override derived per stage_key when the
+  row exists for the latest job; upload/security rows only exist for
+  initial uploads (D15), so reprocess and URL jobs naturally stay
+  derived. The unique constraint on (sync_job_id, stage_key)
+  guarantees one row per stage.
 
 ### 10.3 Reversals and abandoned approaches
 
@@ -442,7 +467,7 @@ Session / memory:
 - 7B2 full detail with backend for Archive/Delete/version/tabs — needs
   backend design for source archive state + per-source tabs filter +
   version history.
-- 7C Processing — 7C-5, 7C-6 remain (see §5).
+- 7C Processing — 7C-6 remains (see §5).
 - 7D Provenance (frontend only, 3+3N calls).
 - 7E Add source (Upload + URL only, ~1h).
 - Steps 8–14 (Knowledge tools, AI, Visibility, Commerce, Website+Auth,
