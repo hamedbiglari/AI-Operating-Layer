@@ -4,9 +4,9 @@ document-ingestion job.
 
 One row per (job, stage) holding its current state, not an append-only event
 log: queries stay simple and the table small; it can grow into a log later if
-one is needed. Rows go with their job (ON DELETE CASCADE). Nothing writes them
-yet: the orchestrator is wired in 7C-4, and until then the Processing endpoint
-derives each stage instead (processing_service).
+one is needed. Rows go with their job (ON DELETE CASCADE). services/stage_events
+writes them when AIOL_EMIT_STAGE_EVENTS is on (7C-4); the Processing endpoint
+still derives each stage (processing_service) until 7C-5 reads them.
 """
 
 import uuid

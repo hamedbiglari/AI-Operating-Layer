@@ -286,6 +286,7 @@ async def upload_document(
         idempotency_key=idempotency_key,
         ocr_languages=ocr_languages,
         enable_ocr=enable_ocr,
+        is_initial=True,
     )
     db.commit()
     db.refresh(job)

@@ -69,6 +69,7 @@ from app.models.enums import (
     DocumentExtractionStatus,
     DocumentOcrStatus,
 )
+from app.services import stage_events
 from app.services.audit import record_audit_log
 
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
@@ -250,12 +251,16 @@ def persist_source_only(
 def process_pending_conversion(
     db: Session, *, organization_id: UUID, document_id: UUID, conversion_id: UUID,
     enable_ocr: bool = True, ocr_languages: str = "eng", providers: list[str] | None = None,
+    sync_job_id: UUID | None = None,
 ) -> dict:
     """Phase 2: the expensive work, run by a Celery worker.
 
     Reads the RETAINED original rather than re-receiving bytes. That is the
     payoff from P12-01: the worker can reprocess at any time, including
     after a converter upgrade, because the source still exists.
+
+    `sync_job_id` is the job this run belongs to; stage events are written
+    only when it is given (and AIOL_EMIT_STAGE_EVENTS is on).
     """
     conversion = db.execute(
         select(DocumentConversion).where(
@@ -288,6 +293,9 @@ def process_pending_conversion(
         quarantined.write_bytes(data)
         conversion.processing_state = "processing"
         db.flush()
+        if sync_job_id is not None and stage_events.enabled():
+            stage_events.start_run(db, job_id=sync_job_id, organization_id=organization_id)
+            db.commit()  # D16: makes the active rows (and "processing") visible while the run is in progress
         result = process_document(
             quarantined, mime_type=None, converter=default_converter(),
             enable_ocr=enable_ocr, ocr_languages=ocr_languages,
@@ -352,6 +360,12 @@ def process_pending_conversion(
         )
         conversion.warnings = {"messages": result.warnings}
         conversion.completed_at = datetime.now(timezone.utc)
+        if sync_job_id is not None:
+            stage_events.finish_run(db, job_id=sync_job_id,
+                                    conversion_status=conversion.conversion_status.value,
+                                    conversion_error=conversion.conversion_error,
+                                    table_count=conversion.table_count,
+                                    ocr_block_count=conversion.ocr_block_count)
 
         # v4 §12: artifacts belong to the extraction that produced them. A retry of THIS conversion
         # replaces its own rows; a reprocess (a new conversion) adds rows beside the earlier ones, which

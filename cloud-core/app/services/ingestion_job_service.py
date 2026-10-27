@@ -39,6 +39,7 @@ from sqlalchemy.orm import Session
 
 from app.models.enums import SyncJobStatus, SyncJobType
 from app.models.sync_job import SyncJob
+from app.services import stage_events
 from app.services.audit import record_audit_log
 
 MAX_ATTEMPTS = 3
@@ -56,7 +57,7 @@ def create_ingestion_job(
     db: Session, *, organization_id: UUID, site_id: UUID | None, document_id: UUID,
     conversion_id: UUID, source_hash: str, actor_user_id: UUID | None,
     idempotency_key: str | None = None, ocr_languages: str = "eng",
-    enable_ocr: bool = True,
+    enable_ocr: bool = True, is_initial: bool = False,
 ) -> tuple[SyncJob, bool]:
     """Returns (job, created).
 
@@ -92,6 +93,9 @@ def create_ingestion_job(
     )
     db.add(job)
     db.flush()
+    if is_initial:
+        # Only an upload ran the upload and security steps; a reprocess job re-reads the kept original.
+        stage_events.record_received(db, job=job)
     record_audit_log(
         db, organization_id=organization_id, user_id=actor_user_id,
         action="document_ingestion.queued", resource_type="sync_job", resource_id=job.id,
@@ -115,6 +119,7 @@ def claim(db: Session, *, job_id: UUID) -> SyncJob | None:
     job.status = SyncJobStatus.RUNNING
     job.attempts += 1
     job.started_at = _now()
+    stage_events.reset_run(db, job_id=job.id)
     db.commit()
     db.refresh(job)
     return job
@@ -148,6 +153,7 @@ def fail(db: Session, *, job: SyncJob, error: str, retryable: bool = True) -> Sy
     else:
         job.status = SyncJobStatus.FAILED
         job.completed_at = _now()
+    stage_events.fail_active(db, job_id=job.id, error=job.error_message)
     db.commit()
     db.refresh(job)
     return job
@@ -318,6 +324,7 @@ def run_ingestion_job(
                 enable_ocr=bool(payload.get("enable_ocr", True)),
                 ocr_languages=str(payload.get("ocr_languages", "eng")),
                 providers=payload.get("providers") or None,
+                sync_job_id=job.id,
             )
     except Exception as exc:  # noqa: BLE001
         # Unexpected exceptions are treated as transient: the bytes are
