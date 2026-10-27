@@ -121,13 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): b6d98f4
+- sha (last non-docs commit): 16bb9d1
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ b6d98f4 (7C-3)
-- last code commit: "feat(processing): add sync_job_stages table (7C-3)" @ b6d98f4
-- last feature commit: "feat(processing): add sync_jobs.document_id
-  with backfill (7C-2)" @ b13d7cc
+- last_ci: green @ 16bb9d1 (7C-4)
+- last code commit: "feat(processing): emit stage events from ingestion (7C-4)" @ 16bb9d1
+- last feature commit: "feat(processing): emit stage events from
+  ingestion (7C-4)" @ 16bb9d1
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -174,6 +174,23 @@ file from scratch (do not diff). Output only the file content.
     PostgreSQL raises UnsafeNewEnumValueUsage.
   - 7C-3 @ b6d98f4 — sync_job_stages table + SyncJobStageKey /
     SyncJobStageState enums + organization_id (Decision A). Migration 0048.
+  - 7C-4 @ 16bb9d1 — emit stage events from ingestion behind
+    AIOL_EMIT_STAGE_EVENTS (default false).
+    D15: retroactive upload/security for initial uploads only; default
+    is_initial=False, so only documents.py passes True.
+    D16: reset_run in claim; commit-before-pipeline makes active rows
+    visible mid-run; fail_active in fail() shares the SyncJob-failure
+    commit.
+    D17: FAILED/UNSUPPORTED -> conversion=failed + structure/ocr=
+    NOT_TRACKED with detail "not run (conversion failed)"; EMPTY ->
+    conversion=failed "no usable text" + structure/ocr=done.
+    D18: reclaim_stalled broken; debt row V5-processing-stale-sweeper.
+    D19: URL jobs out of scope; debt row
+    V5-processing-url-jobs-stage-tracking.
+    R2: redundant CI flag-on step removed. R3: pluralized "1 table" /
+    "N tables", "1 OCR block" / "N OCR blocks".
+    7 tests: flag-off guard, happy path, crashed run,
+    FAILED+UNSUPPORTED, EMPTY, retry, flag turned off after upload.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -187,19 +204,22 @@ file from scratch (do not diff). Output only the file content.
 ## 5. In progress — Step 7C (Processing)
 
 - 7C-1 ✓ @ 522c7f3
-- 7C-2 ✓ @ b13d7cc (fix @ f32a80a)
+- 7C-2 ✓ @ b13d7cc (fix 0047 @ f32a80a)
 - 7C-3 ✓ @ b6d98f4
-- 7C-4 (next): orchestrator wiring with feature flag
-  AIOL_EMIT_STAGE_EVENTS (default false); MarkItDown provider only;
-  integration test proving stage rows written when flag=true and none
-  when flag=false.
-- 7C-5: extend /documents/{id}/processing with job object (job_id,
-  status, attempts from SyncJob.document_id) and prefer stage-events
-  when present, derive otherwise.
+- 7C-4 ✓ @ 16bb9d1
+- 7C-5 (next): extend GET /documents/{id}/processing with job object
+  (job_id, status, attempts from SyncJob.document_id). Prefer
+  stage-events when present, derive otherwise (for URL jobs D19,
+  reprocess jobs, and chunking). Align processing_service.py's
+  "N tables" wording with the pluralized form from R3.
 - 7C-6: frontend #screen-processing live-wired, 8-stage pipeline +
-  metrics card + "Not tracked" for evidence/knowledge, FA + add to
-  --require + Persian browser test.
-
+  metrics card. UI must:
+  * render NOT_TRACKED-with-detail ("not run (conversion failed)")
+    differently from NOT_TRACKED-without-detail (evidence/knowledge =
+    «در این نسخهٔ سامانه ردیابی نمی‌شود»);
+  * not render "0 seconds" for upload/security (start time not
+    captured);
+  * FA + --require + Persian browser test.
 Notes:
 - 2 stages (evidence extraction, knowledge contribution) have no backend
   signal; 7C-6 renders them as "Not tracked in this backend version"
@@ -209,85 +229,10 @@ Notes:
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 7C-4 prompt below.
-
-Prompt to Claude Code (7C-4 — orchestrator wiring + feature flag):
-
-    Step 7C-4 — orchestrator wiring with feature flag. This is the
-    riskiest commit in 7C: it touches the ingestion path that
-    everything else depends on.
-
-    Scope (locked per §5):
-    - Feature flag AIOL_EMIT_STAGE_EVENTS (env var, default false).
-      When off, zero stage rows written; ingestion behaves exactly
-      as before.
-    - When on: emit stage events from the ingestion path for stages
-      that have real signals.
-    - Start with MarkItDown converter only (other converters later).
-    - Integration test proving flag=false → no stage rows (guard),
-      flag=true → stage rows exist after full ingestion.
-
-    Part A — investigation (report first, no code):
-    Read the ingestion path and answer with file:line quotes:
-    1. Where does orchestrator.run() (or equivalent) execute each
-       stage: upload, security validation, conversion (MarkItDown),
-       structure analysis, OCR?
-    2. Which stages share a single signal (like upload+security, or
-       conversion+structure+OCR per 7C-3's Part 1)?
-    3. Where should each INSERT/UPDATE sync_job_stages go? One line
-       per stage (before / after).
-    4. Does chunking happen in the same run or in a separate POST
-       /documents/{id}/process? If separate, is it in 7C-4 or
-       7C-4b?
-    5. Can stage events be emitted atomically with the transaction
-       that writes SyncJob? Or does partial state need to survive
-       a mid-run failure?
-    6. Where does the SyncJob id live in the ingestion flow? It is
-       needed as sync_job_id FK.
-    Report Part A before writing any code.
-
-    Part B — after my OK on Part A, implement:
-    - Read flag from env, default false.
-    - Helper checks flag; if false, no-op (only the check is added).
-    - Stage start: INSERT row state=active, started_at=now.
-    - Stage success: UPDATE state=done, completed_at=now, detail
-      (e.g. "3 tables").
-    - Stage fail: UPDATE state=failed, detail=error message.
-    - Stages with no signal (evidence, knowledge): NO emission;
-      leave for derived fallback in 7C-5.
-
-    Tests (rule 5, fail-before / pass-after via stash):
-    1. flag=false: full ingestion, zero sync_job_stages rows (guard).
-    2. flag=true, happy path: rows exist for upload, security,
-       conversion, structure, ocr; all done.
-    3. flag=true, conversion fails: conversion state=failed; earlier
-       stages done.
-    4. Multiple jobs for same document: each job has its own stage
-       rows (unique constraint allows per-job).
-    5. Existing ingestion tests still pass (flag=false default).
-
-    CI:
-    - Default AIOL_EMIT_STAGE_EVENTS=false in CI env.
-    - One CI test with flag=true to exercise the new path.
-
-    Constraints:
-    - Rule 1: show diff before commit.
-    - Rule 21: targeted tests with DATABASE_URL as in 7C-1..3.
-    - No new migration.
-    - No changes to provider logic beyond the emission hooks.
-    - One commit, subject:
-      feat(processing): emit stage events from ingestion (7C-4)
-      Not a docs commit; anchor moves from b6d98f4.
-    - Pre-push fresh-DB upgrade-head check (new routine from v6
-      §10.2) before pushing.
-
-    Report:
-    - Part A investigation with file:line quotes first.
-    - After my OK: diff, test results (flag=false and flag=true),
-      git status --short.
+State in sync → user says "go" → send the 7C-5 investigation prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 7C-4 prompt above.
+Case B — user says "go": send the 7C-5 investigation prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -328,6 +273,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   CI on a9839dd was still running when this was written. Anchor now a9839dd.
 - v6 @ b6d98f4 — 7C-1, 7C-2, fix 0047, 7C-3 committed. New lessons
   recorded in §10.2.
+- v7 @ 16bb9d1 — 7C-4 shipped (flag-gated stage events, D15-D19).
+  Two debt rows added. 7 tests. CI green.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -425,6 +372,18 @@ Migrations / hooks:
   set before committing or stash the in-progress files (byte-check the
   restore).
 
+Session / memory:
+- Pause / partial-session recovery: if a step ships but memory was not
+  written, the drift check reports STATE DRIFT (anchor = new hash, §3
+  sha = old hash). Resolve by writing the pending memory, not by
+  reverting. Verify CI on the anchor commit first; if green, memory
+  reflects it; if red, do NOT write memory (the drift is a signal that
+  a red commit exists).
+- NOT_TRACKED overloading: means "backend doesn't track this stage at
+  all" (evidence, knowledge) when detail is null, and "didn't run
+  because conversion failed" (structure, ocr on FAILED/UNSUPPORTED)
+  when detail says so. UI must disambiguate by detail.
+
 ### 10.3 Reversals and abandoned approaches
 
 - sudo mkdir /var/lib/aiol && chmod 777 → security anti-pattern. Replaced
@@ -469,13 +428,21 @@ Migrations / hooks:
   Postgres in aiol_postgres container.
 - Cloud Core dev server typically uvicorn at 127.0.0.1:8010 (some 8000).
 - GitHub API unauth limit 60 req/hr. User often checks UI manually.
+- The AIOL repo is at C:/Users/Hamed/Downloads/1- AI-Operating-Layer/
+  graphify-src/02-core-tool-full-repo. Do not run git from
+  C:/Users/Hamed (the home directory contains an unrelated .git with
+  personal files that must never be touched). Always `cd` into the
+  repo path first, or use absolute paths.
+- Alembic venv: cloud-core/.venv/Scripts/alembic.exe (Windows path).
+  The repo-root .venv does not exist. To run alembic current:
+  `cd cloud-core && .venv/Scripts/python -m alembic current`.
 
 ### 10.5 Open threads (outside current 7-series)
 
 - 7B2 full detail with backend for Archive/Delete/version/tabs — needs
   backend design for source archive state + per-source tabs filter +
   version history.
-- 7C Processing — 7C-4, 7C-5, 7C-6 remain (see §5).
+- 7C Processing — 7C-5, 7C-6 remain (see §5).
 - 7D Provenance (frontend only, 3+3N calls).
 - 7E Add source (Upload + URL only, ~1h).
 - Steps 8–14 (Knowledge tools, AI, Visibility, Commerce, Website+Auth,
