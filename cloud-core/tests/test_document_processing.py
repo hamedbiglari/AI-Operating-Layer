@@ -90,6 +90,19 @@ def test_processed_document_with_everything(client: TestClient, register_org, db
     assert body["metrics"] == {"pages": 9, "tables": 3, "images": 2, "ocr_blocks": 5, "chunks": 12, "claims": 2, "evidence": 4}
 
 
+def test_document_title_and_mime_type(client: TestClient, register_org, db_session) -> None:
+    """7C-6b: the header fields come from the Document row, in the same response."""
+    headers = register_org()["headers"]
+    _, doc = _document(client, headers)
+    db_session.execute(update(Document).where(Document.id == uuid.UUID(doc["id"]))
+                       .values(mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+    db_session.flush()
+
+    body = _processing(client, headers, doc)
+    assert (body["document_title"], body["mime_type"]) == (
+        "D", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+
 def test_conversion_still_processing(client: TestClient, register_org, db_session) -> None:
     headers = register_org()["headers"]
     _, doc = _document(client, headers)

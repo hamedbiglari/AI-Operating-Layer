@@ -115,6 +115,8 @@ def get_processing(db: Session, *, document_id: UUID, organization_id: UUID) -> 
 
     return {
         "document_id": document_id,
+        "document_title": document.title,
+        "mime_type": document.mime_type,   # the screen maps it to a short label such as DOCX (D27)
         "stages": stages,
         "metrics": {
             "pages": row.page_count, "tables": row.table_count if has_conversion else None,

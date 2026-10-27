@@ -105,6 +105,8 @@ class ProcessingRead(BaseModel):
     ingestion job, or None when the document has none linked to it (D20)."""
 
     document_id: uuid.UUID
+    document_title: str
+    mime_type: str
     stages: list[StageRead]
     metrics: ProcessingMetrics
     job: JobRead | None = None
