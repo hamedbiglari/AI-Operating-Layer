@@ -921,6 +921,29 @@ class SyncJobStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
+class SyncJobStageKey(str, enum.Enum):
+    """A stage of a document-ingestion job, as the Processing view shows it (Step 7C-3)."""
+
+    UPLOAD = "upload"
+    SECURITY = "security"
+    CONVERSION = "conversion"
+    STRUCTURE = "structure"
+    OCR = "ocr"
+    CHUNKING = "chunking"
+    EVIDENCE = "evidence"
+    KNOWLEDGE = "knowledge"
+
+
+class SyncJobStageState(str, enum.Enum):
+    """NOT_TRACKED says the backend kept no record of the stage, rather than guessing one."""
+
+    PENDING = "pending"
+    ACTIVE = "active"
+    DONE = "done"
+    FAILED = "failed"
+    NOT_TRACKED = "not_tracked"
+
+
 # --- Phase 12: AI Visibility (master spec section 31) -------------------
 
 

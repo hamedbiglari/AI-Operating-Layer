@@ -61,6 +61,7 @@ from app.models.research_task_reference import ResearchTaskReference
 from app.models.site import Site
 from app.models.source import Source
 from app.models.sync_job import SyncJob
+from app.models.sync_job_stage import SyncJobStage
 from app.models.trust_record import TrustRecord
 from app.models.user import User
 from app.models.content_view_daily import ContentViewDaily
@@ -132,6 +133,7 @@ __all__ = [
     "WordPressMapping",
     "CommerceMapping",
     "SyncJob",
+    "SyncJobStage",
     "VisibilityTest",
     "AIExecution",
     "VisibilityBudget",
