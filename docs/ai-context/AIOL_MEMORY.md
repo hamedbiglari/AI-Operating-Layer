@@ -121,13 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 1191934
+- sha (last non-docs commit): 6474e60
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ 62768d7 (7C-5); in_progress @ 1191934 (7C end-to-end suite)
-- last code commit: "test(processing): 7C end-to-end suite (A-J)" @ 1191934
-- last feature commit: "feat(processing): job object and stage-events
-  merge (7C-5)" @ 62768d7
+- last_ci: green @ 6474e60 (7C-6c)
+- last code commit: "feat(processing): live processing screen (7C-6c)" @ 6474e60
+- last feature commit: "feat(processing): live processing screen
+  (7C-6c)" @ 6474e60
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -165,7 +165,7 @@ file from scratch (do not diff). Output only the file content.
   - 7B2c-2 @ a9839dd — i18n-coverage.js skips [data-debt-hidden] (D6);
     6 sample debt items hidden; 5 identifiers wrapped; empty-state
     heading "Source detail"; screen-detail added to the CI --require.
-- Step 7C — Processing (in progress, see §5):
+- Step 7C — Processing, COMPLETE @ 6474e60:
   - 7C-1 @ 522c7f3 — GET /documents/{id}/processing.
   - 7C-2 @ b13d7cc — sync_jobs.document_id column + backfill with EXISTS
     guard + org-match. Migration 0047.
@@ -207,6 +207,17 @@ file from scratch (do not diff). Output only the file content.
   - Test suite: test_7c_end_to_end.py @ 1191934 — scenarios A-J cover
     real flows (upload, reprocess, URL, cross-org, idempotency).
     10 tests, all pass. Validates 7C-1..7C-5 end-to-end.
+  - 7C-6a @ c10fd28 (docs) — Processing screen glossary, 34 rows,
+    36 KNOWN words.
+  - 7C-6b @ 27b8ed7 — ProcessingRead gains document_title and mime_type
+    from the already-loaded Document (no extra query).
+  - 7C-6a2 @ 128f465 (docs) — 6 sample rows; screen renamed "Document
+    processing" because the FA key "Processing" is the status.
+  - 7C-6c @ 6474e60 — frontend for #screen-processing: live processing
+    screen, entry point link from Source detail, full FA dictionary,
+    mock alignment, Playwright test, --require gate. Note: found and
+    fixed an infinite mutation loop caused by an identity FA mapping
+    ("OCR": "OCR").
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -215,39 +226,22 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail and 8 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing and 9
+  browser suites.
 
-## 5. In progress — Step 7C (Processing)
+## 5. In progress — next step
 
-- 7C-1 ✓ @ 522c7f3
-- 7C-2 ✓ @ b13d7cc (fix 0047 @ f32a80a)
-- 7C-3 ✓ @ b6d98f4
-- 7C-4 ✓ @ 16bb9d1
-- 7C-5 ✓ @ 62768d7
-- 7C-6 (next): frontend #screen-processing live-wired. 8-stage
-  pipeline + metrics card + job object. UI must:
-  * render NOT_TRACKED-with-detail ("not run (conversion failed)")
-    differently from NOT_TRACKED-without-detail (evidence/knowledge =
-    «در این نسخهٔ سامانه ردیابی نمی‌شود»);
-  * not render "0 seconds" for upload/security (start time not
-    captured);
-  * label the failed-reprocess state: "last attempt failed; data from
-    previous run" (proven by test E);
-  * handle job=None (URL jobs, no-job docs) gracefully (proven by C, D);
-  * FA + add to --require + Persian browser test.
-Notes:
-- 2 stages (evidence extraction, knowledge contribution) have no backend
-  signal; 7C-6 renders them as "Not tracked in this backend version"
-  («در این نسخهٔ سامانه ردیابی نمی‌شود»; KNOWN word «ردیابی»).
-- 7C-6 must rebuild the endpoint's English `detail` field from metrics
-  with FA templates.
+- Step 7C (Processing) is fully complete: 7C-1 through 7C-6
+  ✓ (see §4).
+- Next up is 7D (Provenance): frontend only, 3+3N calls. Needs
+  investigation before coding.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 7C-6 investigation prompt.
+State in sync → user says "go" → send the 7D investigation prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 7C-6 investigation prompt.
+Case B — user says "go": send the 7D investigation prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -294,6 +288,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   D20/D21/D22/D26 documented.
 - v9 @ 1191934 — 7C end-to-end suite added. 7C-5 complete. Ready for
   7C-6.
+- v10 @ 6474e60 — 7C-6c shipped. Step 7C is complete. v9's stale
+  "in_progress" is corrected to green.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -417,6 +413,10 @@ Session / memory:
   CI completes, §3 records "in_progress". vN+1 updates it to green. Do
   not amend a docs commit for one line; do not create a standalone
   docs commit just for a CI status change.
+- i18n infinite loops: never map an English key to an identical FA
+  value (e.g., "OCR": "OCR"). The mutation observer will rewrite the
+  text node endlessly. Use .identifier or skip the FA entry instead. No
+  static check catches this; only browser tests do.
 
 ### 10.3 Reversals and abandoned approaches
 
@@ -476,7 +476,7 @@ Session / memory:
 - 7B2 full detail with backend for Archive/Delete/version/tabs — needs
   backend design for source archive state + per-source tabs filter +
   version history.
-- 7C Processing — 7C-6 remains (see §5).
+- 7C Processing — done (see §4). 7D and 7E remain.
 - 7D Provenance (frontend only, 3+3N calls).
 - 7E Add source (Upload + URL only, ~1h).
 - Steps 8–14 (Knowledge tools, AI, Visibility, Commerce, Website+Auth,
