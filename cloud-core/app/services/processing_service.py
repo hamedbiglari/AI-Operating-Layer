@@ -2,11 +2,16 @@
 The Processing view of one document (Step 7C-1): its pipeline as far as the
 backend records it, and what it has produced so far.
 
-There is no per-stage record. Conversion, structure detection and OCR are one
-run (ingestion_service.orchestrator.run) and share its processing_state; the
-count each produced is the stage's detail, never its state, because "0 tables"
-is a finished stage. Evidence extraction and knowledge contribution have no
-stage data at all and are reported as not tracked rather than guessed.
+Each stage is derived from the current conversion. Conversion, structure
+detection and OCR are one run (ingestion_service.orchestrator.run) and share
+its processing_state; the count each produced is the stage's detail, never its
+state, because "0 tables" is a finished stage. Evidence extraction and
+knowledge contribution have no stage data at all and are reported as not
+tracked rather than guessed.
+
+Step 7C-5: the document's latest ingestion job (D21, "latest attempt") is
+returned as `job`, and its sync_job_stages rows, where present, replace the
+derived stage of the same key (D20). Stages without a row stay derived.
 """
 
 from uuid import UUID
@@ -20,8 +25,11 @@ from app.models.document_artifact import DocumentConversion
 from app.models.document_chunk import DocumentChunk
 from app.models.enums import DocumentExtractionStatus
 from app.models.evidence import Evidence
+from app.models.sync_job import SyncJob
+from app.models.sync_job_stage import SyncJobStage
 from app.schemas.document import StageState
 from app.services.document_service import get_document_or_404
+from app.services.stage_events import format_count
 
 # processing_state -> the state of each step of the conversion run
 _RUN_STATE = {
@@ -34,6 +42,22 @@ _RUN_STATE = {
     "completed": StageState.DONE,
     "failed": StageState.FAILED,
 }
+
+
+def _get_latest_job(db: Session, *, document_id: UUID, organization_id: UUID) -> SyncJob | None:
+    """The latest attempt (D21). URL jobs have no document_id (D19), so they never match."""
+    return db.execute(
+        select(SyncJob)
+        .where(SyncJob.document_id == document_id, SyncJob.organization_id == organization_id)
+        .order_by(SyncJob.created_at.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+
+
+def _get_stage_rows(db: Session, *, job_id: UUID) -> dict[str, SyncJobStage]:
+    """One row per stage at most: (sync_job_id, stage_key) is unique."""
+    rows = db.execute(select(SyncJobStage).where(SyncJobStage.sync_job_id == job_id)).scalars()
+    return {row.stage_key.value: row for row in rows}
 
 
 def get_processing(db: Session, *, document_id: UUID, organization_id: UUID) -> dict:
@@ -71,23 +95,35 @@ def get_processing(db: Session, *, document_id: UUID, organization_id: UUID) -> 
     def stage(key, state, detail=None):
         return {"key": key, "state": state, "detail": detail}
 
+    stages = [
+        stage("upload", received),
+        stage("security", received),         # validated inside the upload request: the same signal
+        stage("conversion", run),
+        stage("structure", run, format_count(row.table_count, "table", "tables") if finished else None),
+        stage("ocr", run, format_count(row.ocr_block_count, "OCR block", "OCR blocks") if finished else None),
+        # Done once chunks exist. No "active": extraction_status is also set by ingestion itself.
+        stage("chunking", StageState.DONE if row.chunks else StageState.PENDING),
+        stage("evidence", StageState.NOT_TRACKED),
+        stage("knowledge", StageState.NOT_TRACKED),
+    ]
+
+    job = _get_latest_job(db, document_id=document_id, organization_id=organization_id)
+    if job is not None:
+        rows = _get_stage_rows(db, job_id=job.id)
+        stages = [stage(s["key"], StageState(rows[s["key"]].state.value), rows[s["key"]].detail)
+                  if s["key"] in rows else s for s in stages]
+
     return {
         "document_id": document_id,
-        "stages": [
-            stage("upload", received),
-            stage("security", received),         # validated inside the upload request: the same signal
-            stage("conversion", run),
-            stage("structure", run, f"{row.table_count} tables" if finished else None),
-            stage("ocr", run, f"{row.ocr_block_count} OCR blocks" if finished else None),
-            # Done once chunks exist. No "active": extraction_status is also set by ingestion itself.
-            stage("chunking", StageState.DONE if row.chunks else StageState.PENDING),
-            stage("evidence", StageState.NOT_TRACKED),
-            stage("knowledge", StageState.NOT_TRACKED),
-        ],
+        "stages": stages,
         "metrics": {
             "pages": row.page_count, "tables": row.table_count if has_conversion else None,
             "images": row.image_count if has_conversion else None,
             "ocr_blocks": row.ocr_block_count if has_conversion else None,
             "chunks": row.chunks, "claims": row.claims, "evidence": row.evidence,
+        },
+        "job": None if job is None else {
+            "id": job.id, "status": job.status.value, "attempts": job.attempts, "created_at": job.created_at,
+            "started_at": job.started_at, "completed_at": job.completed_at,
         },
     }

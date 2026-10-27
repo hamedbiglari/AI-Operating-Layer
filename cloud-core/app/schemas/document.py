@@ -88,13 +88,26 @@ class ProcessingMetrics(BaseModel):
     evidence: int
 
 
+class JobRead(BaseModel):
+    """The document's latest ingestion job (Step 7C-5, D21)."""
+
+    id: uuid.UUID
+    status: str   # SyncJobStatus value
+    attempts: int
+    created_at: datetime
+    started_at: datetime | None
+    completed_at: datetime | None
+
+
 class ProcessingRead(BaseModel):
     """GET /documents/{id}/processing: the document's pipeline as far as the
-    backend records it, and what it has produced so far. No job object."""
+    backend records it, and what it has produced so far. `job` is the latest
+    ingestion job, or None when the document has none linked to it (D20)."""
 
     document_id: uuid.UUID
     stages: list[StageRead]
     metrics: ProcessingMetrics
+    job: JobRead | None = None
 
 
 class DocumentCreate(BaseModel):

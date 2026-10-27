@@ -60,9 +60,10 @@ def start_run(db: Session, *, job_id: UUID, organization_id: UUID) -> None:
                             state=SyncJobStageState.ACTIVE, started_at=now))
 
 
-def _count(n: int | None, noun: str) -> str:
+def format_count(n: int | None, singular: str, plural: str) -> str:
+    """"1 table" / "N tables": shared with processing_service's derived details (D22)."""
     n = n or 0
-    return f"{n} {noun}" if n == 1 else f"{n} {noun}s"
+    return f"{n} {singular}" if n == 1 else f"{n} {plural}"
 
 
 def finish_run(db: Session, *, job_id: UUID, conversion_status: str, conversion_error: str | None,
@@ -78,8 +79,8 @@ def finish_run(db: Session, *, job_id: UUID, conversion_status: str, conversion_
     done = {"state": SyncJobStageState.DONE, "completed_at": now}
     not_run = {"state": SyncJobStageState.NOT_TRACKED, "started_at": None, "completed_at": None,
                "detail": "not run (conversion failed)"}
-    structure = {**done, "detail": _count(table_count, "table")}
-    ocr = {**done, "detail": _count(ocr_block_count, "OCR block")}
+    structure = {**done, "detail": format_count(table_count, "table", "tables")}
+    ocr = {**done, "detail": format_count(ocr_block_count, "OCR block", "OCR blocks")}
     if conversion_status in ("failed", "unsupported"):
         conversion = {**done, "state": SyncJobStageState.FAILED, "detail": conversion_error or "conversion failed"}
         structure = ocr = not_run

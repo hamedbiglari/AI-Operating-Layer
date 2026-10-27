@@ -343,7 +343,11 @@ def get_document_processing(
     db: Session = Depends(get_db),
 ) -> ProcessingRead:
     """The Processing view: each pipeline stage's state as far as the backend
-    records it, and what the document has produced. One call per document."""
+    records it, and what the document has produced. One call per document.
+
+    Returns the latest attempt's stages (D21). When stage-events exist for
+    that job, they win; otherwise stages are derived from the current
+    conversion."""
     return ProcessingRead(**processing_service.get_processing(
         db, document_id=document_id, organization_id=current_user.organization_id))
 
