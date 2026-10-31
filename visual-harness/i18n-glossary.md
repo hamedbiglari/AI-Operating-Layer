@@ -515,3 +515,130 @@ an existing source) and its sample cards. Format names stay Latin as identifiers
 | Could not add the web page ({error}). | افزودن صفحهٔ وب ناموفق بود ({error}). |
 | Your role is not allowed to add documents (HTTP 403). | نقش شما اجازهٔ افزودن سند را ندارد (HTTP 403). |
 | No sources yet. Create one with the form above first. | هنوز منبعی وجود ندارد. ابتدا با فرم بالا یکی بسازید. |
+
+## Knowledge gap (Step 8A)
+
+Terms for the live Knowledge gap screen. "Gap" is «شکاف», as in "Knowledge gap".
+
+| English | Persian |
+|---|---|
+| Knowledge gaps | شکاف‌های دانش |
+| Open gaps | شکاف‌های باز |
+| Other open gaps on this knowledge object | دیگر شکاف‌های باز این پرونده دانش |
+| No other open gaps on this knowledge object. | این پرونده دانش شکاف باز دیگری ندارد. |
+| No open gaps. | هیچ شکاف بازی وجود ندارد. |
+| This gap was not found. | این شکاف پیدا نشد. |
+| Could not load the gap ({error}). | بارگذاری شکاف ناموفق بود ({error}). |
+| Could not load gaps ({error}). | بارگذاری شکاف‌ها ناموفق بود ({error}). |
+| Still open | هنوز باز |
+| In progress | در حال انجام |
+| Resolved | برطرف‌شده |
+| Dismissed | کنارگذاشته‌شده |
+| Low priority | اولویت پایین |
+| Medium priority | اولویت متوسط |
+| High priority | اولویت بالا |
+| Critical priority | اولویت بحرانی |
+| Content gap | شکاف محتوا |
+| Entity gap | شکاف موجودیت |
+| Claim gap | شکاف ادعا |
+| Evidence gap | شکاف شواهد |
+| Source gap | شکاف منبع |
+| Access gap | شکاف دسترسی |
+| Relation gap | شکاف رابطه |
+| Freshness gap | شکاف به‌روز بودن |
+| Conflict gap | شکاف تعارض |
+
+## Categories & matrix, Coverage audit (Steps 8C, 8D)
+
+Static strings of the two screens. Strings their scripts build at runtime are
+not translated yet (V5-matrix-coverage-runtime-fa).
+
+| English | Persian |
+|---|---|
+| Categories & Master Topic Matrix | دسته‌ها و ماتریس اصلی موضوعات |
+| A category carries the section schema its topics should cover. Each cell of the matrix is read from the knowledge base — claims, evidence, conflicts, gaps — never typed in. An empty cell means the section has never been researched for that topic, not that it does not apply. | هر دسته طرح‌وارهٔ بخش‌هایی را دارد که موضوعاتش باید پوشش دهند. هر خانهٔ ماتریس از پایگاه دانش خوانده می‌شود — ادعاها، شواهد، تعارض‌ها، شکاف‌ها — و هرگز دستی وارد نمی‌شود. خانهٔ خالی یعنی آن بخش هرگز برای آن موضوع پژوهش نشده است، نه اینکه کاربرد ندارد. |
+| Not connected to Cloud Core. Connect on the Dashboard or AI Center screen. | به Cloud Core وصل نیست. در صفحهٔ داشبورد یا مرکز هوش مصنوعی وصل شوید. |
+| Category | دسته |
+| Choose a category | یک دسته انتخاب کنید |
+| Refresh | تازه‌سازی |
+| New category | دستهٔ جدید |
+| Starting schema | طرح‌وارهٔ آغازین |
+| Medicinal plant (18 sections) | گیاه دارویی (۱۸ بخش) |
+| Device (16 sections) | دستگاه (۱۶ بخش) |
+| Generic (8 sections) | عمومی (۸ بخش) |
+| Create category | ایجاد دسته |
+| Proposals waiting for a decision | پیشنهادهای در انتظار تصمیم |
+| A section discovered on one topic is proposed to its siblings. Nothing is written into a sibling's knowledge until you decide. | بخشی که در یک موضوع کشف شود به موضوعات هم‌دستهٔ آن پیشنهاد می‌شود. تا شما تصمیم نگیرید، چیزی در دانش آن موضوعات نوشته نمی‌شود. |
+| Six dimensions, reported separately and never collapsed into one number: sources, processing, knowledge, evidence, sections and publication. A figure that cannot be known is shown as unknown with the reason — never as zero. If the newest run failed, the last successful audit stays on screen, marked stale. | شش بُعد، جداگانه گزارش می‌شوند و هرگز در یک عدد ادغام نمی‌شوند: منابع، پردازش، دانش، شواهد، بخش‌ها و انتشار. رقمی که دانستنش ممکن نیست، با دلیلش «نامعلوم» نشان داده می‌شود — هرگز صفر. اگر تازه‌ترین اجرا ناموفق باشد، آخرین ممیزی موفق روی صفحه می‌ماند و «کهنه» علامت می‌خورد. |
+| Scope | دامنه |
+| A topic | یک موضوع |
+| A category | یک دسته |
+| Which | کدام |
+| Show | نمایش |
+| Run the audit | اجرای ممیزی |
+| History | تاریخچه |
+
+## Knowledge detail (Step 8B)
+
+Terms for the live Knowledge detail screen and its one remaining sample (Toranjebin). The AI visibility and Evidence by kind cards are hidden as debt, so they get no rows (D6).
+
+| English | Persian |
+|---|---|
+| Knowledge detail | جزئیات دانش |
+| Trace a statement | ردیابی یک گزاره |
+| Archive / delete | بایگانی / حذف |
+| Toranjebin · Alhagi manna · published · knowledge updated 4 Sep 2026 | ترنجبین · Alhagi manna · منتشرشده · به‌روزرسانی دانش ۱۳ شهریور ۱۴۰۵ |
+| of which 318 verified | که ۳۱۸ مورد آن راستی‌آزمایی‌شده است |
+| of which {n} verified | که {n} مورد آن راستی‌آزمایی‌شده است |
+| 21 gaps open | ۲۱ شکاف باز |
+| Archived | بایگانی‌شده |
+| Aggregate strength: strong | قوت کلی شواهد: قوی |
+| Aggregate strength: conflicting | قوت کلی شواهد: متعارض |
+| Could not load the knowledge object ({error}). | بارگذاری پرونده دانش ناموفق بود ({error}). |
+
+## AI executions (Step 9A)
+
+Terms for the AI executions screen. Status labels stand for the API values (succeeded, running, failed, timeout, rate_limited, cancelled, abandoned); provider, model, stage and error codes stay as sent.
+
+| English | Persian |
+|---|---|
+| Live operational view of every real AI-model invocation, read from Cloud Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API. | نمای عملیاتی زندهٔ هر فراخوانی واقعی مدل هوش مصنوعی، خوانده‌شده از Cloud Core. این صفحه هیچ دادهٔ نمونه‌ای ندارد: تا وصل نشود چیزی نشان نمی‌دهد، و هر مقداری که نشان داده می‌شود از API می‌آید. |
+| Connection | اتصال |
+| Not connected. Enter the Cloud Core URL and an access token. | وصل نیست. نشانی Cloud Core و یک توکن دسترسی وارد کنید. |
+| Executions | اجراها |
+| all statuses | همهٔ وضعیت‌ها |
+| Failed / timeout / rate-limited | ناموفق / پایان مهلت / محدودیت نرخ |
+| Abandoned (outcome unknown) | رهاشده (نتیجه نامعلوم) |
+| Timeout | پایان مهلت |
+| Rate limited | محدودیت نرخ |
+| Abandoned | رهاشده |
+| Provider | ارائه‌دهنده |
+| Model | مدل |
+| Apply filters | اعمال فیلترها |
+| Started | آغاز |
+| Provider / model | ارائه‌دهنده / مدل |
+| Stage | مرحله |
+| Tokens in / out | توکن‌های ورودی / خروجی |
+| Provider cost | هزینهٔ ارائه‌دهنده |
+| Duration | مدت |
+| No AI executions yet. An execution is recorded only when a real AI model is actually invoked; fixture and not-configured providers record nothing. | هنوز هیچ اجرای هوش مصنوعی ثبت نشده است. اجرا فقط وقتی ثبت می‌شود که یک مدل واقعی هوش مصنوعی واقعاً فراخوانده شود؛ ارائه‌دهنده‌های نمونه و پیکربندی‌نشده چیزی ثبت نمی‌کنند. |
+| Execution detail | جزئیات اجرا |
+| Attempt chain | زنجیرهٔ تلاش‌ها |
+| Bearer token (kept in memory only) | توکن Bearer (فقط در حافظه نگه داشته می‌شود) |
+| Hidden (admin only) | پنهان (فقط مدیر) |
+| {currency} {value} (estimated) | {value} {currency} (تخمینی) |
+| Not reported | گزارش نشده |
+| {n} ms | {n} میلی‌ثانیه |
+| (deleted) | (حذف‌شده) |
+| first attempt | تلاش نخست |
+| Loading AI executions… | در حال بارگذاری اجراهای هوش مصنوعی… |
+| Permission denied (HTTP {status}). The token is missing, expired, or not valid for this organization. | دسترسی رد شد (HTTP {status}). توکن وجود ندارد، منقضی شده یا برای این سازمان معتبر نیست. |
+| Could not load AI executions: {error}. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS). | بارگذاری اجراهای هوش مصنوعی ناموفق بود: {error}. نشانی را بررسی کنید و مطمئن شوید Cloud Core این مبدأ را مجاز می‌داند (CORS_ALLOWED_ORIGINS). |
+| {from}–{to} of {total} | {from}–{to} از {total} |
+| Execution | اجرا |
+| Operation | عملیات |
+| Model version | نسخهٔ مدل |
+| Provider request id | شناسهٔ درخواست ارائه‌دهنده |
+| Parent | والد |
+| Attempt reason | دلیل تلاش |
+| Error | خطا |

@@ -14,6 +14,7 @@ class KnowledgeGapRead(BaseModel):
     id: uuid.UUID
     organization_id: uuid.UUID
     knowledge_object_id: uuid.UUID
+    knowledge_object_name: str | None = None
     gap_type: GapType
     description: str
     priority: GapPriority

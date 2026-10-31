@@ -14,8 +14,8 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.user import User
 from app.models.enums import ADMIN_ROLES
-from app.schemas.ai_execution import AIExecutionRead, to_read
-from app.schemas.common import Page, PaginationParams, SortParams
+from app.schemas.ai_execution import AIExecutionPage, AIExecutionRead, to_read
+from app.schemas.common import PaginationParams, SortParams
 from app.security.dependencies import get_current_user
 from app.services import ai_execution_service as service
 
@@ -29,7 +29,7 @@ def _can_see_cost(user: User) -> bool:
     return user.role in ADMIN_ROLES
 
 
-@router.get("", response_model=Page[AIExecutionRead])
+@router.get("", response_model=AIExecutionPage)
 def list_ai_executions(
     pagination: PaginationParams = Depends(),
     sort: SortParams = Depends(),
@@ -40,14 +40,18 @@ def list_ai_executions(
     visibility_run_id: UUID | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> Page[AIExecutionRead]:
+) -> AIExecutionPage:
     items, total = service.list_executions(
         db, organization_id=current_user.organization_id, limit=pagination.limit,
         offset=pagination.offset, status=status_filter, provider=provider, model=model,
         parent_type=parent_type, visibility_run_id=visibility_run_id, sort=sort,
     )
-    return Page[AIExecutionRead](items=[to_read(i, can_see_cost=_can_see_cost(current_user)) for i in items],
-                                 total=total, limit=pagination.limit, offset=pagination.offset)
+    counts = service.counts_by_status(
+        db, organization_id=current_user.organization_id, provider=provider, model=model,
+        parent_type=parent_type, visibility_run_id=visibility_run_id,
+    )
+    return AIExecutionPage(items=[to_read(i, can_see_cost=_can_see_cost(current_user)) for i in items],
+                           total=total, limit=pagination.limit, offset=pagination.offset, counts_by_status=counts)
 
 
 @router.get("/{execution_id}", response_model=AIExecutionRead)

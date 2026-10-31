@@ -130,3 +130,57 @@ def test_viewer_cannot_create_gap(client: TestClient, register_org) -> None:
         headers=viewer_headers,
     )
     assert response.status_code == 403
+
+
+def test_gap_reads_carry_the_knowledge_object_name(client: TestClient, register_org) -> None:
+    """Rule 17: the list, the per-object list, the detail and the write
+    responses name the gap's object, so no screen needs a call per row."""
+    org = register_org()
+    ko = _create_ko(client, org["headers"])
+    created = client.post(
+        "/api/v1/knowledge-gaps",
+        json={"knowledge_object_id": ko["id"], "gap_type": "evidence_gap", "description": "No human trial."},
+        headers=org["headers"],
+    ).json()
+    assert created["knowledge_object_name"] == "Taranjabin"
+
+    listed = client.get("/api/v1/knowledge-gaps", headers=org["headers"]).json()["items"]
+    assert [g["knowledge_object_name"] for g in listed] == ["Taranjabin"]
+    per_object = client.get(f"/api/v1/knowledge/{ko['id']}/gaps", headers=org["headers"]).json()["items"]
+    assert per_object[0]["knowledge_object_name"] == "Taranjabin"
+    one = client.get(f"/api/v1/knowledge-gaps/{created['id']}", headers=org["headers"]).json()
+    assert one["knowledge_object_name"] == "Taranjabin"
+    patched = client.patch(
+        f"/api/v1/knowledge-gaps/{created['id']}", json={"status": "in_progress"}, headers=org["headers"]
+    ).json()
+    assert patched["knowledge_object_name"] == "Taranjabin"
+
+
+def test_gap_list_names_objects_in_one_query(client: TestClient, register_org, db_engine) -> None:
+    """Three gaps on three objects: the list's SELECTs do not grow per row."""
+    from sqlalchemy import event
+
+    org = register_org()
+    for name in ("A", "B", "C"):
+        ko = client.post(
+            "/api/v1/knowledge", json={"canonical_name": name, "object_type": "plant"}, headers=org["headers"]
+        ).json()
+        client.post(
+            "/api/v1/knowledge-gaps",
+            json={"knowledge_object_id": ko["id"], "gap_type": "content_gap", "description": name},
+            headers=org["headers"],
+        )
+    seen = []
+
+    def count(conn, cursor, statement, *args):
+        # A per-row name lookup reads knowledge_objects without knowledge_gaps.
+        if "knowledge_objects" in statement and "knowledge_gaps" not in statement:
+            seen.append(statement)
+
+    event.listen(db_engine, "before_cursor_execute", count)
+    try:
+        body = client.get("/api/v1/knowledge-gaps", headers=org["headers"]).json()
+    finally:
+        event.remove(db_engine, "before_cursor_execute", count)
+    assert sorted(g["knowledge_object_name"] for g in body["items"]) == ["A", "B", "C"]
+    assert seen == []  # the names came with the page query

@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.common import Page
+
 
 class ProviderCost(BaseModel):
     estimated_provider_cost: Decimal | None
@@ -47,6 +49,14 @@ class AIExecutionRead(BaseModel):
     provider_cost: "ProviderCost | None" = None
     previous_execution_id: UUID | None
     attempt_reason: str | None
+
+
+class AIExecutionPage(Page[AIExecutionRead]):
+    """The list page plus executions per status (every AIExecutionStatus,
+    0 if none), ignoring the status filter, so the screen's header needs no
+    call per status (Rule 17)."""
+
+    counts_by_status: dict[str, int]
 
 
 def to_read(execution, *, can_see_cost: bool) -> AIExecutionRead:

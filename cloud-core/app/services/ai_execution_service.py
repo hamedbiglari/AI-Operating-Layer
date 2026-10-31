@@ -188,6 +188,26 @@ def list_executions(db: Session, *, organization_id: UUID, limit: int, offset: i
     return list(items), total
 
 
+def counts_by_status(db: Session, *, organization_id: UUID, provider: str | None = None, model: str | None = None,
+                     parent_type: str | None = None, visibility_run_id: UUID | None = None) -> dict[str, int]:
+    """Executions per status in one grouped query (Rule 17), with the list's
+    other filters but NOT its status filter, so the header can show every
+    status while the table shows one. Every status is present, 0 if none."""
+    conditions = [AIExecution.organization_id == organization_id]
+    if provider:
+        conditions.append(AIExecution.provider == provider)
+    if model:
+        conditions.append(AIExecution.model == model)
+    if parent_type:
+        conditions.append(AIExecution.parent_type == parent_type)
+    if visibility_run_id:
+        conditions.append(AIExecution.visibility_run_id == visibility_run_id)
+    found = dict(db.execute(
+        select(AIExecution.status, func.count()).where(*conditions).group_by(AIExecution.status)
+    ).all())
+    return {s.value: found.get(s.value, 0) for s in AIExecutionStatus}
+
+
 def execution_chain(db: Session, *, execution_id: UUID, organization_id: UUID) -> list[AIExecution]:
     """Every attempt leading to `execution_id`, oldest first (recursive,
     tenant-scoped at every step)."""

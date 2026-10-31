@@ -39,6 +39,7 @@ def get_overview(
     status: KnowledgeObjectStatus | None = None,
     sort: KnowledgeOverviewSort = KnowledgeOverviewSort.ACTION_NEEDED,
     include_finished: bool = False,
+    object_id: UUID | None = None,
 ) -> tuple[list[dict], int]:
     claims = (
         select(
@@ -90,17 +91,21 @@ def get_overview(
         col["evidence_pending_review"] == 0,
     )
 
-    # Archived objects are not part of the overview at all.
     query = (
         filtered_knowledge_objects(organization_id=organization_id, search=search, object_type=object_type, status=status)
-        .where(KnowledgeObject.status != KnowledgeObjectStatus.ARCHIVED)
         .outerjoin(claims, claims.c.ko == KnowledgeObject.id)
         .outerjoin(evidence, evidence.c.ko == KnowledgeObject.id)
         .outerjoin(gaps, gaps.c.ko == KnowledgeObject.id)
         .add_columns(*(col[name].label(name) for name in COUNT_NAMES), finished.label("finished"))
     )
-    if not include_finished:
-        query = query.where(not_(finished))
+    if object_id is not None:
+        # One object's row for its detail page, whatever its status.
+        query = query.where(KnowledgeObject.id == object_id)
+    else:
+        # Archived objects are not part of the overview list at all.
+        query = query.where(KnowledgeObject.status != KnowledgeObjectStatus.ARCHIVED)
+        if not include_finished:
+            query = query.where(not_(finished))
 
     total = db.execute(select(func.count()).select_from(query.subquery())).scalar_one()
 

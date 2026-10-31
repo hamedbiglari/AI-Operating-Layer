@@ -38,12 +38,26 @@ const norm = (s) => decode(s).replace(/\s+/g, ' ').trim();
 // URLs, paths, emails and bare domains are data, not UI text.
 const isUiText = (s) => /[A-Za-z]{2}/.test(s) && !/^(https?:\/\/|\/|[\w.+-]+@[\w.-]+$|[\w-]+(\.[\w-]+)+$)/.test(s);
 
+// Removes each [data-debt-hidden] element with everything inside it. Same-name
+// tags are counted, so a hidden card holding its own <div>s is removed whole,
+// not cut at its first </div>.
+function dropDebtHidden(s) {
+  const open = /<(\w+)\b[^>]*\bdata-debt-hidden\b[^>]*>/;
+  for (let m = s.match(open); m; m = s.match(open)) {
+    const tag = new RegExp('<(/?)' + m[1] + '\\b[^>]*>', 'g');
+    tag.lastIndex = m.index + m[0].length;
+    let depth = 1, t;
+    while (depth && (t = tag.exec(s))) depth += t[1] ? -1 : 1;
+    s = s.slice(0, m.index) + ' ' + (t ? s.slice(tag.lastIndex) : '');
+  }
+  return s;
+}
+
 const screens = [];
 const starts = [...html.matchAll(/<section class="screen[^"]*" id="(screen-[^"]+)"/g)];
 starts.forEach((m, i) => {
   const end = i + 1 < starts.length ? starts[i + 1].index : html.indexOf('<script', m.index);
-  const body = html.slice(m.index, end).replace(/<(script|style|svg|code|bdi)\b[\s\S]*?<\/\1>/g, ' ')
-    .replace(/<(\w+)\b[^>]*\bdata-debt-hidden\b[^>]*>[\s\S]*?<\/\1>/g, ' ')
+  const body = dropDebtHidden(html.slice(m.index, end).replace(/<(script|style|svg|code|bdi)\b[\s\S]*?<\/\1>/g, ' '))
     .replace(/<(\w+)\b[^>]*\bclass="(?:[^"]*\s)?identifier(?:\s[^"]*)?"[^>]*>[\s\S]*?<\/\1>/g, ' ');
   const found = new Set();
   for (const t of body.matchAll(/>([^<>]+)</g)) found.add(norm(t[1]));

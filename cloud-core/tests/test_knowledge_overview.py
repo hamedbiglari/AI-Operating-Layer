@@ -209,3 +209,40 @@ def test_other_organization_is_never_counted(client: TestClient, register_org) -
     body = _overview(client, org_a, "?include_finished=true")
     assert set(_by_name(body)) == {"Mine"} and body["total"] == 1
     assert set(_by_name(body)["Mine"]["counts"].values()) == {0} and mine
+
+
+def test_id_returns_that_row_with_its_counts(client: TestClient, register_org) -> None:
+    """The detail header's one call (Rule 17): the object and its counts,
+    whatever list filters came with it. A finished object is still returned."""
+    headers = register_org()["headers"]
+    wanted = _ko(client, headers, "Taranjabin")
+    _ko(client, headers, "Saffron")
+    claim = _claim(client, headers, wanted, "contains")
+    _evidence(client, headers, _source(client, headers, "Review"), claim, status="verified")
+    _claim(client, headers, wanted, "tastes", conflicting=True)
+    _gap(client, headers, wanted)
+    for query in (f"?id={wanted['id']}",
+                  f"?id={wanted['id']}&search=nomatch&status=archived&offset=5"):
+        body = _overview(client, headers, query)
+        assert [item["id"] for item in body["items"]] == [wanted["id"]]
+        assert body["total"] == 1
+        assert body["items"][0]["counts"] == {"sources": 1, "claims": 2, "claims_conflicting": 1, "evidence": 1,
+                                              "evidence_verified": 1, "evidence_pending_review": 0, "gaps_open": 1}
+
+    finished = _ko(client, headers, "Thyme", status="published")
+    body = _overview(client, headers, f"?id={finished['id']}")
+    assert [(item["id"], item["finished"]) for item in body["items"]] == [(finished["id"], True)]
+
+
+def test_unknown_id_is_404(client: TestClient, register_org) -> None:
+    import uuid
+
+    headers = register_org()["headers"]
+    response = client.get(f"{OVERVIEW}?id={uuid.uuid4()}", headers=headers)
+    assert response.status_code == 404
+
+
+def test_other_organizations_id_is_404(client: TestClient, register_org) -> None:
+    mine, theirs = register_org()["headers"], register_org()["headers"]
+    their_ko = _ko(client, theirs, "Garlic")
+    assert client.get(f"{OVERVIEW}?id={their_ko['id']}", headers=mine).status_code == 404

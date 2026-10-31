@@ -121,13 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 9691372
+- sha (last non-docs commit): 4441fd5
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 9691372 (7E)
-- last code commit: "feat(sources): live add source screen (7E)" @ 9691372
-- last feature commit: "feat(sources): live add source screen (7E)"
-  @ 9691372
+- last_ci: in_progress @ 4441fd5 (9A). 21be62a (9A backend) was pushed
+  with it and is not built on its own. 41f187d (8B-3) was green (run 79).
+- last code commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
+- last feature commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -248,6 +248,64 @@ file from scratch (do not diff). Output only the file content.
   (data-debt-hidden, no FA rows, per D6). Old #live-add-source panel
   (POST /sources) kept. 18 FA entries + glossary section, 9 KNOWN
   words. e2e/add-source.js (19 checks); --require adds screen-add.
+- Step 8 (partial: 8A, 8C, 8D; 8B Knowledge detail skipped for now):
+  - 8A backend @ 913c790 — KnowledgeGapRead.knowledge_object_name
+    (model property; the gap list loads the object in one joined
+    query, no N+1). 2 tests: name on every gap read; no per-row
+    knowledge_objects lookup (fails without the join).
+  - 8A/8C/8D frontend @ 75e09ef — live #screen-gap (kind 'gap',
+    gapScreen()): ?id= -> GET /knowledge-gaps/{id} + GET
+    /knowledge/{object}/gaps (2 calls, other open gaps as links); no
+    id -> GET /knowledge-gaps?status=open (1 call, object names). It
+    replaces the generic gaps table (its status filter is gone).
+    "What has already been checked" hidden (V5-gap-history). Matrix
+    and Coverage get data-live-wired; their 22 static strings
+    translated (47 FA entries in all with the gap screen; 63 KNOWN
+    words). V5-matrix-coverage-runtime-fa OPEN. e2e/gap.js (19) +
+    e2e/matrix-coverage.js (13) = 32 checks; --require adds
+    screen-matrix,screen-coverage.
+  - 8B-1 @ 7c97cbb — GET /knowledge/overview?id= (alias of
+    knowledge_object_id): one row with its counts, any status (archived
+    and finished included), other filters ignored; unknown or
+    cross-org id -> 404. 3 tests.
+  - 8B-2 @ 1b603f3 — #screen-knowledge-detail?id= (kind
+    'knowledgeDetail', knowledgeDetailScreen()): overview?id= +
+    /knowledge/{id}/claims?limit=200 in parallel (2 calls); header,
+    status badge, Trace a statement -> #screen-provenance?id=, 4 stat
+    cards, claims with status and strength. The 4 sample pages became
+    one (taranjebin renamed; saffron/garlic/thyme deleted; 17 links,
+    the picker and FIXTURE repointed). AI visibility and Evidence by
+    kind hidden (V5-knowledge-detail-visibility,
+    V5-knowledge-detail-evidence-kind). Fixes: live CSS now hides the
+    sample breadcrumbs/header on #screen-gap (8A bug) and
+    #screen-knowledge-detail; i18n-coverage.js skips nested
+    [data-debt-hidden] elements whole. 11 FA entries, 5 KNOWN words.
+    e2e/knowledge-detail.js (21); gap.js tightened; --require adds
+    screen-knowledge-detail.
+  - 8B-3 @ 41f187d — Knowledge list names (table and cards) link to
+    #screen-knowledge-detail?id=; the post-create "Open" goes there too.
+    The inline panel stays, opened only by the Research workspace
+    button (openDetail(it), no toWorkspace flag). build.js now builds
+    one screen-knowledge-detail (first object, the two cards hidden)
+    and its links point there; it was syntax-checked, not run (running
+    it would overwrite the hand-edited index.html). knowledge-list.js
+    108 checks (+2), knowledge-quickfix.js opens the workspace by its
+    button. Step 8 is 100% complete.
+- Step 9 (AI), partial:
+  - 9A backend @ 21be62a — GET /ai-executions returns AIExecutionPage
+    with counts_by_status (every AIExecutionStatus, 0 if none; one
+    grouped query; ignores the status filter, keeps provider/model/
+    parent filters). 1 test in test_phase17_ai_execution.py.
+  - 9A frontend @ 4441fd5 — #screen-ai-executions (own module, own
+    #aix-connect form, not in SCREENS): 1 request per load instead of 7;
+    every runtime string through AIOL_I18N.set (status labels, cost,
+    tokens, duration, page line, detail labels, state messages); status
+    options show labels (still English in Persian: KEEP_LATIN skips
+    select); intro rewritten as one sentence (the Persian layer
+    translates per text node). 40 FA entries, 43 KNOWN words. Debt rows
+    V5-ai-prompts, V5-ai-center-deletes. e2e/ai-executions.js (19);
+    --require adds screen-ai-executions. An error hides #aix-body; the
+    way back is Connect.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -256,13 +314,25 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add
-  and 11 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions
+  and 15 browser suites.
 
 ## 5. In progress — next step
 
-- Step 7E (Add source) is complete @ 9691372 (see §4).
-- Next up is Step 8. Needs investigation before coding.
+- Step 8 (Knowledge tools) is DONE (see §4).
+- Step 9 (AI) is partially complete: 9A (AI executions) done (see §4).
+- Next up: 9B (Memory Center: /memory search, versions, compare,
+  export; route runtime text through AIOL_I18N.set, FA, e2e,
+  --require). Then 9C Chat settings, 9D AI Catalog and Agent Network,
+  9E AI Center (split routing/jobs/discovery), 9F Command workspace.
+  #screen-access moves to Step 10 (Visibility).
+- Debt rows added in 9A, both OPEN: V5-ai-prompts, V5-ai-center-deletes.
+- Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
+  V5-knowledge-detail-evidence-kind. The detail's Trace a statement
+  link is the first entry point into #screen-provenance?id=
+  (V5-knowledge-provenance-link, still only in this file).
+- Debt rows added in 8A/8C/8D, both OPEN: V5-gap-history,
+  V5-matrix-coverage-runtime-fa.
 - Debt rows added in 7E, all OPEN: V5-add-source-dataset,
   V5-add-source-site-article, V5-add-source-research,
   V5-add-source-supplier, V5-add-source-ui-merge (old "Add a source to
@@ -274,10 +344,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the Step 8 investigation prompt.
+State in sync → user says "go" → send the 9B (Memory Center) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the Step 8 investigation prompt.
+Case B — user says "go": send the 9B (Memory Center) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -331,6 +401,15 @@ Case C — anything CI-red: paste log, fix before any new work.
   noted.
 - v12 @ 9691372 — 7E shipped (live Add source: upload + URL cards).
   Step 7E is complete; Step 8 is next. Five V5-add-source-* debt rows.
+- v13 @ 75e09ef — 8A, 8C, 8D shipped (backend 913c790). Gap, Matrix and
+  Coverage screens are now live. 8B remains.
+- v14 @ 1b603f3 — 8B-1 (7c97cbb) and 8B-2 shipped: live Knowledge
+  detail, the 4 sample pages collapsed into one. v13's last_ci
+  "in_progress @ 75e09ef" is corrected: 75e09ef was green.
+- v15 @ 41f187d — 8B-3 shipped (Knowledge list -> detail links, build.js
+  updated). Step 8 is complete; Step 9 (AI) is next.
+- v16 @ 4441fd5 — 9A shipped (backend 21be62a): AI executions loads in one
+  call and is fully translatable. 9B (Memory Center) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -458,6 +537,20 @@ Session / memory:
   value (e.g., "OCR": "OCR"). The mutation observer will rewrite the
   text node endlessly. Use .identifier or skip the FA entry instead. No
   static check catches this; only browser tests do.
+- i18n status label conflicts: the FA key "Open" was already mapped as
+  a verb ("to open"). For gap statuses use "Still open" to avoid the
+  clash. Check an existing key's meaning before reusing it for a value.
+- Live screens that rebuild their own breadcrumbs and header need a CSS
+  rule `body[data-live="on"] #screen-X > .breadcrumbs, ... > .page-header
+  { display: none !important; }` (next to the detail/processing/
+  provenance rules); without it the sample header shows above the live
+  one. A browser test must check that every non-live child is hidden,
+  breadcrumbs and header included (gap.js once skipped them and missed
+  this).
+- i18n-coverage.js used a lazy regex for [data-debt-hidden] that
+  stopped at the first closing tag of the same name, so a hidden card
+  with nested <div>s leaked its inner strings. It now counts nesting
+  (dropDebtHidden, 8B-2).
 
 ### 10.3 Reversals and abandoned approaches
 
@@ -520,8 +613,11 @@ Session / memory:
 - 7C Processing — done (see §4). 7D and 7E remain.
 - 7D Provenance (frontend only, 3+3N calls).
 - 7E Add source (Upload + URL only, ~1h).
-- Steps 8–14 (Knowledge tools, AI, Visibility, Commerce, Website+Auth,
-  Settings, Admin) — not started. Admin blocked on backend design for
+- Step 8 (Knowledge tools) complete: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D.
+  V5-matrix-coverage-runtime-fa is OPEN.
+- Step 9 (AI) partial: 9A done; 9B–9F remain.
+- Steps 10–14 (Visibility, Commerce, Website+Auth, Settings, Admin)
+  — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
 - Design elevation across all screens — baseline Knowledge critique
   started; no fixes yet.
