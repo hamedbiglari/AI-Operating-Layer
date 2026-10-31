@@ -529,8 +529,13 @@ Errors carry `error.reason`. A client must never block sign-in on any of these.
 | GET | `/api/v1/devices/admin/credentials/{id}` | Admin. Linked accounts and the last 100 observations with truncated network pseudonyms. Every read is audit-logged (`device_intelligence.viewed`). |
 | POST | `/api/v1/devices/admin/credentials/{id}/revoke` | Admin. Audited (`device.credential_revoked`). 409 when already revoked. |
 
+Register and verify accept optional `signals: {machine_guid?, gdid?}` (unknown keys → 422). `machine_guid` is
+used only from `platform: "windows"` and stored only as a keyed HMAC; `gdid` is never trusted (state
+`unsupported`). Admin observations carry `os_install_ref` (10-hex prefix) and `signal_states`.
+
 `signing_input` is `AIOL-DEVICE-v1\n<purpose>\n<challenge_id>\n<nonce>\n<organization_id>\n<user_id>\n<credential_id or ->`;
 the server rebuilds it from its own record. Assessment categories (algorithm `di-assess-v1`):
 `DEVICE_CREDENTIAL_REVOKED`, `SAME_REGISTERED_INSTALLATION`, `CONFLICTING_EVIDENCE`,
-`SHARED_NETWORK_ONLY`, `INSUFFICIENT_EVIDENCE`. None of them is a person-level conclusion, and no route
+`SHARED_NETWORK_ONLY`, `INSUFFICIENT_EVIDENCE`, and from `di-assess-v2` `LIKELY_SHARED_CLIENT_ENVIRONMENT`
+(another key reported the same Windows installation). None of them is a person-level conclusion, and no route
 enforces on them.

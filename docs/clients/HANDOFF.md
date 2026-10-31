@@ -18,6 +18,10 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
 - Run 41221954216: Windows built again; **iOS simulator build succeeded**; macOS compiled but bundling failed
   on empty signing secrets; Android failed on NDK_HOME. Both fixed in the workflow (next run).
 - Branch merged with v5-implementation (77d9485), verified: 1800 backend tests pass.
+- Platform signals (§16): Windows MachineGuid (HMAC on arrival, migration 0050), GDID unsupported,
+  LIKELY_SHARED_CLIENT_ENVIRONMENT. Full suite 1809 passed, coverage 93.54 %.
+- Open: §19 dashboard Device Intelligence screen — waits for the local v5 session to finish editing
+  visual-harness/index.html, to avoid merge conflicts.
 
 ## In progress
 - CI "Client suite CI" run 41209523146 on 01b4467:

@@ -31,6 +31,8 @@ os_info = { version = "3", default-features = false }
 # are provided by the Kotlin plugin in mobile/android (Android Keystore).
 [target.'cfg(target_os = "windows")'.dependencies]
 keyring = { version = "3.6", features = ["windows-native"] }
+# Read-only access to HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid (§16.1). No admin rights needed.
+winreg = "0.56"
 [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
 keyring = { version = "3.6", features = ["apple-native"] }
 [target.'cfg(target_os = "linux")'.dependencies]

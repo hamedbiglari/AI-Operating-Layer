@@ -430,3 +430,97 @@ def test_the_admin_list_sorts_by_documented_fields_only(client, register_org):
     ok = client.get(f"{D}/admin/credentials?sort_by=first_seen_at&sort_dir=asc", headers=org["headers"])
     assert ok.status_code == 200 and ok.json()["total"] == 1
     assert client.get(f"{D}/admin/credentials?sort_by=public_key_spki", headers=org["headers"]).status_code == 422
+
+
+# ------------------------------------------------------------------ platform signals (§16): MachineGuid, GDID
+GUID = "3f2504e0-4f89-11d3-9a0c-0305e82c3301"
+
+
+def _obs(db_session, cred_id):
+    return db_session.execute(select(DeviceObservation).where(
+        DeviceObservation.credential_id == uuid.UUID(cred_id))).scalars().all()
+
+
+def test_machine_guid_is_pseudonymised_and_never_stored_or_returned_raw(client, register_org, db_session):
+    org = register_org()
+    inst = Installation()
+    r = inst.register(client, org["headers"], platform="windows", signals={"machine_guid": GUID})
+    assert GUID not in r.text
+    rows = _obs(db_session, inst.credential_id)
+    assert rows and all(GUID not in str(vars(o)) and GUID.replace("-", "") not in str(vars(o)) for o in rows)
+    assert rows[0].os_install_pseudonym == svc.pseudonym(f"winguid:{GUID}")
+    assert rows[0].signal_states == {"machine_guid": "observed", "gdid": "unsupported"}
+    detail = client.get(f"{D}/admin/credentials/{inst.credential_id}", headers=org["headers"]).text
+    assert GUID not in detail and rows[0].os_install_pseudonym not in detail, "only a truncated reference"
+
+
+def test_braces_and_case_do_not_create_a_different_installation():
+    a = svc.signal_fields("WINDOWS_CLIENT", {"machine_guid": GUID})["os_install_pseudonym"]
+    b = svc.signal_fields("WINDOWS_CLIENT", {"machine_guid": "{" + GUID.upper() + "}"})["os_install_pseudonym"]
+    assert a == b
+
+
+def test_signal_states_record_absence_and_unsupported_platforms():
+    assert svc.signal_fields("WINDOWS_CLIENT", {})["signal_states"]["machine_guid"] == "unavailable"
+    assert svc.signal_fields("WINDOWS_CLIENT", {"machine_guid": "not-a-guid"}) == {
+        "os_install_pseudonym": None, "signal_states": {"machine_guid": "invalid", "gdid": "unsupported"}}
+    for prov in ("MACOS_CLIENT", "ANDROID_CLIENT", "IOS_CLIENT", "WEB_BROWSER"):
+        out = svc.signal_fields(prov, {"machine_guid": GUID})
+        assert out["os_install_pseudonym"] is None, "a MachineGuid claimed by a non-Windows client is not stored"
+        assert out["signal_states"]["machine_guid"] == "unsupported"
+
+
+def test_a_client_sent_gdid_is_never_trusted_or_stored(client, register_org, db_session):
+    org = register_org()
+    inst = Installation()
+    inst.register(client, org["headers"], signals={"machine_guid": GUID, "gdid": "FAKE-GDID-123"})
+    rows = _obs(db_session, inst.credential_id)
+    assert all("FAKE-GDID" not in str(vars(o)) for o in rows)
+    assert rows[0].signal_states["gdid"] == "unsupported"
+
+
+def test_unknown_signal_keys_are_refused(client, register_org):
+    org = register_org()
+    r = Installation().register(client, org["headers"], expect=(422,), signals={"bios_serial": "X123"})
+    assert r.status_code == 422
+
+
+def test_two_keys_on_one_windows_installation_are_likely_shared_client_environment(client, register_org):
+    """Reinstall / second app copy / multi-account abuse on one Windows install: new key, same MachineGuid."""
+    org = register_org()
+    h2, _ = _second_user(client, org)
+    first, second = Installation(), Installation()
+    first.register(client, org["headers"], signals={"machine_guid": GUID})
+    second.register(client, h2, signals={"machine_guid": GUID})
+    a = client.get(f"{D}/admin/credentials/{second.credential_id}", headers=org["headers"]).json()["assessment"]
+    assert "LIKELY_SHARED_CLIENT_ENVIRONMENT" in a["categories"]
+    assert a["evidence"]["other_keys_on_same_os_installation"] == 1
+    assert "SHARED_NETWORK_ONLY" not in a["categories"]
+    assert not any("person" in c.lower() for c in a["categories"])
+
+
+def test_different_windows_installations_are_not_linked(client, register_org):
+    org = register_org()
+    a, b = Installation(), Installation()
+    a.register(client, org["headers"], signals={"machine_guid": GUID})
+    b.register(client, org["headers"], signals={"machine_guid": "11111111-2222-3333-4444-555555555555"})
+    cats = client.get(f"{D}/admin/credentials/{b.credential_id}", headers=org["headers"]).json()["assessment"]["categories"]
+    assert "LIKELY_SHARED_CLIENT_ENVIRONMENT" not in cats
+
+
+def test_the_same_machine_guid_in_another_tenant_is_invisible(client, register_org):
+    a_org, b_org = register_org(), register_org()
+    Installation().register(client, a_org["headers"], signals={"machine_guid": GUID})
+    other = Installation()
+    other.register(client, b_org["headers"], signals={"machine_guid": GUID})
+    cats = client.get(f"{D}/admin/credentials/{other.credential_id}",
+                      headers=b_org["headers"]).json()["assessment"]["categories"]
+    assert "LIKELY_SHARED_CLIENT_ENVIRONMENT" not in cats
+
+
+def test_a_missing_machine_guid_is_not_evidence_of_anything(client, register_org):
+    org = register_org()
+    inst = Installation()
+    inst.register(client, org["headers"], signals={})
+    cats = client.get(f"{D}/admin/credentials/{inst.credential_id}", headers=org["headers"]).json()["assessment"]["categories"]
+    assert cats == ["INSUFFICIENT_EVIDENCE"]

@@ -39,14 +39,18 @@ export class DeviceIntelligence {
     return { ch, signature: await this.bridge.deviceSign(ch.signing_input) };
   }
 
-  async #register(info) {
+  async #signals() {
+    try { return (await this.bridge.platformSignals?.()) ?? {}; } catch { return {}; }
+  }
+
+  async #register(info, signals) {
     const key = await this.bridge.deviceKey({ create: true });
     if (!key) { this.status = DeviceStatus.UNAVAILABLE; return; }
     const { ch, signature } = await this.#sign('register');
     const cred = await this.http.post('/devices/credentials', {
       challenge_id: ch.challenge_id, nonce: ch.nonce, public_key: key.publicKey, signature,
       platform: info.platform, key_storage: key.storage, app_version: info.version,
-      os_family: info.osFamily, os_version: info.osVersion,
+      os_family: info.osFamily, os_version: info.osVersion, signals,
     }, { retries: 0 });
     this.#set(CRED, cred.id);
     this.status = DeviceStatus.REGISTERED;
@@ -62,12 +66,13 @@ export class DeviceIntelligence {
     if (!serverEnabled) { this.status = DeviceStatus.UNAVAILABLE; return this.status; }
     try {
       const info = await this.bridge.appInfo();
+      const signals = await this.#signals();
       // Register-or-link first: proof of possession is per account, so account switching is handled here.
-      await this.#register(info);
+      await this.#register(info, signals);
       const id = this.#get(CRED);
       const { ch, signature } = await this.#sign('verify', id);
       await this.http.post(`/devices/credentials/${id}/verify`, {
-        challenge_id: ch.challenge_id, nonce: ch.nonce, signature, app_version: info.version,
+        challenge_id: ch.challenge_id, nonce: ch.nonce, signature, app_version: info.version, signals,
       }, { retries: 0 });
       this.status = DeviceStatus.VERIFIED;
     } catch (err) {

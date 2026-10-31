@@ -9,8 +9,10 @@ WHAT THIS IS
     credential may be used by several accounts (a shared family computer, account switching).
 
 WHAT THIS IS NOT
-    * Not a fingerprint. Nothing here combines browser or hardware properties into an identifier. No
-      hardware serials, MachineGuid, IMEI, UDID, MAC address or TPM material is collected.
+    * Not a fingerprint. Nothing here combines browser or hardware properties into an identifier. No hardware
+      serials, IMEI, UDID, MAC address or TPM material is collected. The one OS-installation identifier accepted
+      is Windows MachineGuid (§16.1): optional, HMAC-pseudonymised on arrival, never stored or shown raw.
+      GDID is capability-gated and reported as unsupported: no documented, verifiable API was identified.
     * Not an enforcement engine. Assessments are evidence categories with reason codes and an algorithm
       version, read by an administrator; no route consumes them to allow or deny anything.
     * Not cross-tenant. Every row carries `organization_id`; the same key registered in two tenants is two
@@ -29,7 +31,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import (
-    TIMESTAMP, CheckConstraint, ForeignKey, ForeignKeyConstraint, Index, Integer, String, Text, UniqueConstraint,
+    JSON, TIMESTAMP, CheckConstraint, ForeignKey, ForeignKeyConstraint, Index, Integer, String, Text, UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -142,6 +144,7 @@ class DeviceObservation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         Index("ix_device_observations_credential", "credential_id", "created_at"),
         Index("ix_device_observations_network", "organization_id", "network_prefix_pseudonym"),
         Index("ix_device_observations_created_at", "created_at"),
+        Index("ix_device_observations_os_install", "organization_id", "os_install_pseudonym"),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(
@@ -159,3 +162,8 @@ class DeviceObservation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     network_prefix_pseudonym: Mapped[str | None] = mapped_column(String(64))
     pseudonym_key_version: Mapped[int | None] = mapped_column(Integer)
     app_version: Mapped[str | None] = mapped_column(String(40))
+    # Keyed HMAC of an OS-installation identifier (Windows MachineGuid). Same key and version as the network
+    # pseudonyms. Raw value never stored. NULL = not observed.
+    os_install_pseudonym: Mapped[str | None] = mapped_column(String(64))
+    # Per-signal availability: observed | unavailable | unsupported | invalid. Absence is recorded, never inferred.
+    signal_states: Mapped[dict | None] = mapped_column(JSON)

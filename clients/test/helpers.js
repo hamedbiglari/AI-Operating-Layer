@@ -28,6 +28,7 @@ export class MemoryBridge {
   async deviceKey() { return { publicKey: 'PUB', storage: 'os_keystore' }; }
   async deviceSign(text) { this.signed.push(text); return 'SIG'; }
   async deviceKeyDelete() { this.keyDeleted++; }
+  async platformSignals() { return this.signals ?? {}; }
 }
 
 export class MemoryStorage {

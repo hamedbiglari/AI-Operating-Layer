@@ -137,3 +137,21 @@ test('device: server-disabled means unavailable, with no requests', async () => 
   assert.equal(await d.ensure({ serverEnabled: false }), DeviceStatus.UNAVAILABLE);
   assert.equal(f.calls.length, 0);
 });
+
+test('device: platform signals ride along with register and verify, and only when verification is on', async () => {
+  const { bridge, f, d } = deviceSetup((req) => {
+    if (req.url.endsWith('/devices/challenges')) return { status: 201, body: CH(req.body.purpose) };
+    return { status: 201, body: { id: 'cred1' } };
+  });
+  bridge.signals = { machine_guid: '3f2504e0-4f89-11d3-9a0c-0305e82c3301' };
+  await d.ensure();
+  const reg = f.calls.find((c) => c.url.endsWith('/devices/credentials'));
+  const ver = f.calls.find((c) => c.url.endsWith('/verify'));
+  assert.deepEqual(reg.body.signals, bridge.signals);
+  assert.deepEqual(ver.body.signals, bridge.signals);
+  assert.ok(!f.calls.some((c) => c.url.includes('3f2504e0')), 'never in a URL');
+  await d.disable();
+  const n = f.calls.length;
+  await d.ensure();
+  assert.equal(f.calls.length, n, 'off: no signal is read or sent');
+});

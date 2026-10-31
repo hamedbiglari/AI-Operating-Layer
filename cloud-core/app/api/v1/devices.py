@@ -43,6 +43,13 @@ class ChallengeIn(BaseModel):
     credential_id: UUID | None = None
 
 
+class PlatformSignals(BaseModel):
+    """Optional platform signals (§16). Unknown keys are refused rather than silently stored."""
+    model_config = {"extra": "forbid"}
+    machine_guid: str | None = Field(default=None, max_length=40, description="Windows only; HMAC-pseudonymised")
+    gdid: str | None = Field(default=None, max_length=200, description="Accepted but never trusted: unsupported")
+
+
 class RegisterIn(BaseModel):
     challenge_id: UUID
     nonce: str = Field(min_length=16, max_length=100)
@@ -53,6 +60,7 @@ class RegisterIn(BaseModel):
     app_version: str | None = Field(default=None, max_length=40)
     os_family: str | None = Field(default=None, max_length=40)
     os_version: str | None = Field(default=None, max_length=40)
+    signals: PlatformSignals | None = None
 
 
 class VerifyIn(BaseModel):
@@ -60,6 +68,7 @@ class VerifyIn(BaseModel):
     nonce: str = Field(min_length=16, max_length=100)
     signature: str = Field(min_length=40, max_length=200)
     app_version: str | None = Field(default=None, max_length=40)
+    signals: PlatformSignals | None = None
 
 
 def _limit(user: User) -> None:
@@ -84,7 +93,8 @@ def register(body: RegisterIn, request: Request, response: Response, user: User 
     cred, created = svc.register(
         db, user=user, challenge_id=body.challenge_id, nonce=body.nonce, public_key=body.public_key,
         signature=body.signature, platform=body.platform, key_storage=body.key_storage,
-        app_version=body.app_version, os_family=body.os_family, os_version=body.os_version, ip=client_ip(request))
+        app_version=body.app_version, os_family=body.os_family, os_version=body.os_version, ip=client_ip(request),
+        signals=body.signals.model_dump() if body.signals else None)
     response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
     return {**svc.credential_out(cred), "created": created}
 
@@ -93,7 +103,8 @@ def register(body: RegisterIn, request: Request, response: Response, user: User 
 def verify(credential_id: UUID, body: VerifyIn, request: Request, user: User = Reader,
            db: Session = Depends(get_db)) -> dict:
     cred = svc.verify(db, user=user, credential_id=credential_id, challenge_id=body.challenge_id, nonce=body.nonce,
-                      signature=body.signature, app_version=body.app_version, ip=client_ip(request))
+                      signature=body.signature, app_version=body.app_version, ip=client_ip(request),
+                      signals=body.signals.model_dump() if body.signals else None)
     return svc.credential_out(cred)
 
 

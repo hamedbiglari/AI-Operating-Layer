@@ -9,8 +9,10 @@
 //!   device_key_sign                sign a server challenge (domain-tagged input only)
 //!   device_key_delete
 //!   open_external                  https / mailto only, validated here as well as in the UI
+//!   platform_signals               Windows MachineGuid (read-only); GDID reported unsupported (§16.1)
 mod device_key;
 mod links;
+mod signals;
 mod vault;
 
 use serde::Serialize;
@@ -194,6 +196,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_info,
             open_external,
+            signals::platform_signals,
             commands::vault_get,
             commands::vault_set,
             commands::vault_delete,

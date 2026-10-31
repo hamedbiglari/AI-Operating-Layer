@@ -30,6 +30,7 @@ import binascii
 import hashlib
 import hmac
 import ipaddress
+import re
 import secrets
 import uuid
 from dataclasses import dataclass
@@ -51,7 +52,7 @@ from app.models.device_intelligence import (
 from app.models.user import User
 from app.services.audit import record_audit_log
 
-ALGORITHM_VERSION = "di-assess-v1"
+ALGORITHM_VERSION = "di-assess-v2"   # v2: OS-installation pseudonym (Windows MachineGuid) evidence
 SIGNING_DOMAIN = "AIOL-DEVICE-v1"
 PLATFORM_PROVENANCE = {"web": "WEB_BROWSER", "windows": "WINDOWS_CLIENT", "macos": "MACOS_CLIENT",
                        "android": "ANDROID_CLIENT", "ios": "IOS_CLIENT"}
@@ -109,6 +110,40 @@ def network_fields(ip: str | None) -> dict:
     return {"network_pseudonym": pseudonym(f"ip:{ipaddress.ip_address(ip.strip())}"),
             "network_prefix_pseudonym": pseudonym(f"net:{prefix}"),
             "pseudonym_key_version": settings.DEVICE_PSEUDONYM_KEY_VERSION}
+
+
+# ---------------------------------------------------------------- platform signals (§16)
+_GUID = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+# Signals each provenance can legitimately report. Anything else is recorded as "unsupported" and discarded.
+_SIGNALS_BY_PROVENANCE = {"WINDOWS_CLIENT": {"machine_guid"}}
+
+
+def signal_fields(provenance: str, signals: dict | None) -> dict:
+    """Turn what a client reported into what is stored.
+
+    * machine_guid (Windows only): a GUID string → keyed HMAC (`os_install_pseudonym`); the raw value is discarded
+      here and never persisted, logged or returned. Missing → "unavailable". Malformed → "invalid" (and nothing
+      stored). From any other platform → "unsupported" (a macOS/Android/iOS/web client has no MachineGuid).
+    * gdid: always "unsupported". No documented, verifiable GDID API was identified (§16.1); a client-sent value
+      is ignored rather than trusted or simulated.
+    A missing signal is a state, never evidence of abuse (§17)."""
+    signals = signals or {}
+    allowed = _SIGNALS_BY_PROVENANCE.get(provenance, set())
+    states = {"gdid": "unsupported"}
+    out = {"os_install_pseudonym": None}
+    if "machine_guid" not in allowed:
+        states["machine_guid"] = "unsupported"
+    else:
+        raw = signals.get("machine_guid")
+        if raw is None or (isinstance(raw, str) and not raw.strip()):
+            states["machine_guid"] = "unavailable"
+        elif not isinstance(raw, str) or not _GUID.match(raw.strip().strip("{}")):
+            states["machine_guid"] = "invalid"
+        else:
+            states["machine_guid"] = "observed"
+            out["os_install_pseudonym"] = pseudonym(f"winguid:{raw.strip().strip('{}').lower()}")
+    out["signal_states"] = states
+    return out
 
 
 # ---------------------------------------------------------------- crypto
@@ -244,10 +279,11 @@ def _consume(db: Session, *, user: User, challenge_id: uuid.UUID, nonce_b64: str
 
 def _observe(db: Session, *, organization_id: uuid.UUID, credential_id: uuid.UUID | None, user_id: uuid.UUID | None,
              provenance: str, kind: str, ip: str | None, reason_code: str | None = None,
-             app_version: str | None = None) -> DeviceObservation:
+             app_version: str | None = None, signals: dict | None = None) -> DeviceObservation:
+    extra = signal_fields(provenance, signals) if signals is not None else {}
     row = DeviceObservation(organization_id=organization_id, credential_id=credential_id, user_id=user_id,
                             provenance=provenance, kind=kind, reason_code=reason_code,
-                            app_version=_trim(app_version, 40), **network_fields(ip))
+                            app_version=_trim(app_version, 40), **network_fields(ip), **extra)
     db.add(row)
     return row
 
@@ -260,7 +296,7 @@ def _trim(value: str | None, limit: int) -> str | None:
 # ---------------------------------------------------------------- register / verify
 def register(db: Session, *, user: User, challenge_id: uuid.UUID, nonce: str, public_key: str, signature: str,
              platform: str, key_storage: str, app_version: str | None, os_family: str | None,
-             os_version: str | None, ip: str | None) -> tuple[DeviceCredential, bool]:
+             os_version: str | None, ip: str | None, signals: dict | None = None) -> tuple[DeviceCredential, bool]:
     """Returns (credential, created). Idempotent: the same key registered again by the same account returns the
     existing row; registered by another account in the organization links that account (shared device)."""
     _require_enabled()
@@ -273,7 +309,7 @@ def register(db: Session, *, user: User, challenge_id: uuid.UUID, nonce: str, pu
     if not verify_signature(key, signature, consumed.message):
         _observe(db, organization_id=user.organization_id, credential_id=None, user_id=user.id,
                  provenance=provenance, kind="verification_failed", reason_code="bad_signature", ip=ip,
-                 app_version=app_version)
+                 app_version=app_version, signals=signals or {})
         db.commit()
         raise _bad("The signature does not match the public key.", "bad_signature", status.HTTP_401_UNAUTHORIZED)
 
@@ -291,7 +327,7 @@ def register(db: Session, *, user: User, challenge_id: uuid.UUID, nonce: str, pu
         # Same key, different claimed platform: not comparable, and suspicious. Recorded, refused.
         _observe(db, organization_id=user.organization_id, credential_id=cred.id, user_id=user.id,
                  provenance=provenance, kind="verification_failed", reason_code="provenance_mismatch", ip=ip,
-                 app_version=app_version)
+                 app_version=app_version, signals=signals or {})
         db.commit()
         raise _bad("This key is registered for a different platform.", "provenance_mismatch",
                    status.HTTP_409_CONFLICT)
@@ -312,7 +348,7 @@ def register(db: Session, *, user: User, challenge_id: uuid.UUID, nonce: str, pu
                        status.HTTP_409_CONFLICT) from None
         created = True
         _observe(db, organization_id=user.organization_id, credential_id=cred.id, user_id=user.id,
-                 provenance=provenance, kind="registered", ip=ip, app_version=app_version)
+                 provenance=provenance, kind="registered", ip=ip, app_version=app_version, signals=signals or {})
         record_audit_log(db, organization_id=user.organization_id, user_id=user.id,
                          action="device.credential_registered", resource_type="device_credential",
                          resource_id=cred.id, new_value={"provenance": provenance, "key_storage": key_storage})
@@ -330,7 +366,7 @@ def register(db: Session, *, user: User, challenge_id: uuid.UUID, nonce: str, pu
                                     first_linked_at=now, last_verified_at=now))
         if not created:
             _observe(db, organization_id=user.organization_id, credential_id=cred.id, user_id=user.id,
-                     provenance=provenance, kind="linked", ip=ip, app_version=app_version)
+                     provenance=provenance, kind="linked", ip=ip, app_version=app_version, signals=signals or {})
     else:
         link.unlinked_at = None
         link.last_verified_at = now
@@ -340,7 +376,7 @@ def register(db: Session, *, user: User, challenge_id: uuid.UUID, nonce: str, pu
 
 
 def verify(db: Session, *, user: User, credential_id: uuid.UUID, challenge_id: uuid.UUID, nonce: str,
-           signature: str, app_version: str | None, ip: str | None) -> DeviceCredential:
+           signature: str, app_version: str | None, ip: str | None, signals: dict | None = None) -> DeviceCredential:
     _require_enabled()
     cred = _credential_in_org(db, user.organization_id, credential_id)
     if _active_link(db, cred.id, user.id) is None:
@@ -355,7 +391,7 @@ def verify(db: Session, *, user: User, credential_id: uuid.UUID, challenge_id: u
     if not verify_signature(key, signature, consumed.message):
         _observe(db, organization_id=user.organization_id, credential_id=cred.id, user_id=user.id,
                  provenance=cred.provenance, kind="verification_failed", reason_code="bad_signature", ip=ip,
-                 app_version=app_version)
+                 app_version=app_version, signals=signals or {})
         db.commit()
         raise _bad("The signature does not match this device credential.", "bad_signature",
                    status.HTTP_401_UNAUTHORIZED)
@@ -366,7 +402,7 @@ def verify(db: Session, *, user: User, credential_id: uuid.UUID, challenge_id: u
     link = _active_link(db, cred.id, user.id)
     link.last_verified_at = now
     _observe(db, organization_id=user.organization_id, credential_id=cred.id, user_id=user.id,
-             provenance=cred.provenance, kind="verified", ip=ip, app_version=app_version)
+             provenance=cred.provenance, kind="verified", ip=ip, app_version=app_version, signals=signals or {})
     db.commit()
     db.refresh(cred)
     return cred
@@ -432,6 +468,8 @@ def assess(db: Session, cred: DeviceCredential) -> dict:
       DEVICE_CREDENTIAL_REVOKED      the credential is revoked (and why)
       SAME_REGISTERED_INSTALLATION   two or more accounts each proved possession of this one key
       CONFLICTING_EVIDENCE           successful and failed signature checks against this key in the window
+      LIKELY_SHARED_CLIENT_ENVIRONMENT  another key reported the same Windows installation (MachineGuid
+                                     pseudonym) — reinstall, second app copy, or a copied OS image
       SHARED_NETWORK_ONLY            another account was seen on the same network prefix, with no shared key —
                                      weak by itself (offices, families, carrier NAT, VPN exits)
       INSUFFICIENT_EVIDENCE          none of the above
@@ -441,8 +479,17 @@ def assess(db: Session, cred: DeviceCredential) -> dict:
         DeviceCredentialLink.credential_id == cred.id)).scalars().all()
     active_links = [link for link in links if link.unlinked_at is None]
     obs = db.execute(select(DeviceObservation.kind, DeviceObservation.reason_code,
-                            DeviceObservation.network_prefix_pseudonym).where(
+                            DeviceObservation.network_prefix_pseudonym, DeviceObservation.os_install_pseudonym).where(
         DeviceObservation.credential_id == cred.id, DeviceObservation.created_at >= since)).all()
+    os_installs = {o.os_install_pseudonym for o in obs if o.os_install_pseudonym}
+    other_credentials_same_os = 0
+    if os_installs:
+        other_credentials_same_os = db.execute(select(func.count(func.distinct(DeviceObservation.credential_id))).where(
+            DeviceObservation.organization_id == cred.organization_id,
+            DeviceObservation.os_install_pseudonym.in_(os_installs),
+            DeviceObservation.created_at >= since,
+            DeviceObservation.credential_id.is_not(None),
+            DeviceObservation.credential_id != cred.id)).scalar_one()
     verified = sum(1 for o in obs if o.kind in ("registered", "linked", "verified"))
     failed = sum(1 for o in obs if o.kind == "verification_failed")
     prefixes = {o.network_prefix_pseudonym for o in obs if o.network_prefix_pseudonym}
@@ -468,7 +515,12 @@ def assess(db: Session, cred: DeviceCredential) -> dict:
     if verified and failed:
         categories.append("CONFLICTING_EVIDENCE")
         reasons.append("failed_signature_checks_against_a_verified_key")
-    if shared_network_accounts and len(active_links) < 2:
+    if other_credentials_same_os:
+        # Another app key reported the same Windows installation: a reinstall, a second copy of the app, a
+        # profile reset — or a cloned/copied OS image. Likely the same client environment; not a person.
+        categories.append("LIKELY_SHARED_CLIENT_ENVIRONMENT")
+        reasons.append("same_os_installation_pseudonym_on_another_key")
+    if shared_network_accounts and len(active_links) < 2 and not other_credentials_same_os:
         categories.append("SHARED_NETWORK_ONLY")
         reasons.append("network_prefix_shared_with_other_accounts")
     if not categories:
@@ -477,6 +529,7 @@ def assess(db: Session, cred: DeviceCredential) -> dict:
             "evidence": {"active_linked_accounts": len(active_links), "linked_accounts_ever": len(links),
                          "successful_checks": verified, "failed_checks": failed,
                          "other_accounts_on_shared_network": shared_network_accounts,
+                         "other_keys_on_same_os_installation": other_credentials_same_os,
                          "window_days": settings.DEVICE_OBSERVATION_RETENTION_DAYS},
             "key_storage_is_client_claimed": True,
             "note": "Installation continuity evidence only. Not an identity of a person, not an enforcement "
@@ -517,6 +570,8 @@ def admin_detail(db: Session, *, actor: User, credential_id: uuid.UUID) -> dict:
             # rows, useless for locating anyone.
             "observations": [{"kind": o.kind, "reason_code": o.reason_code, "provenance": o.provenance,
                               "network_ref": o.network_prefix_pseudonym[:10] if o.network_prefix_pseudonym else None,
+                              "os_install_ref": o.os_install_pseudonym[:10] if o.os_install_pseudonym else None,
+                              "signal_states": o.signal_states,
                               "app_version": o.app_version, "at": o.created_at} for o in obs]}
 
 

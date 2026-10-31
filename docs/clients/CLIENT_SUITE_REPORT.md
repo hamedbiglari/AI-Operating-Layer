@@ -126,7 +126,9 @@ is usable, never blocks sign-in, every failure becomes a status in Settings. Use
 | Client IP | request | same/different network evidence | **no** | keyed HMAC (versioned) of IP and of /24 or /48 | 90 days (`DEVICE_OBSERVATION_RETENTION_DAYS`) | admin sees 10-hex prefix of the prefix pseudonym | Settings text |
 | Linked accounts per installation | server | shared-device / account-switch evidence | yes | tenant-scoped | until unlink | admin of that tenant only | Settings text |
 | Challenge nonce | server | replay protection | SHA-256 hash only | single use, 120 s | purged 1 h after expiry/use | nobody | — |
-| Hardware serials, MachineGuid, GDID, IMEI, UDID, MAC, ANDROID_ID, browser fingerprint | — | — | **not collected** | — | — | — | — |
+| Windows MachineGuid (§16.1) | Windows client, read-only registry, only while verification is on | tell reinstall / second copy / several accounts on one Windows install from distinct machines | **no** | keyed versioned HMAC on arrival (`os_install_pseudonym`) | 90 days | admin sees a 10-hex reference | Settings text (EN/FA) |
+| GDID | — | — | **not collected** — capability-gated, recorded as `unsupported` (no verifiable API) | — | — | — | — |
+| Hardware serials, IMEI, UDID, MAC, ANDROID_ID, browser fingerprint | — | — | **not collected** | — | — | — | — |
 
 Legal status: **not reviewed.** The Settings disclosure text, the legal basis (consent vs legitimate
 interest) for each jurisdiction, and Apple/Google privacy declarations need qualified review before

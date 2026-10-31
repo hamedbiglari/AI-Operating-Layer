@@ -98,6 +98,9 @@ export class WebBridge {
   async deviceKeyDelete() {
     if (this.idb) await this.#idb('readwrite', (s) => s.delete(KEY_ID));
   }
+
+  /** A browser has no OS-installation identifier and none is derived (no fingerprinting). */
+  async platformSignals() { return {}; }
 }
 
 export class TauriBridge {
@@ -130,6 +133,10 @@ export class TauriBridge {
   }
   deviceSign(text) { return this.invoke('device_key_sign', { message: text }); }
   deviceKeyDelete() { return this.invoke('device_key_delete'); }
+  /** Windows: {machine_guid}; other platforms: {}. Pseudonymised by Cloud Core on arrival. */
+  async platformSignals() {
+    try { return (await this.invoke('platform_signals')) ?? {}; } catch { return {}; }
+  }
 }
 
 export async function detectBridge(opts = {}) {
