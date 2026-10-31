@@ -121,13 +121,17 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 9691372
+- sha (last non-docs commit): 75e09ef
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 9691372 (7E)
-- last code commit: "feat(sources): live add source screen (7E)" @ 9691372
-- last feature commit: "feat(sources): live add source screen (7E)"
-  @ 9691372
+- last_ci: in_progress @ 75e09ef (8A, 8C, 8D). 913c790 (8A backend) was pushed
+  with it and is not built on its own; the run on 75e09ef is the first full
+  backend suite for it (the local full run hung on Windows and was
+  stopped; test_knowledge_gaps.py passed 7/7 locally).
+- last code commit: "feat(knowledge): live gap, matrix, and coverage
+  screens (8A, 8C, 8D)" @ 75e09ef
+- last feature commit: "feat(knowledge): live gap, matrix, and coverage
+  screens (8A, 8C, 8D)" @ 75e09ef
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -248,6 +252,22 @@ file from scratch (do not diff). Output only the file content.
   (data-debt-hidden, no FA rows, per D6). Old #live-add-source panel
   (POST /sources) kept. 18 FA entries + glossary section, 9 KNOWN
   words. e2e/add-source.js (19 checks); --require adds screen-add.
+- Step 8 (partial: 8A, 8C, 8D; 8B Knowledge detail skipped for now):
+  - 8A backend @ 913c790 — KnowledgeGapRead.knowledge_object_name
+    (model property; the gap list loads the object in one joined
+    query, no N+1). 2 tests: name on every gap read; no per-row
+    knowledge_objects lookup (fails without the join).
+  - 8A/8C/8D frontend @ 75e09ef — live #screen-gap (kind 'gap',
+    gapScreen()): ?id= -> GET /knowledge-gaps/{id} + GET
+    /knowledge/{object}/gaps (2 calls, other open gaps as links); no
+    id -> GET /knowledge-gaps?status=open (1 call, object names). It
+    replaces the generic gaps table (its status filter is gone).
+    "What has already been checked" hidden (V5-gap-history). Matrix
+    and Coverage get data-live-wired; their 22 static strings
+    translated (47 FA entries in all with the gap screen; 63 KNOWN
+    words). V5-matrix-coverage-runtime-fa OPEN. e2e/gap.js (19) +
+    e2e/matrix-coverage.js (13) = 32 checks; --require adds
+    screen-matrix,screen-coverage.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -256,13 +276,18 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add
-  and 11 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage
+  and 13 browser suites.
 
 ## 5. In progress — next step
 
-- Step 7E (Add source) is complete @ 9691372 (see §4).
-- Next up is Step 8. Needs investigation before coding.
+- Step 8 is partially complete: 8A, 8C, 8D done @ 75e09ef (see §4).
+- Next up: Step 8B (Knowledge detail: the 4 sample pages need a
+  template; scope rule 4 requires listing what each page would lose
+  and getting confirmation first) OR Step 9 (AI). Propose which one at
+  the start of the next session.
+- Debt rows added in 8A/8C/8D, both OPEN: V5-gap-history,
+  V5-matrix-coverage-runtime-fa.
 - Debt rows added in 7E, all OPEN: V5-add-source-dataset,
   V5-add-source-site-article, V5-add-source-research,
   V5-add-source-supplier, V5-add-source-ui-merge (old "Add a source to
@@ -274,10 +299,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the Step 8 investigation prompt.
+State in sync → user says "go" → send the next step investigation prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the Step 8 investigation prompt.
+Case B — user says "go": send the next step investigation prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -331,6 +356,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   noted.
 - v12 @ 9691372 — 7E shipped (live Add source: upload + URL cards).
   Step 7E is complete; Step 8 is next. Five V5-add-source-* debt rows.
+- v13 @ 75e09ef — 8A, 8C, 8D shipped (backend 913c790). Gap, Matrix and
+  Coverage screens are now live. 8B remains.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -458,6 +485,9 @@ Session / memory:
   value (e.g., "OCR": "OCR"). The mutation observer will rewrite the
   text node endlessly. Use .identifier or skip the FA entry instead. No
   static check catches this; only browser tests do.
+- i18n status label conflicts: the FA key "Open" was already mapped as
+  a verb ("to open"). For gap statuses use "Still open" to avoid the
+  clash. Check an existing key's meaning before reusing it for a value.
 
 ### 10.3 Reversals and abandoned approaches
 
@@ -520,8 +550,10 @@ Session / memory:
 - 7C Processing — done (see §4). 7D and 7E remain.
 - 7D Provenance (frontend only, 3+3N calls).
 - 7E Add source (Upload + URL only, ~1h).
-- Steps 8–14 (Knowledge tools, AI, Visibility, Commerce, Website+Auth,
-  Settings, Admin) — not started. Admin blocked on backend design for
+- Step 8 (Knowledge tools) partially complete: 8A, 8C, 8D done; 8B
+  remains. V5-matrix-coverage-runtime-fa is OPEN.
+- Steps 9–14 (AI, Visibility, Commerce, Website+Auth, Settings, Admin)
+  — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
 - Design elevation across all screens — baseline Knowledge critique
   started; no fixes yet.
