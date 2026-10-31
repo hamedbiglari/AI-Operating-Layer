@@ -4485,7 +4485,7 @@ button.card { color: inherit; font: inherit; }
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px, 100%), 1fr));gap:var(--space-4);align-items:start">
-    <div class="card">
+    <div class="card" data-debt-hidden>
       <h2 class="card__title">What has already been checked</h2>
       <dl class="kv">
         <dt>Traditional use</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Well attested — 41 sources</span></span></dd><dt>Compositional analysis</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established — 12 verified studies</span></span></dd><dt>Animal studies</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Insufficient — 2 studies</span></span></dd><dt>Human clinical trials</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>None found — 4 databases searched</span></span></dd>
@@ -4629,7 +4629,7 @@ button.card { color: inherit; font: inherit; }
   </div>
 </section>
 
-<section class="screen" id="screen-matrix" aria-labelledby="h-screen-matrix">
+<section class="screen" id="screen-matrix" aria-labelledby="h-screen-matrix" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-screen-matrix">Categories &amp; Master Topic Matrix</h1>
     <div class="callout page-intro" role="note"><p>A category carries the section schema its topics should cover. Each cell of the matrix is read from the knowledge base — claims, evidence, conflicts, gaps — never typed in. An empty cell means the section has never been researched for that topic, not that it does not apply.</p></div>
@@ -4661,7 +4661,7 @@ button.card { color: inherit; font: inherit; }
   </div>
 </section>
 
-<section class="screen" id="screen-coverage" aria-labelledby="h-screen-coverage">
+<section class="screen" id="screen-coverage" aria-labelledby="h-screen-coverage" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-screen-coverage">Coverage audit</h1>
     <div class="callout page-intro" role="note"><p>Six dimensions, reported separately and never collapsed into one number: sources, processing, knowledge, evidence, sections and publication. A figure that cannot be known is shown as unknown with the reason — never as zero. If the newest run failed, the last successful audit stays on screen, marked stale.</p></div>
@@ -9554,9 +9554,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-products': { kind: 'table', title: 'Products (Cloud Core)', endpoint: '/products',
       cols: [['Product', 'name'], ['SKU', 'sku'], ['Status', 'status', 'badge'], ['Category', 'category'], ['Updated', 'updated_at', 'date']],
       detail: 'product' },
-    'screen-gap': { kind: 'table', title: 'Knowledge gaps (Cloud Core)', endpoint: '/knowledge-gaps',
-      cols: [['Gap', 'description'], ['Type', 'gap_type'], ['Priority', 'priority'], ['Status', 'status', 'badge'], ['Recommended action', 'recommended_action'], ['Created', 'created_at', 'date']],
-      filter: ['status', ['', 'open', 'in_progress', 'resolved', 'dismissed']] },
+    'screen-gap': { kind: 'gap', title: 'Knowledge gap (Cloud Core)', compact: true },
     'screen-visibility-detail': { kind: 'table', title: 'AI visibility observations (Cloud Core)', endpoint: '/visibility/observations',
       cols: [['Platform', 'platform'], ['Test', 'test_type'], ['Mentioned', 'mentioned', 'bool'], ['Cited', 'cited', 'bool'], ['Recommended', 'recommended', 'bool'], ['Product shown', 'product_present', 'bool'], ['Method', 'collection_method']] },
     'screen-access': { kind: 'table', title: 'AI access policies (Cloud Core)', endpoint: '/telemetry/access-policies',
@@ -11018,6 +11016,109 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__addLoad = function () { return screen.classList.contains('is-active') ? load() : Promise.resolve(); };
     return panel.__addLoad();
   }
+  // Knowledge gap (8A). With ?id=: GET /knowledge-gaps/{id}, then GET /knowledge/{object}/gaps for the
+  // object's other open gaps — two calls. Without an id: one GET /knowledge-gaps?status=open. Every gap
+  // read carries knowledge_object_name, so no list needs a call per row (Rule 17).
+  var GAP_TYPE = { content_gap: 'Content gap', entity_gap: 'Entity gap', claim_gap: 'Claim gap', evidence_gap: 'Evidence gap',
+    source_gap: 'Source gap', access_gap: 'Access gap', relation_gap: 'Relation gap', freshness_gap: 'Freshness gap', conflict_gap: 'Conflict gap' };
+  var GAP_PRIORITY = { low: 'Low priority', medium: 'Medium priority', high: 'High priority', critical: 'Critical priority' };
+  var GAP_STATUS = { open: ['Still open', 'badge--warning'], in_progress: ['In progress', 'badge--processing'],
+    resolved: ['Resolved', 'badge--success'], dismissed: ['Dismissed', 'badge--unknown'] };
+  function gapScreen(panel) {
+    // Wired once; a later connect only reloads.
+    if (panel.__gapLoad) return panel.__gapLoad();
+    var screen = document.getElementById('screen-gap');
+    var st = { seq: 0 };
+    // In live mode these replace the sample breadcrumbs and header (CSS).
+    var top = el('div'); top.setAttribute('data-live-keep', '');
+    var crumbs = top.appendChild(screen.querySelector(':scope > .breadcrumbs').cloneNode(true)), up = crumbs.querySelector('a');
+    up.href = '#screen-knowledge'; AIOL_I18N.set(up, 'Knowledge');
+    var head = top.appendChild(el('div', 'page-header')), titles = head.appendChild(el('div'));
+    var h1 = titles.appendChild(el('h1')); h1.id = 'h-gap-live';
+    var meta = titles.appendChild(el('p', 'gap-meta')), badgeBox = head.appendChild(el('div', 'page-actions'));
+    screen.insertBefore(top, screen.firstChild);
+    screen.setAttribute('aria-labelledby', 'h-gap-live');
+    var body = el('div'); body.setAttribute('data-live-keep', '');
+    var status = messageBox(body);
+    var card = body.appendChild(el('div', 'card')), cardTitle = card.appendChild(el('h2', 'card__title'));
+    var list = card.appendChild(el('ul', 'gap-list'));
+    panel.insertAdjacentElement('afterend', body);
+
+    // A known value is translated; anything else is shown as sent.
+    function word(parent, map, v) {
+      if (map[v]) AIOL_I18N.set(parent.appendChild(el('span')), map[v]); else parent.appendChild(el('bdi', null, v));
+    }
+    function sep(parent) { parent.appendChild(document.createTextNode(' · ')); }
+    function statusBadge(v) {
+      var s = GAP_STATUS[v], b = el('span', 'badge ' + (s ? s[1] : 'badge--unknown'));
+      if (s) AIOL_I18N.set(b.appendChild(el('span')), s[0]); else b.appendChild(el('bdi', null, v));
+      return b;
+    }
+    // One row: the description links to the gap; the meta line names its object when asked to.
+    function row(g, withObject) {
+      var li = list.appendChild(el('li')), a = li.appendChild(el('a'));
+      a.href = '#screen-gap?id=' + encodeURIComponent(g.id); a.appendChild(el('bdi', null, g.description)).dir = 'auto';
+      var m = li.appendChild(el('span', 'gap-list__meta'));
+      if (withObject && g.knowledge_object_name) { m.appendChild(el('bdi', null, g.knowledge_object_name)).dir = 'auto'; sep(m); }
+      word(m, GAP_TYPE, g.gap_type); sep(m); word(m, GAP_PRIORITY, g.priority);
+    }
+    function shown(on) {
+      card.hidden = !on; meta.textContent = ''; badgeBox.textContent = ''; list.textContent = '';
+      h1.textContent = ''; h1.appendChild(AIOL_I18N.set(el('span'), 'Knowledge gaps'));
+    }
+    function renderDetail(g, others) {
+      h1.textContent = ''; h1.appendChild(el('bdi', null, g.description)).dir = 'auto';
+      if (g.knowledge_object_name) { meta.appendChild(el('bdi', null, g.knowledge_object_name)).dir = 'auto'; sep(meta); }
+      word(meta, GAP_TYPE, g.gap_type); sep(meta); word(meta, GAP_PRIORITY, g.priority);
+      badgeBox.appendChild(statusBadge(g.status));
+      AIOL_I18N.set(cardTitle, 'Other open gaps on this knowledge object');
+      others.forEach(function (o) { row(o, false); });
+      card.hidden = false;
+      if (!others.length) status('empty', 'No other open gaps on this knowledge object.');
+    }
+    function hashId() {
+      var h = location.hash;
+      return h.indexOf('#screen-gap?') === 0 ? new URLSearchParams(h.slice(h.indexOf('?') + 1)).get('id') : null;
+    }
+    function failed(e, tpl) {
+      state(panel, 'ready');
+      if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+      else status('error', tpl, { error: e.message }, 'Retry', load);
+    }
+    function load() {
+      var seq = ++st.seq, id = hashId();
+      shown(false); status('loading', 'Loading…');
+      if (!id) {
+        // 100 is the backend's page limit.
+        return api('/knowledge-gaps?status=open&limit=100').then(function (page) {
+          if (seq !== st.seq) return null;
+          state(panel, 'ready'); status('');
+          AIOL_I18N.set(cardTitle, 'Open gaps');
+          page.items.forEach(function (g) { row(g, true); });
+          card.hidden = false;
+          if (!page.items.length) status('empty', 'No open gaps.');
+          return page;
+        }).catch(function (e) { if (seq === st.seq) failed(e, 'Could not load gaps ({error}).'); return null; });
+      }
+      return api('/knowledge-gaps/' + encodeURIComponent(id)).then(function (g) {
+        return api('/knowledge/' + encodeURIComponent(g.knowledge_object_id) + '/gaps?limit=100').then(function (page) {
+          if (seq !== st.seq) return null;     // a newer request owns the screen
+          state(panel, 'ready'); status('');
+          renderDetail(g, page.items.filter(function (o) { return o.id !== g.id && o.status === 'open'; }));
+          return g;
+        });
+      }).catch(function (e) {
+        if (seq !== st.seq) return null;
+        // An unknown id, another organization's (404) or a malformed one (422): one sentence.
+        if (e.status === 404 || e.status === 422) { state(panel, 'ready'); status('empty', 'This gap was not found.'); }
+        else failed(e, 'Could not load the gap ({error}).');
+        return null;
+      });
+    }
+    document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-gap' && LIVE) load(); });
+    panel.__gapLoad = load;
+    return load();
+  }
   function dashboardCards(panel) {
     var grid = document.getElementById('dash-stats');
     function card(name, value, tpl, args) {
@@ -11127,6 +11228,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       else if (cfg.kind === 'processing') processingScreen(panel);
       else if (cfg.kind === 'provenance') provenanceScreen(panel);
       else if (cfg.kind === 'add') addSourceScreen(panel);
+      else if (cfg.kind === 'gap') gapScreen(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
@@ -13762,7 +13864,56 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Upload failed ({error}).": "بارگذاری ناموفق بود ({error}).",
     "Could not add the web page ({error}).": "افزودن صفحهٔ وب ناموفق بود ({error}).",
     "Your role is not allowed to add documents (HTTP 403).": "نقش شما اجازهٔ افزودن سند را ندارد (HTTP 403).",
-    "No sources yet. Create one with the form above first.": "هنوز منبعی وجود ندارد. ابتدا با فرم بالا یکی بسازید."
+    "No sources yet. Create one with the form above first.": "هنوز منبعی وجود ندارد. ابتدا با فرم بالا یکی بسازید.",
+    // Knowledge gap (Step 8A)
+    "Knowledge gaps": "شکاف‌های دانش",
+    "Open gaps": "شکاف‌های باز",
+    "Other open gaps on this knowledge object": "دیگر شکاف‌های باز این پرونده دانش",
+    "No other open gaps on this knowledge object.": "این پرونده دانش شکاف باز دیگری ندارد.",
+    "No open gaps.": "هیچ شکاف بازی وجود ندارد.",
+    "This gap was not found.": "این شکاف پیدا نشد.",
+    "Could not load the gap ({error}).": "بارگذاری شکاف ناموفق بود ({error}).",
+    "Could not load gaps ({error}).": "بارگذاری شکاف‌ها ناموفق بود ({error}).",
+    "Still open": "هنوز باز",
+    "In progress": "در حال انجام",
+    "Resolved": "برطرف‌شده",
+    "Dismissed": "کنارگذاشته‌شده",
+    "Low priority": "اولویت پایین",
+    "Medium priority": "اولویت متوسط",
+    "High priority": "اولویت بالا",
+    "Critical priority": "اولویت بحرانی",
+    "Content gap": "شکاف محتوا",
+    "Entity gap": "شکاف موجودیت",
+    "Claim gap": "شکاف ادعا",
+    "Evidence gap": "شکاف شواهد",
+    "Source gap": "شکاف منبع",
+    "Access gap": "شکاف دسترسی",
+    "Relation gap": "شکاف رابطه",
+    "Freshness gap": "شکاف به‌روز بودن",
+    "Conflict gap": "شکاف تعارض",
+    // Categories & matrix, Coverage audit (Steps 8C, 8D)
+    "Categories & Master Topic Matrix": "دسته‌ها و ماتریس اصلی موضوعات",
+    "A category carries the section schema its topics should cover. Each cell of the matrix is read from the knowledge base — claims, evidence, conflicts, gaps — never typed in. An empty cell means the section has never been researched for that topic, not that it does not apply.": "هر دسته طرح‌وارهٔ بخش‌هایی را دارد که موضوعاتش باید پوشش دهند. هر خانهٔ ماتریس از پایگاه دانش خوانده می‌شود — ادعاها، شواهد، تعارض‌ها، شکاف‌ها — و هرگز دستی وارد نمی‌شود. خانهٔ خالی یعنی آن بخش هرگز برای آن موضوع پژوهش نشده است، نه اینکه کاربرد ندارد.",
+    "Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.": "به Cloud Core وصل نیست. در صفحهٔ داشبورد یا مرکز هوش مصنوعی وصل شوید.",
+    "Category": "دسته",
+    "Choose a category": "یک دسته انتخاب کنید",
+    "Refresh": "تازه‌سازی",
+    "New category": "دستهٔ جدید",
+    "Starting schema": "طرح‌وارهٔ آغازین",
+    "Medicinal plant (18 sections)": "گیاه دارویی (۱۸ بخش)",
+    "Device (16 sections)": "دستگاه (۱۶ بخش)",
+    "Generic (8 sections)": "عمومی (۸ بخش)",
+    "Create category": "ایجاد دسته",
+    "Proposals waiting for a decision": "پیشنهادهای در انتظار تصمیم",
+    "A section discovered on one topic is proposed to its siblings. Nothing is written into a sibling's knowledge until you decide.": "بخشی که در یک موضوع کشف شود به موضوعات هم‌دستهٔ آن پیشنهاد می‌شود. تا شما تصمیم نگیرید، چیزی در دانش آن موضوعات نوشته نمی‌شود.",
+    "Six dimensions, reported separately and never collapsed into one number: sources, processing, knowledge, evidence, sections and publication. A figure that cannot be known is shown as unknown with the reason — never as zero. If the newest run failed, the last successful audit stays on screen, marked stale.": "شش بُعد، جداگانه گزارش می‌شوند و هرگز در یک عدد ادغام نمی‌شوند: منابع، پردازش، دانش، شواهد، بخش‌ها و انتشار. رقمی که دانستنش ممکن نیست، با دلیلش «نامعلوم» نشان داده می‌شود — هرگز صفر. اگر تازه‌ترین اجرا ناموفق باشد، آخرین ممیزی موفق روی صفحه می‌ماند و «کهنه» علامت می‌خورد.",
+    "Scope": "دامنه",
+    "A topic": "یک موضوع",
+    "A category": "یک دسته",
+    "Which": "کدام",
+    "Show": "نمایش",
+    "Run the audit": "اجرای ممیزی",
+    "History": "تاریخچه"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [
