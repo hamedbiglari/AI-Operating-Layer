@@ -4661,7 +4661,7 @@ button.card { color: inherit; font: inherit; }
   </div>
 </section>
 
-<section class="screen" id="screen-memory" aria-labelledby="h-memory">
+<section class="screen" id="screen-memory" aria-labelledby="h-memory" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-memory">Memory Center</h1>
     <div class="callout page-intro" role="note"><p>Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from Cloud Core; exports are produced by the backend.</p></div>
@@ -4686,11 +4686,11 @@ button.card { color: inherit; font: inherit; }
       <h3>Export</h3>
       <p class="aic-hint">The export carries this organization's memory only, with provenance and no credentials. Owner or admin.</p>
       <div class="rq-review">
-        <button type="button" class="btn" data-mc-export="json">JSON</button>
-        <button type="button" class="btn" data-mc-export="jsonl">JSONL</button>
-        <button type="button" class="btn" data-mc-export="csv">CSV</button>
+        <button type="button" class="btn" data-mc-export="json"><bdi class="identifier">JSON</bdi></button>
+        <button type="button" class="btn" data-mc-export="jsonl"><bdi class="identifier">JSONL</bdi></button>
+        <button type="button" class="btn" data-mc-export="csv"><bdi class="identifier">CSV</bdi></button>
         <button type="button" class="btn" data-mc-export="md">Markdown</button>
-        <button type="button" class="btn btn--primary" data-mc-export="zip">ZIP (everything)</button>
+        <button type="button" class="btn btn--primary" data-mc-export="zip"><bdi class="identifier">ZIP</bdi> (everything)</button>
       </div>
       <p id="mc-msg" role="status" aria-live="polite"></p>
     </div>
@@ -12508,19 +12508,28 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   if (!$('mc-panel')) return;
-  var KINDS = ['job_state', 'ai_handoff', 'intermediate_finding', 'open_question', 'current_synthesis',
-               'next_action', 'conflict_context', 'processing_checkpoint', 'ai_summary'];
+  // Kind values as the API sends them; a value missing here is shown as sent.
+  var KINDS = { job_state: 'Job state', ai_handoff: 'AI handoff', intermediate_finding: 'Intermediate finding',
+    open_question: 'Open question', current_synthesis: 'Current synthesis', next_action: 'Next action',
+    conflict_context: 'Conflict context', processing_checkpoint: 'Processing checkpoint', ai_summary: 'AI summary' };
+  var CHANGE = { added: 'Added', removed: 'Removed', changed: 'Changed', unchanged: 'Unchanged' };
   var offset = 0;
   function live() { return window.AIOL_LIVE_STATE && window.AIOL_LIVE_STATE(); }
   function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; }
+  // Every visible string goes through AIOL_I18N.set, so it follows the language switch (9B).
+  function raw(v) { var b = el('bdi'); b.textContent = v === null || v === undefined || v === '' ? '—' : String(v); b.dir = 'auto'; return b; }
+  function word(map, v) { return map[v] ? AIOL_I18N.set(el('span'), map[v]) : raw(v); }
+  function when(ts) { return AIOL_I18N.set(el('span'), '{d}', { d: { date: ts } }); }
+  function say(tpl, args) { AIOL_I18N.set($('mc-msg'), tpl || '', args); }
   function api(path) { var L = live();
     return fetch(L.base + '/api/v1' + path, { headers: { Authorization: 'Bearer ' + L.token } })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) {
         if (!r.ok) throw new Error((b.error && b.error.message) || b.detail || ('HTTP ' + r.status)); return b; }); }); }
+  // cols: [header, fill(row) -> Node or plain value]; headers are translated, values are data.
   function table(cols, rows) { var w = el('div', 'table-wrap'), t = el('table', 'table'), h = el('thead'), hr = el('tr');
-    cols.forEach(function (c) { var th = el('th', null, c[0]); th.scope = 'col'; hr.appendChild(th); }); h.appendChild(hr); t.appendChild(h);
+    cols.forEach(function (c) { var th = el('th'); th.scope = 'col'; if (c[0]) AIOL_I18N.set(th, c[0]); hr.appendChild(th); }); h.appendChild(hr); t.appendChild(h);
     var b = el('tbody'); rows.forEach(function (r) { var tr = el('tr'); cols.forEach(function (c) { var td = el('td'); td.setAttribute('data-label', c[0]);
-      var v = c[1](r); if (v instanceof Node) td.appendChild(v); else { var bd = el('bdi'); bd.textContent = v === null || v === undefined || v === '' ? '—' : String(v); td.appendChild(bd); } tr.appendChild(td); });
+      var v = c[1](r); td.appendChild(v instanceof Node ? v : raw(v)); tr.appendChild(td); });
       b.appendChild(tr); }); t.appendChild(b); w.appendChild(t); return w; }
   function query() { var q = '/memory/search?limit=25&offset=' + offset + '&sort=' + $('mc-sort').value + '&direction=desc';
     if ($('mc-q').value.trim()) q += '&q=' + encodeURIComponent($('mc-q').value.trim());
@@ -12530,54 +12539,60 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return q; }
   function load() {
     if (!live()) return;
+    say('');
     api(query()).then(function (r) {
-      $('mc-total').textContent = r.total + ' memory item(s)';
-      var box = $('mc-table'); box.textContent = '';
-      if (!r.items.length) { box.appendChild(el('p', 'aic-empty', 'Nothing matches. Memory appears once an AI job or an agent has run.')); return; }
+      AIOL_I18N.set($('mc-total'), '{n|memory item|memory items}', { n: r.total });
+      var box = $('mc-table'); box.textContent = ''; $('mc-pager').textContent = '';
+      if (!r.items.length) { var none = box.appendChild(el('p', 'aic-empty')); AIOL_I18N.set(none, 'Nothing matches. Memory appears once an AI job or an agent has run.'); return; }
       box.appendChild(table([
         ['Job', function (m) { return m.job_key; }],
-        ['Kind', function (m) { return m.kind.replace(/_/g, ' '); }],
+        ['Kind', function (m) { return word(KINDS, m.kind); }],
         ['Version', function (m) { return m.version; }],
         ['Written by', function (m) { return m.created_by; }],
-        ['When', function (m) { return new Date(m.created_at).toLocaleString(); }],
+        ['When', function (m) { return when(m.created_at); }],
         ['Content', function (m) { return JSON.stringify(m.content).slice(0, 120); }],
-        ['', function (m) { var b = el('button', 'btn btn--quiet', 'Versions'); b.type = 'button';
+        ['', function (m) { var b = el('button', 'btn btn--quiet'); b.type = 'button'; AIOL_I18N.set(b, 'Versions');
           b.onclick = function () { showVersions(m.job_key, m.kind); }; return b; }]], r.items));
-      var pg = $('mc-pager'); pg.textContent = '';
+      var pg = $('mc-pager');
       if (r.total > 25) { var end = Math.min(r.offset + r.items.length, r.total);
-        var info = el('span', null, (r.offset + 1) + '–' + end + ' of ' + r.total); info.dir = 'auto';
-        var prev = el('button', 'btn btn--quiet', 'Previous'), next = el('button', 'btn btn--quiet', 'Next'); prev.type = next.type = 'button';
+        var info = el('span'); info.dir = 'auto'; AIOL_I18N.set(info, '{from}–{to} of {total}', { from: r.offset + 1, to: end, total: r.total });
+        var prev = el('button', 'btn btn--quiet'), next = el('button', 'btn btn--quiet'); prev.type = next.type = 'button';
+        AIOL_I18N.set(prev, 'Previous'); AIOL_I18N.set(next, 'Next');
         prev.disabled = r.offset === 0; next.disabled = end >= r.total;
         prev.onclick = function () { offset = Math.max(0, offset - 25); load(); }; next.onclick = function () { offset += 25; load(); };
         var nav = el('span'); nav.appendChild(prev); nav.appendChild(document.createTextNode(' ')); nav.appendChild(next);
         pg.appendChild(info); pg.appendChild(nav); }
-    }).catch(function (e) { $('mc-msg').textContent = e.message; });
+    }).catch(function (e) { say('Could not load memory ({error}).', { error: e.message }); });
   }
   function showVersions(job, kind) {
     api('/memory/items/' + encodeURIComponent(job) + '/' + kind + '/versions').then(function (vs) {
       var box = $('mc-versions'); box.textContent = '';
-      box.appendChild(el('p', null, job + ' · ' + kind.replace(/_/g, ' ') + ' — ' + vs.length + ' version(s)'));
+      var head = box.appendChild(el('p', 'mc-versions-head'));
+      head.appendChild(raw(job)); head.appendChild(document.createTextNode(' · ')); head.appendChild(word(KINDS, kind));
+      head.appendChild(document.createTextNode(' — ')); head.appendChild(AIOL_I18N.set(el('span'), '{n|version|versions}', { n: vs.length }));
       box.appendChild(table([['Version', function (v) { return v.version; }], ['Written by', function (v) { return v.created_by; }],
-        ['When', function (v) { return new Date(v.created_at).toLocaleString(); }],
+        ['When', function (v) { return when(v.created_at); }],
         ['Content', function (v) { return JSON.stringify(v.content).slice(0, 140); }]], vs));
       if (vs.length > 1) { var row = el('div', 'rq-review');
-        var mk = function (lbl, id) { var l = el('label', 'field'); l.appendChild(el('span', 'field__label', lbl)); var s2 = el('select'); s2.id = id;
+        var mk = function (lbl, id) { var l = el('label', 'field'); var name = l.appendChild(el('span', 'field__label')); AIOL_I18N.set(name, lbl); var s2 = el('select'); s2.id = id;
           vs.forEach(function (v) { var o = el('option', null, 'v' + v.version); o.value = v.version; s2.appendChild(o); }); l.appendChild(s2); return l; };
         row.appendChild(mk('Compare', 'mc-left')); row.appendChild(mk('with', 'mc-right'));
-        $('mc-left') && ($('mc-left').value = vs[vs.length - 2].version);
-        var cb = el('button', 'btn', 'Compare'); cb.type = 'button';
+        var cb = el('button', 'btn'); cb.type = 'button'; AIOL_I18N.set(cb, 'Compare');
         cb.onclick = function () { api('/memory/items/' + encodeURIComponent(job) + '/' + kind + '/compare?left=' + $('mc-left').value + '&right=' + $('mc-right').value)
           .then(function (d) { var out = el('div', 'rq-graph');
-            out.appendChild(el('h4', null, d.identical ? 'The two versions are identical' : 'Changed: ' + d.changed_keys.join(', ')));
-            out.appendChild(table([['Field', function (x) { return x.key; }], ['Change', function (x) { return x.change; }],
+            var h4 = out.appendChild(el('h4'));
+            if (d.identical) AIOL_I18N.set(h4, 'The two versions are identical');
+            else { AIOL_I18N.set(h4.appendChild(el('span')), 'Changed:'); h4.appendChild(document.createTextNode(' ')); h4.appendChild(raw(d.changed_keys.join(', '))); }
+            out.appendChild(table([['Field', function (x) { return x.key; }], ['Change', function (x) { return word(CHANGE, x.change); }],
               ['Before', function (x) { return JSON.stringify(x.before); }], ['After', function (x) { return JSON.stringify(x.after); }]], d.diff));
             var prev = box.querySelector('.rq-graph'); if (prev) prev.remove(); box.appendChild(out); })
-          .catch(function (e) { $('mc-msg').textContent = e.message; }); };
+          .catch(function (e) { say('Could not compare the versions ({error}).', { error: e.message }); }); };
         row.appendChild(cb); box.appendChild(row);
         var sel = box.querySelectorAll('select'); if (sel.length === 2) { sel[0].value = vs[vs.length - 2].version; sel[1].value = vs[vs.length - 1].version; } }
-    }).catch(function (e) { $('mc-msg').textContent = e.message; });
+    }).catch(function (e) { say('Could not load the versions ({error}).', { error: e.message }); });
   }
-  KINDS.forEach(function (k) { var o = el('option', null, k.replace(/_/g, ' ')); o.value = k; $('mc-kind').appendChild(o); });
+  // Option text stays English in Persian (the Persian layer skips <select>); the labels are still readable.
+  Object.keys(KINDS).forEach(function (k) { var o = el('option', null, KINDS[k]); o.value = k; $('mc-kind').appendChild(o); });
   ['mc-refresh'].forEach(function (id) { $(id).addEventListener('click', function () { offset = 0; load(); }); });
   ['mc-q', 'mc-job'].forEach(function (id) { $(id).addEventListener('change', function () { offset = 0; load(); }); });
   ['mc-kind', 'mc-sort', 'mc-latest'].forEach(function (id) { $(id).addEventListener('change', function () { offset = 0; load(); }); });
@@ -12585,13 +12600,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var L = live(); if (!L) return; var fmt = b.getAttribute('data-mc-export');
     var q = []; if ($('mc-kind').value) q.push('kind=' + $('mc-kind').value);
     if ($('mc-job').value.trim()) q.push('job_key=' + encodeURIComponent($('mc-job').value.trim()));
-    $('mc-msg').textContent = 'Preparing the export…';
+    say('Preparing the export…');
     fetch(L.base + '/api/v1/memory/export.' + fmt + (q.length ? '?' + q.join('&') : ''), { headers: { Authorization: 'Bearer ' + L.token } })
-      .then(function (r) { if (!r.ok) throw new Error(r.status === 403 ? 'Only an owner or admin can export memory.' : 'HTTP ' + r.status); return r.blob(); })
+      .then(function (r) { if (!r.ok) { var e = new Error('HTTP ' + r.status); e.status = r.status; throw e; } return r.blob(); })
       .then(function (blob) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
         a.download = 'memory-export.' + fmt; document.body.appendChild(a); a.click();
-        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); $('mc-msg').textContent = 'Exported as ' + fmt.toUpperCase() + '.'; })
-      .catch(function (e) { $('mc-msg').textContent = e.message; }); }); });
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); say('Exported as {format}.', { format: fmt.toUpperCase() }); })
+      .catch(function (e) { if (e.status === 403) say('Only an owner or admin can export memory.'); else say('Could not export ({error}).', { error: e.message }); }); }); });
   document.addEventListener('aiol:live', function () { $('mc-note').hidden = true; $('mc-body').hidden = false; offset = 0; load(); });
 })();
 </script>
@@ -13899,7 +13914,59 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Provider request id": "شناسهٔ درخواست ارائه‌دهنده",
     "Parent": "والد",
     "Attempt reason": "دلیل تلاش",
-    "Error": "خطا"
+    "Error": "خطا",
+    // Memory Center (Step 9B)
+    "Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from Cloud Core; exports are produced by the backend.": "هر آنچه هوش مصنوعی هنگام کار نوشته است: یافته‌ها، پرسش‌های باز، نقطه‌های بازبینی و تحویل‌ها — همهٔ نسخه‌ها نگه داشته می‌شوند، با نویسنده و زمان نوشتن. PostgreSQL مخزن مرجع است. خواندن‌ها زنده از Cloud Core است؛ خروجی‌ها را بک‌اند تولید می‌کند.",
+    "Working memory": "حافظهٔ کاری",
+    "Search": "جست‌وجو",
+    "Kind": "نوع",
+    "All kinds": "همهٔ انواع",
+    "Job key": "کلید کار",
+    "Newest first": "تازه‌ترین نخست",
+    "Version": "نسخه",
+    "Latest version only": "فقط آخرین نسخه",
+    "Apply": "اعمال",
+    "Versions": "نسخه‌ها",
+    "Open a memory item to see its versions and compare them.": "یک مورد حافظه را باز کنید تا نسخه‌هایش را ببینید و آن‌ها را مقایسه کنید.",
+    "Export": "خروجی‌گیری",
+    "The export carries this organization's memory only, with provenance and no credentials. Owner or admin.": "خروجی فقط حافظهٔ این سازمان را دارد، همراه با منشأ و بدون هیچ اعتبارنامه‌ای. فقط مالک یا مدیر.",
+    "Markdown": "مارک‌داون",
+    "(everything)": "(همه‌چیز)",
+    "text inside the memory": "متنی درون حافظه",
+    "{n|memory item|memory items}": "{n} مورد حافظه",
+    "Nothing matches. Memory appears once an AI job or an agent has run.": "چیزی پیدا نشد. حافظه پس از اجرای یک کار هوش مصنوعی یا یک عامل پدید می‌آید.",
+    "Written by": "نویسنده",
+    "When": "زمان",
+    "Content": "محتوا",
+    "Field": "فیلد",
+    "Change": "تغییر",
+    "Before": "پیش از",
+    "After": "پس از",
+    "Job state": "وضعیت کار",
+    "AI handoff": "تحویل هوش مصنوعی",
+    "Intermediate finding": "یافتهٔ میانی",
+    "Open question": "پرسش باز",
+    "Current synthesis": "جمع‌بندی کنونی",
+    "Next action": "اقدام بعدی",
+    "Conflict context": "زمینهٔ تعارض",
+    "Processing checkpoint": "نقطهٔ بازبینی پردازش",
+    "AI summary": "خلاصهٔ هوش مصنوعی",
+    "Added": "افزوده‌شده",
+    "Removed": "حذف‌شده",
+    "Changed": "تغییرکرده",
+    "Unchanged": "بدون تغییر",
+    "{n|version|versions}": "{n} نسخه",
+    "Compare": "مقایسه",
+    "with": "با",
+    "The two versions are identical": "دو نسخه یکسان‌اند",
+    "Changed:": "تغییرکرده:",
+    "Could not load memory ({error}).": "بارگذاری حافظه ناموفق بود ({error}).",
+    "Could not compare the versions ({error}).": "مقایسهٔ نسخه‌ها ناموفق بود ({error}).",
+    "Could not load the versions ({error}).": "بارگذاری نسخه‌ها ناموفق بود ({error}).",
+    "Preparing the export…": "در حال آماده‌سازی خروجی…",
+    "Exported as {format}.": "خروجی با قالب {format} گرفته شد.",
+    "Only an owner or admin can export memory.": "فقط مالک یا مدیر می‌تواند از حافظه خروجی بگیرد.",
+    "Could not export ({error}).": "خروجی‌گیری ناموفق بود ({error})."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

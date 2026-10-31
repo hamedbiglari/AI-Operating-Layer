@@ -642,3 +642,61 @@ Terms for the AI executions screen. Status labels stand for the API values (succ
 | Parent | والد |
 | Attempt reason | دلیل تلاش |
 | Error | خطا |
+
+## Memory Center (Step 9B)
+
+Terms for the Memory Center screen. Kind and change labels stand for API values; job keys, authors and content stay as sent. JSON, JSONL, CSV and ZIP stay Latin as identifiers.
+
+| English | Persian |
+|---|---|
+| Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from Cloud Core; exports are produced by the backend. | هر آنچه هوش مصنوعی هنگام کار نوشته است: یافته‌ها، پرسش‌های باز، نقطه‌های بازبینی و تحویل‌ها — همهٔ نسخه‌ها نگه داشته می‌شوند، با نویسنده و زمان نوشتن. PostgreSQL مخزن مرجع است. خواندن‌ها زنده از Cloud Core است؛ خروجی‌ها را بک‌اند تولید می‌کند. |
+| Working memory | حافظهٔ کاری |
+| Search | جست‌وجو |
+| Kind | نوع |
+| All kinds | همهٔ انواع |
+| Job key | کلید کار |
+| Newest first | تازه‌ترین نخست |
+| Version | نسخه |
+| Latest version only | فقط آخرین نسخه |
+| Apply | اعمال |
+| Versions | نسخه‌ها |
+| Open a memory item to see its versions and compare them. | یک مورد حافظه را باز کنید تا نسخه‌هایش را ببینید و آن‌ها را مقایسه کنید. |
+| Export | خروجی‌گیری |
+| The export carries this organization's memory only, with provenance and no credentials. Owner or admin. | خروجی فقط حافظهٔ این سازمان را دارد، همراه با منشأ و بدون هیچ اعتبارنامه‌ای. فقط مالک یا مدیر. |
+| Markdown | مارک‌داون |
+| (everything) | (همه‌چیز) |
+| text inside the memory | متنی درون حافظه |
+| {n|memory item|memory items} | {n} مورد حافظه |
+| Nothing matches. Memory appears once an AI job or an agent has run. | چیزی پیدا نشد. حافظه پس از اجرای یک کار هوش مصنوعی یا یک عامل پدید می‌آید. |
+| Written by | نویسنده |
+| When | زمان |
+| Content | محتوا |
+| Field | فیلد |
+| Change | تغییر |
+| Before | پیش از |
+| After | پس از |
+| Job state | وضعیت کار |
+| AI handoff | تحویل هوش مصنوعی |
+| Intermediate finding | یافتهٔ میانی |
+| Open question | پرسش باز |
+| Current synthesis | جمع‌بندی کنونی |
+| Next action | اقدام بعدی |
+| Conflict context | زمینهٔ تعارض |
+| Processing checkpoint | نقطهٔ بازبینی پردازش |
+| AI summary | خلاصهٔ هوش مصنوعی |
+| Added | افزوده‌شده |
+| Removed | حذف‌شده |
+| Changed | تغییرکرده |
+| Unchanged | بدون تغییر |
+| {n|version|versions} | {n} نسخه |
+| Compare | مقایسه |
+| with | با |
+| The two versions are identical | دو نسخه یکسان‌اند |
+| Changed: | تغییرکرده: |
+| Could not load memory ({error}). | بارگذاری حافظه ناموفق بود ({error}). |
+| Could not compare the versions ({error}). | مقایسهٔ نسخه‌ها ناموفق بود ({error}). |
+| Could not load the versions ({error}). | بارگذاری نسخه‌ها ناموفق بود ({error}). |
+| Preparing the export… | در حال آماده‌سازی خروجی… |
+| Exported as {format}. | خروجی با قالب {format} گرفته شد. |
+| Only an owner or admin can export memory. | فقط مالک یا مدیر می‌تواند از حافظه خروجی بگیرد. |
+| Could not export ({error}). | خروجی‌گیری ناموفق بود ({error}). |
