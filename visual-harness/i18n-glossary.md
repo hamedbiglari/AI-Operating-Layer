@@ -642,3 +642,144 @@ Terms for the AI executions screen. Status labels stand for the API values (succ
 | Parent | والد |
 | Attempt reason | دلیل تلاش |
 | Error | خطا |
+
+## Memory Center (Step 9B)
+
+Terms for the Memory Center screen. Kind and change labels stand for API values; job keys, authors and content stay as sent. JSON, JSONL, CSV and ZIP stay Latin as identifiers.
+
+| English | Persian |
+|---|---|
+| Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from Cloud Core; exports are produced by the backend. | هر آنچه هوش مصنوعی هنگام کار نوشته است: یافته‌ها، پرسش‌های باز، نقطه‌های بازبینی و تحویل‌ها — همهٔ نسخه‌ها نگه داشته می‌شوند، با نویسنده و زمان نوشتن. PostgreSQL مخزن مرجع است. خواندن‌ها زنده از Cloud Core است؛ خروجی‌ها را بک‌اند تولید می‌کند. |
+| Working memory | حافظهٔ کاری |
+| Search | جست‌وجو |
+| Kind | نوع |
+| All kinds | همهٔ انواع |
+| Job key | کلید کار |
+| Newest first | تازه‌ترین نخست |
+| Version | نسخه |
+| Latest version only | فقط آخرین نسخه |
+| Apply | اعمال |
+| Versions | نسخه‌ها |
+| Open a memory item to see its versions and compare them. | یک مورد حافظه را باز کنید تا نسخه‌هایش را ببینید و آن‌ها را مقایسه کنید. |
+| Export | خروجی‌گیری |
+| The export carries this organization's memory only, with provenance and no credentials. Owner or admin. | خروجی فقط حافظهٔ این سازمان را دارد، همراه با منشأ و بدون هیچ اعتبارنامه‌ای. فقط مالک یا مدیر. |
+| Markdown | مارک‌داون |
+| (everything) | (همه‌چیز) |
+| text inside the memory | متنی درون حافظه |
+| {n|memory item|memory items} | {n} مورد حافظه |
+| Nothing matches. Memory appears once an AI job or an agent has run. | چیزی پیدا نشد. حافظه پس از اجرای یک کار هوش مصنوعی یا یک عامل پدید می‌آید. |
+| Written by | نویسنده |
+| When | زمان |
+| Content | محتوا |
+| Field | فیلد |
+| Change | تغییر |
+| Before | پیش از |
+| After | پس از |
+| Job state | وضعیت کار |
+| AI handoff | تحویل هوش مصنوعی |
+| Intermediate finding | یافتهٔ میانی |
+| Open question | پرسش باز |
+| Current synthesis | جمع‌بندی کنونی |
+| Next action | اقدام بعدی |
+| Conflict context | زمینهٔ تعارض |
+| Processing checkpoint | نقطهٔ بازبینی پردازش |
+| AI summary | خلاصهٔ هوش مصنوعی |
+| Added | افزوده‌شده |
+| Removed | حذف‌شده |
+| Changed | تغییرکرده |
+| Unchanged | بدون تغییر |
+| {n|version|versions} | {n} نسخه |
+| Compare | مقایسه |
+| with | با |
+| The two versions are identical | دو نسخه یکسان‌اند |
+| Changed: | تغییرکرده: |
+| Could not load memory ({error}). | بارگذاری حافظه ناموفق بود ({error}). |
+| Could not compare the versions ({error}). | مقایسهٔ نسخه‌ها ناموفق بود ({error}). |
+| Could not load the versions ({error}). | بارگذاری نسخه‌ها ناموفق بود ({error}). |
+| Preparing the export… | در حال آماده‌سازی خروجی… |
+| Exported as {format}. | خروجی با قالب {format} گرفته شد. |
+| Only an owner or admin can export memory. | فقط مالک یا مدیر می‌تواند از حافظه خروجی بگیرد. |
+| Could not export ({error}). | خروجی‌گیری ناموفق بود ({error}). |
+
+## Chat settings (Step 9C)
+
+Terms for the Chat settings screen. Option text inside the dropdowns stays English at runtime (the Persian layer skips select), but the rows are kept for the static scan. Topic names, types and policy names stay as sent.
+
+| English | Persian |
+|---|---|
+| Controls for the knowledge chat on the public website. Choose which knowledge topics it may read, whether it may ask to research online, which AI resource pays for it, and the limits per person. The chat stays off until you enable it here, and every rule on this screen is enforced on the server — not in the browser. | تنظیمات گفت‌وگوی دانش در وب‌سایت عمومی. انتخاب کنید کدام موضوعات دانش را بخواند، آیا می‌تواند برای پژوهش آنلاین اجازه بخواهد، کدام منبع هوش مصنوعی هزینه‌اش را می‌پردازد، و محدودیت‌های هر نفر. گفت‌وگو تا وقتی اینجا روشنش نکنید خاموش می‌ماند، و هر قاعدهٔ این صفحه روی سرور اعمال می‌شود — نه در مرورگر. |
+| Save settings | ذخیرهٔ تنظیمات |
+| Chat on the website | گفت‌وگو در وب‌سایت |
+| Off | خاموش |
+| On | روشن |
+| Online research | پژوهش آنلاین |
+| Never — answer only from stored knowledge | هرگز — فقط از دانش ذخیره‌شده پاسخ بده |
+| Ask the person every time | هر بار از کاربر بپرس |
+| Allowed without asking each time | بدون پرسیدن در هر بار مجاز است |
+| AI resource that pays for answers | منبع هوش مصنوعی که هزینهٔ پاسخ‌ها را می‌پردازد |
+| None — the chat cannot call a model | هیچ — گفت‌وگو نمی‌تواند مدلی را فراخوانی کند |
+| Answers per person per day | پاسخ برای هر نفر در روز |
+| Longest answer (output tokens) | بلندترین پاسخ (توکن‌های خروجی) |
+| Knowledge per answer (context tokens) | دانش در هر پاسخ (توکن‌های زمینه) |
+| Cost ceiling per answer | سقف هزینهٔ هر پاسخ |
+| Keep conversations for (days) | نگهداری گفت‌وگوها (روز) |
+| Show sources under each answer | نمایش منابع زیر هر پاسخ |
+| Yes | بله |
+| No | خیر |
+| Collect answer feedback | گردآوری بازخورد پاسخ |
+| Knowledge topics the chat may read | موضوعات دانشی که گفت‌وگو می‌تواند بخواند |
+| Select none to allow every topic in this workspace. Selecting some makes the list exact: the chat can read nothing else, and a question outside it is answered as a knowledge gap rather than guessed. | هیچ‌کدام را انتخاب نکنید تا همهٔ موضوعات این فضای کاری مجاز باشند. انتخاب برخی، فهرست را دقیق می‌کند: گفت‌وگو چیز دیگری نمی‌تواند بخواند، و به پرسشی خارج از آن به‌جای حدس زدن، به‌عنوان شکاف دانش پاسخ داده می‌شود. |
+| no ceiling | بدون سقف |
+| keep until deleted | نگهداری تا زمان حذف |
+| This workspace has no knowledge topics yet. Add sources and build a topic first. | این فضای کاری هنوز موضوع دانشی ندارد. ابتدا منبع بیفزایید و یک موضوع بسازید. |
+| Never configured: the website chat is OFF for this workspace. | هرگز پیکربندی نشده: گفت‌وگوی وب‌سایت برای این فضای کاری خاموش است. |
+| The website chat is ON. | گفت‌وگوی وب‌سایت روشن است. |
+| Saved, but the website chat is OFF. | ذخیره شد، اما گفت‌وگوی وب‌سایت خاموش است. |
+| No AI resource is chosen, so questions are answered as "provider unavailable" rather than guessed. | هیچ منبع هوش مصنوعی انتخاب نشده است، پس به پرسش‌ها به‌جای حدس زدن، با «ارائه‌دهنده در دسترس نیست» پاسخ داده می‌شود. |
+| The answer length and the knowledge budget are both required. | طول پاسخ و بودجهٔ دانش هر دو الزامی‌اند. |
+| Saving… | در حال ذخیره… |
+| Saved. The website chat uses these settings from the next question. | ذخیره شد. گفت‌وگوی وب‌سایت از پرسش بعدی این تنظیمات را به کار می‌برد. |
+
+## AI Catalog (Step 9D)
+
+Terms for the AI Catalog screen. Type and status labels are the filter options' own text (type values like RESEARCH_TOOL, status values like official_source_verified); resource names and URLs stay as sent.
+
+| English | Persian |
+|---|---|
+| Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay "Discovered" until verified from an official source; API and pricing information stays empty until then. This screen reads live from Cloud Core — no sample data. | هر منبع هوش مصنوعی که سامانه می‌شناسد — ارائه‌دهنده‌ها، APIها، مدل‌ها، برنامه‌ها و ابزارهای پژوهشی. مدخل‌ها تا زمانی که از یک منبع رسمی راستی‌آزمایی نشوند «کشف‌شده» می‌مانند؛ اطلاعات API و قیمت تا آن زمان خالی می‌ماند. این صفحه زنده از Cloud Core می‌خواند — بدون دادهٔ نمونه. |
+| Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your Cloud Core URL and token here. | وصل نیست. از صفحهٔ داشبورد، اجراهای هوش مصنوعی یا مرکز هوش مصنوعی وصل شوید — یا نشانی Cloud Core و توکن خود را اینجا وارد کنید. |
+| All types | همهٔ انواع |
+| Application | برنامه |
+| Research tool | ابزار پژوهشی |
+| Document tool | ابزار سند |
+| Search tool | ابزار جست‌وجو |
+| Academic tool | ابزار دانشگاهی |
+| Parsing tool | ابزار تجزیه |
+| Writing tool | ابزار نگارش |
+| Education tool | ابزار آموزشی |
+| Vision tool | ابزار بینایی |
+| Audio tool | ابزار صوتی |
+| Multimodal tool | ابزار چندوجهی |
+| All statuses | همهٔ وضعیت‌ها |
+| Discovered | کشف‌شده |
+| Identified | شناسایی‌شده |
+| Official source verified | منبع رسمی راستی‌آزمایی‌شده |
+| Api capability checked | توانایی API بررسی‌شده |
+| Credential method verified | روش اعتبارنامه راستی‌آزمایی‌شده |
+| Capability verified | توانایی راستی‌آزمایی‌شده |
+| Health checked | سلامت بررسی‌شده |
+| Active | فعال |
+| Application only | فقط برنامه |
+| Model only | فقط مدل |
+| Specialized research tool | ابزار پژوهشی تخصصی |
+| No verified api | بدون API راستی‌آزمایی‌شده |
+| Not verified | راستی‌آزمایی‌نشده |
+| Blocked external dependency | وابستگی بیرونی مسدودشده |
+| Disabled | غیرفعال |
+| Import initial list | وارد کردن فهرست اولیه |
+| {n|resource in catalog|resources in catalog} | {n} منبع در فهرست |
+| No results matching the current filters. | با فیلترهای کنونی نتیجه‌ای پیدا نشد. |
+| Connected to {base}. | به {base} وصل است. |
+| Could not load the catalog ({error}). | بارگذاری فهرست ناموفق بود ({error}). |
+| Imported {inserted} new, {present} already present. | {inserted} مورد تازه وارد شد، {present} مورد از پیش بود. |
+| Could not import the list ({error}). | وارد کردن فهرست ناموفق بود ({error}). |

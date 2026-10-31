@@ -121,13 +121,14 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 4441fd5
+- sha (last non-docs commit): 4d4bd81
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 4441fd5 (9A). 21be62a (9A backend) was pushed
-  with it and is not built on its own. 41f187d (8B-3) was green (run 79).
-- last code commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
-- last feature commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
+- last_ci: in_progress @ 4d4bd81 (9D). Runs 81 (9A code) and 82 (9B,
+  b8c8724) green. Run 84 (23269bd, carries 9C d4af282) was still running
+  when 9D was pushed (user override).
+- last code commit: "feat(ai): live ai catalog screen (9D)" @ 4d4bd81
+- last feature commit: "feat(ai): live ai catalog screen (9D)" @ 4d4bd81
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -306,6 +307,34 @@ file from scratch (do not diff). Output only the file content.
     V5-ai-prompts, V5-ai-center-deletes. e2e/ai-executions.js (19);
     --require adds screen-ai-executions. An error hides #aix-body; the
     way back is Connect.
+  - 9B @ b8c8724 — #screen-memory (own module, connects on aiol:live):
+    no backend change (search = 1 call with full rows; versions and
+    compare = 1 call each, on demand). data-live-wired; every runtime
+    string through AIOL_I18N.set (headers, kind/change labels, totals,
+    versions heading, compare result, pager, messages incl. a 403
+    export message); JSON/JSONL/CSV/ZIP as identifiers. 51 FA entries,
+    46 KNOWN words. e2e/memory-center.js (16); --require adds
+    screen-memory.
+  - 9C @ d4af282 — #screen-chat-settings (own module, aiol:live): no
+    backend change (GET/PUT /chat/settings, admin only; 3 fixed calls:
+    settings, routing policies, topics). data-live-wired; message and
+    state lines through AIOL_I18N.set (state = on / saved-but-off /
+    never-configured + no-resource warning); server errors in {error};
+    topic names as <bdi>. 32 FA entries, 60 KNOWN words.
+    e2e/chat-settings.js (15: one PUT with the form body, 422 message,
+    Persian); --require adds screen-chat-settings.
+  - 9D @ 4d4bd81 — #screen-ai-catalog (catalog block of the shared
+    Catalog/Memory/Background/Agent script): no backend change (GET
+    /ai-center/discovery = 1 call, server-side filters). data-live-wired
+    on the section and data-live-keep on #cat-body (outside the panel,
+    so live CSS would hide it). Type/status badges reuse the filter
+    options' labels; total, empty, pager, connected note, import result
+    and errors through AIOL_I18N.set. 37 FA entries, 40 KNOWN words.
+    e2e/ai-catalog.js (14); --require adds screen-ai-catalog. There is
+    no Agent Network screen: its agents list is inside AI Center (9E);
+    memory profiles and background policies sit on another screen
+    (index.html ~6245/6265). AI Center also loads discovery (limit=25)
+    on connect, a duplicate of the catalog's read — a 9E item.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -314,18 +343,17 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions
-  and 15 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog
+  and 18 browser suites.
 
 ## 5. In progress — next step
 
 - Step 8 (Knowledge tools) is DONE (see §4).
-- Step 9 (AI) is partially complete: 9A (AI executions) done (see §4).
-- Next up: 9B (Memory Center: /memory search, versions, compare,
-  export; route runtime text through AIOL_I18N.set, FA, e2e,
-  --require). Then 9C Chat settings, 9D AI Catalog and Agent Network,
-  9E AI Center (split routing/jobs/discovery), 9F Command workspace.
-  #screen-access moves to Step 10 (Visibility).
+- Step 9 (AI) is partially complete: 9A (AI executions), 9B (Memory
+  Center), 9C (Chat settings) and 9D (AI Catalog) done (see §4).
+- Next up: 9E (AI Center, with the Agent Network agents list; split
+  routing/jobs/discovery; drop its duplicate discovery read). Then 9F
+  Command workspace. #screen-access moves to Step 10 (Visibility).
 - Debt rows added in 9A, both OPEN: V5-ai-prompts, V5-ai-center-deletes.
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
@@ -344,10 +372,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 9B (Memory Center) prompt.
+State in sync → user says "go" → send the 9E (AI Center) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 9B (Memory Center) prompt.
+Case B — user says "go": send the 9E (AI Center) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -410,6 +438,12 @@ Case C — anything CI-red: paste log, fix before any new work.
   updated). Step 8 is complete; Step 9 (AI) is next.
 - v16 @ 4441fd5 — 9A shipped (backend 21be62a): AI executions loads in one
   call and is fully translatable. 9B (Memory Center) is next.
+- v17 @ b8c8724 — 9B shipped (Memory Center live and translatable, no
+  backend change). 9C (Chat settings) is next.
+- v18 @ d4af282 — 9C shipped (Chat settings live and translatable, no
+  backend change). 9D (AI Catalog and Agent Network) is next.
+- v19 @ 4d4bd81 — 9D shipped (AI Catalog live and translatable, no backend
+  change). Agent Network belongs to AI Center (9E), which is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -551,6 +585,12 @@ Session / memory:
   stopped at the first closing tag of the same name, so a hidden card
   with nested <div>s leaked its inner strings. It now counts nesting
   (dropDebtHidden, 8B-2).
+- Dropdown option text stays English in Persian: the Persian layer's
+  KEEP_LATIN includes `select`, so <option> text is never translated.
+  Give options readable English labels (API values stay in `value`);
+  i18n-coverage still counts static option text, so those strings get
+  FA rows anyway. A label that must change with the language belongs
+  outside the select.
 
 ### 10.3 Reversals and abandoned approaches
 
@@ -615,7 +655,7 @@ Session / memory:
 - 7E Add source (Upload + URL only, ~1h).
 - Step 8 (Knowledge tools) complete: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D.
   V5-matrix-coverage-runtime-fa is OPEN.
-- Step 9 (AI) partial: 9A done; 9B–9F remain.
+- Step 9 (AI) partial: 9A, 9B, 9C, 9D done; 9E, 9F remain.
 - Steps 10–14 (Visibility, Commerce, Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
