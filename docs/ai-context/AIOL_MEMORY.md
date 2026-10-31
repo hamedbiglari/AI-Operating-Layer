@@ -121,13 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 2d9d56c
+- sha (last non-docs commit): 9691372
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ 2d9d56c (7D-2)
-- last code commit: "feat(provenance): live provenance screen (7D-2)" @ 2d9d56c
-- last feature commit: "feat(provenance): live provenance screen
-  (7D-2)" @ 2d9d56c
+- last_ci: in_progress @ 9691372 (7E)
+- last code commit: "feat(sources): live add source screen (7E)" @ 9691372
+- last feature commit: "feat(sources): live add source screen (7E)"
+  @ 9691372
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -238,6 +238,16 @@ file from scratch (do not diff). Output only the file content.
     Source detail. 62 FA entries + glossary section, 67 KNOWN words,
     allowlist pair 13/31 (both numbers). e2e/provenance.js (23
     checks); --require adds screen-provenance.
+- 7E @ 9691372 — live #screen-add (kind 'add', addSourceScreen()):
+  source picker from GET /sources/overview?limit=100 (read when the
+  screen is shown, not on every connect); Document card -> POST
+  /documents/upload (multipart, api() opts.form); Web page card -> POST
+  /documents/ingest-url; success opens #screen-detail?id=<picked
+  source> (neither reply carries a source id). Mock: Dataset and Site
+  article cards removed; Research and Supplier document hidden
+  (data-debt-hidden, no FA rows, per D6). Old #live-add-source panel
+  (POST /sources) kept. 18 FA entries + glossary section, 9 KNOWN
+  words. e2e/add-source.js (19 checks); --require adds screen-add.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -246,13 +256,17 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance
-  and 10 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add
+  and 11 browser suites.
 
 ## 5. In progress — next step
 
-- Step 7D (Provenance) is complete: 7D-1 and 7D-2 ✓ (see §4).
-- Next up is 7E (Add source). Needs investigation before coding.
+- Step 7E (Add source) is complete @ 9691372 (see §4).
+- Next up is Step 8. Needs investigation before coding.
+- Debt rows added in 7E, all OPEN: V5-add-source-dataset,
+  V5-add-source-site-article, V5-add-source-research,
+  V5-add-source-supplier, V5-add-source-ui-merge (old "Add a source to
+  Cloud Core" panel overlaps the Web page card and has no Persian).
 - Debt: V5-knowledge-provenance-link OPEN — nothing links to
   #screen-provenance?id= yet (no entry point from Knowledge), although
   the no-id message says "Open one from Knowledge". Not yet written to
@@ -260,10 +274,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 7E investigation prompt.
+State in sync → user says "go" → send the Step 8 investigation prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 7E investigation prompt.
+Case B — user says "go": send the Step 8 investigation prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -315,6 +329,8 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v11 @ 2d9d56c — 7D-1 (5caa754) and 7D-2 (2d9d56c) shipped. Step 7D is
   complete; 7E (Add source) is next. Debt V5-knowledge-provenance-link
   noted.
+- v12 @ 9691372 — 7E shipped (live Add source: upload + URL cards).
+  Step 7E is complete; Step 8 is next. Five V5-add-source-* debt rows.
 
 ## 10. Historical context (from two prior sessions)
 
