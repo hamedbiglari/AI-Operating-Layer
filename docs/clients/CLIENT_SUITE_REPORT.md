@@ -68,10 +68,10 @@ responsive platform adaptation (CSS drawer < 768 px, safe areas, touch targets) 
 
 | Platform | Status | Evidence | Missing for the next status |
 |----------|--------|----------|-----------------------------|
-| Windows | **PACKAGE GENERATED** (unsigned) — CI run 41209523146, job "Package — Windows x64" succeeded, artifact `aiol-Windows` (2.8 MB, NSIS + MSI) | Rust shell compiles and tests on the Linux host; Windows code path: see §17 (`cargo check --target x86_64-pc-windows-msvc`) | run `clients.yml` "Package — Windows x64" (NSIS/MSI); Authenticode certificate |
-| macOS | **SOURCE IMPLEMENTED** | as above; `cargo check --target aarch64-apple-darwin` (§17) | run "Package — macOS universal"; Developer ID + notarization |
-| Android | **SOURCE IMPLEMENTED** (Kotlin plugin uncompiled) | `cargo check --target aarch64-linux-android` (§17); `VaultPlugin.kt` not compiled — SDK host blocked | `scripts/mobile-setup.sh android` + `tauri android build` with SDK/NDK; upload keystore |
-| iOS / iPadOS | **BUILD VERIFIED** (simulator, arm64, unsigned) — CI run 41221954216 "Finished 1 iOS Bundle … arm64-sim/AIOL.app"; not run on a simulator or device | `cargo check --target aarch64-apple-ios` (§17) | macOS + Xcode: `scripts/mobile-setup.sh ios`, `tauri ios build`; Apple team |
+| Windows | **PACKAGE GENERATED** (unsigned) | CI runs 41209523146, 41221954216, 41223589699: "Package — Windows x64" succeeded; artifact `aiol-Windows` (2.8 MB, NSIS + MSI) | Authenticode signing; install and test on real Windows devices |
+| macOS | **PACKAGE GENERATED** (unsigned, universal) | CI run 41223589699 "Package — macOS universal" succeeded; artifact `aiol-macOS` (6.7 MB, `.app` + `.dmg`) | Developer ID signing + notarization; real-device test |
+| Android | **PACKAGE GENERATED** (unsigned debug APK) | CI run 41223589699 "Package — Android" succeeded — this compiled the Kotlin Keystore plugin; artifact `aiol-android-debug` (122 MB, debug APKs) | release AAB with an upload keystore; real-device test (Keystore, keyboard, back navigation) |
+| iOS / iPadOS | **BUILD VERIFIED** (simulator, arm64, unsigned) | CI runs 41221954216 and 41223589699: "Finished 1 iOS Bundle"; artifact `aiol-ios-simulator` (19 MB `AIOL.app`) | device build needs an Apple team + provisioning; simulator/device test |
 
 The **shared UI** that all four load is at **TESTS PASS** (unit + live end-to-end in Chromium). Chromium is
 the engine of WebView2 (Windows) and Android System WebView, not of WKWebView (macOS/iOS).
@@ -222,8 +222,8 @@ macOS/Xcode host; legal review.
 
 ## 21. Production readiness decision
 
-**NOT READY FOR RELEASE.** No platform has a built, signed, device-tested package; WebKit engines are
-untested; the Android Kotlin plugin is uncompiled; the privacy disclosure lacks legal review. No
+**NOT READY FOR RELEASE.** All four platforms now build in CI (unsigned), but none is signed or device-tested; WebKit engines are
+untested; the privacy disclosure lacks legal review. No
 release-blocking vulnerability is known in the implemented code, and the backend changes are additive and
 reversible (migration 0049 down-migrates cleanly).
 
@@ -272,3 +272,15 @@ run on a fresh database (as CI does), not one that also holds rows from a live e
 
 Merge of `v5-implementation` (8A–9A) into this branch at 77d9485: fresh-DB upgrade to 0049, full backend
 suite 1800 passed / 0 failed, coverage 93.53 %; harness i18n gate with CI's full `--require` list passes.
+
+### CI run 41223589699 (commit 33be46e) — all jobs green
+
+| Job | Result | Artifact |
+|-----|--------|----------|
+| Shared UI unit tests · end-to-end vs live Cloud Core · Rust tests | success | `e2e-screenshots` |
+| Package — Windows x64 | success | `aiol-Windows` 2.8 MB |
+| Package — macOS universal | success (unsigned) | `aiol-macOS` 6.7 MB |
+| Package — Android (debug APK) | success — first compilation of `VaultPlugin.kt` | `aiol-android-debug` 122 MB |
+| Build — iOS simulator | success | `aiol-ios-simulator` 19 MB |
+
+None of these packages has been installed or run on a real device; none is signed; nothing is published.

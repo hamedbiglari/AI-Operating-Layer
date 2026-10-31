@@ -23,6 +23,9 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
 - Open: §19 dashboard Device Intelligence screen — waits for the local v5 session to finish editing
   visual-harness/index.html, to avoid merge conflicts.
 
+- **Run 41223589699 (33be46e): every job green — Windows, macOS, Android (debug APK) and iOS simulator all
+  built.** Artifacts: aiol-Windows, aiol-macOS, aiol-android-debug, aiol-ios-simulator (kept 14 days).
+
 ## In progress
 - CI "Client suite CI" run 41209523146 on 01b4467:
   https://github.com/hamedbiglari/AI-Operating-Layer/actions/runs/41209523146
