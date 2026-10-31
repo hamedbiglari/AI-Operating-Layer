@@ -487,3 +487,50 @@ fields are mutually exclusive — see `docs/database.md`):
 | GET    | `/api/v1/knowledge-gaps/{id}`         | Read one                                      |
 | PATCH  | `/api/v1/knowledge-gaps/{id}`         | Update description/priority/status/recommended_action |
 
+
+## Official client suite (ADR-137)
+
+Native clients (Windows, macOS, Android, iOS) authenticate with the methods the website and dashboard
+already use, and keep the long-lived half of the session in the operating system's secure storage.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/auth/native/session` | none | `{grant: "login_code", email, code}` or `{grant: "password", email, password}` → `{access_token, expires_in_minutes, refresh_token, refresh_expires_at}`. Same throttles, lockout and indistinguishable failures as `/auth/login-code/verify` and `/auth/login`. Never sets a cookie. |
+| POST | `/api/v1/auth/native/session/refresh` | none (refresh token in body) | Rotates the refresh secret. A secret rotated away more than 30 s ago revokes the whole session (`reuse_detected`). 401 on every failure. |
+| POST | `/api/v1/auth/native/session/end` | none (refresh token in body) | Sign out. Idempotent, always 204. Does not touch conversations. |
+| GET | `/api/v1/clients/config?platform=` | none | Operator-configured links (`help`, `learn_more`, `privacy`, `terms`, `docs`, `report_problem`; `null` when unset), `upgrade {url, state}` (`available` · `not_configured` · `not_offered_on_platform`), published `releases`, `languages`, Device Intelligence switch and retention. No tenant data. |
+
+The refresh token is the same `auth_sessions` secret the browser keeps in its HttpOnly cookie
+(ADR-129): HMAC-only storage, rotation, reuse detection, absolute lifetime.
+
+**Chat idempotency.** `POST /chat/conversations/{id}/messages` accepts an optional
+`client_request_id` (`[A-Za-z0-9_-]{8,64}`). Re-sending the same key returns the stored assistant
+turn with `200` and `Idempotent-Replay: true`; a key whose question is stored but not yet answered
+is `409` with `error.reason = "request_in_progress"`. Requests without a key behave as before.
+Message objects now include `client_request_id`.
+
+**Structured error reasons.** When a route raises a detail of the form `{code, message}`, the error
+envelope keeps its shape and adds `error.reason` (a stable machine code). String details are
+unchanged.
+
+## Device Intelligence (ADR-138)
+
+Installation-continuity evidence. Every route requires a session; admin routes require owner or admin.
+Errors carry `error.reason`. A client must never block sign-in on any of these.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/devices/challenges` | `{purpose: "register" \| "verify", credential_id?}` → `{challenge_id, nonce, expires_at, signing_input}`. Single use, 120 s, bound to (organization, user, purpose, credential). 30/min per user. |
+| POST | `/api/v1/devices/credentials` | Register: `{challenge_id, nonce, public_key (base64 DER SPKI, P-256), signature (ES256, DER or P1363), platform, key_storage, app_version?, os_family?, os_version?}`. 201 created · 200 already registered (and this account linked). Reasons: `bad_signature` (401), `challenge_replayed` / `challenge_expired` / `challenge_invalid` / `credential_revoked` / `provenance_mismatch` (409), `unsupported_key` (422). |
+| POST | `/api/v1/devices/credentials/{id}/verify` | Continuity check with a `verify` challenge. 404 unless the caller's account is linked to the credential. |
+| GET | `/api/v1/devices/credentials` | Installations linked to the caller's account. |
+| DELETE | `/api/v1/devices/credentials/{id}` | Unlink the caller; revokes the credential when no account remains. 204. |
+| GET | `/api/v1/devices/admin/credentials` | Admin. Paginated, `state=active\|revoked`. Each item carries `assessment {categories, reason_codes, algorithm_version, evidence}`. |
+| GET | `/api/v1/devices/admin/credentials/{id}` | Admin. Linked accounts and the last 100 observations with truncated network pseudonyms. Every read is audit-logged (`device_intelligence.viewed`). |
+| POST | `/api/v1/devices/admin/credentials/{id}/revoke` | Admin. Audited (`device.credential_revoked`). 409 when already revoked. |
+
+`signing_input` is `AIOL-DEVICE-v1\n<purpose>\n<challenge_id>\n<nonce>\n<organization_id>\n<user_id>\n<credential_id or ->`;
+the server rebuilds it from its own record. Assessment categories (algorithm `di-assess-v1`):
+`DEVICE_CREDENTIAL_REVOKED`, `SAME_REGISTERED_INSTALLATION`, `CONFLICTING_EVIDENCE`,
+`SHARED_NETWORK_ONLY`, `INSUFFICIENT_EVIDENCE`. None of them is a person-level conclusion, and no route
+enforces on them.
