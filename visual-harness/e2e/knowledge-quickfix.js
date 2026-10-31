@@ -84,7 +84,8 @@ function check(name, got, want) {
     window.AIOL_LIVE_CONNECT('http://core.test', 'tok');
   });
   await page.waitForSelector('#know-view-table tbody .know-name', { timeout: 10000 });
-  await page.click('#know-view-table tbody .know-name');
+  // A name now opens #screen-knowledge-detail (8B-3); the workspace opens from its own button.
+  await page.click('#know-view-table tbody .research-workspace-btn');
   await page.waitForSelector('#live-screen-knowledge .kw-workspace', { timeout: 10000 });
   await page.waitForTimeout(500);
   check('detail shows exactly one keyword workspace',

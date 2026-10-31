@@ -9649,11 +9649,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         AIOL_I18N.set(seg, parts.length === 1 ? p[0] : p[1], { n: p[2] });
       });
     }
-    function openDetail(it, toWorkspace) {
+    // A name opens the object's own page (8B-3); the inline panel below now serves only the Research workspace.
+    function detailHref(it) { return '#screen-knowledge-detail?id=' + encodeURIComponent(it.id); }
+    function openDetail(it) {
       detail(panel, 'knowledge', it);
       var box = panel.querySelector('.live-detail');
       box.scrollIntoView({ block: 'start' });
-      if (!toWorkspace) return;
       // The workspace arrives after the detail's own reads; wait for it, then bring it into view.
       var found = function () { var w = box.querySelector('.kw-workspace'); if (w) { w.scrollIntoView({ block: 'start' }); return true; } return false; };
       if (found()) return;
@@ -9683,9 +9684,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     function row(it) {
       var tr = el('tr'); tr.dataset.knowledgeId = it.id;
       var name = el('td'); name.dataset.label = 'Knowledge object';
-      var a = el('a', 'know-name'); a.href = '#screen-knowledge';
+      var a = el('a', 'know-name'); a.href = detailHref(it);
       var n = a.appendChild(el('bdi', null, it.canonical_name)); n.dir = 'auto';
-      a.addEventListener('click', function (e) { e.preventDefault(); openDetail(it, false); });
       name.appendChild(a); name.appendChild(typeLine(it.object_type));
       var sources = el('td', 'num'); sources.dataset.label = 'Sources'; AIOL_I18N.set(sources, '{n}', { n: it.counts.sources });
       var appr = el('td'); appr.dataset.label = 'Approval'; appr.appendChild(approval(it.status));
@@ -9699,9 +9699,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     function card(it) {
       var c = el('div', 'card know-card'); c.dataset.knowledgeId = it.id;
       var top = c.appendChild(el('div', 'know-card__top'));
-      var a = top.appendChild(el('a', 'know-name')); a.href = '#screen-knowledge';
+      var a = top.appendChild(el('a', 'know-name')); a.href = detailHref(it);
       var n = a.appendChild(el('bdi', null, it.canonical_name)); n.dir = 'auto';
-      a.addEventListener('click', function (e) { e.preventDefault(); openDetail(it, false); });
       top.appendChild(typeLine(it.object_type));
       var dl = c.appendChild(el('dl', 'kv'));
       [['Sources', function (dd) { AIOL_I18N.set(dd, '{n}', { n: it.counts.sources }); }],
@@ -9720,7 +9719,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       shown.setAttribute('aria-hidden', 'true');
       AIOL_I18N.set(shown, 'Research workspace');
       AIOL_I18N.set(spoken, 'Research workspace for {name}', { name: it.canonical_name });
-      b.addEventListener('click', function () { openDetail(it, true); });
+      b.addEventListener('click', function () { openDetail(it); });
       return b;
     }
     function render(page) {
@@ -9874,7 +9873,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
             if (link) { AIOL_I18N.set(text, 'Created {name}.', { name: made.canonical_name }); link.focus(); return; }
             AIOL_I18N.set(text, '{name} was created; it is not on this page.', { name: made.canonical_name });
             var open = note.appendChild(el('button', 'btn')); open.type = 'button'; AIOL_I18N.set(open, 'Open');
-            open.addEventListener('click', function () { openDetail(made, false); });
+            open.addEventListener('click', function () { location.hash = detailHref(made); });
           });
         }).catch(function (err) { AIOL_I18N.set(msg, 'Could not create: {error}', { error: err.message }); })
           .then(function () { create.disabled = false; });

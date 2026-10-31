@@ -473,7 +473,7 @@ const screenDetail = `
     <div class="card">
       <h2 class="card__title">What this source contributed</h2>
       <dl class="kv">
-        <dt>Knowledge objects</dt><dd><a href="#screen-knowledge-taranjebin" class="num">3</a></dd>
+        <dt>Knowledge objects</dt><dd><a href="#screen-knowledge-detail" class="num">3</a></dd>
         <dt>Claims</dt><dd><a href="#screen-detail" class="num">74</a></dd>
         <dt>Evidence</dt><dd><a href="#screen-detail" class="num">31</a></dd>
         <dt>Research projects</dt><dd><a href="#screen-detail" class="num">2</a></dd>
@@ -546,7 +546,7 @@ const screenProvenance = `
       </p>
       <div class="callout callout--warning" style="margin-top:var(--space-4)"><span class="callout__icon">${ic('conflict')}</span>
         <div><p>This claim is marked <strong>conflicting</strong>. It is not presented as settled anywhere in the product.</p>
-        <p><a href="#screen-knowledge-taranjebin">Review the conflict</a></p></div>
+        <p><a href="#screen-knowledge-detail">Review the conflict</a></p></div>
       </div>
     </div>
   </div>
@@ -611,7 +611,7 @@ function knowledgeRow(k) {
   const pct = Math.round((k.processed / k.sources) * 100);
   return `
     <tr data-entity="${k.id}" data-version="1">
-      <td data-label="Knowledge object"><a href="#screen-knowledge-${k.id}" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl">${k.title}</bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)">${k.subtitle}</span></td>
+      <td data-label="Knowledge object"><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl">${k.title}</bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)">${k.subtitle}</span></td>
       <td data-label="Sources" class="num">${k.sources.toLocaleString()}</td>
       <td data-label="Processing">
         <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -633,7 +633,7 @@ function knowledgeCard(k) {
   return `
     <div class="card" data-entity="${k.id}" data-version="1" style="display:flex;flex-direction:column;gap:var(--space-2)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2)">
-        <div><a href="#screen-knowledge-${k.id}" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl">${k.title}</bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)">${k.subtitle}</div></div>
+        <div><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl">${k.title}</bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)">${k.subtitle}</div></div>
         <button type="button" class="btn btn--icon research-again-btn" data-entity="${k.id}" title="Re-run research — creates a new version" aria-label="Research again for ${k.subtitle}">${ic('research')}</button>
       </div>
       <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -710,7 +710,7 @@ function keywordVisibilitySummary(k) {
   const topCountry = GEO_POINTS[seed % GEO_POINTS.length];
   const secondCountry = GEO_POINTS[(seed + 1) % GEO_POINTS.length];
   return `
-  <div class="card">
+  <div class="card" data-debt-hidden>
     <h2 class="card__title" style="display:flex;align-items:center;gap:var(--space-2)">${ic('visibility')}AI visibility for <bdi lang="fa" dir="rtl">${k.title}</bdi></h2>
     <p style="color:var(--text-muted);margin-top:0">Scoped to pages about <bdi lang="fa" dir="rtl">${k.title}</bdi> only — the same fields as the site-wide report, filtered to this keyword. <a href="#screen-visibility-detail">Open the site-wide report</a> to compare across all keywords.</p>
     <div class="stat-grid">
@@ -735,10 +735,10 @@ function keywordVisibilitySummary(k) {
 
 function knowledgeDetailScreen(k) {
   return `
-<section class="screen" id="screen-knowledge-${k.id}" aria-labelledby="h-know-${k.id}">
+<section class="screen" id="screen-knowledge-detail" aria-labelledby="h-know-detail">
   <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge">Knowledge</a>${ic('action-expand')}<span lang="fa" dir="rtl">${k.title}</span></nav>
   <div class="page-header">
-    <div><h1 id="h-know-${k.id}" lang="fa" dir="rtl">${k.title}</h1><p>${k.subtitle} · published · knowledge updated ${k.updated}</p></div>
+    <div><h1 id="h-know-detail" lang="fa" dir="rtl">${k.title}</h1><p>${k.subtitle} · published · knowledge updated ${k.updated}</p></div>
     <div class="page-actions">
       <button class="btn">${ic('provenance-trace')}Trace a statement</button>
       <a class="btn" href="#screen-states">${ic('action-archive')}Archive / delete</a>
@@ -754,7 +754,7 @@ function knowledgeDetailScreen(k) {
 
   ${keywordVisibilitySummary(k)}
 
-  <div class="card">
+  <div class="card" data-debt-hidden>
     <h2 class="card__title">Evidence by kind</h2>
     <p style="color:var(--text-muted);margin-top:0">Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.</p>
     <dl class="kv">
@@ -769,7 +769,9 @@ function knowledgeDetailScreen(k) {
 }
 
 const screenKnowledge = screenKnowledgeList;
-const KNOWLEDGE_DETAIL_SCREENS = KNOWLEDGE_OBJECTS.map(k => [`screen-knowledge-${k.id}`, k.title.replace(/<[^>]+>/g, ''), knowledgeDetailScreen(k)]);
+// One sample detail page (8B-2): the first object; the live screen is #screen-knowledge-detail?id=.
+// AI visibility and Evidence by kind are hidden as debt (V5-knowledge-detail-visibility, -evidence-kind).
+const KNOWLEDGE_DETAIL_SCREENS = [['screen-knowledge-detail', 'Knowledge detail', knowledgeDetailScreen(KNOWLEDGE_OBJECTS[0])]];
 
 const GAP_ACTION_ICON = { search: 'action-search', upload: 'action-upload', keep: 'action-restore' };
 
@@ -790,7 +792,7 @@ function gapActionButton(a, idx) {
 
 const screenGap = `
 <section class="screen" id="screen-gap" aria-labelledby="h-gap">
-  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge-taranjebin">${fa('ترنجبین')}</a>${ic('action-expand')}<span>Knowledge gap</span></nav>
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge-detail">${fa('ترنجبین')}</a>${ic('action-expand')}<span>Knowledge gap</span></nav>
   <div class="page-header">
     <div>
       <h1 id="h-gap">${GAPS[0].title}</h1>
@@ -1695,7 +1697,7 @@ function productRow(p) {
       <td data-label="Product"><a href="#screen-product-${p.id}" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl">${p.name}</bdi></a><br><span style="color:var(--text-subtle);font-size:var(--text-sm)">SKU <bdi>${p.sku}</bdi></span></td>
       <td data-label="Category"><bdi lang="fa" dir="rtl">${p.category}</bdi></td>
       <td data-label="Origin"><bdi lang="fa" dir="rtl">${p.origin}</bdi></td>
-      <td data-label="Knowledge">${p.knowledgeId ? `<a href="#screen-knowledge-${p.knowledgeId}">${ic('knowledge')}Linked</a>` : '<span style="color:var(--text-subtle)">Not linked</span>'}</td>
+      <td data-label="Knowledge">${p.knowledgeId ? `<a href="#screen-knowledge-detail">${ic('knowledge')}Linked</a>` : '<span style="color:var(--text-subtle)">Not linked</span>'}</td>
       <td data-label="Offers" class="num">${p.offers}</td>
       <td data-label="Availability">${offerAvailabilityBadge(p.availability)}</td>
       <td data-label="Status">${p.status === 'active' ? badge('success', 'status-completed', 'Active') : badge('unknown', 'status-unknown', 'Draft')}</td>
@@ -1742,7 +1744,7 @@ function productDetailScreen(p) {
       <dt>Origin</dt><dd><bdi lang="fa" dir="rtl">${p.origin}</bdi></dd>
       <dt>Ingredients</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
       <dt>Certifications</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
-      <dt>Knowledge Object</dt><dd>${p.knowledgeId ? `<a href="#screen-knowledge-${p.knowledgeId}">${ic('knowledge')}Open linked knowledge</a>` : 'Not linked'}</dd>
+      <dt>Knowledge Object</dt><dd>${p.knowledgeId ? `<a href="#screen-knowledge-detail">${ic('knowledge')}Open linked knowledge</a>` : 'Not linked'}</dd>
     </dl>
   </div>
   <div class="card" style="margin-top:var(--space-4)">
@@ -2137,7 +2139,7 @@ body { font-family: var(--font-ui); color: var(--text); }
     var sel = document.getElementById('pick-screen');
     if (sel.value !== id) sel.value = id;
     // Highlight whichever top-level nav item owns this screen — a
-    // sub-screen like "screen-knowledge-taranjebin" or
+    // sub-screen like "screen-knowledge-detail" or
     // "screen-visibility-detail" still belongs to its parent's nav
     // entry (Knowledge Objects / AI Visibility), so this matches on the
     // screen id STARTING WITH the nav target, not an exact match, or

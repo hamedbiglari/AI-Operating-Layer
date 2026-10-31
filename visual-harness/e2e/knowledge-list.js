@@ -211,6 +211,10 @@ function installMock(items) {
   await page.click('#know-view-table tbody tr:first-child .research-workspace-btn');
   await page.waitForSelector('#live-screen-knowledge .live-detail .kw-workspace', { timeout: 10000 });
   check('Research workspace opens the detail with one keyword workspace', await page.$$eval('#live-screen-knowledge .live-detail .kw-workspace', (w) => w.length), 1);
+  // 8B-3: a name is a link to the object's own page, in the table and the cards.
+  check('names link to Knowledge detail', [await page.$$eval('#know-view-table tbody .know-name', (a) => a.map((x) => x.getAttribute('href'))),
+    await page.$$eval('#know-view-grid .know-card .know-name', (a) => a.map((x) => x.getAttribute('href')))],
+    [ITEMS.map((i) => '#screen-knowledge-detail?id=' + i.id), ITEMS.map((i) => '#screen-knowledge-detail?id=' + i.id)]);
 
   // ---------- Part B ----------
   const search = '#screen-knowledge .toolbar input[type=search]';
@@ -566,6 +570,12 @@ function installMock(items) {
     return [split, document.documentElement.scrollWidth > window.innerWidth];
   }), [[], false]);
   await p5.close();
+
+  // Last, because it leaves the screen: a name opens the object's own page (8B-3).
+  const firstId = await page.$eval('#know-view-table tbody tr:first-child', (tr) => tr.dataset.knowledgeId);
+  await page.click('#know-view-table tbody tr:first-child .know-name'); await settle();
+  check('clicking a name opens Knowledge detail', await page.evaluate(() => [location.hash, document.querySelector('.screen.is-active').id]),
+    ['#screen-knowledge-detail?id=' + firstId, 'screen-knowledge-detail']);
 
   await browser.close();
   console.log(failures ? failures + ' FAILED' : 'ALL PASSED');
