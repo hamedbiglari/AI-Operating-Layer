@@ -10,6 +10,7 @@ POST /knowledge/{id}/publish
 DELETE /knowledge/{id}         -- archives, does not hard-delete
 GET  /knowledge/{id}/entities
 GET  /knowledge/{id}/claims
+GET  /knowledge/{id}/provenance -- claims with their evidence, sources and documents
 GET  /knowledge/{id}/relations
 GET  /knowledge/{id}/versions
 GET  /knowledge/{id}/gaps
@@ -36,10 +37,11 @@ from app.schemas.knowledge_object import (
 )
 from app.schemas.knowledge_overview import KnowledgeOverviewItem, KnowledgeOverviewPage, KnowledgeOverviewSort
 from app.schemas.knowledge_version import KnowledgeVersionRead
+from app.schemas.provenance import ProvenanceRead
 from app.schemas.relationship import RelationshipRead
 from app.security.dependencies import get_current_user, require_roles
 from app.services import entity_service, knowledge_gap_service, knowledge_service, knowledge_representation
-from app.services import claim_service, knowledge_overview_service
+from app.services import claim_service, knowledge_overview_service, provenance_service
 from app.services.relationship_service import list_relationships_for_node
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
@@ -255,6 +257,24 @@ def list_claims_for_knowledge_object(
         offset=pagination.offset,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
+
+
+@router.get("/{object_id}/provenance", response_model=ProvenanceRead)
+def get_provenance_for_knowledge_object(
+    object_id: UUID,
+    pagination: PaginationParams = Depends(),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """One page of the object's claims, each with its evidence links, plus
+    the evidence, sources and documents those links reach, keyed by id."""
+    return provenance_service.get_knowledge_provenance(
+        db,
+        ko_id=object_id,
+        org_id=current_user.organization_id,
+        limit=pagination.limit,
+        offset=pagination.offset,
+    )
 
 
 @router.get("/{object_id}/relations", response_model=Page[RelationshipRead])
