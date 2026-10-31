@@ -2900,6 +2900,8 @@ body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcru
 body[data-live="on"] #screen-detail > .breadcrumbs, body[data-live="on"] #screen-detail > .page-header { display: none !important; }
 body[data-live="on"] #screen-processing > .breadcrumbs, body[data-live="on"] #screen-processing > .page-header { display: none !important; }
 body[data-live="on"] #screen-provenance > .breadcrumbs, body[data-live="on"] #screen-provenance > .page-header { display: none !important; }
+body[data-live="on"] #screen-gap > .breadcrumbs, body[data-live="on"] #screen-gap > .page-header { display: none !important; }
+body[data-live="on"] #screen-knowledge-detail > .breadcrumbs, body[data-live="on"] #screen-knowledge-detail > .page-header { display: none !important; }
 .prov-claims { display: grid; gap: var(--space-4); margin-top: var(--space-4); }
 .prov-claims .trail li[data-kind="conflict"] .trail__node { color: var(--warning); border-color: var(--warning); background: var(--warning-tint); }
 .prov-none { color: var(--text-subtle); font-size: var(--text-sm); margin: var(--space-2) 0 0; }
@@ -3411,7 +3413,7 @@ button.card { color: inherit; font: inherit; }
 <div class="harness-bar">
   <strong>UX prototype harness</strong>
   <label>Screen
-    <select id="pick-screen"><option value="screen-dashboard">Dashboard</option><option value="screen-sources">Sources</option><option value="screen-add">Add source</option><option value="screen-processing">Document processing</option><option value="screen-detail">Source detail</option><option value="screen-provenance">Provenance</option><option value="screen-knowledge">Knowledge</option><option value="screen-knowledge-taranjebin">ترنجبین</option><option value="screen-knowledge-saffron">زعفران</option><option value="screen-knowledge-garlic">سیر</option><option value="screen-knowledge-thyme">آویشن</option><option value="screen-gap">Knowledge gap</option><option value="screen-visibility">AI Visibility</option><option value="screen-visibility-detail">Visibility detail</option><option value="screen-ai-executions">AI executions (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-ai-catalog">AI Catalog (live)</option><option value="screen-memory">Memory Center (live)</option><option value="screen-matrix">Categories &amp; matrix (live)</option><option value="screen-coverage">Coverage audit (live)</option><option value="screen-publications">Publications &amp; citations (live)</option><option value="screen-site-blog">Website: blog (live)</option><option value="screen-site-sections">Website: page sections (live)</option><option value="screen-site-subscribers">Website: subscribers (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-analytics">Analytics & demand</option><option value="screen-access">AI access</option><option value="screen-chat-settings">Chat settings (live)</option><option value="screen-operations">Connection & logs</option><option value="screen-states">Edge states</option><option value="screen-settings">Settings</option><option value="screen-chat">Command workspace (live)</option><option value="screen-products">Products</option><option value="screen-product-taranjebin-grade-a">ترنجبین درجه یک — ۱۰۰ گرم</option><option value="screen-product-saffron-negin-5g">زعفران نگین — ۵ گرم</option><option value="screen-product-garlic-oil-30ml">روغن سیر — ۳۰ میلی‌لیتر</option><option value="screen-admin-overview">Admin — overview</option><option value="screen-admin-users">Admin — users</option><option value="screen-admin-billing">Admin — billing &amp; wallets</option><option value="screen-statistics">Statistics</option><option value="screen-payment">Payment</option><option value="screen-transactions">Transactions</option><option value="screen-traffic">Traffic &amp; content</option><option value="screen-research">Research</option><option value="screen-admin-user-u1">Admin — Hamed Biglari</option><option value="screen-admin-user-u2">Admin — <span lang="fa" dir="rtl">مریم سلیمانی</span></option><option value="screen-admin-user-u3">Admin — Reza Kiani</option><option value="screen-admin-user-u4">Admin — Sahar Ahmadi</option><option value="screen-admin-user-u5">Admin — Unknown applicant</option><option value="screen-login">Login</option><option value="screen-signup">Sign up</option><option value="screen-login-code">Login — enter code</option></select>
+    <select id="pick-screen"><option value="screen-dashboard">Dashboard</option><option value="screen-sources">Sources</option><option value="screen-add">Add source</option><option value="screen-processing">Document processing</option><option value="screen-detail">Source detail</option><option value="screen-provenance">Provenance</option><option value="screen-knowledge">Knowledge</option><option value="screen-knowledge-detail">Knowledge detail</option><option value="screen-gap">Knowledge gap</option><option value="screen-visibility">AI Visibility</option><option value="screen-visibility-detail">Visibility detail</option><option value="screen-ai-executions">AI executions (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-ai-catalog">AI Catalog (live)</option><option value="screen-memory">Memory Center (live)</option><option value="screen-matrix">Categories &amp; matrix (live)</option><option value="screen-coverage">Coverage audit (live)</option><option value="screen-publications">Publications &amp; citations (live)</option><option value="screen-site-blog">Website: blog (live)</option><option value="screen-site-sections">Website: page sections (live)</option><option value="screen-site-subscribers">Website: subscribers (live)</option><option value="screen-ai-center">AI Center (live)</option><option value="screen-analytics">Analytics & demand</option><option value="screen-access">AI access</option><option value="screen-chat-settings">Chat settings (live)</option><option value="screen-operations">Connection & logs</option><option value="screen-states">Edge states</option><option value="screen-settings">Settings</option><option value="screen-chat">Command workspace (live)</option><option value="screen-products">Products</option><option value="screen-product-taranjebin-grade-a">ترنجبین درجه یک — ۱۰۰ گرم</option><option value="screen-product-saffron-negin-5g">زعفران نگین — ۵ گرم</option><option value="screen-product-garlic-oil-30ml">روغن سیر — ۳۰ میلی‌لیتر</option><option value="screen-admin-overview">Admin — overview</option><option value="screen-admin-users">Admin — users</option><option value="screen-admin-billing">Admin — billing &amp; wallets</option><option value="screen-statistics">Statistics</option><option value="screen-payment">Payment</option><option value="screen-transactions">Transactions</option><option value="screen-traffic">Traffic &amp; content</option><option value="screen-research">Research</option><option value="screen-admin-user-u1">Admin — Hamed Biglari</option><option value="screen-admin-user-u2">Admin — <span lang="fa" dir="rtl">مریم سلیمانی</span></option><option value="screen-admin-user-u3">Admin — Reza Kiani</option><option value="screen-admin-user-u4">Admin — Sahar Ahmadi</option><option value="screen-admin-user-u5">Admin — Unknown applicant</option><option value="screen-login">Login</option><option value="screen-signup">Sign up</option><option value="screen-login-code">Login — enter code</option></select>
   </label>
   <label>Language
     <select id="pick-lang"><option value="en">English (LTR)</option><option value="fa">فارسی (RTL)</option></select>
@@ -3994,7 +3996,7 @@ button.card { color: inherit; font: inherit; }
     <div class="card">
       <h2 class="card__title">What this source contributed</h2>
       <dl class="kv">
-        <dt>Knowledge objects</dt><dd><a href="#screen-knowledge-taranjebin" class="num">3</a></dd>
+        <dt>Knowledge objects</dt><dd><a href="#screen-knowledge-detail" class="num">3</a></dd>
         <dt>Claims</dt><dd><a href="#screen-detail" class="num">74</a></dd>
         <dt>Evidence</dt><dd><a href="#screen-detail" class="num">31</a></dd>
         <dt data-debt-hidden="V5-source-detail-research-projects">Research projects</dt><dd data-debt-hidden="V5-source-detail-research-projects"><a href="#screen-detail" class="num">2</a></dd>
@@ -4066,7 +4068,7 @@ button.card { color: inherit; font: inherit; }
       </p>
       <div class="callout callout--warning" style="margin-top:var(--space-4)"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 3 7v6.5c0 4.6 3.7 8.4 9 10 5.3-1.6 9-5.4 9-10V7zM12 7.8v5M12 16.4h.01"/></svg></span>
         <div><p>This claim is marked <strong>conflicting</strong>. It is not presented as settled anywhere in the product.</p>
-        <p><a href="#screen-knowledge-taranjebin">Review the conflict</a></p></div>
+        <p><a href="#screen-knowledge-detail">Review the conflict</a></p></div>
       </div>
     </div>
   </div>
@@ -4104,7 +4106,7 @@ button.card { color: inherit; font: inherit; }
     </tr></thead>
     <tbody>
     <tr data-entity="taranjebin" data-version="1">
-      <td data-label="Knowledge object"><a href="#screen-knowledge-taranjebin" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Toranjebin · Alhagi manna</bdi></span></td>
+      <td data-label="Knowledge object"><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Toranjebin · Alhagi manna</bdi></span></td>
       <td data-label="Sources" class="num">248</td>
       <td data-label="Processing">
         <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4120,7 +4122,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Research" class="td--center"><button type="button" class="btn research-again-btn" data-entity="taranjebin" title="Re-run research on new/updated sources — creates a new version, never overwrites this one"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5.2L5.4 17A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.8-3L14 8.2V3M7.8 14h8.4"/></svg><span class="visually-hidden" data-sample-name="Toranjebin · Alhagi manna"></span></button></td>
     </tr>
     <tr data-entity="saffron" data-version="1">
-      <td data-label="Knowledge object"><a href="#screen-knowledge-saffron" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Saffron · Crocus sativus</bdi></span></td>
+      <td data-label="Knowledge object"><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Saffron · Crocus sativus</bdi></span></td>
       <td data-label="Sources" class="num">612</td>
       <td data-label="Processing">
         <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4136,7 +4138,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Research" class="td--center"><button type="button" class="btn research-again-btn" data-entity="saffron" title="Re-run research on new/updated sources — creates a new version, never overwrites this one"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5.2L5.4 17A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.8-3L14 8.2V3M7.8 14h8.4"/></svg><span class="visually-hidden" data-sample-name="Saffron · Crocus sativus"></span></button></td>
     </tr>
     <tr data-entity="garlic" data-version="1">
-      <td data-label="Knowledge object"><a href="#screen-knowledge-garlic" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Garlic · Allium sativum</bdi></span></td>
+      <td data-label="Knowledge object"><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Garlic · Allium sativum</bdi></span></td>
       <td data-label="Sources" class="num">401</td>
       <td data-label="Processing">
         <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4152,7 +4154,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Research" class="td--center"><button type="button" class="btn research-again-btn" data-entity="garlic" title="Re-run research on new/updated sources — creates a new version, never overwrites this one"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5.2L5.4 17A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.8-3L14 8.2V3M7.8 14h8.4"/></svg><span class="visually-hidden" data-sample-name="Garlic · Allium sativum"></span></button></td>
     </tr>
     <tr data-entity="thyme" data-version="1">
-      <td data-label="Knowledge object"><a href="#screen-knowledge-thyme" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Thyme · Thymus vulgaris</bdi></span></td>
+      <td data-label="Knowledge object"><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs);font-weight:var(--weight-regular)">v1</span><br><span style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Thyme · Thymus vulgaris</bdi></span></td>
       <td data-label="Sources" class="num">156</td>
       <td data-label="Processing">
         <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4172,7 +4174,7 @@ button.card { color: inherit; font: inherit; }
   <div id="know-view-grid" class="know-grid" data-live-keep hidden>
     <div class="card" data-entity="taranjebin" data-version="1" style="display:flex;flex-direction:column;gap:var(--space-2)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2)">
-        <div><a href="#screen-knowledge-taranjebin" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Toranjebin · Alhagi manna</bdi></div></div>
+        <div><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Toranjebin · Alhagi manna</bdi></div></div>
         <button type="button" class="btn btn--icon research-again-btn" data-entity="taranjebin" title="Re-run research — creates a new version"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5.2L5.4 17A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.8-3L14 8.2V3M7.8 14h8.4"/></svg><span class="visually-hidden" data-sample-name="Toranjebin · Alhagi manna"></span></button>
       </div>
       <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4188,7 +4190,7 @@ button.card { color: inherit; font: inherit; }
     </div>
     <div class="card" data-entity="saffron" data-version="1" style="display:flex;flex-direction:column;gap:var(--space-2)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2)">
-        <div><a href="#screen-knowledge-saffron" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Saffron · Crocus sativus</bdi></div></div>
+        <div><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Saffron · Crocus sativus</bdi></div></div>
         <button type="button" class="btn btn--icon research-again-btn" data-entity="saffron" title="Re-run research — creates a new version"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5.2L5.4 17A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.8-3L14 8.2V3M7.8 14h8.4"/></svg><span class="visually-hidden" data-sample-name="Saffron · Crocus sativus"></span></button>
       </div>
       <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4204,7 +4206,7 @@ button.card { color: inherit; font: inherit; }
     </div>
     <div class="card" data-entity="garlic" data-version="1" style="display:flex;flex-direction:column;gap:var(--space-2)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2)">
-        <div><a href="#screen-knowledge-garlic" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Garlic · Allium sativum</bdi></div></div>
+        <div><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Garlic · Allium sativum</bdi></div></div>
         <button type="button" class="btn btn--icon research-again-btn" data-entity="garlic" title="Re-run research — creates a new version"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5.2L5.4 17A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.8-3L14 8.2V3M7.8 14h8.4"/></svg><span class="visually-hidden" data-sample-name="Garlic · Allium sativum"></span></button>
       </div>
       <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4220,7 +4222,7 @@ button.card { color: inherit; font: inherit; }
     </div>
     <div class="card" data-entity="thyme" data-version="1" style="display:flex;flex-direction:column;gap:var(--space-2)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2)">
-        <div><a href="#screen-knowledge-thyme" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Thyme · Thymus vulgaris</bdi></div></div>
+        <div><a href="#screen-knowledge-detail" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></bdi></a> <span class="version-tag" style="color:var(--text-subtle);font-size:var(--text-xs)">v1</span><div style="color:var(--text-subtle);font-size:var(--text-sm)"><bdi dir="ltr">Thyme · Thymus vulgaris</bdi></div></div>
         <button type="button" class="btn btn--icon research-again-btn" data-entity="thyme" title="Re-run research — creates a new version"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5.2L5.4 17A2 2 0 0 0 7.2 20h9.6a2 2 0 0 0 1.8-3L14 8.2V3M7.8 14h8.4"/></svg><span class="visually-hidden" data-sample-name="Thyme · Thymus vulgaris"></span></button>
       </div>
       <div style="display:flex;align-items:center;gap:var(--space-2)">
@@ -4239,10 +4241,10 @@ button.card { color: inherit; font: inherit; }
   </p>
 </section>
 
-<section class="screen" id="screen-knowledge-taranjebin" aria-labelledby="h-know-taranjebin">
+<section class="screen" id="screen-knowledge-detail" aria-labelledby="h-know-detail">
   <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge">Knowledge</a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></span></nav>
   <div class="page-header">
-    <div><h1 id="h-know-taranjebin" lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></h1></div>
+    <div><h1 id="h-know-detail" lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></h1></div>
     <div class="page-actions">
       <button class="btn"><svg class="icon icon--mirror" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM6 8.5v3a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3"/></svg>Trace a statement</button>
       <a class="btn" href="#screen-states"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17v4h-17zM5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M9.5 12.5h5"/></svg>Archive / delete</a>
@@ -4259,7 +4261,7 @@ button.card { color: inherit; font: inherit; }
   </div>
 
   
-  <div class="card">
+  <div class="card" data-debt-hidden>
     <h2 class="card__title" style="display:flex;align-items:center;gap:var(--space-2)"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>AI visibility for <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi></h2>
     <p style="color:var(--text-muted);margin-top:0">Scoped to pages about <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین</span></bdi> only — the same fields as the site-wide report, filtered to this keyword. <a href="#screen-visibility-detail">Open the site-wide report</a> to compare across all keywords.</p>
     <div class="stat-grid">
@@ -4281,7 +4283,7 @@ button.card { color: inherit; font: inherit; }
     <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-top:var(--space-3);margin-block-end:0">Fixture numbers, deterministic per keyword id — not a claim about real Toranjebin traffic. In production this is one filtered query against the same <code>page_views</code>/<code>search_demand_events</code> tables the site-wide report reads, not a separate per-keyword pipeline.</p>
   </div>
 
-  <div class="card">
+  <div class="card" data-debt-hidden>
     <h2 class="card__title">Evidence by kind</h2>
     <p style="color:var(--text-muted);margin-top:0">Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.</p>
     <dl class="kv">
@@ -4298,185 +4300,8 @@ button.card { color: inherit; font: inherit; }
   </div>
 </section>
 
-<section class="screen" id="screen-knowledge-saffron" aria-labelledby="h-know-saffron">
-  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge">Knowledge</a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></span></nav>
-  <div class="page-header">
-    <div><h1 id="h-know-saffron" lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></h1></div>
-    <div class="page-actions">
-      <button class="btn"><svg class="icon icon--mirror" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM6 8.5v3a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3"/></svg>Trace a statement</button>
-      <a class="btn" href="#screen-states"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17v4h-17zM5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M9.5 12.5h5"/></svg>Archive / delete</a>
-    </div>
-  </div>
-  <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Saffron · Crocus sativus · published · knowledge updated 11 Sep 2026</p></div></div>
-
-
-  <div class="stat-grid">
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">612</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3M18.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3"/></svg>Claims</span><span class="stat__value">3,104</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4 3 7.3 7 9 4-1.7 7-5 7-9V6zM9.2 12l2 2 3.6-3.8"/></svg>Evidence</span><span class="stat__value">1,180</span><span class="stat__note">of which 940 verified</span></div>
-    <div class="stat stat--attention"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 3 7v6.5c0 4.6 3.7 8.4 9 10 5.3-1.6 9-5.4 9-10V7zM12 7.8v5M12 16.4h.01"/></svg>Conflicts</span><span class="stat__value">3</span><span class="stat__note">9 gaps open</span></div>
-  </div>
-
-  
-  <div class="card">
-    <h2 class="card__title" style="display:flex;align-items:center;gap:var(--space-2)"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>AI visibility for <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></bdi></h2>
-    <p style="color:var(--text-muted);margin-top:0">Scoped to pages about <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران</span></bdi> only — the same fields as the site-wide report, filtered to this keyword. <a href="#screen-visibility-detail">Open the site-wide report</a> to compare across all keywords.</p>
-    <div class="stat-grid">
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>Platform observations (28d)</span><span class="stat__value">35</span></div>
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg>Automated requests (28d)</span><span class="stat__value">907</span></div>
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.6-3.8-9S9.5 5.5 12 3Z"/></svg>Top country</span><span class="stat__value" style="font-size:var(--text-lg)">United States</span></div>
-    </div>
-    <div role="img" aria-label="Automated requests for this keyword, last 14 days" style="display:flex;align-items:flex-end;gap:2px;height:48px;margin-top:var(--space-3)">
-      <div style="flex:1;height:54px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:72px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:48px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:60px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:42px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:72px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:72px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:84px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:90px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:78px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:48px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:72px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:72px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:48px;background:var(--info);border-radius:1px 1px 0 0"></div>
-    </div>
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table sortable" style="margin-top:var(--space-3)">
-      <caption class="visually-hidden">Requests by country for this keyword</caption>
-      <thead><tr><th scope="col">Country</th><th scope="col">Requests</th></tr></thead>
-      <tbody>
-        <tr><td data-label="Country"><bdi>United States</bdi></td><td data-label="Requests" class="num">544</td></tr>
-        <tr><td data-label="Country"><bdi>Germany</bdi></td><td data-label="Requests" class="num">200</td></tr>
-      </tbody>
-    </table></div>
-    <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-top:var(--space-3);margin-block-end:0">Fixture numbers, deterministic per keyword id — not a claim about real Toranjebin traffic. In production this is one filtered query against the same <code>page_views</code>/<code>search_demand_events</code> tables the site-wide report reads, not a separate per-keyword pipeline.</p>
-  </div>
-
-  <div class="card">
-    <h2 class="card__title">Evidence by kind</h2>
-    <p style="color:var(--text-muted);margin-top:0">Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.</p>
-    <dl class="kv">
-      <dt>Traditional use</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Well attested</span></span> 88 sources</dd>
-      <dt>Compositional</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 54 verified studies</dd>
-      <dt>Mechanistic</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 22 studies</dd>
-      <dt>Animal</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 31 studies</dd>
-      <dt>Human clinical</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Limited</span></span> 6 small trials, no large RCT</dd>
-    </dl>
-    <div class="callout" style="margin-top:var(--space-4)"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 0-18M12 3a9 9 0 0 0 0 18M8 12h8"/><path d="M12 3a9 9 0 0 0 0 18" stroke-dasharray="3 3"/></svg></span>
-      <div><p><strong>Knowledge gap:</strong> existing human trials are small and short-duration. No adequately powered long-term RCT has been found.</p>
-      <p><a href="#screen-gap">Open this gap</a></p></div>
-    </div>
-  </div>
-</section>
-
-<section class="screen" id="screen-knowledge-garlic" aria-labelledby="h-know-garlic">
-  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge">Knowledge</a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></span></nav>
-  <div class="page-header">
-    <div><h1 id="h-know-garlic" lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></h1></div>
-    <div class="page-actions">
-      <button class="btn"><svg class="icon icon--mirror" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM6 8.5v3a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3"/></svg>Trace a statement</button>
-      <a class="btn" href="#screen-states"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17v4h-17zM5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M9.5 12.5h5"/></svg>Archive / delete</a>
-    </div>
-  </div>
-  <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Garlic · Allium sativum · published · knowledge updated 9 Sep 2026</p></div></div>
-
-
-  <div class="stat-grid">
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">401</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3M18.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3"/></svg>Claims</span><span class="stat__value">2,210</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4 3 7.3 7 9 4-1.7 7-5 7-9V6zM9.2 12l2 2 3.6-3.8"/></svg>Evidence</span><span class="stat__value">860</span><span class="stat__note">of which 701 verified</span></div>
-    <div class="stat stat--attention"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 3 7v6.5c0 4.6 3.7 8.4 9 10 5.3-1.6 9-5.4 9-10V7zM12 7.8v5M12 16.4h.01"/></svg>Conflicts</span><span class="stat__value">5</span><span class="stat__note">6 gaps open</span></div>
-  </div>
-
-  
-  <div class="card">
-    <h2 class="card__title" style="display:flex;align-items:center;gap:var(--space-2)"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>AI visibility for <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></bdi></h2>
-    <p style="color:var(--text-muted);margin-top:0">Scoped to pages about <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">سیر</span></bdi> only — the same fields as the site-wide report, filtered to this keyword. <a href="#screen-visibility-detail">Open the site-wide report</a> to compare across all keywords.</p>
-    <div class="stat-grid">
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>Platform observations (28d)</span><span class="stat__value">14</span></div>
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg>Automated requests (28d)</span><span class="stat__value">926</span></div>
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.6-3.8-9S9.5 5.5 12 3Z"/></svg>Top country</span><span class="stat__value" style="font-size:var(--text-lg)">Germany</span></div>
-    </div>
-    <div role="img" aria-label="Automated requests for this keyword, last 14 days" style="display:flex;align-items:flex-end;gap:2px;height:48px;margin-top:var(--space-3)">
-      <div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:12px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:18px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:6px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:24px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:12px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:18px;background:var(--info);border-radius:1px 1px 0 0"></div>
-    </div>
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table sortable" style="margin-top:var(--space-3)">
-      <caption class="visually-hidden">Requests by country for this keyword</caption>
-      <thead><tr><th scope="col">Country</th><th scope="col">Requests</th></tr></thead>
-      <tbody>
-        <tr><td data-label="Country"><bdi>Germany</bdi></td><td data-label="Requests" class="num">556</td></tr>
-        <tr><td data-label="Country"><bdi>United Kingdom</bdi></td><td data-label="Requests" class="num">204</td></tr>
-      </tbody>
-    </table></div>
-    <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-top:var(--space-3);margin-block-end:0">Fixture numbers, deterministic per keyword id — not a claim about real Toranjebin traffic. In production this is one filtered query against the same <code>page_views</code>/<code>search_demand_events</code> tables the site-wide report reads, not a separate per-keyword pipeline.</p>
-  </div>
-
-  <div class="card">
-    <h2 class="card__title">Evidence by kind</h2>
-    <p style="color:var(--text-muted);margin-top:0">Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.</p>
-    <dl class="kv">
-      <dt>Traditional use</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Well attested</span></span> 70 sources</dd>
-      <dt>Compositional</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 38 verified studies</dd>
-      <dt>Mechanistic</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 19 studies</dd>
-      <dt>Animal</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 24 studies</dd>
-      <dt>Human clinical</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 14 RCTs, mixed cardiovascular endpoints</dd>
-    </dl>
-    <div class="callout" style="margin-top:var(--space-4)"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 0-18M12 3a9 9 0 0 0 0 18M8 12h8"/><path d="M12 3a9 9 0 0 0 0 18" stroke-dasharray="3 3"/></svg></span>
-      <div><p><strong>Knowledge gap:</strong> cardiovascular outcome trials disagree on effect size. 5 open conflicts trace to dosage-form differences (raw vs. aged extract) that the current claim graph does not yet separate.</p>
-      <p><a href="#screen-gap">Open this gap</a></p></div>
-    </div>
-  </div>
-</section>
-
-<section class="screen" id="screen-knowledge-thyme" aria-labelledby="h-know-thyme">
-  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge">Knowledge</a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></span></nav>
-  <div class="page-header">
-    <div><h1 id="h-know-thyme" lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></h1></div>
-    <div class="page-actions">
-      <button class="btn"><svg class="icon icon--mirror" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM6 8.5v3a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3"/></svg>Trace a statement</button>
-      <a class="btn" href="#screen-states"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17v4h-17zM5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M9.5 12.5h5"/></svg>Archive / delete</a>
-    </div>
-  </div>
-  <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Thyme · Thymus vulgaris · published · knowledge updated 2 Sep 2026</p></div></div>
-
-
-  <div class="stat-grid">
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg>Sources</span><span class="stat__value">156</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3M18.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3"/></svg>Claims</span><span class="stat__value">704</span></div>
-    <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4 3 7.3 7 9 4-1.7 7-5 7-9V6zM9.2 12l2 2 3.6-3.8"/></svg>Evidence</span><span class="stat__value">211</span><span class="stat__note">of which 98 verified</span></div>
-    <div class="stat stat--attention"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 3 7v6.5c0 4.6 3.7 8.4 9 10 5.3-1.6 9-5.4 9-10V7zM12 7.8v5M12 16.4h.01"/></svg>Conflicts</span><span class="stat__value">1</span><span class="stat__note">14 gaps open</span></div>
-  </div>
-
-  
-  <div class="card">
-    <h2 class="card__title" style="display:flex;align-items:center;gap:var(--space-2)"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>AI visibility for <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></bdi></h2>
-    <p style="color:var(--text-muted);margin-top:0">Scoped to pages about <bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">آویشن</span></bdi> only — the same fields as the site-wide report, filtered to this keyword. <a href="#screen-visibility-detail">Open the site-wide report</a> to compare across all keywords.</p>
-    <div class="stat-grid">
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>Platform observations (28d)</span><span class="stat__value">29</span></div>
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg>Automated requests (28d)</span><span class="stat__value">281</span></div>
-      <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.6-3.8-9S9.5 5.5 12 3Z"/></svg>Top country</span><span class="stat__value" style="font-size:var(--text-lg)"><span lang="fa" dir="rtl">ترکیه</span></span></div>
-    </div>
-    <div role="img" aria-label="Automated requests for this keyword, last 14 days" style="display:flex;align-items:flex-end;gap:2px;height:48px;margin-top:var(--space-3)">
-      <div style="flex:1;height:42px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:30px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:66px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:30px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:24px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:60px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:30px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:24px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:24px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:12px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:18px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:24px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:12px;background:var(--info);border-radius:1px 1px 0 0"></div><div style="flex:1;height:54px;background:var(--info);border-radius:1px 1px 0 0"></div>
-    </div>
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table sortable" style="margin-top:var(--space-3)">
-      <caption class="visually-hidden">Requests by country for this keyword</caption>
-      <thead><tr><th scope="col">Country</th><th scope="col">Requests</th></tr></thead>
-      <tbody>
-        <tr><td data-label="Country"><bdi><span lang="fa" dir="rtl">ترکیه</span></bdi></td><td data-label="Requests" class="num">169</td></tr>
-        <tr><td data-label="Country"><bdi><span lang="fa" dir="rtl">ایران</span></bdi></td><td data-label="Requests" class="num">62</td></tr>
-      </tbody>
-    </table></div>
-    <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-top:var(--space-3);margin-block-end:0">Fixture numbers, deterministic per keyword id — not a claim about real Toranjebin traffic. In production this is one filtered query against the same <code>page_views</code>/<code>search_demand_events</code> tables the site-wide report reads, not a separate per-keyword pipeline.</p>
-  </div>
-
-  <div class="card">
-    <h2 class="card__title">Evidence by kind</h2>
-    <p style="color:var(--text-muted);margin-top:0">Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.</p>
-    <dl class="kv">
-      <dt>Traditional use</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Well attested</span></span> 52 sources</dd>
-      <dt>Compositional</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 9 verified studies</dd>
-      <dt>Mechanistic</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Indirect only</span></span> 4 studies, mostly in-vitro</dd>
-      <dt>Animal</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>None found</span></span> searched 3 databases, 0 studies</dd>
-      <dt>Human clinical</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>None found</span></span> searched 4 databases, 0 trials</dd>
-    </dl>
-    <div class="callout" style="margin-top:var(--space-4)"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 0-18M12 3a9 9 0 0 0 0 18M8 12h8"/><path d="M12 3a9 9 0 0 0 0 18" stroke-dasharray="3 3"/></svg></span>
-      <div><p><strong>Knowledge gap:</strong> no animal or human evidence has been located for the specific respiratory-use claim carried over from traditional sources. 14 gaps remain open, the most of any object currently tracked.</p>
-      <p><a href="#screen-gap">Open this gap</a></p></div>
-    </div>
-  </div>
-</section>
-
 <section class="screen" id="screen-gap" aria-labelledby="h-gap">
-  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge-taranjebin"><span lang="fa" dir="rtl">ترنجبین</span></a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span>Knowledge gap</span></nav>
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-knowledge-detail"><span lang="fa" dir="rtl">ترنجبین</span></a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span>Knowledge gap</span></nav>
   <div class="page-header">
     <div>
       <h1 id="h-gap">Human clinical evidence for Toranjebin</h1><div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p><bdi class="identifier">GAP-0118</bdi> · Evidence gap · part of <span lang="fa" dir="rtl">ترنجبین</span> (Toranjebin)</p></div></div>
@@ -6517,7 +6342,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <td data-label="Product"><a href="#screen-product-taranjebin-grade-a" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ترنجبین درجه یک — ۱۰۰ گرم</span></bdi></a><br><span style="color:var(--text-subtle);font-size:var(--text-sm)">SKU <bdi>TRJ-GA-100</bdi></span></td>
       <td data-label="Category"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">گیاهان دارویی سنتی</span></bdi></td>
       <td data-label="Origin"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">خراسان جنوبی، ایران</span></bdi></td>
-      <td data-label="Knowledge"><a href="#screen-knowledge-taranjebin"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
+      <td data-label="Knowledge"><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
       <td data-label="Offers" class="num">1</td>
       <td data-label="Availability"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>In stock</span></span></td>
       <td data-label="Status"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Active</span></span></td>
@@ -6526,7 +6351,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <td data-label="Product"><a href="#screen-product-saffron-negin-5g" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">زعفران نگین — ۵ گرم</span></bdi></a><br><span style="color:var(--text-subtle);font-size:var(--text-sm)">SKU <bdi>SAF-NG-5</bdi></span></td>
       <td data-label="Category"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ادویه و طعم‌دهنده</span></bdi></td>
       <td data-label="Origin"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">قائنات، خراسان جنوبی</span></bdi></td>
-      <td data-label="Knowledge"><a href="#screen-knowledge-saffron"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
+      <td data-label="Knowledge"><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
       <td data-label="Offers" class="num">2</td>
       <td data-label="Availability"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>In stock</span></span></td>
       <td data-label="Status"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Active</span></span></td>
@@ -6535,7 +6360,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <td data-label="Product"><a href="#screen-product-garlic-oil-30ml" style="font-weight:var(--weight-semibold);text-decoration:none;color:var(--text)"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">روغن سیر — ۳۰ میلی‌لیتر</span></bdi></a><br><span style="color:var(--text-subtle);font-size:var(--text-sm)">SKU <bdi>GRL-OIL-30</bdi></span></td>
       <td data-label="Category"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">روغن‌های گیاهی</span></bdi></td>
       <td data-label="Origin"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">همدان، ایران</span></bdi></td>
-      <td data-label="Knowledge"><a href="#screen-knowledge-garlic"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
+      <td data-label="Knowledge"><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
       <td data-label="Offers" class="num">0</td>
       <td data-label="Availability"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>No offer yet</span></span></td>
       <td data-label="Status"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Draft</span></span></td>
@@ -6560,7 +6385,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <dt>Origin</dt><dd><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">خراسان جنوبی، ایران</span></bdi></dd>
       <dt>Ingredients</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
       <dt>Certifications</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
-      <dt>Knowledge Object</dt><dd><a href="#screen-knowledge-taranjebin"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Open linked knowledge</a></dd>
+      <dt>Knowledge Object</dt><dd><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Open linked knowledge</a></dd>
     </dl>
   </div>
   <div class="card" style="margin-top:var(--space-4)">
@@ -6590,7 +6415,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <dt>Origin</dt><dd><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">قائنات، خراسان جنوبی</span></bdi></dd>
       <dt>Ingredients</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
       <dt>Certifications</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
-      <dt>Knowledge Object</dt><dd><a href="#screen-knowledge-saffron"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Open linked knowledge</a></dd>
+      <dt>Knowledge Object</dt><dd><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Open linked knowledge</a></dd>
     </dl>
   </div>
   <div class="card" style="margin-top:var(--space-4)">
@@ -6620,7 +6445,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <dt>Origin</dt><dd><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">همدان، ایران</span></bdi></dd>
       <dt>Ingredients</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
       <dt>Certifications</dt><dd style="color:var(--text-subtle)">Not entered yet</dd>
-      <dt>Knowledge Object</dt><dd><a href="#screen-knowledge-garlic"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Open linked knowledge</a></dd>
+      <dt>Knowledge Object</dt><dd><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Open linked knowledge</a></dd>
     </dl>
   </div>
   <div class="card" style="margin-top:var(--space-4)">
@@ -7818,7 +7643,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     if (isAuth) return; // no dashboard nav state to update on an auth page
 
     // Highlight whichever top-level nav item owns this screen — a
-    // sub-screen like "screen-knowledge-taranjebin" or
+    // sub-screen like "screen-knowledge-detail" or
     // "screen-visibility-detail" still belongs to its parent's nav
     // entry (Knowledge Objects / AI Visibility), so this matches on the
     // screen id STARTING WITH the nav target, not an exact match, or
@@ -9544,6 +9369,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var SCREENS = {
     'screen-dashboard': { kind: 'cards', title: 'Live overview (Cloud Core)', compact: true },
     'screen-knowledge': { kind: 'knowledge', title: 'Knowledge objects (Cloud Core)', compact: true },
+    'screen-knowledge-detail': { kind: 'knowledgeDetail', title: 'Knowledge detail (Cloud Core)', compact: true },
     'screen-sources': { kind: 'sources', title: 'Sources (Cloud Core)', compact: true },
     'screen-detail': { kind: 'detail', title: 'Source detail (Cloud Core)', compact: true },
     'screen-processing': { kind: 'processing', title: 'Document processing (Cloud Core)', compact: true },
@@ -11119,6 +10945,103 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__gapLoad = load;
     return load();
   }
+  // Knowledge detail (8B): GET /knowledge/overview?id= (the object and its counts, one row) and
+  // GET /knowledge/{id}/claims, in parallel — two calls, whatever the number of claims (Rule 17).
+  var KO_STATUS = { draft: ['Draft', 'badge--unknown'], in_review: ['In review', 'badge--info'],
+    published: ['Published', 'badge--success'], archived: ['Archived', 'badge--unknown'] };
+  var DETAIL_STRENGTH = Object.assign({ strong: 'Aggregate strength: strong', conflicting: 'Aggregate strength: conflicting' }, CLAIM_STRENGTH);
+  function knowledgeDetailScreen(panel) {
+    // Wired once; a later connect only reloads.
+    if (panel.__kdLoad) return panel.__kdLoad();
+    var screen = document.getElementById('screen-knowledge-detail');
+    var st = { seq: 0 };
+    // In live mode these replace the sample breadcrumbs and header (CSS).
+    var top = el('div'); top.setAttribute('data-live-keep', '');
+    var crumbs = top.appendChild(screen.querySelector(':scope > .breadcrumbs').cloneNode(true)), up = crumbs.querySelector('a');
+    up.href = '#screen-knowledge'; AIOL_I18N.set(up, 'Knowledge');
+    // The sample's last crumb is Persian sample text; live it is the object's name, in its own direction.
+    var here = crumbs.lastElementChild; here.removeAttribute('lang'); here.removeAttribute('dir');
+    var head = top.appendChild(el('div', 'page-header')), titles = head.appendChild(el('div'));
+    var h1 = titles.appendChild(el('h1')); h1.id = 'h-know-detail-live';
+    var desc = titles.appendChild(el('p', 'kd-description')), actions = head.appendChild(el('div', 'page-actions'));
+    screen.insertBefore(top, screen.firstChild);
+    screen.setAttribute('aria-labelledby', 'h-know-detail-live');
+    var body = el('div'); body.setAttribute('data-live-keep', '');
+    var status = messageBox(body);
+    var stats = body.appendChild(el('div', 'stat-grid'));
+    var card = body.appendChild(el('div', 'card')), cardTitle = card.appendChild(el('h2', 'card__title'));
+    AIOL_I18N.set(cardTitle, 'Claims');
+    var count = card.appendChild(el('p', 'kd-count')), list = card.appendChild(el('ul', 'kd-claims'));
+    panel.insertAdjacentElement('afterend', body);
+
+    function word(parent, map, v) {
+      if (map[v]) AIOL_I18N.set(parent.appendChild(el('span')), map[v]); else parent.appendChild(el('bdi', null, v));
+    }
+    function stat(label, value, note, args, attention) {
+      var s = stats.appendChild(el('div', 'stat' + (attention ? ' stat--attention' : '')));
+      var l = s.appendChild(el('span', 'stat__label')); AIOL_I18N.set(l, label);
+      var v = s.appendChild(el('span', 'stat__value')); AIOL_I18N.set(v, '{n}', { n: value });
+      if (note) { var n = s.appendChild(el('span', 'stat__note')); AIOL_I18N.set(n, note, args); }
+    }
+    function shown(on) {
+      stats.textContent = ''; actions.textContent = ''; list.textContent = ''; desc.textContent = '';
+      stats.hidden = card.hidden = !on;
+      h1.textContent = ''; here.textContent = '';
+      if (!on) h1.appendChild(AIOL_I18N.set(el('span'), 'Knowledge detail'));
+    }
+    function render(ko, claims) {
+      var c = ko.counts;
+      h1.textContent = '';
+      h1.appendChild(el('bdi', null, ko.canonical_name)).dir = 'auto';
+      here.appendChild(el('bdi', null, ko.canonical_name)).dir = 'auto';
+      if (ko.description) desc.appendChild(el('bdi', null, ko.description)).dir = 'auto';
+      var s = KO_STATUS[ko.status], badge = actions.appendChild(el('span', 'badge ' + (s ? s[1] : 'badge--unknown')));
+      if (s) AIOL_I18N.set(badge.appendChild(el('span')), s[0]); else badge.appendChild(el('bdi', null, ko.status));
+      var trace = actions.appendChild(el('a', 'btn')); AIOL_I18N.set(trace, 'Trace a statement');
+      trace.href = '#screen-provenance?id=' + encodeURIComponent(ko.id);
+      stat('Sources', c.sources);
+      stat('Claims', c.claims);
+      stat('Evidence', c.evidence, 'of which {n} verified', { n: c.evidence_verified });
+      stat('Conflicts', c.claims_conflicting, '{n|gap|gaps} open', { n: c.gaps_open }, c.claims_conflicting > 0 || c.gaps_open > 0);
+      AIOL_I18N.set(count, 'Claims shown: {shown} of {total}', { shown: claims.items.length, total: claims.total });
+      claims.items.forEach(function (cl) {
+        var li = list.appendChild(el('li'));
+        li.appendChild(el('bdi', 'kd-claim__text', cl.predicate + (cl.object_value ? ' ' + cl.object_value : ''))).dir = 'auto';
+        var meta = li.appendChild(el('span', 'kd-claim__meta'));
+        word(meta, CLAIM_STATUS, cl.status); meta.appendChild(document.createTextNode(' · ')); word(meta, DETAIL_STRENGTH, cl.evidence_strength);
+      });
+      stats.hidden = card.hidden = false;
+      count.hidden = !claims.items.length;
+      if (!claims.items.length) status('empty', 'This knowledge object has no claims yet.');
+    }
+    function hashId() {
+      var h = location.hash;
+      return h.indexOf('#screen-knowledge-detail?') === 0 ? new URLSearchParams(h.slice(h.indexOf('?') + 1)).get('id') : null;
+    }
+    function load() {
+      var seq = ++st.seq, id = hashId();
+      shown(false);
+      if (!id) { status('empty', 'No knowledge object selected. Open one from Knowledge.'); return Promise.resolve(null); }
+      status('loading', 'Loading…');
+      // 200 is the backend's page limit; the count line says when an object has more claims.
+      return Promise.all([api('/knowledge/overview?id=' + encodeURIComponent(id)),
+        api('/knowledge/' + encodeURIComponent(id) + '/claims?limit=200')]).then(function (r) {
+        if (seq !== st.seq) return null;        // a newer request owns the screen
+        state(panel, 'ready'); status(''); render(r[0].items[0], r[1]); return r[0].items[0];
+      }).catch(function (e) {
+        if (seq !== st.seq) return null;
+        state(panel, 'ready');
+        // An unknown id, another organization's (404) or a malformed one (422): one sentence.
+        if (e.status === 404 || e.status === 422) status('empty', 'This knowledge object was not found.');
+        else if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else status('error', 'Could not load the knowledge object ({error}).', { error: e.message }, 'Retry', load);
+        return null;
+      });
+    }
+    document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-knowledge-detail' && LIVE) load(); });
+    panel.__kdLoad = load;
+    return load();
+  }
   function dashboardCards(panel) {
     var grid = document.getElementById('dash-stats');
     function card(name, value, tpl, args) {
@@ -11229,6 +11152,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       else if (cfg.kind === 'provenance') provenanceScreen(panel);
       else if (cfg.kind === 'add') addSourceScreen(panel);
       else if (cfg.kind === 'gap') gapScreen(panel);
+      else if (cfg.kind === 'knowledgeDetail') knowledgeDetailScreen(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
@@ -11991,10 +11915,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var FIXTURE = {
     'screen-detail': 'A design sample of one source. Real sources: Sources screen (live).',
     'screen-provenance': 'A design sample. Real provenance: open a knowledge object on the Knowledge screen (live).',
-    'screen-knowledge-taranjebin': 'A design sample of one knowledge object. Real objects: Knowledge screen (live).',
-    'screen-knowledge-saffron': 'A design sample of one knowledge object. Real objects: Knowledge screen (live).',
-    'screen-knowledge-garlic': 'A design sample of one knowledge object. Real objects: Knowledge screen (live).',
-    'screen-knowledge-thyme': 'A design sample of one knowledge object. Real objects: Knowledge screen (live).',
+    'screen-knowledge-detail': 'A design sample of one knowledge object. Real objects: Knowledge screen (live).',
     'screen-product-taranjebin-grade-a': 'A design sample of one product. Real products and offers: Products screen (live).',
     'screen-product-saffron-negin-5g': 'A design sample of one product. Real products and offers: Products screen (live).',
     'screen-product-garlic-oil-30ml': 'A design sample of one product. Real products and offers: Products screen (live).',
@@ -13913,7 +13834,19 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Which": "کدام",
     "Show": "نمایش",
     "Run the audit": "اجرای ممیزی",
-    "History": "تاریخچه"
+    "History": "تاریخچه",
+    // Knowledge detail (Step 8B)
+    "Knowledge detail": "جزئیات دانش",
+    "Trace a statement": "ردیابی یک گزاره",
+    "Archive / delete": "بایگانی / حذف",
+    "Toranjebin · Alhagi manna · published · knowledge updated 4 Sep 2026": "ترنجبین · Alhagi manna · منتشرشده · به‌روزرسانی دانش ۱۳ شهریور ۱۴۰۵",
+    "of which 318 verified": "که ۳۱۸ مورد آن راستی‌آزمایی‌شده است",
+    "of which {n} verified": "که {n} مورد آن راستی‌آزمایی‌شده است",
+    "21 gaps open": "۲۱ شکاف باز",
+    "Archived": "بایگانی‌شده",
+    "Aggregate strength: strong": "قوت کلی شواهد: قوی",
+    "Aggregate strength: conflicting": "قوت کلی شواهد: متعارض",
+    "Could not load the knowledge object ({error}).": "بارگذاری پرونده دانش ناموفق بود ({error})."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

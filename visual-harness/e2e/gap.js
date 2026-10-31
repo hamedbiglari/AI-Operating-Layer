@@ -113,8 +113,9 @@ function installMock(gaps) {
       rows: card.hidden ? null : Array.from(card.querySelectorAll('li')).map((li) => [li.querySelector('a').getAttribute('href'),
         li.querySelector('a').textContent, li.querySelector('.gap-list__meta').textContent]),
       state: box.dataset.state, message: box.querySelector('p').textContent, action: act && !act.hidden ? act.textContent : null,
+      // Everything but the live panel and the live content is hidden, the sample breadcrumbs and header included.
       sampleShown: Array.from(s.children).some((c) => !c.hasAttribute('data-live-keep') && !c.classList.contains('live-panel')
-        && !c.classList.contains('breadcrumbs') && !c.classList.contains('page-header') && getComputedStyle(c).display !== 'none'),
+        && getComputedStyle(c).display !== 'none'),
     };
   });
 

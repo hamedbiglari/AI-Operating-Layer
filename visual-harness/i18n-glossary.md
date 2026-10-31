@@ -577,3 +577,21 @@ not translated yet (V5-matrix-coverage-runtime-fa).
 | Show | نمایش |
 | Run the audit | اجرای ممیزی |
 | History | تاریخچه |
+
+## Knowledge detail (Step 8B)
+
+Terms for the live Knowledge detail screen and its one remaining sample (Toranjebin). The AI visibility and Evidence by kind cards are hidden as debt, so they get no rows (D6).
+
+| English | Persian |
+|---|---|
+| Knowledge detail | جزئیات دانش |
+| Trace a statement | ردیابی یک گزاره |
+| Archive / delete | بایگانی / حذف |
+| Toranjebin · Alhagi manna · published · knowledge updated 4 Sep 2026 | ترنجبین · Alhagi manna · منتشرشده · به‌روزرسانی دانش ۱۳ شهریور ۱۴۰۵ |
+| of which 318 verified | که ۳۱۸ مورد آن راستی‌آزمایی‌شده است |
+| of which {n} verified | که {n} مورد آن راستی‌آزمایی‌شده است |
+| 21 gaps open | ۲۱ شکاف باز |
+| Archived | بایگانی‌شده |
+| Aggregate strength: strong | قوت کلی شواهد: قوی |
+| Aggregate strength: conflicting | قوت کلی شواهد: متعارض |
+| Could not load the knowledge object ({error}). | بارگذاری پرونده دانش ناموفق بود ({error}). |
