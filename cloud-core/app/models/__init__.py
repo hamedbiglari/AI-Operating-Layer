@@ -13,6 +13,9 @@ from app.models.access_policy import AccessPolicy
 from app.models.ai_agent import AiAgent
 from app.models.audit_log import AuditLog
 from app.models.auth_session import AuthSession
+from app.models.device_intelligence import (
+    DeviceChallenge, DeviceCredential, DeviceCredentialLink, DeviceObservation,
+)
 from app.models.coverage_audit import CoverageAudit
 from app.models.website import NewsletterSubscriber, SitePost, SitePostRevision, SiteSection
 from app.models.publication import (

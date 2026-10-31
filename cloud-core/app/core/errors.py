@@ -44,11 +44,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
         code = _STATUS_CODE_TO_ERROR_CODE.get(exc.status_code, "HTTP_ERROR")
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=_envelope(code, str(exc.detail), request),
-            headers=exc.headers,
-        )
+        detail = exc.detail
+        # A structured detail {"code", "message"} (ADR-137) keeps the envelope's shape and adds a stable,
+        # machine-readable `reason` the clients branch on. A plain string detail is unchanged.
+        if isinstance(detail, dict) and isinstance(detail.get("code"), str) and "message" in detail:
+            content = _envelope(code, str(detail["message"]), request)
+            content["error"]["reason"] = detail["code"]
+        else:
+            content = _envelope(code, str(detail), request)
+        return JSONResponse(status_code=exc.status_code, content=content, headers=exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(

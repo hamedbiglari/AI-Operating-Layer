@@ -21,6 +21,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # Sentinel defaults. These exist ONLY to make local `docker compose up`
 # work out of the box. They are explicitly rejected in production — see
 # `Settings.forbid_insecure_defaults_in_production` below.
+CLIENT_LINK_SETTINGS = ("CLIENT_HELP_URL", "CLIENT_LEARN_MORE_URL", "CLIENT_PRIVACY_URL", "CLIENT_TERMS_URL",
+                        "CLIENT_DOCS_URL", "CLIENT_REPORT_PROBLEM_URL", "CLIENT_UPGRADE_URL")
 _DEFAULT_SECRET_KEY = "change-me-to-a-random-64-char-secret-in-production"
 _DEFAULT_DB_PASSWORD_MARKER = "aiol_dev_password"
 
@@ -191,6 +193,39 @@ class Settings(BaseSettings):
     SESSION_COOKIE_SAMESITE: str = "strict"
     SESSION_COOKIE_DOMAIN: str | None = None
 
+    # --- Official client suite (ADR-137) ---
+    # Native clients (Windows, macOS, Android, iOS) have no cookie jar the server can rely on, so they
+    # receive the same auth_sessions refresh secret in the response body and keep it in the operating
+    # system's secure storage. Their access token is as short-lived as the browser's.
+    NATIVE_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    # Links the clients show. Each is optional: an unset link is reported as null and the client hides
+    # the menu item instead of inventing a destination. Production refuses anything but https.
+    CLIENT_HELP_URL: str | None = None
+    CLIENT_LEARN_MORE_URL: str | None = None
+    CLIENT_PRIVACY_URL: str | None = None
+    CLIENT_TERMS_URL: str | None = None
+    CLIENT_DOCS_URL: str | None = None
+    CLIENT_REPORT_PROBLEM_URL: str | None = None
+    CLIENT_UPGRADE_URL: str | None = None
+    # JSON list of published client downloads: [{"platform": "windows", "status": "AVAILABLE",
+    # "version": "0.1.0", "url": "https://..."}]. Empty = nothing is published, and the client says so.
+    CLIENT_RELEASES_JSON: str = ""
+    # Store billing rules differ from web/desktop. Until a policy-reviewed purchase flow exists for a
+    # mobile platform, the upgrade link is withheld from it (ADR-137 §billing).
+    CLIENT_UPGRADE_PLATFORMS: str = "web,windows,macos"
+
+    # --- Device Intelligence (ADR-138) ---
+    # Optional installation-continuity evidence. Never an identity proof, never an enforcement input
+    # on its own; there is no policy engine that consumes it yet.
+    DEVICE_INTELLIGENCE_ENABLED: bool = True
+    DEVICE_CHALLENGE_TTL_SECONDS: int = 120
+    DEVICE_OBSERVATION_RETENTION_DAYS: int = 90
+    # Keyed pseudonyms for network observations. The version is stored with every pseudonym so the
+    # key can be rotated without silently mixing two incomparable value spaces. Falls back to a key
+    # derived from SECRET_KEY when unset.
+    DEVICE_PSEUDONYM_KEY: SecretStr | None = None
+    DEVICE_PSEUDONYM_KEY_VERSION: int = 1
+
     # --- Embeddings ---
     # Kept configurable so the vector dimension is never hard-coded into
     # migrations/models in a way that blocks switching embedding models.
@@ -263,6 +298,10 @@ class Settings(BaseSettings):
         if (self.PAYMENT_PROVIDER or "").strip().lower() == "sandbox":
             # The sandbox provider lets an admin self-sign a "payment succeeded" event (SEC-06).
             problems.append("PAYMENT_PROVIDER=sandbox credits wallets without real payment")
+        for name in CLIENT_LINK_SETTINGS:
+            value = (getattr(self, name) or "").strip()
+            if value and not value.lower().startswith("https://"):
+                problems.append(f"{name} must be an https:// URL in production")
 
         if problems:
             raise InsecureProductionConfigError(

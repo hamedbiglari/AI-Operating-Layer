@@ -37,6 +37,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.ai import context_assembly as ca
@@ -248,7 +249,8 @@ def message_out(db: Session, msg: ConversationMessage, *, with_citations: bool =
            "input_tokens": msg.input_tokens, "output_tokens": msg.output_tokens,
            "cost": float(msg.cost) if msg.cost is not None else None,
            "cost_currency": msg.cost_currency,
-           "answers_message_id": str(msg.answers_message_id) if msg.answers_message_id else None}
+           "answers_message_id": str(msg.answers_message_id) if msg.answers_message_id else None,
+           "client_request_id": msg.client_request_id}
     if with_citations:
         rows = db.execute(select(ConversationCitation).where(
             ConversationCitation.message_id == msg.id).order_by(ConversationCitation.ordinal)).scalars().all()
@@ -431,9 +433,28 @@ def _open_research_request(db: Session, convo: Conversation, user_msg: Conversat
     return req
 
 
+def find_replay(db: Session, *, convo: Conversation, client_request_id: str) -> ConversationMessage | None:
+    """The stored answer to a question this client already sent (ADR-137). None when the key is new. A key whose
+    question is stored but whose answer is not yet is a request still being answered: 409, never a second ask."""
+    user_msg = db.execute(select(ConversationMessage).where(
+        ConversationMessage.conversation_id == convo.id,
+        ConversationMessage.client_request_id == client_request_id)).scalar_one_or_none()
+    if user_msg is None:
+        return None
+    answer = db.execute(select(ConversationMessage).where(
+        ConversationMessage.conversation_id == convo.id,
+        ConversationMessage.answers_message_id == user_msg.id).order_by(
+        ConversationMessage.position.asc()).limit(1)).scalar_one_or_none()
+    if answer is None:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            {"code": "request_in_progress",
+                             "message": "This question is still being answered. Reload the conversation shortly."})
+    return answer
+
+
 def ask(db: Session, *, convo: Conversation, user: User, question: str,
         attachments: list[UUID] | None = None, adapters: dict | None = None, pricing=None,  # noqa: ANN001
-        ) -> ConversationMessage:
+        client_request_id: str | None = None) -> ConversationMessage:
     org = convo.organization_id
     row = _require_enabled(db, org)
 
@@ -442,9 +463,20 @@ def ask(db: Session, *, convo: Conversation, user: User, question: str,
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS,
                             f"Daily chat limit reached ({limit} answers in 24 hours).")
 
-    user_msg = _add_message(db, convo, role="user", text=question,
-                            attachments=[str(a) for a in (attachments or [])])
-    db.commit()
+    try:
+        user_msg = _add_message(db, convo, role="user", text=question,
+                                attachments=[str(a) for a in (attachments or [])],
+                                client_request_id=client_request_id)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        if client_request_id is None:
+            raise
+        # Two copies of the same keyed request raced; the other one is answering it.
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            {"code": "request_in_progress",
+                             "message": "This question is still being answered. Reload the conversation shortly."}
+                            ) from None
 
     # ---- scope (§14): server-side, every time
     topic_ids = allowed_topic_ids(db, row, org)

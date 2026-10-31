@@ -9,9 +9,13 @@ GET  /auth/me                     — current user + their organization
 POST /auth/session                — open a browser session (code sign-in + HttpOnly refresh cookie)
 POST /auth/session/refresh        — rotate the cookie, hand back a short-lived access token
 DELETE /auth/session              — sign out of the browser session
+POST /auth/native/session         — native client sign-in: refresh secret in the body (ADR-137)
+POST /auth/native/session/refresh — rotate it (same reuse detection as the cookie)
+POST /auth/native/session/end     — sign out a native client
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Literal
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, EmailStr, Field
@@ -327,3 +331,92 @@ def close_session(response: Response, db: Session = Depends(get_db),
     told that its cookie was already worthless."""
     auth_session_service.end(db, cookie=session_cookie)
     _clear_session_cookie(response)
+
+
+# --- Native client session (ADR-137) ----------------------------------------------
+#
+# The official Windows, macOS, Android and iOS clients have no cookie jar the server can rely on. They
+# open the SAME auth_sessions row the website does — same HMAC-only storage, same rotation, same reuse
+# detection, same absolute lifetime — but the refresh secret travels in the response body, and the
+# client keeps it in the operating system's secure storage (Credential Manager, Keychain, Android
+# Keystore). The access token is as short-lived as the browser's. Nothing here changes the cookie routes.
+
+
+class NativeSessionOpen(BaseModel):
+    grant: Literal["login_code", "password"]
+    email: EmailStr
+    code: str | None = Field(default=None, min_length=6, max_length=6)
+    password: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class NativeRefresh(BaseModel):
+    refresh_token: str = Field(min_length=10, max_length=200)
+
+
+class NativeSessionResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in_minutes: int
+    refresh_token: str
+    refresh_expires_at: datetime
+
+
+def _native_response(outcome) -> NativeSessionResponse:  # noqa: ANN001
+    minutes = settings.NATIVE_ACCESS_TOKEN_EXPIRE_MINUTES
+    user = outcome.user
+    token = create_access_token(user_id=str(user.id), organization_id=str(user.organization_id),
+                                role=user.role.value, expires_delta=timedelta(minutes=minutes))
+    return NativeSessionResponse(access_token=token, expires_in_minutes=minutes, refresh_token=outcome.cookie,
+                                 refresh_expires_at=outcome.session.expires_at)
+
+
+@router.post("/native/session", response_model=NativeSessionResponse)
+def open_native_session(payload: NativeSessionOpen, request: Request,
+                        db: Session = Depends(get_db)) -> NativeSessionResponse:
+    """Sign in a native client with the methods the website and dashboard already use, under the same
+    throttles and the same deliberately indistinguishable failures."""
+    import hashlib
+
+    if payload.grant == "login_code":
+        from app.services import login_code_service
+
+        if not payload.code:
+            raise HTTPException(status_code=422, detail="code is required for the login_code grant")
+        _ip_limit(request)
+        outcome = login_code_service.verify_code(db, email=payload.email, code=payload.code)
+        if outcome.kind == "locked":
+            raise _lock_error(outcome)
+        if outcome.kind != "ok":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired code.")
+        user = outcome.user
+    else:
+        if not payload.password:
+            raise HTTPException(status_code=422, detail="password is required for the password grant")
+        _throttle(f"login-pw-ip:{client_ip(request)}", settings.LOGIN_PASSWORD_IP_LIMIT_PER_MINUTE, 60,
+                  "Too many sign-in attempts. Try again later.")
+        acct = hashlib.sha256(str(payload.email).strip().lower().encode()).hexdigest()[:32]
+        _throttle(f"login-pw-acct:{acct}", settings.LOGIN_PASSWORD_ACCOUNT_LIMIT_PER_15_MIN, 900,
+                  "Too many sign-in attempts for this account. Try again in 15 minutes, or sign in with an emailed code.")
+        user = auth_service.authenticate(db, email=str(payload.email), password=payload.password)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+    started = auth_session_service.start(db, user=user, user_agent=request.headers.get("user-agent"),
+                                         ip=client_ip(request))
+    return _native_response(started)
+
+
+@router.post("/native/session/refresh", response_model=NativeSessionResponse)
+def refresh_native_session(payload: NativeRefresh, request: Request,
+                           db: Session = Depends(get_db)) -> NativeSessionResponse:
+    outcome = auth_session_service.rotate(db, cookie=payload.refresh_token,
+                                          user_agent=request.headers.get("user-agent"), ip=client_ip(request))
+    if outcome.kind != "ok":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=_SESSION_GONE.get(outcome.kind, _SESSION_GONE["invalid"]))
+    return _native_response(outcome)
+
+
+@router.post("/native/session/end", status_code=status.HTTP_204_NO_CONTENT)
+def end_native_session(payload: NativeRefresh, db: Session = Depends(get_db)) -> None:
+    """Sign out. Idempotent and silent, exactly like DELETE /auth/session."""
+    auth_session_service.end(db, cookie=payload.refresh_token)

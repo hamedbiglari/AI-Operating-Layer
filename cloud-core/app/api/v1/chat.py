@@ -65,6 +65,10 @@ class ConversationPatch(BaseModel):
 class Ask(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
     attachments: list[UUID] | None = None
+    # Idempotency key chosen by the client (ADR-137). Re-sending a question with the same key returns the
+    # stored answer instead of asking — and paying for — the question twice.
+    client_request_id: str | None = Field(default=None, min_length=8, max_length=64,
+                                          pattern=r"^[A-Za-z0-9_-]+$")
 
 
 class FeedbackIn(BaseModel):
@@ -192,12 +196,20 @@ def list_messages(conversation_id: UUID, p: PaginationParams = Depends(), sort: 
 
 
 @router.post("/conversations/{conversation_id}/messages", status_code=status.HTTP_201_CREATED)
-def ask(conversation_id: UUID, body: Ask, user: User = Reader, db: Session = Depends(get_db)) -> dict:
+def ask(conversation_id: UUID, body: Ask, response: Response, user: User = Reader,
+        db: Session = Depends(get_db)) -> dict:
     convo = _mine(db, user, conversation_id)
     if convo.state == "archived":
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This conversation is archived. Unarchive it to continue.")
-    msg = svc.ask(db, convo=convo, user=user, question=body.question, attachments=body.attachments)
+    if body.client_request_id:
+        replay = svc.find_replay(db, convo=convo, client_request_id=body.client_request_id)
+        if replay is not None:
+            response.status_code = status.HTTP_200_OK
+            response.headers["Idempotent-Replay"] = "true"
+            return svc.message_out(db, replay)
+    msg = svc.ask(db, convo=convo, user=user, question=body.question, attachments=body.attachments,
+                  client_request_id=body.client_request_id)
     return svc.message_out(db, msg)
 
 

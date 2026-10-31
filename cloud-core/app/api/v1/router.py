@@ -109,3 +109,8 @@ api_router.include_router(knowledge_transfer_router)
 # Dashboard count cards in one read.
 from app.api.v1.dashboard import router as dashboard_router  # noqa: E402
 api_router.include_router(dashboard_router)
+# ADR-137 / ADR-138 — official client suite and Device Intelligence.
+from app.api.v1.clients import router as clients_router  # noqa: E402
+from app.api.v1.devices import router as devices_router  # noqa: E402
+api_router.include_router(clients_router)
+api_router.include_router(devices_router)
