@@ -103,12 +103,22 @@ def knowledge_overview(
     include_finished: bool = Query(default=False),
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    knowledge_object_id: UUID | None = Query(default=None, alias="id"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> KnowledgeOverviewPage:
     """The Knowledge list's rows: the same filters as GET /knowledge, plus the
     per-object counts, ordered and paged server-side. Archived objects are
-    left out; finished ones only with include_finished=true."""
+    left out; finished ones only with include_finished=true.
+
+    With ?id= it is the Knowledge detail header's one row
+    (any status), whatever filters the list had; an unknown id is a 404."""
+    if knowledge_object_id:
+        knowledge_service.get_knowledge_object_or_404(
+            db, object_id=knowledge_object_id, organization_id=current_user.organization_id
+        )
+        search = object_type = status_filter = None
+        offset = 0
     rows, total = knowledge_overview_service.get_overview(
         db,
         organization_id=current_user.organization_id,
@@ -119,6 +129,7 @@ def knowledge_overview(
         status=status_filter,
         sort=sort,
         include_finished=include_finished,
+        object_id=knowledge_object_id,
     )
     items = [
         KnowledgeOverviewItem(
