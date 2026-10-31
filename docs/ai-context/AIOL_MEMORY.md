@@ -121,13 +121,14 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 4441fd5
+- sha (last non-docs commit): b8c8724
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 4441fd5 (9A). 21be62a (9A backend) was pushed
-  with it and is not built on its own. 41f187d (8B-3) was green (run 79).
-- last code commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
-- last feature commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
+- last_ci: in_progress @ b8c8724 (9B). Run 81 (001dcd1, which carries the
+  9A commits 21be62a/4441fd5) was still running when 9B was pushed;
+  check both on resume.
+- last code commit: "feat(ai): live memory center screen (9B)" @ b8c8724
+- last feature commit: "feat(ai): live memory center screen (9B)" @ b8c8724
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -306,6 +307,14 @@ file from scratch (do not diff). Output only the file content.
     V5-ai-prompts, V5-ai-center-deletes. e2e/ai-executions.js (19);
     --require adds screen-ai-executions. An error hides #aix-body; the
     way back is Connect.
+  - 9B @ b8c8724 — #screen-memory (own module, connects on aiol:live):
+    no backend change (search = 1 call with full rows; versions and
+    compare = 1 call each, on demand). data-live-wired; every runtime
+    string through AIOL_I18N.set (headers, kind/change labels, totals,
+    versions heading, compare result, pager, messages incl. a 403
+    export message); JSON/JSONL/CSV/ZIP as identifiers. 51 FA entries,
+    46 KNOWN words. e2e/memory-center.js (16); --require adds
+    screen-memory.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -314,18 +323,18 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions
-  and 15 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory
+  and 16 browser suites.
 
 ## 5. In progress — next step
 
 - Step 8 (Knowledge tools) is DONE (see §4).
-- Step 9 (AI) is partially complete: 9A (AI executions) done (see §4).
-- Next up: 9B (Memory Center: /memory search, versions, compare,
-  export; route runtime text through AIOL_I18N.set, FA, e2e,
-  --require). Then 9C Chat settings, 9D AI Catalog and Agent Network,
-  9E AI Center (split routing/jobs/discovery), 9F Command workspace.
-  #screen-access moves to Step 10 (Visibility).
+- Step 9 (AI) is partially complete: 9A (AI executions) and 9B (Memory
+  Center) done (see §4).
+- Next up: 9C (Chat settings: GET/PUT /chat/settings; route runtime
+  text through AIOL_I18N.set, FA, e2e, --require). Then 9D AI Catalog
+  and Agent Network, 9E AI Center (split routing/jobs/discovery), 9F
+  Command workspace. #screen-access moves to Step 10 (Visibility).
 - Debt rows added in 9A, both OPEN: V5-ai-prompts, V5-ai-center-deletes.
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
@@ -344,10 +353,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 9B (Memory Center) prompt.
+State in sync → user says "go" → send the 9C (Chat settings) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 9B (Memory Center) prompt.
+Case B — user says "go": send the 9C (Chat settings) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -410,6 +419,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   updated). Step 8 is complete; Step 9 (AI) is next.
 - v16 @ 4441fd5 — 9A shipped (backend 21be62a): AI executions loads in one
   call and is fully translatable. 9B (Memory Center) is next.
+- v17 @ b8c8724 — 9B shipped (Memory Center live and translatable, no
+  backend change). 9C (Chat settings) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -615,7 +626,7 @@ Session / memory:
 - 7E Add source (Upload + URL only, ~1h).
 - Step 8 (Knowledge tools) complete: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D.
   V5-matrix-coverage-runtime-fa is OPEN.
-- Step 9 (AI) partial: 9A done; 9B–9F remain.
+- Step 9 (AI) partial: 9A, 9B done; 9C–9F remain.
 - Steps 10–14 (Visibility, Commerce, Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
