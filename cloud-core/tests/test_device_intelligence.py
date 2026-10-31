@@ -422,3 +422,11 @@ def test_turning_device_intelligence_off_disables_it_without_touching_sign_in(cl
     org = register_org()
     assert client.post(f"{D}/challenges", headers=org["headers"], json={"purpose": "register"}).status_code == 404
     assert client.get("/api/v1/auth/me", headers=org["headers"]).status_code == 200
+
+
+def test_the_admin_list_sorts_by_documented_fields_only(client, register_org):
+    org = register_org()
+    Installation().register(client, org["headers"])
+    ok = client.get(f"{D}/admin/credentials?sort_by=first_seen_at&sort_dir=asc", headers=org["headers"])
+    assert ok.status_code == 200 and ok.json()["total"] == 1
+    assert client.get(f"{D}/admin/credentials?sort_by=public_key_spki", headers=org["headers"]).status_code == 422

@@ -73,8 +73,8 @@ def test_a_grant_without_its_secret_is_refused(client, register_org):
 
 def test_only_the_hash_of_the_refresh_secret_is_stored(client, register_org, outbox, db_session):
     _, r = _native_by_code(client, register_org, outbox)
-    secret = r.json()["refresh_token"].split(".", 1)[1]
-    row = db_session.execute(select(AuthSession)).scalars().all()[-1]
+    sid, secret = r.json()["refresh_token"].split(".", 1)
+    row = db_session.get(AuthSession, uuid.UUID(sid))
     assert secret not in row.token_hash and len(row.token_hash) == 64
     assert row.user_agent.startswith("AIOL-Desktop/0.1.0")
 
@@ -94,7 +94,9 @@ def test_refresh_rotates_and_the_old_secret_dies(client, register_org, outbox, d
     replay = client.post(f"{N}/refresh", json={"refresh_token": first})
     assert replay.status_code == 401
     assert client.post(f"{N}/refresh", json={"refresh_token": second}).status_code == 401
-    assert db_session.execute(select(AuthSession)).scalars().all()[-1].revoked_reason == "reuse_detected"
+    row = db_session.get(AuthSession, uuid.UUID(first.split(".", 1)[0]))
+    db_session.refresh(row)
+    assert row.revoked_reason == "reuse_detected"
 
 
 def test_sign_out_ends_the_session_and_is_idempotent(client, register_org, outbox):

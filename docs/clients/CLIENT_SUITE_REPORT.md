@@ -190,7 +190,7 @@ the client then reports "not available here" and continues.
 
 ## 16. Automated test results
 
-See the commands and outputs in §17. Summary is filled from those runs.
+Cloud Core: 1794 passed, 0 failed, 3 skipped, coverage 93.54 % (fresh DB). New backend tests: 19 (client suite) + 31 (Device Intelligence). Client unit: 30/30. End-to-end: 39/39. Rust shell: 5/5.
 
 ## 17. Build and packaging results
 
@@ -224,3 +224,25 @@ macOS/Xcode host; legal review.
 untested; the Android Kotlin plugin is uncompiled; the privacy disclosure lacks legal review. No
 release-blocking vulnerability is known in the implemented code, and the backend changes are additive and
 reversible (migration 0049 down-migrates cleanly).
+
+---
+
+## Command log (observed outcomes, 2026-10-31)
+
+| Command | Host | Result |
+|---------|------|--------|
+| `alembic upgrade head` → `downgrade 0048` → `upgrade head` | Linux, PostgreSQL 16 + pgvector | 0049 up/down/up clean |
+| `pytest` (full Cloud Core suite, coverage gate 92 %) on a freshly migrated DB | Linux | 1794 passed, 3 skipped, 0 failed; coverage 93.54 % (gate 92 %) |
+| `npm test` (clients) | Node 22 | 30 passed, 0 failed |
+| `node e2e/run.mjs` vs live Cloud Core (uvicorn + PostgreSQL + Redis) | Chromium (Playwright) | 39/39 checks passed |
+| `cargo test --locked` (src-tauri) | Linux x86_64 | 5 passed — builds the full Tauri shell for the host |
+| `cargo check --locked --target x86_64-pc-windows-msvc` | Linux | finished; Windows resource (.rc) step skipped: no MSVC toolchain |
+| `cargo check --locked --target aarch64-linux-android` | Linux | finished (includes the Android-only plugin bridge) |
+| `cargo check --target aarch64-apple-darwin` / `aarch64-apple-ios` | Linux | **blocked**: `objc2-exception-helper` compiles Objective-C, needs clang + Apple SDK |
+| `npx tauri icon` | Linux | Windows/macOS/iOS/Android icon sets generated |
+| `npx tauri build` / `tauri android build` / `tauri ios build` | — | **not run** (no Windows/macOS host, Android SDK host blocked, no Xcode) |
+| `git push` | — | **failed: 403** — the session has no GitHub access to the repository, so CI has not run |
+
+Baseline before any change: 1741 passed, 2 failed, 3 skipped; both failures came from this work in
+progress and were fixed. `test_auth_session.py` selects "the last `auth_sessions` row", so the suite must
+run on a fresh database (as CI does), not one that also holds rows from a live end-to-end run.

@@ -484,13 +484,15 @@ def assess(db: Session, cred: DeviceCredential) -> dict:
 
 
 def admin_list(db: Session, *, organization_id: uuid.UUID, limit: int, offset: int,
-               status_filter: str | None = None) -> tuple[int, list[dict]]:
+               status_filter: str | None = None, sort=None) -> tuple[int, list[dict]]:  # noqa: ANN001
+    from app.schemas.common import apply_sort
+
     where = [DeviceCredential.organization_id == organization_id]
     if status_filter:
         where.append(DeviceCredential.status == status_filter)
     total = db.execute(select(func.count()).select_from(DeviceCredential).where(*where)).scalar_one()
-    rows = db.execute(select(DeviceCredential).where(*where).order_by(DeviceCredential.last_seen_at.desc())
-                      .limit(limit).offset(offset)).scalars().all()
+    stmt = apply_sort(select(DeviceCredential).where(*where), DeviceCredential, sort, "last_seen_at")
+    rows = db.execute(stmt.limit(limit).offset(offset)).scalars().all()
     return total, [{**credential_out(r), "assessment": assess(db, r)} for r in rows]
 
 

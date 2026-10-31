@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.enums import ADMIN_ROLES
 from app.models.user import User
-from app.schemas.common import Page, PaginationParams
+from app.schemas.common import Page, PaginationParams, SortParams
 from app.security.client_ip import client_ip
 from app.security.dependencies import get_current_user, require_roles
 from app.services import device_intelligence_service as svc
@@ -109,10 +109,10 @@ def unlink(credential_id: UUID, request: Request, user: User = Reader, db: Sessi
 
 
 @router.get("/admin/credentials", response_model=Page[dict])
-def admin_list(p: PaginationParams = Depends(), state: Literal["active", "revoked"] | None = Query(default=None),
+def admin_list(p: PaginationParams = Depends(), sort: SortParams = Depends(), state: Literal["active", "revoked"] | None = Query(default=None),
                user: User = Admin, db: Session = Depends(get_db)) -> Page[dict]:
     total, items = svc.admin_list(db, organization_id=user.organization_id, limit=p.limit, offset=p.offset,
-                                  status_filter=state)
+                                  status_filter=state, sort=sort)
     return Page(items=items, total=total, limit=p.limit, offset=p.offset)
 
 
