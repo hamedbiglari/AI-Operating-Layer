@@ -3,7 +3,7 @@
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.schemas.common import SortDirection, SortParams, apply_sort
 
@@ -32,7 +32,12 @@ def list_knowledge_gaps(
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
     rows = (
-        db.execute(apply_sort(base, KnowledgeGap, sort, "created_at", SortDirection.DESC).limit(limit).offset(offset))
+        db.execute(
+            apply_sort(base, KnowledgeGap, sort, "created_at", SortDirection.DESC)
+            .options(joinedload(KnowledgeGap.knowledge_object))  # the name, in the same query
+            .limit(limit)
+            .offset(offset)
+        )
         .scalars()
         .all()
     )

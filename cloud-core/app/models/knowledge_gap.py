@@ -57,5 +57,12 @@ class KnowledgeGap(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     knowledge_object: Mapped["KnowledgeObject"] = relationship(back_populates="gaps")  # noqa: F821
 
+    @property
+    def knowledge_object_name(self) -> str:
+        """The object's name for KnowledgeGapRead, so a list of gaps needs no
+        call per row to name its objects (Rule 17). Lists load it with the
+        gaps in one joined query."""
+        return self.knowledge_object.canonical_name
+
     def __repr__(self) -> str:  # pragma: no cover
         return f"<KnowledgeGap id={self.id} type={self.gap_type.value} status={self.status.value}>"
