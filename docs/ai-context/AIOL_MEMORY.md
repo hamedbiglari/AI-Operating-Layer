@@ -121,13 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 6474e60
+- sha (last non-docs commit): 2d9d56c
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ 6474e60 (7C-6c)
-- last code commit: "feat(processing): live processing screen (7C-6c)" @ 6474e60
-- last feature commit: "feat(processing): live processing screen
-  (7C-6c)" @ 6474e60
+- last_ci: green @ 2d9d56c (7D-2)
+- last code commit: "feat(provenance): live provenance screen (7D-2)" @ 2d9d56c
+- last feature commit: "feat(provenance): live provenance screen
+  (7D-2)" @ 2d9d56c
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -218,6 +218,26 @@ file from scratch (do not diff). Output only the file content.
     mock alignment, Playwright test, --require gate. Note: found and
     fixed an infinite mutation loop caused by an identity FA mapping
     ("OCR": "OCR").
+- Step 7D (Provenance):
+  - 7D-1 @ 5caa754 — backend GET /knowledge/{id}/provenance
+    (ProvenanceRead): one page of claims (limit/offset) with their
+    claim_evidence links, plus evidence/sources/documents maps keyed by
+    id (Rule 17: at most 6 queries, constant in claims/links). Claim
+    carries predicate, object_value, joined text, status,
+    evidence_strength; links carry link_id. Evidence has basis and
+    subject_tested; documents have converter_version from the current
+    conversion. total_claims = all claims; total_evidence = distinct
+    evidence in this page. 4 tests (query count, happy path,
+    pagination, cross-org 404). No migration.
+  - 7D-2 @ 2d9d56c — live #screen-provenance?id= (kind 'provenance',
+    provenanceScreen()): one call with limit=200 and a "Claims shown:
+    N of total" line; each claim a .trail--fan card; remove link via
+    confirm + DELETE /claim-evidence/{link_id} + reload, editor roles
+    only, 403 keeps the button. EDIT_ROLES lifted to module scope;
+    /auth/me read once per connection (connectionRole()), shared with
+    Source detail. 62 FA entries + glossary section, 67 KNOWN words,
+    allowlist pair 13/31 (both numbers). e2e/provenance.js (23
+    checks); --require adds screen-provenance.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -226,22 +246,24 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing and 9
-  browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance
+  and 10 browser suites.
 
 ## 5. In progress — next step
 
-- Step 7C (Processing) is fully complete: 7C-1 through 7C-6
-  ✓ (see §4).
-- Next up is 7D (Provenance): frontend only, 3+3N calls. Needs
-  investigation before coding.
+- Step 7D (Provenance) is complete: 7D-1 and 7D-2 ✓ (see §4).
+- Next up is 7E (Add source). Needs investigation before coding.
+- Debt: V5-knowledge-provenance-link OPEN — nothing links to
+  #screen-provenance?id= yet (no entry point from Knowledge), although
+  the no-id message says "Open one from Knowledge". Not yet written to
+  DEBT_REGISTER.md.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 7D investigation prompt.
+State in sync → user says "go" → send the 7E investigation prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 7D investigation prompt.
+Case B — user says "go": send the 7E investigation prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -290,6 +312,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   7C-6.
 - v10 @ 6474e60 — 7C-6c shipped. Step 7C is complete. v9's stale
   "in_progress" is corrected to green.
+- v11 @ 2d9d56c — 7D-1 (5caa754) and 7D-2 (2d9d56c) shipped. Step 7D is
+  complete; 7E (Add source) is next. Debt V5-knowledge-provenance-link
+  noted.
 
 ## 10. Historical context (from two prior sessions)
 
