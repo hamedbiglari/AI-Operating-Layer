@@ -783,3 +783,220 @@ Terms for the AI Catalog screen. Type and status labels are the filter options' 
 | Could not load the catalog ({error}). | بارگذاری فهرست ناموفق بود ({error}). |
 | Imported {inserted} new, {present} already present. | {inserted} مورد تازه وارد شد، {present} مورد از پیش بود. |
 | Could not import the list ({error}). | وارد کردن فهرست ناموفق بود ({error}). |
+
+## AI Center (Step 9E)
+
+Terms for the AI Center screen. Mode labels are the Create form's own options; provider, account, model, agent and job names, API values (health, verification) and server messages stay as sent. Option text inside dropdowns stays English at runtime (the Persian layer skips select).
+
+| English | Persian |
+|---|---|
+| Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to Cloud Core. No sample data: until connected this screen shows nothing. | ارائه‌دهنده‌ها، حساب‌ها، مدل‌ها، مسیریابی، کارهای طولانی با نقطه‌های بازبینی و تحویل، حافظهٔ مشترک و فهرست کشف — خواندن و نوشتن در Cloud Core. بدون دادهٔ نمونه: تا وصل نشود، این صفحه چیزی نشان نمی‌دهد. |
+| Not connected. | وصل نیست. |
+| Providers & accounts | ارائه‌دهنده‌ها و حساب‌ها |
+| Routing | مسیریابی |
+| Jobs & memory | کارها و حافظه |
+| Agent network | شبکهٔ عامل‌ها |
+| Shared memory | حافظهٔ مشترک |
+| Discovery | کشف |
+| AI Center sections | بخش‌های مرکز هوش مصنوعی |
+| Providers | ارائه‌دهنده‌ها |
+| Registered AI providers | ارائه‌دهنده‌های ثبت‌شدهٔ هوش مصنوعی |
+| Adapter | آداپتور |
+| Verification | راستی‌آزمایی |
+| Credential method | روش اعتبارنامه |
+| Add provider | افزودن ارائه‌دهنده |
+| Official URL | نشانی رسمی |
+| API base URL | نشانی پایهٔ API |
+| None (registry only) | هیچ (فقط در فهرست) |
+| anthropic | آنتروپیک |
+| openai | اوپن‌ای‌آی |
+| Accounts | حساب‌ها |
+| Every account is tracked separately: credential, health, failures, limits. Unknown quota or balance is shown as "Unknown", never 0. Credentials are write-only. | هر حساب جداگانه پیگیری می‌شود: اعتبارنامه، سلامت، خطاها، محدودیت‌ها. سهمیه یا موجودی ناشناخته «نامعلوم» نشان داده می‌شود، هرگز ۰. اعتبارنامه‌ها فقط نوشتنی‌اند. |
+| Provider accounts | حساب‌های ارائه‌دهنده |
+| Account | حساب |
+| Credential | اعتبارنامه |
+| Health | سلامت |
+| Failures | خطاها |
+| Remaining tokens | توکن‌های باقی‌مانده |
+| Add account | افزودن حساب |
+| Label | برچسب |
+| Plan | طرح |
+| Set or rotate a credential | تنظیم یا چرخش اعتبارنامه |
+| Secret (never shown again) | رمز (دیگر هرگز نشان داده نمی‌شود) |
+| Save credential | ذخیرهٔ اعتبارنامه |
+| e.g. Account A | مثلاً حساب A |
+| Models and their limits | مدل‌ها و محدودیت‌هایشان |
+| Limits are what the provider documents for your account. Providers change them, so enter them here rather than trusting a built-in table. Empty means "Unknown" and blocks nothing. A job item larger than a known input limit, or a job reserving more output than a known output limit, fails with CONTEXT_OVERFLOW or OUTPUT_EXCEEDS_MODEL_LIMIT before any call: it is never truncated. Without a max input, the room is the context window minus the output reserve. Requests and tokens per minute are recorded, not yet enforced. | محدودیت‌ها همان‌هایی‌اند که ارائه‌دهنده برای حساب شما مستند کرده است. ارائه‌دهنده‌ها آن‌ها را تغییر می‌دهند، پس به‌جای اعتماد به یک جدول درونی، آن‌ها را اینجا وارد کنید. خالی یعنی «نامعلوم» و جلوی چیزی را نمی‌گیرد. یک مورد کار بزرگ‌تر از محدودیت ورودی شناخته‌شده، یا کاری که بیش از محدودیت خروجی شناخته‌شده خروجی رزرو کند، پیش از هر فراخوانی با CONTEXT_OVERFLOW یا OUTPUT_EXCEEDS_MODEL_LIMIT ناموفق می‌شود: هرگز کوتاه نمی‌شود. بدون حداکثر ورودی، فضا برابر پنجرهٔ زمینه منهای رزرو خروجی است. درخواست‌ها و توکن‌ها در دقیقه ثبت می‌شوند، اما هنوز اعمال نمی‌شوند. |
+| Registered models and their limits | مدل‌های ثبت‌شده و محدودیت‌هایشان |
+| Context window | پنجرهٔ زمینه |
+| Max input | حداکثر ورودی |
+| Max output | حداکثر خروجی |
+| RPM / TPM | درخواست / توکن در دقیقه |
+| Register a model | ثبت یک مدل |
+| Model name (as the provider spells it) | نام مدل (همان‌طور که ارائه‌دهنده می‌نویسد) |
+| Context window (tokens) | پنجرهٔ زمینه (توکن) |
+| Max input tokens | حداکثر توکن‌های ورودی |
+| Max output tokens | حداکثر توکن‌های خروجی |
+| Requests per minute | درخواست در دقیقه |
+| Tokens per minute | توکن در دقیقه |
+| Where the figures come from | این ارقام از کجا آمده‌اند |
+| Provider documentation | مستندات ارائه‌دهنده |
+| Provider API | API ارائه‌دهنده |
+| Entered by an operator | واردشده توسط یک کاربر |
+| Conservative estimate | برآورد محتاطانه |
+| Register model | ثبت مدل |
+| Edit limits | ویرایش محدودیت‌ها |
+| Save limits | ذخیرهٔ محدودیت‌ها |
+| claude-sonnet-4-6 | مثلاً claude-sonnet-4-6 |
+| Routing policies | سیاست‌های مسیریابی |
+| Modes: manual single, manual ordered chain, stage-based manual, automatic pool, automatic priority pool, hybrid. "Explain" shows which resource would be chosen now and why every other one is skipped. | حالت‌ها: دستی تکی، زنجیرهٔ دستی مرتب، دستی بر پایهٔ مرحله، استخر خودکار، استخر اولویت‌دار خودکار، ترکیبی. «توضیح» نشان می‌دهد اکنون کدام منبع انتخاب می‌شود و چرا هر منبع دیگر کنار گذاشته می‌شود. |
+| Create a routing policy | ساخت یک سیاست مسیریابی |
+| Mode | حالت |
+| Manual — one model | دستی — یک مدل |
+| Manual chain — try in order | زنجیرهٔ دستی — به ترتیب امتحان کن |
+| Stage-based — a model per stage | بر پایهٔ مرحله — یک مدل برای هر مرحله |
+| Automatic pool | استخر خودکار |
+| Priority pool — try in order, skipping unhealthy | استخر اولویت‌دار — به ترتیب امتحان کن و ناسالم‌ها را رد کن |
+| Hybrid | ترکیبی |
+| First step: account | گام نخست: حساب |
+| First step: model | گام نخست: مدل |
+| Stage (stage-based only) | مرحله (فقط بر پایهٔ مرحله) |
+| Cost ceiling per job | سقف هزینهٔ هر کار |
+| Create policy | ساخت سیاست |
+| Job status, checkpoint and handoff | وضعیت کار، نقطهٔ بازبینی و تحویل |
+| Open job | باز کردن کار |
+| Knowledge transfer packages | بسته‌های انتقال دانش |
+| What workers handed back as structured findings, and what the validator and reconciler did with each claim. Nothing a worker returns becomes approved knowledge: accepted claims and evidence are drafts for review. A quote that cannot be found in the stored source text is rejected as a citation mismatch. Rejected items stay listed here with their reason. | آنچه کارگزاران به‌صورت یافته‌های ساختاریافته برگرداندند، و آنچه اعتبارسنج و تطبیق‌دهنده با هر ادعا کردند. هیچ‌چیزی که یک کارگزار برمی‌گرداند دانش تأییدشده نمی‌شود: ادعاها و شواهد پذیرفته‌شده پیش‌نویس‌هایی برای بررسی‌اند. نقل‌قولی که در متن ذخیره‌شدهٔ منبع پیدا نشود، به‌عنوان ناهمخوانی استناد رد می‌شود. موارد ردشده با دلیلشان اینجا فهرست می‌مانند. |
+| Reconciled | تطبیق‌یافته |
+| Partly reconciled | تا حدی تطبیق‌یافته |
+| Nothing accepted | چیزی پذیرفته نشد |
+| Invalid | نامعتبر |
+| Received | دریافت‌شده |
+| From | از |
+| Claims accepted | ادعاهای پذیرفته‌شده |
+| Outcomes | نتیجه‌ها |
+| Semantic memory backend | بک‌اند حافظهٔ معنایی |
+| Agent orchestration console | کنسول هماهنگی عامل‌ها |
+| Every action below calls Cloud Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it. | هر کنش زیر Cloud Core را فرا می‌خواند. اجرای یک کار از مسیر مرجع هوش مصنوعی می‌گذرد (یک کار هوش مصنوعی که فراخوانی‌هایش به‌صورت AIExecution ثبت می‌شوند) و فقط از حساب‌هایی استفاده می‌کند که عامل اعلام کرده است؛ تحویل با یک نقطهٔ بازبینی حافظهٔ مشترک ذخیره می‌شود و فقط عامل مخاطب می‌تواند آن را بپذیرد. |
+| 1. Register an agent | ۱. ثبت یک عامل |
+| research | پژوهش |
+| evidence | شاهد |
+| knowledge | دانش |
+| content | محتوا |
+| reviewer | بازبین |
+| planner | برنامه‌ریز |
+| summarizer | خلاصه‌ساز |
+| translator | مترجم |
+| commerce | تجارت |
+| custom | سفارشی |
+| Capabilities (comma-separated) | توانایی‌ها (جداشده با ویرگول) |
+| Allowed AI accounts | حساب‌های مجاز هوش مصنوعی |
+| Register agent | ثبت عامل |
+| 2. Grant memory access | ۲. اعطای دسترسی به حافظه |
+| Agent | عامل |
+| Memory profile | نمایهٔ حافظه |
+| Access | دسترسی |
+| read | خواندن |
+| write | نوشتن |
+| admin | مدیر |
+| Grant | اعطا |
+| 3. Start a session | ۳. آغاز یک نشست |
+| Session key | کلید نشست |
+| Goal | هدف |
+| Start session | آغاز نشست |
+| 4. Add a task | ۴. افزودن یک کار |
+| Session ID | شناسهٔ نشست |
+| Task type | نوع کار |
+| Task key | کلید کار |
+| Add task | افزودن کار |
+| 5. Run a task with an agent | ۵. اجرای یک کار با یک عامل |
+| Task ID | شناسهٔ کار |
+| Routing policy | سیاست مسیریابی |
+| Instruction | دستور |
+| Continue from handoff ID (optional) | ادامه از شناسهٔ تحویل (اختیاری) |
+| Run | اجرا |
+| 6. Hand off to another agent | ۶. تحویل به عاملی دیگر |
+| Completed task ID | شناسهٔ کار انجام‌شده |
+| From agent | از عامل |
+| To agent | به عامل |
+| Create handoff | ساخت تحویل |
+| 7. Accept a handoff | ۷. پذیرش یک تحویل |
+| Handoff ID | شناسهٔ تحویل |
+| Receiving agent | عامل دریافت‌کننده |
+| Accept | پذیرش |
+| extract | مثلاً extract |
+| research, summarize | مثلاً research, summarize |
+| Internal and external Agents that perform coordinated tasks. Agents use AI resources but are a separate concept from AI providers. | عامل‌های درونی و بیرونی که کارهای هماهنگ انجام می‌دهند. عامل‌ها از منابع هوش مصنوعی استفاده می‌کنند، اما مفهومی جدا از ارائه‌دهنده‌های هوش مصنوعی‌اند. |
+| Session inspector | بازرس نشست |
+| Tasks, handoffs and agent-to-agent messages of one orchestration session — read from Cloud Core. | کارها، تحویل‌ها و پیام‌های عامل به عامل یک نشست هماهنگی — خوانده‌شده از Cloud Core. |
+| Inspect | بررسی |
+| Shared memory — runtime view | حافظهٔ مشترک — نمای زمان اجرا |
+| Configure in Settings › Shared memory. | در تنظیمات › حافظهٔ مشترک پیکربندی کنید. |
+| is always the canonical store. | همیشه مخزن مرجع است. |
+| Canonical store | مخزن مرجع |
+| Semantic backend | بک‌اند معنایی |
+| AI Resource Discovery Registry | فهرست کشف منابع هوش مصنوعی |
+| A discovered name is not an integration. Entries start as "discovered" with proposed types labelled as inference; API, pricing and quota stay unknown until verified from an official source. | یک نام کشف‌شده یک یکپارچه‌سازی نیست. مدخل‌ها با وضعیت «کشف‌شده» و نوع‌های پیشنهادی برچسب‌خورده به‌عنوان استنباط آغاز می‌شوند؛ API، قیمت و سهمیه تا راستی‌آزمایی از یک منبع رسمی نامعلوم می‌مانند. |
+| Import the initial discovery list | وارد کردن فهرست اولیهٔ کشف |
+| discovered | کشف‌شده |
+| identified | شناسایی‌شده |
+| official_source_verified | منبع رسمی راستی‌آزمایی‌شده |
+| approved | تأییدشده |
+| active | فعال |
+| application_only | فقط برنامه |
+| no_verified_api | بدون API راستی‌آزمایی‌شده |
+| not_verified | راستی‌آزمایی‌نشده |
+| disabled | غیرفعال |
+| AI resource discovery registry | فهرست کشف منابع هوش مصنوعی |
+| Proposed types | نوع‌های پیشنهادی |
+| Last verified | آخرین راستی‌آزمایی |
+| API URL | نشانی API |
+| No providers registered yet. | هنوز هیچ ارائه‌دهنده‌ای ثبت نشده است. |
+| No accounts yet. | هنوز هیچ حسابی وجود ندارد. |
+| No models registered yet. Routing still works; limits are then unknown. | هنوز هیچ مدلی ثبت نشده است. مسیریابی همچنان کار می‌کند؛ محدودیت‌ها در این حالت نامعلوم‌اند. |
+| (no adapter) | (بدون آداپتور) |
+| (disabled) | (غیرفعال) |
+| Not set | تنظیم نشده |
+| Set ••••{last4} | تنظیم‌شده ••••{last4} |
+| Test connection | آزمایش اتصال |
+| Enable | فعال‌سازی |
+| Disable | غیرفعال‌سازی |
+| Testing {label}… | در حال آزمایش {label}… |
+| No routing policies yet. Create one with the form above. | هنوز هیچ سیاست مسیریابی‌ای وجود ندارد. با فرم بالا یکی بسازید. |
+| Save | ذخیره |
+| Remove ceiling | حذف سقف |
+| Delete policy | حذف سیاست |
+| Delete the policy "{name}"? A policy that has already run jobs is kept. | سیاست «{name}» حذف شود؟ سیاستی که پیش‌تر کار اجرا کرده است نگه داشته می‌شود. |
+| {model} on account {account} | {model} روی حساب {account} |
+| Move up | انتقال به بالا |
+| Move down | انتقال به پایین |
+| Remove | حذف |
+| Add step | افزودن گام |
+| Explain current choice | توضیح انتخاب کنونی |
+| No usable resource — stop reason: {reason} | هیچ منبع قابل‌استفاده‌ای نیست — دلیل توقف: {reason} |
+| Policy created. Add more steps to set a fallback order. | سیاست ساخته شد. برای تعیین ترتیب جایگزین، گام‌های بیشتری بیفزایید. |
+| Policy saved. | سیاست ذخیره شد. |
+| Policy deleted. | سیاست حذف شد. |
+| Cost ceiling removed. | سقف هزینه حذف شد. |
+| Step added. | گام افزوده شد. |
+| Step removed. | گام حذف شد. |
+| Order saved — position 0 is tried first. | ترتیب ذخیره شد — جایگاه ۰ اول امتحان می‌شود. |
+| Add a provider account first, on the Providers & accounts tab. | ابتدا در زبانهٔ ارائه‌دهنده‌ها و حساب‌ها یک حساب ارائه‌دهنده بیفزایید. |
+| The first step needs a model. | گام نخست به یک مدل نیاز دارد. |
+| Edit limits — {name} | ویرایش محدودیت‌ها — {name} |
+| Limits must be whole numbers of at least 1 ({field}). | محدودیت‌ها باید عدد صحیح و دست‌کم ۱ باشند ({field}). |
+| Registering {name}… | در حال ثبت {name}… |
+| Saving limits… | در حال ذخیرهٔ محدودیت‌ها… |
+| Limits saved. | محدودیت‌ها ذخیره شد. |
+| Model registered. | مدل ثبت شد. |
+| Add a provider first. | ابتدا یک ارائه‌دهنده بیفزایید. |
+| The model name is required. | نام مدل الزامی است. |
+| Provider name is required. | نام ارائه‌دهنده الزامی است. |
+| Provider added. | ارائه‌دهنده افزوده شد. |
+| Provider and label are required. | ارائه‌دهنده و برچسب الزامی‌اند. |
+| Account added. | حساب افزوده شد. |
+| Account and secret are required. | حساب و رمز الزامی‌اند. |
+| Credential saved (encrypted; it will not be shown again). | اعتبارنامه ذخیره شد (رمزنگاری‌شده؛ دیگر نشان داده نمی‌شود). |
+| Could not load: {error} | بارگذاری ناموفق بود: {error} |
+| Both fields are required. | هر دو فیلد الزامی‌اند. |
+| Operator | کاربر |

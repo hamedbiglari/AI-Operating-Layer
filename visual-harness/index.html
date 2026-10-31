@@ -4727,10 +4727,10 @@ button.card { color: inherit; font: inherit; }
   </div>
 </section>
 
-<section class="screen" id="screen-ai-center" aria-labelledby="h-aicenter">
+<section class="screen" id="screen-ai-center" aria-labelledby="h-aicenter" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-aicenter">AI Center</h1>
-    <div class="callout page-intro" role="note"><p>Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to Cloud Core (<code>/api/v1/ai-center</code>). No sample data: until connected this screen shows nothing.</p></div>
+    <div class="callout page-intro" role="note"><p>Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to Cloud Core. No sample data: until connected this screen shows nothing.</p><p><code>/api/v1/ai-center</code></p></div>
   </div></div>
   <div class="card live-panel" id="aic-connect-card">
     <h2 class="card__title">Connection</h2>
@@ -4741,7 +4741,7 @@ button.card { color: inherit; font: inherit; }
       <button type="submit" class="btn btn--primary">Connect</button>
     </form>
   </div>
-  <div id="aic-body" hidden>
+  <div id="aic-body" hidden data-live-keep>
     <div class="aic-tabs" role="tablist" aria-label="AI Center sections">
       <button type="button" role="tab" aria-selected="true" data-aic-tab="resources">Providers &amp; accounts</button>
       <button type="button" role="tab" aria-selected="false" data-aic-tab="routing">Routing</button>
@@ -4927,8 +4927,8 @@ button.card { color: inherit; font: inherit; }
     </div>
     <div class="aic-pane" data-aic-pane="memory-ctrl" hidden>
       <div class="card"><h2 class="card__title">Shared memory — runtime view</h2>
-        <p class="aic-hint">Configure in Settings › Shared memory. PostgreSQL is always the canonical store.</p>
-        <dl class="kv" style="margin-block-end:var(--space-3)"><dt>Canonical store</dt><dd>PostgreSQL</dd><dt>Semantic backend</dt><dd id="aic-mem-backend-status">—</dd></dl>
+        <p class="aic-hint"><span>Configure in Settings › Shared memory.</span> <bdi class="identifier">PostgreSQL</bdi> <span>is always the canonical store.</span></p>
+        <dl class="kv" style="margin-block-end:var(--space-3)"><dt>Canonical store</dt><dd><bdi class="identifier">PostgreSQL</bdi></dd><dt>Semantic backend</dt><dd id="aic-mem-backend-status">—</dd></dl>
         <div id="aic-mem-profiles-list" class="aic-slot"></div>
       </div>
     </div>
@@ -11197,7 +11197,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var $ = function (id) { return document.getElementById(id); };
   function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; }
   function fmt(v) { return v === null || v === undefined || v === '' ? 'Unknown' : String(v); }
-  function status(msg) { $('aic-status').textContent = msg || ''; }
+  // Every visible string goes through AIOL_I18N.set or is an exact FA key the Persian layer translates (9E).
+  // A server's own message is shown as sent, in the {error} slot.
+  function status(tpl, args) { AIOL_I18N.set($('aic-status'), tpl || '', args); }
+  function failed(e) { status('{error}', { error: e.message }); }
+  function ui(text) { var s = el('span'); AIOL_I18N.set(s, text); return s; }
+  function val(v) { return v === null || v === undefined || v === '' ? ui('Unknown') : String(v); }
+  // Routing modes are labelled as in the Create form's own options.
+  var MODE = {}; (function () { var f = $('aic-policy-new'); if (!f) return;
+    Array.prototype.forEach.call(f.querySelectorAll('select[name="mode"] option'), function (o) { MODE[o.value] = o.textContent; }); })();
+  function modeBadge(m) { var b = el('span', 'badge badge--info'); if (MODE[m]) AIOL_I18N.set(b, MODE[m]); else b.appendChild(el('bdi', null, m)); return b; }
   function api(path, opt) {
     opt = opt || {}; var h = { Authorization: 'Bearer ' + L.token }; if (opt.json) h['Content-Type'] = 'application/json';
     return fetch(L.base + '/api/v1' + path, { method: opt.method || 'GET', headers: h, body: opt.json ? JSON.stringify(opt.json) : undefined })
@@ -11212,21 +11221,25 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return Promise.all([api('/ai-center/providers?limit=100'), api('/ai-center/accounts?limit=100'), api('/ai-center/models?limit=100')]).then(function (r) {
       providers = r[0].items || r[0]; var accounts = r[1].items || r[1]; renderModels(r[2].items || r[2]);
       var tb = $('aic-providers'); tb.textContent = '';
-      if (!providers.length) row(tb, ['No providers registered yet.', '', '', '']);
-      providers.forEach(function (p) { row(tb, [p.name, p.adapter_key ? p.adapter_key + (p.adapter_implemented ? '' : ' (no adapter)') : 'None', badge(p.verification_status), fmt(p.credential_method)]); });
+      if (!providers.length) row(tb, [ui('No providers registered yet.'), '', '', '']);
+      providers.forEach(function (p) {
+        var adapter = ui('None');
+        if (p.adapter_key) { adapter = el('span'); adapter.appendChild(el('bdi', null, p.adapter_key)); if (!p.adapter_implemented) { adapter.appendChild(document.createTextNode(' ')); adapter.appendChild(ui('(no adapter)')); } }
+        row(tb, [p.name, adapter, badge(p.verification_status), val(p.credential_method)]); });
       var ps = $('aic-provider-select'); ps.textContent = ''; providers.forEach(function (p) { var o = el('option', null, p.name); o.value = p.id; ps.appendChild(o); });
       var name = {}; providers.forEach(function (p) { name[p.id] = p.name; });
       var ta = $('aic-accounts'); ta.textContent = ''; var as = $('aic-account-select'); as.textContent = '';
-      if (!accounts.length) row(ta, ['No accounts yet.', '', '', '', '', '', '']);
+      if (!accounts.length) row(ta, [ui('No accounts yet.'), '', '', '', '', '', '']);
       accounts.forEach(function (a) {
         var act = el('span', 'aic-actions');
         var t = el('button', 'btn btn--quiet', 'Test connection'); t.type = 'button';
-        t.onclick = function () { status('Testing ' + a.label + '…'); api('/ai-center/accounts/' + a.id + '/test', { method: 'POST' }).then(function (res) { status(a.label + ': ' + (res.result || JSON.stringify(res)) + (res.http_status ? ' (HTTP ' + res.http_status + ')' : '') + (res.message ? ' — ' + res.message : '')); loadResources(); }).catch(function (e) { status(e.message); }); };
+        t.onclick = function () { status('Testing {label}…', { label: a.label }); api('/ai-center/accounts/' + a.id + '/test', { method: 'POST' }).then(function (res) { status('{label}: {result}', { label: a.label, result: (res.result || JSON.stringify(res)) + (res.http_status ? ' (HTTP ' + res.http_status + ')' : '') + (res.message ? ' — ' + res.message : '') }); loadResources(); }).catch(failed); };
         var tg = el('button', 'btn btn--quiet', a.enabled ? 'Disable' : 'Enable'); tg.type = 'button';
-        tg.onclick = function () { api('/ai-center/accounts/' + a.id, { method: 'PATCH', json: { enabled: !a.enabled } }).then(loadResources).catch(function (e) { status(e.message); }); };
+        tg.onclick = function () { api('/ai-center/accounts/' + a.id, { method: 'PATCH', json: { enabled: !a.enabled } }).then(loadResources).catch(failed); };
         act.appendChild(t); act.appendChild(tg);
-        row(ta, [a.label + (a.enabled ? '' : ' (disabled)'), name[a.provider_id] || '—', a.credential_set ? 'Set ••••' + (a.credential_last4 || '') : 'Not set',
-          badge(a.health_status, HEALTH[a.health_status]), String(a.failure_count), fmt(a.remaining_tokens), act]);
+        var label = el('span'); label.appendChild(el('bdi', null, a.label)); if (!a.enabled) { label.appendChild(document.createTextNode(' ')); label.appendChild(ui('(disabled)')); }
+        var cred = a.credential_set ? AIOL_I18N.set(el('span'), 'Set ••••{last4}', { last4: a.credential_last4 || '' }) : ui('Not set');
+        row(ta, [label, name[a.provider_id] || '—', cred, badge(a.health_status, HEALTH[a.health_status]), String(a.failure_count), val(a.remaining_tokens), act]);
         var o = el('option', null, (name[a.provider_id] || '') + ' — ' + a.label); o.value = a.id; as.appendChild(o);
       });
     });
@@ -11245,7 +11258,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     api('/ai-center/routing-policies', { method: 'POST', json: body })
       .then(function () { policyNew.reset(); return loadRouting(); })
       .then(function () { status('Policy created. Add more steps to set a fallback order.'); })
-      .catch(function (e) { status(e.message); });
+      .catch(failed);
   });
   function fillAccountPicker(accounts) {
     var sel = $('aic-policy-account'); if (!sel) return;
@@ -11257,7 +11270,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function moveStep(policyId, from, to) {
     return api('/ai-center/routing-policies/' + policyId + '/steps/' + from + '/move', { method: 'POST', json: { position: to } })
       .then(loadRouting).then(function () { status('Order saved \u2014 position 0 is tried first.'); })
-      .catch(function (e) { status(e.message); });
+      .catch(failed);
   }
   function loadRouting() {
     return Promise.all([api('/ai-center/routing-policies?limit=50'), api('/ai-center/accounts?limit=100')]).then(function (res) {
@@ -11268,7 +11281,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (!list.length) { box.appendChild(el('p', 'aic-note', 'No routing policies yet. Create one with the form above.')); return; }
       list.forEach(function (p) {
         var c = el('div', 'aic-policy'), h = el('div', 'aic-policy__head');
-        h.appendChild(el('h3', null, p.name)); h.appendChild(badge(p.mode, 'badge--info'));
+        h.appendChild(el('h3')).appendChild(el('bdi', null, p.name)); h.appendChild(modeBadge(p.mode));
         if (p.max_cost_per_job != null) h.appendChild(badge('\u2264 ' + p.max_cost_per_job + ' ' + (p.currency || ''), 'badge--neutral'));
         c.appendChild(h);
 
@@ -11279,33 +11292,33 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         var modeL = el('label', 'field'); modeL.appendChild(el('span', 'field__label', 'Mode'));
         var modeS = el('select'); modeS.name = 'mode';
         ['manual_single','manual_chain','stage_manual','auto_pool','priority_pool','hybrid'].forEach(function (m) {
-          var o = el('option', null, m); o.value = m; if (m === p.mode) o.selected = true; modeS.appendChild(o); });
+          var o = el('option', null, MODE[m] || m); o.value = m; if (m === p.mode) o.selected = true; modeS.appendChild(o); });
         modeL.appendChild(modeS); edit.appendChild(modeL);
         var save = el('button', 'btn', 'Save'); save.type = 'submit'; edit.appendChild(save);
         if (p.max_cost_per_job != null) {
           var clr = el('button', 'btn btn--quiet', 'Remove ceiling'); clr.type = 'button';
           clr.onclick = function () { api('/ai-center/routing-policies/' + p.id, { method: 'PATCH', json: { clear_max_cost: true } })
-            .then(loadRouting).then(function () { status('Cost ceiling removed.'); }).catch(function (e) { status(e.message); }); };
+            .then(loadRouting).then(function () { status('Cost ceiling removed.'); }).catch(failed); };
           edit.appendChild(clr);
         }
         var del = el('button', 'btn btn--quiet', 'Delete policy'); del.type = 'button';
         del.onclick = function () {
-          if (!window.confirm('Delete the policy "' + p.name + '"? A policy that has already run jobs is kept.')) return;
+          if (!window.confirm(AIOL_I18N.format('Delete the policy "{name}"? A policy that has already run jobs is kept.', { name: p.name }, AIOL_I18N.lang()))) return;
           api('/ai-center/routing-policies/' + p.id, { method: 'DELETE' }).then(loadRouting)
-            .then(function () { status('Policy deleted.'); }).catch(function (e) { status(e.message); }); };
+            .then(function () { status('Policy deleted.'); }).catch(failed); };
         edit.appendChild(del);
         edit.onsubmit = function (ev) { ev.preventDefault();
           api('/ai-center/routing-policies/' + p.id, { method: 'PATCH', json: { name: nameI.value.trim(), mode: modeS.value } })
-            .then(loadRouting).then(function () { status('Policy saved.'); }).catch(function (e) { status(e.message); }); };
+            .then(loadRouting).then(function () { status('Policy saved.'); }).catch(failed); };
         c.appendChild(edit);
 
         // the steps, in the order they are tried
         var ol = el('ol', 'aic-steps');
         (p.steps || []).forEach(function (s2, idx) {
-          var li = el('li'); var b = el('bdi');
+          var li = el('li'); var b = el('span');
           var acc = byId[s2.account_id] || {};
-          b.textContent = (s2.stage ? '[' + s2.stage + '] ' : '') + s2.model + ' on account ' + (acc.label || s2.account_id)
-            + (acc.health_status && acc.health_status !== 'unknown' ? ' (' + acc.health_status + ')' : '');
+          AIOL_I18N.set(b, '{model} on account {account}', { model: (s2.stage ? '[' + s2.stage + '] ' : '') + s2.model,
+            account: (acc.label || s2.account_id) + (acc.health_status && acc.health_status !== 'unknown' ? ' (' + acc.health_status + ')' : '') });
           li.appendChild(b);
           var acts = el('span', 'aic-step-actions');
           var up = el('button', 'btn btn--sm', 'Move up'); up.type = 'button'; up.disabled = idx === 0;
@@ -11317,7 +11330,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           var rm = el('button', 'btn btn--sm', 'Remove'); rm.type = 'button';
           rm.setAttribute('aria-label', 'Remove step ' + (idx + 1));
           rm.onclick = function () { api('/ai-center/routing-policies/' + p.id + '/steps/' + s2.position, { method: 'DELETE' })
-            .then(loadRouting).then(function () { status('Step removed.'); }).catch(function (e) { status(e.message); }); };
+            .then(loadRouting).then(function () { status('Step removed.'); }).catch(failed); };
           acts.appendChild(up); acts.appendChild(dn); acts.appendChild(rm); li.appendChild(acts); ol.appendChild(li);
         });
         c.appendChild(ol);
@@ -11337,7 +11350,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           var body = { account_id: aS.value, model: mI.value.trim() };
           if (sI.value.trim()) body.stage = sI.value.trim();
           api('/ai-center/routing-policies/' + p.id + '/steps', { method: 'POST', json: body })
-            .then(loadRouting).then(function () { status('Step added.'); }).catch(function (e) { status(e.message); }); };
+            .then(loadRouting).then(function () { status('Step added.'); }).catch(failed); };
         c.appendChild(addF);
 
         var ex = el('button', 'btn btn--quiet', 'Explain current choice'); ex.type = 'button'; var out = el('ol', 'aic-explain');
@@ -11345,7 +11358,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           (r.candidates || []).forEach(function (cnd) { var li = el('li'); var b = el('bdi');
             b.textContent = cnd.verdict.toUpperCase() + ' \u2014 ' + [cnd.provider, cnd.account_label || cnd.account, cnd.model].filter(Boolean).join(' / ') + (cnd.reason ? ': ' + cnd.reason : '');
             li.appendChild(b); out.appendChild(li); });
-          if (r.stop_reason) out.appendChild(el('li', null, 'No usable resource \u2014 stop reason: ' + r.stop_reason)); }).catch(function (e) { status(e.message); }); };
+          if (r.stop_reason) { var none = out.appendChild(el('li')); AIOL_I18N.set(none, 'No usable resource — stop reason: {reason}', { reason: r.stop_reason }); } }).catch(failed); };
         c.appendChild(ex); c.appendChild(out); box.appendChild(c);
       });
     });
@@ -11358,7 +11371,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       box.appendChild(kv([['Goal', j.goal], ['Status', j.status], ['Stop reason', j.stop_reason], ['Stage', j.stage], ['Completed', j.completed], ['Pending', j.pending], ['Failed', j.failed], ['Total', j.total]]));
       var act = el('div', 'aic-actions');
       ['pause', 'resume', 'cancel'].forEach(function (a) { var b = el('button', 'btn btn--quiet', a.charAt(0).toUpperCase() + a.slice(1)); b.type = 'button';
-        b.onclick = function () { api('/ai-center/jobs/' + encodeURIComponent(key) + '/control', { method: 'POST', json: { action: a } }).then(function () { openJob(key); }).catch(function (e) { status(e.message); }); }; act.appendChild(b); });
+        b.onclick = function () { api('/ai-center/jobs/' + encodeURIComponent(key) + '/control', { method: 'POST', json: { action: a } }).then(function () { openJob(key); }).catch(failed); }; act.appendChild(b); });
       var live = el('p', 'aic-live-progress'); live.setAttribute('role', 'status'); live.setAttribute('aria-live', 'polite'); box.appendChild(live);
       window.AIOL_JOB_STREAM && window.AIOL_JOB_STREAM(key, live, function () { openJob(key); });
       var exp = el('button', 'btn btn--quiet', 'Export this job\u2019s memory'); exp.type = 'button';
@@ -11367,7 +11380,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       box.appendChild(act);
       box.appendChild(el('h3', null, 'Latest handoff package'));
       box.appendChild(el('pre', 'aic-pre', r[1] ? JSON.stringify(r[1], null, 2) : 'No handoff yet — the job has not switched resources.'));
-    }).catch(function (e) { status(e.message); });
+    }).catch(failed);
   }
   function loadDiscovery() {
     var st = $('aic-disc-status').value;
@@ -11429,22 +11442,22 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       $('aic-ktp-prev').disabled = ktpOffset === 0; $('aic-ktp-next').disabled = end >= total;
     });
   }
-  $('aic-ktp-status').addEventListener('change', function () { ktpOffset = 0; loadKtp().catch(function (e) { status(e.message); }); });
-  $('aic-ktp-prev').addEventListener('click', function () { ktpOffset = Math.max(0, ktpOffset - 25); loadKtp().catch(function (e) { status(e.message); }); });
-  $('aic-ktp-next').addEventListener('click', function () { ktpOffset += 25; loadKtp().catch(function (e) { status(e.message); }); });
+  $('aic-ktp-status').addEventListener('change', function () { ktpOffset = 0; loadKtp().catch(failed); });
+  $('aic-ktp-prev').addEventListener('click', function () { ktpOffset = Math.max(0, ktpOffset - 25); loadKtp().catch(failed); });
+  $('aic-ktp-next').addEventListener('click', function () { ktpOffset += 25; loadKtp().catch(failed); });
   function loadAll() {
     status('Loading…');
     Promise.all([loadResources(), loadRouting(), loadDiscovery(), loadKtp(),
       api('/ai-center/memory/semantic-backend').then(function (w) { $('aic-walrus').textContent = 'Walrus: ' + w.status + ' — ' + w.detail; })])
-      .then(function () { status(''); }).catch(function (e) { status('Could not load: ' + e.message); });
+      .then(function () { status(''); }).catch(function (e) { status('Could not load: {error}', { error: e.message }); });
   }
   function connected(d) {
     L = { base: d.base, token: d.token };
-    $('aic-conn-note').textContent = 'Connected to ' + L.base + '.'; $('aic-connect').hidden = true; $('aic-body').hidden = false; loadAll();
+    AIOL_I18N.set($('aic-conn-note'), 'Connected to {base}.', { base: L.base }); $('aic-connect').hidden = true; $('aic-body').hidden = false; loadAll();
   }
   document.addEventListener('aiol:live', function (e) { if (e.detail) connected(e.detail); });
   $('aic-connect').addEventListener('submit', function (e) { e.preventDefault();
-    var b = $('aic-base').value.trim().replace(/\/+$/, ''), t = $('aic-token').value.trim(); if (!b || !t) { $('aic-conn-note').textContent = 'Both fields are required.'; return; }
+    var b = $('aic-base').value.trim().replace(/\/+$/, ''), t = $('aic-token').value.trim(); if (!b || !t) { AIOL_I18N.set($('aic-conn-note'), 'Both fields are required.'); return; }
     if (window.AIOL_LIVE_CONNECT) window.AIOL_LIVE_CONNECT(b, t); else connected({ base: b, token: t }); });
   document.querySelectorAll('[data-aic-tab]').forEach(function (t) { t.addEventListener('click', function () {
     document.querySelectorAll('[data-aic-tab]').forEach(function (x) { x.setAttribute('aria-selected', String(x === t)); });
@@ -11457,44 +11470,45 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     LIMIT_FIELDS.forEach(function (k) { var v = String(f.get(k) || '').trim(); if (!v) { body[k] = null; return; }
       var n = Number(v); if (!Number.isInteger(n) || n < 1) bad = k.replace(/_/g, ' '); body[k] = n; });
     body.capability_source = String(f.get('capability_source') || '') || null;
-    return bad ? { error: 'Limits must be whole numbers of at least 1 (' + bad + ').' } : { body: body };
+    return bad ? { error: 'Limits must be whole numbers of at least 1 ({field}).', args: { field: bad } } : { body: body };
   }
   function renderModels(models) {
     var name = {}; providers.forEach(function (p) { name[p.id] = p.name; });
     var mp = $('aic-model-provider'); mp.textContent = ''; providers.forEach(function (p) { var o = el('option', null, p.name); o.value = p.id; mp.appendChild(o); });
     var tb = $('aic-models'); tb.textContent = '';
-    if (!models.length) { row(tb, ['No models registered yet. Routing still works; limits are then unknown.', '', '', '', '', '', '', '']); return; }
+    if (!models.length) { row(tb, [ui('No models registered yet. Routing still works; limits are then unknown.'), '', '', '', '', '', '', '']); return; }
     models.forEach(function (m) {
       var edit = el('button', 'btn btn--quiet', 'Edit limits'); edit.type = 'button';
       edit.onclick = function () { var f = $('aic-edit-model'); f.hidden = false; f.elements.model_id.value = m.id;
-        $('aic-edit-model-title').textContent = 'Edit limits — ' + m.name;
+        AIOL_I18N.set($('aic-edit-model-title'), 'Edit limits — {name}', { name: m.name });
         LIMIT_FIELDS.forEach(function (k) { f.elements[k].value = m[k] == null ? '' : String(m[k]); });
         f.elements.capability_source.value = m.capability_source || ''; f.elements.context_window.focus(); };
-      row(tb, [m.name, name[m.provider_id] || '—', fmt(m.context_window), fmt(m.max_input_tokens), fmt(m.max_output_tokens),
-        fmt(m.rpm_limit) + ' / ' + fmt(m.tpm_limit), m.capability_source ? SOURCE_LABEL[m.capability_source] || m.capability_source : 'Unknown', edit]);
+      var rate = el('span'); [m.rpm_limit, m.tpm_limit].forEach(function (x, i) { if (i) rate.appendChild(document.createTextNode(' / ')); var c = val(x); rate.appendChild(c instanceof Node ? c : el('bdi', null, c)); });
+      var source = !m.capability_source ? ui('Unknown') : SOURCE_LABEL[m.capability_source] ? ui(SOURCE_LABEL[m.capability_source]) : m.capability_source;
+      row(tb, [m.name, name[m.provider_id] || '—', val(m.context_window), val(m.max_input_tokens), val(m.max_output_tokens), rate, source, edit]);
     });
   }
   $('aic-add-model').addEventListener('submit', function (e) { e.preventDefault(); var f = new FormData(e.target);
     var pid = f.get('provider_id'), nm = String(f.get('name') || '').trim();
     if (!pid) { status('Add a provider first.'); return; } if (!nm) { status('The model name is required.'); return; }
-    var lb = limitBody(e.target); if (lb.error) { status(lb.error); return; }
+    var lb = limitBody(e.target); if (lb.error) { status(lb.error, lb.args); return; }
     var body = { provider_id: pid, name: nm }; Object.keys(lb.body).forEach(function (k) { if (lb.body[k] !== null) body[k] = lb.body[k]; });
-    status('Registering ' + nm + '…');
-    api('/ai-center/models', { method: 'POST', json: body }).then(function () { e.target.reset(); status('Model registered.'); loadResources(); }).catch(function (x) { status(x.message); }); });
+    status('Registering {name}…', { name: nm });
+    api('/ai-center/models', { method: 'POST', json: body }).then(function () { e.target.reset(); status('Model registered.'); loadResources(); }).catch(failed); });
   $('aic-edit-model').addEventListener('submit', function (e) { e.preventDefault(); var id = e.target.elements.model_id.value;
-    var lb = limitBody(e.target); if (lb.error) { status(lb.error); return; }
+    var lb = limitBody(e.target); if (lb.error) { status(lb.error, lb.args); return; }
     status('Saving limits…');
-    api('/ai-center/models/' + id, { method: 'PATCH', json: lb.body }).then(function () { e.target.hidden = true; status('Limits saved.'); loadResources(); }).catch(function (x) { status(x.message); }); });
+    api('/ai-center/models/' + id, { method: 'PATCH', json: lb.body }).then(function () { e.target.hidden = true; status('Limits saved.'); loadResources(); }).catch(failed); });
   $('aic-edit-model-cancel').addEventListener('click', function () { $('aic-edit-model').hidden = true; });
   function formJson(f) { var o = {}; new FormData(f).forEach(function (v, k) { if (String(v).trim()) o[k] = String(v).trim(); }); return o; }
   $('aic-add-provider').addEventListener('submit', function (e) { e.preventDefault(); var d = formJson(e.target); if (!d.name) { status('Provider name is required.'); return; }
-    api('/ai-center/providers', { method: 'POST', json: d }).then(function () { e.target.reset(); status('Provider added.'); loadResources(); }).catch(function (x) { status(x.message); }); });
+    api('/ai-center/providers', { method: 'POST', json: d }).then(function () { e.target.reset(); status('Provider added.'); loadResources(); }).catch(failed); });
   $('aic-add-account').addEventListener('submit', function (e) { e.preventDefault(); var d = formJson(e.target); if (!d.label || !d.provider_id) { status('Provider and label are required.'); return; }
-    api('/ai-center/accounts', { method: 'POST', json: d }).then(function () { e.target.reset(); status('Account added.'); loadResources(); }).catch(function (x) { status(x.message); }); });
+    api('/ai-center/accounts', { method: 'POST', json: d }).then(function () { e.target.reset(); status('Account added.'); loadResources(); }).catch(failed); });
   $('aic-set-credential').addEventListener('submit', function (e) { e.preventDefault(); var d = formJson(e.target); var id = d.account_id; if (!id || !d.secret) { status('Account and secret are required.'); return; }
-    api('/ai-center/accounts/' + id + '/credential', { method: 'PUT', json: { secret: d.secret } }).then(function () { e.target.reset(); status('Credential saved (encrypted; it will not be shown again).'); loadResources(); }).catch(function (x) { status(x.message); }); });
+    api('/ai-center/accounts/' + id + '/credential', { method: 'PUT', json: { secret: d.secret } }).then(function () { e.target.reset(); status('Credential saved (encrypted; it will not be shown again).'); loadResources(); }).catch(failed); });
   $('aic-job-lookup').addEventListener('submit', function (e) { e.preventDefault(); var k = formJson(e.target).job_key; if (k) openJob(k); });
-  $('aic-import-seed').addEventListener('click', function () { api('/ai-center/discovery/import-seed', { method: 'POST' }).then(function (r) { status('Imported: ' + JSON.stringify(r)); discOffset = 0; loadDiscovery(); }).catch(function (x) { status(x.message); }); });
+  $('aic-import-seed').addEventListener('click', function () { api('/ai-center/discovery/import-seed', { method: 'POST' }).then(function (r) { status('Imported: ' + JSON.stringify(r)); discOffset = 0; loadDiscovery(); }).catch(failed); });
   $('aic-disc-status').addEventListener('change', function () { discOffset = 0; loadDiscovery(); });
   $('aic-disc-prev').addEventListener('click', function () { discOffset = Math.max(0, discOffset - 25); loadDiscovery(); });
   $('aic-disc-next').addEventListener('click', function () { discOffset += 25; loadDiscovery(); });
@@ -14057,7 +14071,218 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Connected to {base}.": "به {base} وصل است.",
     "Could not load the catalog ({error}).": "بارگذاری فهرست ناموفق بود ({error}).",
     "Imported {inserted} new, {present} already present.": "{inserted} مورد تازه وارد شد، {present} مورد از پیش بود.",
-    "Could not import the list ({error}).": "وارد کردن فهرست ناموفق بود ({error})."
+    "Could not import the list ({error}).": "وارد کردن فهرست ناموفق بود ({error}).",
+    // AI Center (Step 9E)
+    "Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to Cloud Core. No sample data: until connected this screen shows nothing.": "ارائه‌دهنده‌ها، حساب‌ها، مدل‌ها، مسیریابی، کارهای طولانی با نقطه‌های بازبینی و تحویل، حافظهٔ مشترک و فهرست کشف — خواندن و نوشتن در Cloud Core. بدون دادهٔ نمونه: تا وصل نشود، این صفحه چیزی نشان نمی‌دهد.",
+    "Not connected.": "وصل نیست.",
+    "Providers & accounts": "ارائه‌دهنده‌ها و حساب‌ها",
+    "Routing": "مسیریابی",
+    "Jobs & memory": "کارها و حافظه",
+    "Agent network": "شبکهٔ عامل‌ها",
+    "Shared memory": "حافظهٔ مشترک",
+    "Discovery": "کشف",
+    "AI Center sections": "بخش‌های مرکز هوش مصنوعی",
+    "Providers": "ارائه‌دهنده‌ها",
+    "Registered AI providers": "ارائه‌دهنده‌های ثبت‌شدهٔ هوش مصنوعی",
+    "Adapter": "آداپتور",
+    "Verification": "راستی‌آزمایی",
+    "Credential method": "روش اعتبارنامه",
+    "Add provider": "افزودن ارائه‌دهنده",
+    "Official URL": "نشانی رسمی",
+    "API base URL": "نشانی پایهٔ API",
+    "None (registry only)": "هیچ (فقط در فهرست)",
+    "anthropic": "آنتروپیک",
+    "openai": "اوپن‌ای‌آی",
+    "Accounts": "حساب‌ها",
+    "Every account is tracked separately: credential, health, failures, limits. Unknown quota or balance is shown as \"Unknown\", never 0. Credentials are write-only.": "هر حساب جداگانه پیگیری می‌شود: اعتبارنامه، سلامت، خطاها، محدودیت‌ها. سهمیه یا موجودی ناشناخته «نامعلوم» نشان داده می‌شود، هرگز ۰. اعتبارنامه‌ها فقط نوشتنی‌اند.",
+    "Provider accounts": "حساب‌های ارائه‌دهنده",
+    "Account": "حساب",
+    "Credential": "اعتبارنامه",
+    "Health": "سلامت",
+    "Failures": "خطاها",
+    "Remaining tokens": "توکن‌های باقی‌مانده",
+    "Add account": "افزودن حساب",
+    "Label": "برچسب",
+    "Plan": "طرح",
+    "Set or rotate a credential": "تنظیم یا چرخش اعتبارنامه",
+    "Secret (never shown again)": "رمز (دیگر هرگز نشان داده نمی‌شود)",
+    "Save credential": "ذخیرهٔ اعتبارنامه",
+    "e.g. Account A": "مثلاً حساب A",
+    "Models and their limits": "مدل‌ها و محدودیت‌هایشان",
+    "Limits are what the provider documents for your account. Providers change them, so enter them here rather than trusting a built-in table. Empty means \"Unknown\" and blocks nothing. A job item larger than a known input limit, or a job reserving more output than a known output limit, fails with CONTEXT_OVERFLOW or OUTPUT_EXCEEDS_MODEL_LIMIT before any call: it is never truncated. Without a max input, the room is the context window minus the output reserve. Requests and tokens per minute are recorded, not yet enforced.": "محدودیت‌ها همان‌هایی‌اند که ارائه‌دهنده برای حساب شما مستند کرده است. ارائه‌دهنده‌ها آن‌ها را تغییر می‌دهند، پس به‌جای اعتماد به یک جدول درونی، آن‌ها را اینجا وارد کنید. خالی یعنی «نامعلوم» و جلوی چیزی را نمی‌گیرد. یک مورد کار بزرگ‌تر از محدودیت ورودی شناخته‌شده، یا کاری که بیش از محدودیت خروجی شناخته‌شده خروجی رزرو کند، پیش از هر فراخوانی با CONTEXT_OVERFLOW یا OUTPUT_EXCEEDS_MODEL_LIMIT ناموفق می‌شود: هرگز کوتاه نمی‌شود. بدون حداکثر ورودی، فضا برابر پنجرهٔ زمینه منهای رزرو خروجی است. درخواست‌ها و توکن‌ها در دقیقه ثبت می‌شوند، اما هنوز اعمال نمی‌شوند.",
+    "Registered models and their limits": "مدل‌های ثبت‌شده و محدودیت‌هایشان",
+    "Context window": "پنجرهٔ زمینه",
+    "Max input": "حداکثر ورودی",
+    "Max output": "حداکثر خروجی",
+    "RPM / TPM": "درخواست / توکن در دقیقه",
+    "Register a model": "ثبت یک مدل",
+    "Model name (as the provider spells it)": "نام مدل (همان‌طور که ارائه‌دهنده می‌نویسد)",
+    "Context window (tokens)": "پنجرهٔ زمینه (توکن)",
+    "Max input tokens": "حداکثر توکن‌های ورودی",
+    "Max output tokens": "حداکثر توکن‌های خروجی",
+    "Requests per minute": "درخواست در دقیقه",
+    "Tokens per minute": "توکن در دقیقه",
+    "Where the figures come from": "این ارقام از کجا آمده‌اند",
+    "Provider documentation": "مستندات ارائه‌دهنده",
+    "Provider API": "API ارائه‌دهنده",
+    "Entered by an operator": "واردشده توسط یک کاربر",
+    "Conservative estimate": "برآورد محتاطانه",
+    "Register model": "ثبت مدل",
+    "Edit limits": "ویرایش محدودیت‌ها",
+    "Save limits": "ذخیرهٔ محدودیت‌ها",
+    "claude-sonnet-4-6": "مثلاً claude-sonnet-4-6",
+    "Routing policies": "سیاست‌های مسیریابی",
+    "Modes: manual single, manual ordered chain, stage-based manual, automatic pool, automatic priority pool, hybrid. \"Explain\" shows which resource would be chosen now and why every other one is skipped.": "حالت‌ها: دستی تکی، زنجیرهٔ دستی مرتب، دستی بر پایهٔ مرحله، استخر خودکار، استخر اولویت‌دار خودکار، ترکیبی. «توضیح» نشان می‌دهد اکنون کدام منبع انتخاب می‌شود و چرا هر منبع دیگر کنار گذاشته می‌شود.",
+    "Create a routing policy": "ساخت یک سیاست مسیریابی",
+    "Mode": "حالت",
+    "Manual — one model": "دستی — یک مدل",
+    "Manual chain — try in order": "زنجیرهٔ دستی — به ترتیب امتحان کن",
+    "Stage-based — a model per stage": "بر پایهٔ مرحله — یک مدل برای هر مرحله",
+    "Automatic pool": "استخر خودکار",
+    "Priority pool — try in order, skipping unhealthy": "استخر اولویت‌دار — به ترتیب امتحان کن و ناسالم‌ها را رد کن",
+    "Hybrid": "ترکیبی",
+    "First step: account": "گام نخست: حساب",
+    "First step: model": "گام نخست: مدل",
+    "Stage (stage-based only)": "مرحله (فقط بر پایهٔ مرحله)",
+    "Cost ceiling per job": "سقف هزینهٔ هر کار",
+    "Create policy": "ساخت سیاست",
+    "Job status, checkpoint and handoff": "وضعیت کار، نقطهٔ بازبینی و تحویل",
+    "Open job": "باز کردن کار",
+    "Knowledge transfer packages": "بسته‌های انتقال دانش",
+    "What workers handed back as structured findings, and what the validator and reconciler did with each claim. Nothing a worker returns becomes approved knowledge: accepted claims and evidence are drafts for review. A quote that cannot be found in the stored source text is rejected as a citation mismatch. Rejected items stay listed here with their reason.": "آنچه کارگزاران به‌صورت یافته‌های ساختاریافته برگرداندند، و آنچه اعتبارسنج و تطبیق‌دهنده با هر ادعا کردند. هیچ‌چیزی که یک کارگزار برمی‌گرداند دانش تأییدشده نمی‌شود: ادعاها و شواهد پذیرفته‌شده پیش‌نویس‌هایی برای بررسی‌اند. نقل‌قولی که در متن ذخیره‌شدهٔ منبع پیدا نشود، به‌عنوان ناهمخوانی استناد رد می‌شود. موارد ردشده با دلیلشان اینجا فهرست می‌مانند.",
+    "Reconciled": "تطبیق‌یافته",
+    "Partly reconciled": "تا حدی تطبیق‌یافته",
+    "Nothing accepted": "چیزی پذیرفته نشد",
+    "Invalid": "نامعتبر",
+    "Received": "دریافت‌شده",
+    "From": "از",
+    "Claims accepted": "ادعاهای پذیرفته‌شده",
+    "Outcomes": "نتیجه‌ها",
+    "Semantic memory backend": "بک‌اند حافظهٔ معنایی",
+    "Agent orchestration console": "کنسول هماهنگی عامل‌ها",
+    "Every action below calls Cloud Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it.": "هر کنش زیر Cloud Core را فرا می‌خواند. اجرای یک کار از مسیر مرجع هوش مصنوعی می‌گذرد (یک کار هوش مصنوعی که فراخوانی‌هایش به‌صورت AIExecution ثبت می‌شوند) و فقط از حساب‌هایی استفاده می‌کند که عامل اعلام کرده است؛ تحویل با یک نقطهٔ بازبینی حافظهٔ مشترک ذخیره می‌شود و فقط عامل مخاطب می‌تواند آن را بپذیرد.",
+    "1. Register an agent": "۱. ثبت یک عامل",
+    "research": "پژوهش",
+    "evidence": "شاهد",
+    "knowledge": "دانش",
+    "content": "محتوا",
+    "reviewer": "بازبین",
+    "planner": "برنامه‌ریز",
+    "summarizer": "خلاصه‌ساز",
+    "translator": "مترجم",
+    "commerce": "تجارت",
+    "custom": "سفارشی",
+    "Capabilities (comma-separated)": "توانایی‌ها (جداشده با ویرگول)",
+    "Allowed AI accounts": "حساب‌های مجاز هوش مصنوعی",
+    "Register agent": "ثبت عامل",
+    "2. Grant memory access": "۲. اعطای دسترسی به حافظه",
+    "Agent": "عامل",
+    "Memory profile": "نمایهٔ حافظه",
+    "Access": "دسترسی",
+    "read": "خواندن",
+    "write": "نوشتن",
+    "admin": "مدیر",
+    "Grant": "اعطا",
+    "3. Start a session": "۳. آغاز یک نشست",
+    "Session key": "کلید نشست",
+    "Goal": "هدف",
+    "Start session": "آغاز نشست",
+    "4. Add a task": "۴. افزودن یک کار",
+    "Session ID": "شناسهٔ نشست",
+    "Task type": "نوع کار",
+    "Task key": "کلید کار",
+    "Add task": "افزودن کار",
+    "5. Run a task with an agent": "۵. اجرای یک کار با یک عامل",
+    "Task ID": "شناسهٔ کار",
+    "Routing policy": "سیاست مسیریابی",
+    "Instruction": "دستور",
+    "Continue from handoff ID (optional)": "ادامه از شناسهٔ تحویل (اختیاری)",
+    "Run": "اجرا",
+    "6. Hand off to another agent": "۶. تحویل به عاملی دیگر",
+    "Completed task ID": "شناسهٔ کار انجام‌شده",
+    "From agent": "از عامل",
+    "To agent": "به عامل",
+    "Create handoff": "ساخت تحویل",
+    "7. Accept a handoff": "۷. پذیرش یک تحویل",
+    "Handoff ID": "شناسهٔ تحویل",
+    "Receiving agent": "عامل دریافت‌کننده",
+    "Accept": "پذیرش",
+    "extract": "مثلاً extract",
+    "research, summarize": "مثلاً research, summarize",
+    "Internal and external Agents that perform coordinated tasks. Agents use AI resources but are a separate concept from AI providers.": "عامل‌های درونی و بیرونی که کارهای هماهنگ انجام می‌دهند. عامل‌ها از منابع هوش مصنوعی استفاده می‌کنند، اما مفهومی جدا از ارائه‌دهنده‌های هوش مصنوعی‌اند.",
+    "Session inspector": "بازرس نشست",
+    "Tasks, handoffs and agent-to-agent messages of one orchestration session — read from Cloud Core.": "کارها، تحویل‌ها و پیام‌های عامل به عامل یک نشست هماهنگی — خوانده‌شده از Cloud Core.",
+    "Inspect": "بررسی",
+    "Shared memory — runtime view": "حافظهٔ مشترک — نمای زمان اجرا",
+    "Configure in Settings › Shared memory.": "در تنظیمات › حافظهٔ مشترک پیکربندی کنید.",
+    "is always the canonical store.": "همیشه مخزن مرجع است.",
+    "Canonical store": "مخزن مرجع",
+    "Semantic backend": "بک‌اند معنایی",
+    "AI Resource Discovery Registry": "فهرست کشف منابع هوش مصنوعی",
+    "A discovered name is not an integration. Entries start as \"discovered\" with proposed types labelled as inference; API, pricing and quota stay unknown until verified from an official source.": "یک نام کشف‌شده یک یکپارچه‌سازی نیست. مدخل‌ها با وضعیت «کشف‌شده» و نوع‌های پیشنهادی برچسب‌خورده به‌عنوان استنباط آغاز می‌شوند؛ API، قیمت و سهمیه تا راستی‌آزمایی از یک منبع رسمی نامعلوم می‌مانند.",
+    "Import the initial discovery list": "وارد کردن فهرست اولیهٔ کشف",
+    "discovered": "کشف‌شده",
+    "identified": "شناسایی‌شده",
+    "official_source_verified": "منبع رسمی راستی‌آزمایی‌شده",
+    "approved": "تأییدشده",
+    "active": "فعال",
+    "application_only": "فقط برنامه",
+    "no_verified_api": "بدون API راستی‌آزمایی‌شده",
+    "not_verified": "راستی‌آزمایی‌نشده",
+    "disabled": "غیرفعال",
+    "AI resource discovery registry": "فهرست کشف منابع هوش مصنوعی",
+    "Proposed types": "نوع‌های پیشنهادی",
+    "Last verified": "آخرین راستی‌آزمایی",
+    "API URL": "نشانی API",
+    "No providers registered yet.": "هنوز هیچ ارائه‌دهنده‌ای ثبت نشده است.",
+    "No accounts yet.": "هنوز هیچ حسابی وجود ندارد.",
+    "No models registered yet. Routing still works; limits are then unknown.": "هنوز هیچ مدلی ثبت نشده است. مسیریابی همچنان کار می‌کند؛ محدودیت‌ها در این حالت نامعلوم‌اند.",
+    "(no adapter)": "(بدون آداپتور)",
+    "(disabled)": "(غیرفعال)",
+    "Not set": "تنظیم نشده",
+    "Set ••••{last4}": "تنظیم‌شده ••••{last4}",
+    "Test connection": "آزمایش اتصال",
+    "Enable": "فعال‌سازی",
+    "Disable": "غیرفعال‌سازی",
+    "Testing {label}…": "در حال آزمایش {label}…",
+    "No routing policies yet. Create one with the form above.": "هنوز هیچ سیاست مسیریابی‌ای وجود ندارد. با فرم بالا یکی بسازید.",
+    "Save": "ذخیره",
+    "Remove ceiling": "حذف سقف",
+    "Delete policy": "حذف سیاست",
+    "Delete the policy \"{name}\"? A policy that has already run jobs is kept.": "سیاست «{name}» حذف شود؟ سیاستی که پیش‌تر کار اجرا کرده است نگه داشته می‌شود.",
+    "{model} on account {account}": "{model} روی حساب {account}",
+    "Move up": "انتقال به بالا",
+    "Move down": "انتقال به پایین",
+    "Remove": "حذف",
+    "Add step": "افزودن گام",
+    "Explain current choice": "توضیح انتخاب کنونی",
+    "No usable resource — stop reason: {reason}": "هیچ منبع قابل‌استفاده‌ای نیست — دلیل توقف: {reason}",
+    "Policy created. Add more steps to set a fallback order.": "سیاست ساخته شد. برای تعیین ترتیب جایگزین، گام‌های بیشتری بیفزایید.",
+    "Policy saved.": "سیاست ذخیره شد.",
+    "Policy deleted.": "سیاست حذف شد.",
+    "Cost ceiling removed.": "سقف هزینه حذف شد.",
+    "Step added.": "گام افزوده شد.",
+    "Step removed.": "گام حذف شد.",
+    "Order saved — position 0 is tried first.": "ترتیب ذخیره شد — جایگاه ۰ اول امتحان می‌شود.",
+    "Add a provider account first, on the Providers & accounts tab.": "ابتدا در زبانهٔ ارائه‌دهنده‌ها و حساب‌ها یک حساب ارائه‌دهنده بیفزایید.",
+    "The first step needs a model.": "گام نخست به یک مدل نیاز دارد.",
+    "Edit limits — {name}": "ویرایش محدودیت‌ها — {name}",
+    "Limits must be whole numbers of at least 1 ({field}).": "محدودیت‌ها باید عدد صحیح و دست‌کم ۱ باشند ({field}).",
+    "Registering {name}…": "در حال ثبت {name}…",
+    "Saving limits…": "در حال ذخیرهٔ محدودیت‌ها…",
+    "Limits saved.": "محدودیت‌ها ذخیره شد.",
+    "Model registered.": "مدل ثبت شد.",
+    "Add a provider first.": "ابتدا یک ارائه‌دهنده بیفزایید.",
+    "The model name is required.": "نام مدل الزامی است.",
+    "Provider name is required.": "نام ارائه‌دهنده الزامی است.",
+    "Provider added.": "ارائه‌دهنده افزوده شد.",
+    "Provider and label are required.": "ارائه‌دهنده و برچسب الزامی‌اند.",
+    "Account added.": "حساب افزوده شد.",
+    "Account and secret are required.": "حساب و رمز الزامی‌اند.",
+    "Credential saved (encrypted; it will not be shown again).": "اعتبارنامه ذخیره شد (رمزنگاری‌شده؛ دیگر نشان داده نمی‌شود).",
+    "Could not load: {error}": "بارگذاری ناموفق بود: {error}",
+    "Both fields are required.": "هر دو فیلد الزامی‌اند.",
+    "Operator": "کاربر"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [
