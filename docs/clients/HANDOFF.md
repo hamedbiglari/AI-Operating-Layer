@@ -10,6 +10,11 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
 - Tauri shell (`clients/src-tauri`): 5/5 Rust tests; type-checks for Windows and Android.
 - Commits: 7c73827 (backend + CI), 1e1bca8 (clients), f8372ea (docs), 01b4467 (sorting + test fix).
 
+## CI results so far
+- Run 41209523146: shared UI, e2e, Rust tests passed; **Windows package built** (artifact `aiol-Windows`,
+  unsigned); Android failed in setup-android; macOS/iOS cancelled (macos-14 label). Both fixed in the
+  workflow — check the next run.
+
 ## In progress
 - CI "Client suite CI" run 41209523146 on 01b4467:
   https://github.com/hamedbiglari/AI-Operating-Layer/actions/runs/41209523146

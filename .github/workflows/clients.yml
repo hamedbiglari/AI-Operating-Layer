@@ -97,7 +97,7 @@ jobs:
             os: windows-2022
             args: ''
           - name: macOS universal
-            os: macos-14
+            os: macos-latest
             args: '--target universal-apple-darwin'
     runs-on: ${{ matrix.os }}
     steps:
@@ -154,10 +154,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      # GitHub's Ubuntu images ship the Android SDK at $ANDROID_HOME; android-actions/setup-android@v3 fails
+      # on the Node 24 runtime, so the preinstalled sdkmanager is used directly.
       - name: NDK and Rust targets
         run: |
-          sdkmanager "ndk;27.0.12077973"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973"
           rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
       - name: Build
         env:
@@ -176,7 +178,7 @@ jobs:
   ios:
     name: Build — iOS simulator (no signing)
     needs: [ shared, shell-tests ]
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6

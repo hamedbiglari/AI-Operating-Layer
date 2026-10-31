@@ -68,7 +68,7 @@ responsive platform adaptation (CSS drawer < 768 px, safe areas, touch targets) 
 
 | Platform | Status | Evidence | Missing for the next status |
 |----------|--------|----------|-----------------------------|
-| Windows | **SOURCE IMPLEMENTED** | Rust shell compiles and tests on the Linux host; Windows code path: see §17 (`cargo check --target x86_64-pc-windows-msvc`) | run `clients.yml` "Package — Windows x64" (NSIS/MSI); Authenticode certificate |
+| Windows | **PACKAGE GENERATED** (unsigned) — CI run 41209523146, job "Package — Windows x64" succeeded, artifact `aiol-Windows` (2.8 MB, NSIS + MSI) | Rust shell compiles and tests on the Linux host; Windows code path: see §17 (`cargo check --target x86_64-pc-windows-msvc`) | run `clients.yml` "Package — Windows x64" (NSIS/MSI); Authenticode certificate |
 | macOS | **SOURCE IMPLEMENTED** | as above; `cargo check --target aarch64-apple-darwin` (§17) | run "Package — macOS universal"; Developer ID + notarization |
 | Android | **SOURCE IMPLEMENTED** (Kotlin plugin uncompiled) | `cargo check --target aarch64-linux-android` (§17); `VaultPlugin.kt` not compiled — SDK host blocked | `scripts/mobile-setup.sh android` + `tauri android build` with SDK/NDK; upload keystore |
 | iOS / iPadOS | **SOURCE IMPLEMENTED** | `cargo check --target aarch64-apple-ios` (§17) | macOS + Xcode: `scripts/mobile-setup.sh ios`, `tauri ios build`; Apple team |
@@ -246,3 +246,14 @@ reversible (migration 0049 down-migrates cleanly).
 Baseline before any change: 1741 passed, 2 failed, 3 skipped; both failures came from this work in
 progress and were fixed. `test_auth_session.py` selects "the last `auth_sessions` row", so the suite must
 run on a fresh database (as CI does), not one that also holds rows from a live end-to-end run.
+
+### CI run 41209523146 (commit 01b4467, GitHub-hosted runners)
+
+| Job | Result |
+|-----|--------|
+| Shared UI — unit tests, design-system parity | success |
+| Shared UI against a live Cloud Core (Chromium) | success |
+| Native shell — Rust tests (Linux) | success |
+| Package — Windows x64 (`windows-2022`) | **success**, artifact `aiol-Windows` (unsigned, not installed or run on a device) |
+| Package — Android | failed in `android-actions/setup-android@v3` (Node 20 action on Node 24) — workflow fixed to use the runner's preinstalled SDK |
+| Package — macOS, Build — iOS simulator | cancelled within 1 s, no logs: the `macos-14` label — workflow switched to `macos-latest` |
