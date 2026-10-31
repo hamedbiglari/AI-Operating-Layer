@@ -918,3 +918,20 @@ def test_when_every_provider_fails_the_failure_is_reported_not_disguised(client,
     assert [r.provider for r in rows] == ["anthropic", "openai"]
     assert all(r.status == AIExecutionStatus.FAILED.value for r in rows)
     assert all(PROMPT not in (r.error_message or "") for r in rows)
+
+
+def test_list_carries_counts_by_status(db_session, client, register_org, org, run):
+    """Step 9A (Rule 17): the list page carries executions per status, so the
+    screen's header needs no call per status. The counts ignore the status
+    filter, list every status (0 if none) and stay inside the tenant."""
+    s = Script(db_session, [(503, {}, {}), (503, {}, {}), (200, ok_body(), {})])
+    invoke_with_policy(db_session, ctx_for(run), [ModelTarget("anthropic", MODEL)], req(),
+                       attempts_per_target=3, adapters={"anthropic": adapter_for(s)}, pricing=PRICING)
+    expected = {st.value: 0 for st in AIExecutionStatus} | {"failed": 2, "succeeded": 1}
+
+    body = client.get("/api/v1/ai-executions", headers=org["headers"]).json()
+    assert (body["total"], body["counts_by_status"]) == (3, expected)
+    filtered = client.get("/api/v1/ai-executions?status=failed", headers=org["headers"]).json()
+    assert (filtered["total"], filtered["counts_by_status"]) == (2, expected)
+    other = client.get("/api/v1/ai-executions", headers=register_org()["headers"]).json()
+    assert other["counts_by_status"] == {st.value: 0 for st in AIExecutionStatus}
