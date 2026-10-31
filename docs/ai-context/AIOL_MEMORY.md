@@ -121,15 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 41f187d
+- sha (last non-docs commit): 4441fd5
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 41f187d (8B-3). 1b603f3 (8B-2) was green (user
-  checked GitHub Actions).
-- last code commit: "feat(knowledge): link list to detail and update
-  build.js (8B-3)" @ 41f187d
-- last feature commit: "feat(knowledge): link list to detail and update
-  build.js (8B-3)" @ 41f187d
+- last_ci: in_progress @ 4441fd5 (9A). 21be62a (9A backend) was pushed
+  with it and is not built on its own. 41f187d (8B-3) was green (run 79).
+- last code commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
+- last feature commit: "feat(ai): live ai-executions screen (9A)" @ 4441fd5
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -293,6 +291,21 @@ file from scratch (do not diff). Output only the file content.
     it would overwrite the hand-edited index.html). knowledge-list.js
     108 checks (+2), knowledge-quickfix.js opens the workspace by its
     button. Step 8 is 100% complete.
+- Step 9 (AI), partial:
+  - 9A backend @ 21be62a — GET /ai-executions returns AIExecutionPage
+    with counts_by_status (every AIExecutionStatus, 0 if none; one
+    grouped query; ignores the status filter, keeps provider/model/
+    parent filters). 1 test in test_phase17_ai_execution.py.
+  - 9A frontend @ 4441fd5 — #screen-ai-executions (own module, own
+    #aix-connect form, not in SCREENS): 1 request per load instead of 7;
+    every runtime string through AIOL_I18N.set (status labels, cost,
+    tokens, duration, page line, detail labels, state messages); status
+    options show labels (still English in Persian: KEEP_LATIN skips
+    select); intro rewritten as one sentence (the Persian layer
+    translates per text node). 40 FA entries, 43 KNOWN words. Debt rows
+    V5-ai-prompts, V5-ai-center-deletes. e2e/ai-executions.js (19);
+    --require adds screen-ai-executions. An error hides #aix-body; the
+    way back is Connect.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -301,15 +314,19 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail
-  and 14 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions
+  and 15 browser suites.
 
 ## 5. In progress — next step
 
-- Step 8 (Knowledge tools) is DONE: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D
-  (see §4). Optional later: archive/delete and publish on Knowledge
-  detail (EDIT_ROLES only).
-- Next up is Step 9 (AI). Needs investigation before coding.
+- Step 8 (Knowledge tools) is DONE (see §4).
+- Step 9 (AI) is partially complete: 9A (AI executions) done (see §4).
+- Next up: 9B (Memory Center: /memory search, versions, compare,
+  export; route runtime text through AIOL_I18N.set, FA, e2e,
+  --require). Then 9C Chat settings, 9D AI Catalog and Agent Network,
+  9E AI Center (split routing/jobs/discovery), 9F Command workspace.
+  #screen-access moves to Step 10 (Visibility).
+- Debt rows added in 9A, both OPEN: V5-ai-prompts, V5-ai-center-deletes.
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
   link is the first entry point into #screen-provenance?id=
@@ -327,11 +344,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the Step 9 (AI) investigation
-prompt (9A: which AI screens exist, which are live, their endpoints).
+State in sync → user says "go" → send the 9B (Memory Center) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the Step 9 (AI) investigation prompt.
+Case B — user says "go": send the 9B (Memory Center) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -392,6 +408,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   "in_progress @ 75e09ef" is corrected: 75e09ef was green.
 - v15 @ 41f187d — 8B-3 shipped (Knowledge list -> detail links, build.js
   updated). Step 8 is complete; Step 9 (AI) is next.
+- v16 @ 4441fd5 — 9A shipped (backend 21be62a): AI executions loads in one
+  call and is fully translatable. 9B (Memory Center) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -597,7 +615,8 @@ Session / memory:
 - 7E Add source (Upload + URL only, ~1h).
 - Step 8 (Knowledge tools) complete: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D.
   V5-matrix-coverage-runtime-fa is OPEN.
-- Steps 9–14 (AI, Visibility, Commerce, Website+Auth, Settings, Admin)
+- Step 9 (AI) partial: 9A done; 9B–9F remain.
+- Steps 10–14 (Visibility, Commerce, Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
 - Design elevation across all screens — baseline Knowledge critique
