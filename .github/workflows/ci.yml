@@ -36,7 +36,7 @@ jobs:
         run: node visual-harness/check-persian.js
 
       - name: Check translation templates
-        run: node visual-harness/i18n-coverage.js --require screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail
+        run: node visual-harness/i18n-coverage.js --require screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions
 
       - name: Check source characters
         run: |
@@ -65,6 +65,7 @@ jobs:
           node visual-harness/e2e/gap.js
           node visual-harness/e2e/matrix-coverage.js
           node visual-harness/e2e/knowledge-detail.js
+          node visual-harness/e2e/ai-executions.js
           node visual-harness/e2e/theme-toggle.js
 
       - name: Set up Python

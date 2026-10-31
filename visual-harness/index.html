@@ -4400,7 +4400,7 @@ button.card { color: inherit; font: inherit; }
   <div class="page-header">
     <div>
       <h1 id="h-aiexec">AI executions</h1>
-      <div class="callout page-intro" role="note"><p>Live operational view of every real AI-model invocation, read from Cloud Core (<code>/api/v1/ai-executions</code>). This screen has <strong>no fixture data</strong>: until it is connected it shows nothing, and every value shown comes from the API.</p></div>
+      <div class="callout page-intro" role="note"><p>Live operational view of every real AI-model invocation, read from Cloud Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API.</p><p><code>/api/v1/ai-executions</code></p></div>
     </div>
   </div>
 
@@ -4427,7 +4427,7 @@ button.card { color: inherit; font: inherit; }
       <h2 class="card__title">Executions</h2>
       <div class="aix-filters" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:end;margin-block-end:var(--space-3)">
         <label class="field"><span class="field__label">Status</span>
-          <select id="aix-f-status"><option value="">All</option><option>running</option><option>succeeded</option><option>failed</option><option>timeout</option><option>rate_limited</option><option>cancelled</option><option>abandoned</option></select></label>
+          <select id="aix-f-status"><option value="">All</option><option value="running">Running</option><option value="succeeded">Succeeded</option><option value="failed">Failed</option><option value="timeout">Timeout</option><option value="rate_limited">Rate limited</option><option value="cancelled">Cancelled</option><option value="abandoned">Abandoned</option></select></label>
         <label class="field"><span class="field__label">Provider</span><input id="aix-f-provider" type="text" dir="ltr"></label>
         <label class="field"><span class="field__label">Model</span><input id="aix-f-model" type="text" dir="ltr"></label>
         <button type="button" class="btn btn--quiet" id="aix-apply">Apply filters</button>
@@ -9248,11 +9248,17 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var conn = null, offset = 0, LIMIT = 20;
   var BADGE = { succeeded: 'badge--success', running: 'badge--processing', failed: 'badge--danger',
     timeout: 'badge--danger', rate_limited: 'badge--warning', cancelled: 'badge--unknown', abandoned: 'badge--unknown' };
+  // Status values as the API sends them; a value missing here is shown as sent.
+  var STATUS = { succeeded: 'Succeeded', running: 'Running', failed: 'Failed', timeout: 'Timeout',
+    rate_limited: 'Rate limited', cancelled: 'Cancelled', abandoned: 'Abandoned' };
 
-  function setState(kind, text) {
+  // Every visible string goes through AIOL_I18N.set, so it follows the language switch (9A).
+  function el(tag, cls) { var e = document.createElement(tag); if (cls) e.className = cls; return e; }
+  function raw(v) { var b = el('bdi'); b.textContent = v; return b; }
+  function setState(kind, tpl, args) {
     var box = $('aix-state'); box.dataset.state = kind;
     box.className = 'callout' + (kind === 'error' || kind === 'denied' ? ' callout--danger' : '');
-    $('aix-state-text').textContent = text;
+    AIOL_I18N.set($('aix-state-text'), tpl || '', args);
     box.hidden = kind === 'ready';
   }
   function api(path) {
@@ -9263,25 +9269,26 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         return r.json();
       });
   }
-  function fmtCost(x) {
-    if (!x.provider_cost_visible) return 'Hidden (admin only)';
+  // Each fills a node: a status label, the cost, the tokens, a duration, a time.
+  function status(node, v) { if (STATUS[v]) AIOL_I18N.set(node, STATUS[v]); else node.appendChild(raw(v)); return node; }
+  function cost(node, x) {
+    if (!x.provider_cost_visible) return AIOL_I18N.set(node, 'Hidden (admin only)');
     var c = x.provider_cost, v = c && c.estimated_provider_cost;
-    if (v === null || v === undefined) return 'Unknown';
-    return c.currency + ' ' + v + ' (estimated)';
+    if (v === null || v === undefined) return AIOL_I18N.set(node, 'Unknown');
+    return AIOL_I18N.set(node, '{currency} {value} (estimated)', { currency: c.currency, value: v });
   }
-  function fmtTokens(x) {
-    var a = x.input_tokens === null ? '?' : x.input_tokens, b = x.output_tokens === null ? '?' : x.output_tokens;
-    return (x.input_tokens === null && x.output_tokens === null) ? 'Not reported' : a + ' / ' + b;
+  function tokens(node, x) {
+    if (x.input_tokens === null && x.output_tokens === null) return AIOL_I18N.set(node, 'Not reported');
+    return AIOL_I18N.set(node, '{a} / {b}', { a: x.input_tokens === null ? '?' : x.input_tokens, b: x.output_tokens === null ? '?' : x.output_tokens });
   }
+  function duration(node, x) { return x.duration_ms === null ? AIOL_I18N.set(node, '—') : AIOL_I18N.set(node, '{n} ms', { n: x.duration_ms }); }
+  function when(node, ts) { return ts ? AIOL_I18N.set(node, '{d}', { d: { date: ts } }) : AIOL_I18N.set(node, '—'); }
+  function plain(node, v) { node.appendChild(raw(v)); return node; }
   var LABELS = ['Started', 'Status', 'Provider / model', 'Stage', 'Tokens in / out', 'Provider cost', 'Duration'];
-  function cell(tr, text, opts) {
-    var td = document.createElement('td');
-    td.setAttribute('data-label', LABELS[tr.cells.length]);  // mobile card layout labels
-    if (opts && opts.badge) { var b = document.createElement('span'); b.className = 'badge ' + (BADGE[text] || 'badge--unknown'); b.textContent = text; td.appendChild(b); }
-    else { var bd = document.createElement('bdi'); bd.textContent = text; td.appendChild(bd); }
-    tr.appendChild(td); return td;
+  function cell(tr, fill) {
+    var td = el('td'); td.setAttribute('data-label', LABELS[tr.cells.length]);  // mobile card layout labels
+    fill(td); tr.appendChild(td); return td;
   }
-  function when(ts) { return ts ? new Date(ts).toLocaleString() : '—'; }
   function query() {
     var p = ['limit=' + LIMIT, 'offset=' + offset], st = $('aix-f-status').value,
         pr = $('aix-f-provider').value.trim(), mo = $('aix-f-model').value.trim();
@@ -9290,23 +9297,26 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     if (mo) p.push('model=' + encodeURIComponent(mo));
     return '?' + p.join('&');
   }
-  function totals() {
-    var c = function (s) { return api('?limit=1' + (s ? '&status=' + s : '')).then(function (d) { return d.total; }); };
-    return Promise.all([c(''), c('succeeded'), c('failed'), c('timeout'), c('rate_limited'), c('abandoned')])
-      .then(function (t) {
-        $('aix-s-total').textContent = t[0]; $('aix-s-succeeded').textContent = t[1];
-        $('aix-s-failed').textContent = t[2] + t[3] + t[4]; $('aix-s-abandoned').textContent = t[5];
-      });
+  // One request (Rule 17): the page carries counts_by_status, which ignores the status filter.
+  function totals(c) {
+    var n = function (s) { return c[s] || 0; }, all = Object.keys(c).reduce(function (t, s) { return t + c[s]; }, 0);
+    AIOL_I18N.set($('aix-s-total'), '{n}', { n: all }); AIOL_I18N.set($('aix-s-succeeded'), '{n}', { n: n('succeeded') });
+    AIOL_I18N.set($('aix-s-failed'), '{n}', { n: n('failed') + n('timeout') + n('rate_limited') }); AIOL_I18N.set($('aix-s-abandoned'), '{n}', { n: n('abandoned') });
   }
   function load() {
     setState('loading', 'Loading AI executions…');
-    return Promise.all([api(query()), totals()]).then(function (res) {
-      var page = res[0], body = $('aix-rows'); body.textContent = '';
+    return api(query()).then(function (page) {
+      totals(page.counts_by_status || {});
+      var body = $('aix-rows'); body.textContent = '';
       page.items.forEach(function (x) {
-        var tr = document.createElement('tr'); tr.tabIndex = 0; tr.style.cursor = 'pointer';
-        cell(tr, when(x.started_at)); cell(tr, x.status, { badge: true });
-        cell(tr, x.provider + ' / ' + x.model); cell(tr, x.stage || '—'); cell(tr, fmtTokens(x));
-        cell(tr, fmtCost(x)); cell(tr, x.duration_ms === null ? '—' : x.duration_ms + ' ms');
+        var tr = el('tr'); tr.tabIndex = 0; tr.style.cursor = 'pointer';
+        cell(tr, function (td) { when(td, x.started_at); });
+        cell(tr, function (td) { status(td.appendChild(el('span', 'badge ' + (BADGE[x.status] || 'badge--unknown'))), x.status); });
+        cell(tr, function (td) { plain(td, x.provider + ' / ' + x.model); });
+        cell(tr, function (td) { if (x.stage) plain(td, x.stage); else AIOL_I18N.set(td, '—'); });
+        cell(tr, function (td) { tokens(td, x); });
+        cell(tr, function (td) { cost(td, x); });
+        cell(tr, function (td) { duration(td, x); });
         var open = function () { detail(x.id); };
         tr.addEventListener('click', open);
         tr.addEventListener('keydown', function (e) { if (e.key === 'Enter') open(); });
@@ -9315,36 +9325,39 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       $('aix-empty').hidden = page.items.length > 0;
       $('aix-table').hidden = page.items.length === 0;
       var end = Math.min(page.offset + page.items.length, page.total);
-      $('aix-page-info').textContent = page.total ? (page.offset + 1) + '–' + end + ' of ' + page.total : '';
+      AIOL_I18N.set($('aix-page-info'), page.total ? '{from}–{to} of {total}' : '', { from: page.offset + 1, to: end, total: page.total });
       $('aix-prev').disabled = page.offset === 0; $('aix-next').disabled = end >= page.total;
       $('aix-body').hidden = false; setState('ready', '');
     }).catch(fail);
   }
   function fail(e) {
     $('aix-body').hidden = true;
-    if (e && e.denied) setState('denied', 'Permission denied (HTTP ' + e.denied + '). The token is missing, expired, or not valid for this organization.');
-    else setState('error', 'Could not load AI executions: ' + (e && e.message ? e.message : 'network error') + '. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS).');
+    if (e && e.denied) setState('denied', 'Permission denied (HTTP {status}). The token is missing, expired, or not valid for this organization.', { status: e.denied });
+    else setState('error', 'Could not load AI executions: {error}. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS).',
+      { error: e && e.message ? e.message : 'network error' });
   }
   function detail(id) {
     Promise.all([api('/' + id), api('/' + id + '/chain')]).then(function (r) {
       var x = r[0], dl = $('aix-detail-list'); dl.textContent = '';
-      [['Execution', x.id], ['Status', x.status], ['Operation', x.operation_type], ['Provider', x.provider],
-       ['Model', x.model], ['Model version', x.model_version || '—'], ['Provider request id', x.provider_request_id || '—'],
-       ['Parent', x.parent_type + (x.visibility_run_id ? ' ' + x.visibility_run_id : ' (deleted)')],
-       ['Stage', x.stage || '—'], ['Started', when(x.started_at)], ['Completed', when(x.completed_at)],
-       ['Duration', x.duration_ms === null ? '—' : x.duration_ms + ' ms'], ['Tokens in / out', fmtTokens(x)],
-       ['Provider cost', fmtCost(x)], ['Attempt reason', x.attempt_reason || 'first attempt'],
-       ['Error', x.error_code ? x.error_code + ': ' + (x.error_message || '') : '—']
+      [['Execution', function (n) { plain(n, x.id); }], ['Status', function (n) { status(n, x.status); }],
+       ['Operation', function (n) { plain(n, x.operation_type); }], ['Provider', function (n) { plain(n, x.provider); }],
+       ['Model', function (n) { plain(n, x.model); }], ['Model version', function (n) { if (x.model_version) plain(n, x.model_version); else AIOL_I18N.set(n, '—'); }],
+       ['Provider request id', function (n) { if (x.provider_request_id) plain(n, x.provider_request_id); else AIOL_I18N.set(n, '—'); }],
+       ['Parent', function (n) { plain(n, x.parent_type); if (x.visibility_run_id) plain(n, ' ' + x.visibility_run_id); else { n.appendChild(document.createTextNode(' ')); n.appendChild(AIOL_I18N.set(el('span'), '(deleted)')); } }],
+       ['Stage', function (n) { if (x.stage) plain(n, x.stage); else AIOL_I18N.set(n, '—'); }], ['Started', function (n) { when(n, x.started_at); }],
+       ['Completed', function (n) { when(n, x.completed_at); }], ['Duration', function (n) { duration(n, x); }],
+       ['Tokens in / out', function (n) { tokens(n, x); }], ['Provider cost', function (n) { cost(n, x); }],
+       ['Attempt reason', function (n) { if (x.attempt_reason) plain(n, x.attempt_reason); else AIOL_I18N.set(n, 'first attempt'); }],
+       ['Error', function (n) { if (x.error_code) plain(n, x.error_code + ': ' + (x.error_message || '')); else AIOL_I18N.set(n, '—'); }]
       ].forEach(function (kv) {
-        var dt = document.createElement('dt'); dt.textContent = kv[0];
-        var dd = document.createElement('dd'); var bd = document.createElement('bdi'); bd.textContent = kv[1]; dd.appendChild(bd);
-        dl.appendChild(dt); dl.appendChild(dd);
+        dl.appendChild(AIOL_I18N.set(el('dt'), kv[0]));
+        var dd = dl.appendChild(el('dd')); kv[1](dd.appendChild(el('span')));
       });
       var ol = $('aix-chain'); ol.textContent = '';
       r[1].forEach(function (c) {
-        var li = document.createElement('li'); var bd = document.createElement('bdi');
-        bd.textContent = c.status + ' — ' + c.provider + ' / ' + c.model + (c.attempt_reason ? ' (' + c.attempt_reason + ')' : '');
-        li.appendChild(bd); ol.appendChild(li);
+        var li = ol.appendChild(el('li'));
+        status(li.appendChild(el('span')), c.status);
+        plain(li, ' — ' + c.provider + ' / ' + c.model + (c.attempt_reason ? ' (' + c.attempt_reason + ')' : ''));
       });
       $('aix-detail').hidden = false; $('aix-detail').scrollIntoView({ block: 'nearest' });
     }).catch(fail);
@@ -13845,7 +13858,48 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Archived": "بایگانی‌شده",
     "Aggregate strength: strong": "قوت کلی شواهد: قوی",
     "Aggregate strength: conflicting": "قوت کلی شواهد: متعارض",
-    "Could not load the knowledge object ({error}).": "بارگذاری پرونده دانش ناموفق بود ({error})."
+    "Could not load the knowledge object ({error}).": "بارگذاری پرونده دانش ناموفق بود ({error}).",
+    // AI executions (Step 9A)
+    "Live operational view of every real AI-model invocation, read from Cloud Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API.": "نمای عملیاتی زندهٔ هر فراخوانی واقعی مدل هوش مصنوعی، خوانده‌شده از Cloud Core. این صفحه هیچ دادهٔ نمونه‌ای ندارد: تا وصل نشود چیزی نشان نمی‌دهد، و هر مقداری که نشان داده می‌شود از API می‌آید.",
+    "Connection": "اتصال",
+    "Not connected. Enter the Cloud Core URL and an access token.": "وصل نیست. نشانی Cloud Core و یک توکن دسترسی وارد کنید.",
+    "Executions": "اجراها",
+    "all statuses": "همهٔ وضعیت‌ها",
+    "Failed / timeout / rate-limited": "ناموفق / پایان مهلت / محدودیت نرخ",
+    "Abandoned (outcome unknown)": "رهاشده (نتیجه نامعلوم)",
+    "Timeout": "پایان مهلت",
+    "Rate limited": "محدودیت نرخ",
+    "Abandoned": "رهاشده",
+    "Provider": "ارائه‌دهنده",
+    "Model": "مدل",
+    "Apply filters": "اعمال فیلترها",
+    "Started": "آغاز",
+    "Provider / model": "ارائه‌دهنده / مدل",
+    "Stage": "مرحله",
+    "Tokens in / out": "توکن‌های ورودی / خروجی",
+    "Provider cost": "هزینهٔ ارائه‌دهنده",
+    "Duration": "مدت",
+    "No AI executions yet. An execution is recorded only when a real AI model is actually invoked; fixture and not-configured providers record nothing.": "هنوز هیچ اجرای هوش مصنوعی ثبت نشده است. اجرا فقط وقتی ثبت می‌شود که یک مدل واقعی هوش مصنوعی واقعاً فراخوانده شود؛ ارائه‌دهنده‌های نمونه و پیکربندی‌نشده چیزی ثبت نمی‌کنند.",
+    "Execution detail": "جزئیات اجرا",
+    "Attempt chain": "زنجیرهٔ تلاش‌ها",
+    "Bearer token (kept in memory only)": "توکن Bearer (فقط در حافظه نگه داشته می‌شود)",
+    "Hidden (admin only)": "پنهان (فقط مدیر)",
+    "{currency} {value} (estimated)": "{value} {currency} (تخمینی)",
+    "Not reported": "گزارش نشده",
+    "{n} ms": "{n} میلی‌ثانیه",
+    "(deleted)": "(حذف‌شده)",
+    "first attempt": "تلاش نخست",
+    "Loading AI executions…": "در حال بارگذاری اجراهای هوش مصنوعی…",
+    "Permission denied (HTTP {status}). The token is missing, expired, or not valid for this organization.": "دسترسی رد شد (HTTP {status}). توکن وجود ندارد، منقضی شده یا برای این سازمان معتبر نیست.",
+    "Could not load AI executions: {error}. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS).": "بارگذاری اجراهای هوش مصنوعی ناموفق بود: {error}. نشانی را بررسی کنید و مطمئن شوید Cloud Core این مبدأ را مجاز می‌داند (CORS_ALLOWED_ORIGINS).",
+    "{from}–{to} of {total}": "{from}–{to} از {total}",
+    "Execution": "اجرا",
+    "Operation": "عملیات",
+    "Model version": "نسخهٔ مدل",
+    "Provider request id": "شناسهٔ درخواست ارائه‌دهنده",
+    "Parent": "والد",
+    "Attempt reason": "دلیل تلاش",
+    "Error": "خطا"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

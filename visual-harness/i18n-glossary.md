@@ -595,3 +595,50 @@ Terms for the live Knowledge detail screen and its one remaining sample (Toranje
 | Aggregate strength: strong | قوت کلی شواهد: قوی |
 | Aggregate strength: conflicting | قوت کلی شواهد: متعارض |
 | Could not load the knowledge object ({error}). | بارگذاری پرونده دانش ناموفق بود ({error}). |
+
+## AI executions (Step 9A)
+
+Terms for the AI executions screen. Status labels stand for the API values (succeeded, running, failed, timeout, rate_limited, cancelled, abandoned); provider, model, stage and error codes stay as sent.
+
+| English | Persian |
+|---|---|
+| Live operational view of every real AI-model invocation, read from Cloud Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API. | نمای عملیاتی زندهٔ هر فراخوانی واقعی مدل هوش مصنوعی، خوانده‌شده از Cloud Core. این صفحه هیچ دادهٔ نمونه‌ای ندارد: تا وصل نشود چیزی نشان نمی‌دهد، و هر مقداری که نشان داده می‌شود از API می‌آید. |
+| Connection | اتصال |
+| Not connected. Enter the Cloud Core URL and an access token. | وصل نیست. نشانی Cloud Core و یک توکن دسترسی وارد کنید. |
+| Executions | اجراها |
+| all statuses | همهٔ وضعیت‌ها |
+| Failed / timeout / rate-limited | ناموفق / پایان مهلت / محدودیت نرخ |
+| Abandoned (outcome unknown) | رهاشده (نتیجه نامعلوم) |
+| Timeout | پایان مهلت |
+| Rate limited | محدودیت نرخ |
+| Abandoned | رهاشده |
+| Provider | ارائه‌دهنده |
+| Model | مدل |
+| Apply filters | اعمال فیلترها |
+| Started | آغاز |
+| Provider / model | ارائه‌دهنده / مدل |
+| Stage | مرحله |
+| Tokens in / out | توکن‌های ورودی / خروجی |
+| Provider cost | هزینهٔ ارائه‌دهنده |
+| Duration | مدت |
+| No AI executions yet. An execution is recorded only when a real AI model is actually invoked; fixture and not-configured providers record nothing. | هنوز هیچ اجرای هوش مصنوعی ثبت نشده است. اجرا فقط وقتی ثبت می‌شود که یک مدل واقعی هوش مصنوعی واقعاً فراخوانده شود؛ ارائه‌دهنده‌های نمونه و پیکربندی‌نشده چیزی ثبت نمی‌کنند. |
+| Execution detail | جزئیات اجرا |
+| Attempt chain | زنجیرهٔ تلاش‌ها |
+| Bearer token (kept in memory only) | توکن Bearer (فقط در حافظه نگه داشته می‌شود) |
+| Hidden (admin only) | پنهان (فقط مدیر) |
+| {currency} {value} (estimated) | {value} {currency} (تخمینی) |
+| Not reported | گزارش نشده |
+| {n} ms | {n} میلی‌ثانیه |
+| (deleted) | (حذف‌شده) |
+| first attempt | تلاش نخست |
+| Loading AI executions… | در حال بارگذاری اجراهای هوش مصنوعی… |
+| Permission denied (HTTP {status}). The token is missing, expired, or not valid for this organization. | دسترسی رد شد (HTTP {status}). توکن وجود ندارد، منقضی شده یا برای این سازمان معتبر نیست. |
+| Could not load AI executions: {error}. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS). | بارگذاری اجراهای هوش مصنوعی ناموفق بود: {error}. نشانی را بررسی کنید و مطمئن شوید Cloud Core این مبدأ را مجاز می‌داند (CORS_ALLOWED_ORIGINS). |
+| {from}–{to} of {total} | {from}–{to} از {total} |
+| Execution | اجرا |
+| Operation | عملیات |
+| Model version | نسخهٔ مدل |
+| Provider request id | شناسهٔ درخواست ارائه‌دهنده |
+| Parent | والد |
+| Attempt reason | دلیل تلاش |
+| Error | خطا |
