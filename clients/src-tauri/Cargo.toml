@@ -1,0 +1,46 @@
+[package]
+name = "aiol-client"
+version = "0.1.0"
+description = "AIOL official client (Windows, macOS, Android, iOS) — ADR-137"
+edition = "2021"
+rust-version = "1.80"
+publish = false
+
+[lib]
+# Mobile targets load the app as a library; desktop links it into the binary.
+name = "aiol_client_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = [] }
+tauri-plugin-opener = "2.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+url = "2"
+thiserror = "2"
+p256 = { version = "0.13", features = ["ecdsa", "pkcs8", "std"] }
+rand_core = { version = "0.6", features = ["getrandom"] }
+zeroize = "1"
+os_info = { version = "3", default-features = false }
+
+# The operating system's credential store. Android has no keyring backend; there the vault and the device key
+# are provided by the Kotlin plugin in mobile/android (Android Keystore).
+[target.'cfg(target_os = "windows")'.dependencies]
+keyring = { version = "3.6", features = ["windows-native"] }
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+keyring = { version = "3.6", features = ["apple-native"] }
+[target.'cfg(target_os = "linux")'.dependencies]
+# Linux is out of scope for release (ADR-137); this backend exists only so the crate builds and its tests run
+# on the Linux CI host.
+keyring = { version = "3.6", features = ["linux-native"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
