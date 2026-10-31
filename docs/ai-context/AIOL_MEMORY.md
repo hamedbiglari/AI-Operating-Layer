@@ -121,14 +121,13 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 4d4bd81
+- sha (last non-docs commit): e7f245f
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 4d4bd81 (9D). Runs 81 (9A code) and 82 (9B,
-  b8c8724) green. Run 84 (23269bd, carries 9C d4af282) was still running
-  when 9D was pushed (user override).
-- last code commit: "feat(ai): live ai catalog screen (9D)" @ 4d4bd81
-- last feature commit: "feat(ai): live ai catalog screen (9D)" @ 4d4bd81
+- last_ci: in_progress @ e7f245f (9E). 9D (4d4bd81, run 85) green; 9A-9C
+  (runs 81, 82, 84) green.
+- last code commit: "feat(ai): live ai center screen (9E)" @ e7f245f
+- last feature commit: "feat(ai): live ai center screen (9E)" @ e7f245f
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -335,6 +334,25 @@ file from scratch (do not diff). Output only the file content.
     memory profiles and background policies sit on another screen
     (index.html ~6245/6265). AI Center also loads discovery (limit=25)
     on connect, a duplicate of the catalog's read — a 9E item.
+  - 9E @ e7f245f — #screen-ai-center: no backend change (resources = 3
+    parallel calls, routing = 2; details on demand). data-live-wired
+    on the section and data-live-keep on #aic-body (it was hidden in
+    live mode — caught by a click test). No card hidden: every card has
+    a working backend. All 180 static strings translated (intro split
+    from its <code>, PostgreSQL as identifier, hint split into spans).
+    Runtime text of Providers & accounts, Models and Routing through
+    AIOL_I18N.set or translatable nodes: row() wraps strings in <bdi>
+    (never translated), so UI words there are now ui() spans (Unknown,
+    None, Not set, (disabled), (no adapter), empty-list messages);
+    mode badge/select use the Create form's option labels; templates
+    for "{model} on account {account}", "Set ••••{last4}", Testing,
+    Edit limits, limits error, Connected to, Could not load; 18 error
+    paths through failed() -> '{error}'. 210 FA entries, 172 KNOWN
+    words. Debt V5-ai-center-runtime-fa: composites in the job panel,
+    package verdicts, discovery rows, step aria-labels and the agent
+    console script stay English. The duplicate discovery read on
+    connect is still there. e2e/ai-center.js (17); --require adds
+    screen-ai-center.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -343,17 +361,16 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog
-  and 18 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center
+  and 19 browser suites.
 
 ## 5. In progress — next step
 
 - Step 8 (Knowledge tools) is DONE (see §4).
-- Step 9 (AI) is partially complete: 9A (AI executions), 9B (Memory
-  Center), 9C (Chat settings) and 9D (AI Catalog) done (see §4).
-- Next up: 9E (AI Center, with the Agent Network agents list; split
-  routing/jobs/discovery; drop its duplicate discovery read). Then 9F
-  Command workspace. #screen-access moves to Step 10 (Visibility).
+- Step 9 (AI) is almost complete: 9A-9E done (see §4).
+- Next up: 9F (Command workspace) or Step 10 (Visibility, incl.
+  #screen-access). Also open from 9E: V5-ai-center-runtime-fa and the
+  duplicate discovery read on connect.
 - Debt rows added in 9A, both OPEN: V5-ai-prompts, V5-ai-center-deletes.
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
@@ -372,10 +389,11 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 9E (AI Center) prompt.
+State in sync → user says "go" → send the 9F (Command workspace) prompt,
+or Step 10 if the user chooses.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 9E (AI Center) prompt.
+Case B — user says "go": send the 9F (Command workspace) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -444,6 +462,8 @@ Case C — anything CI-red: paste log, fix before any new work.
   backend change). 9D (AI Catalog and Agent Network) is next.
 - v19 @ 4d4bd81 — 9D shipped (AI Catalog live and translatable, no backend
   change). Agent Network belongs to AI Center (9E), which is next.
+- v20 @ e7f245f — 9E shipped (AI Center: all static text in Persian; the
+  three core tabs translated at runtime; data-live-keep fix). 9F next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -591,6 +611,12 @@ Session / memory:
   i18n-coverage still counts static option text, so those strings get
   FA rows anyway. A label that must change with the language belongs
   outside the select.
+- data-live-wired on a screen hides every direct child that is not
+  .page-header, .breadcrumbs, .live-panel or [data-live-keep] while
+  live mode is on. A screen whose live body sits outside its live panel
+  (#cat-body, #aic-body) must carry data-live-keep, or the whole live
+  content disappears. Text checks still pass on hidden nodes, so a test
+  must assert the body is visible (or click inside it).
 
 ### 10.3 Reversals and abandoned approaches
 
@@ -655,7 +681,8 @@ Session / memory:
 - 7E Add source (Upload + URL only, ~1h).
 - Step 8 (Knowledge tools) complete: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D.
   V5-matrix-coverage-runtime-fa is OPEN.
-- Step 9 (AI) partial: 9A, 9B, 9C, 9D done; 9E, 9F remain.
+- Step 9 (AI) almost complete: 9A-9E done; 9F remains (V5-ai-center-runtime-fa
+  open).
 - Steps 10–14 (Visibility, Commerce, Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
