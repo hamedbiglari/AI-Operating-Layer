@@ -71,7 +71,7 @@ responsive platform adaptation (CSS drawer < 768 px, safe areas, touch targets) 
 | Windows | **PACKAGE GENERATED** (unsigned) — CI run 41209523146, job "Package — Windows x64" succeeded, artifact `aiol-Windows` (2.8 MB, NSIS + MSI) | Rust shell compiles and tests on the Linux host; Windows code path: see §17 (`cargo check --target x86_64-pc-windows-msvc`) | run `clients.yml` "Package — Windows x64" (NSIS/MSI); Authenticode certificate |
 | macOS | **SOURCE IMPLEMENTED** | as above; `cargo check --target aarch64-apple-darwin` (§17) | run "Package — macOS universal"; Developer ID + notarization |
 | Android | **SOURCE IMPLEMENTED** (Kotlin plugin uncompiled) | `cargo check --target aarch64-linux-android` (§17); `VaultPlugin.kt` not compiled — SDK host blocked | `scripts/mobile-setup.sh android` + `tauri android build` with SDK/NDK; upload keystore |
-| iOS / iPadOS | **SOURCE IMPLEMENTED** | `cargo check --target aarch64-apple-ios` (§17) | macOS + Xcode: `scripts/mobile-setup.sh ios`, `tauri ios build`; Apple team |
+| iOS / iPadOS | **BUILD VERIFIED** (simulator, arm64, unsigned) — CI run 41221954216 "Finished 1 iOS Bundle … arm64-sim/AIOL.app"; not run on a simulator or device | `cargo check --target aarch64-apple-ios` (§17) | macOS + Xcode: `scripts/mobile-setup.sh ios`, `tauri ios build`; Apple team |
 
 The **shared UI** that all four load is at **TESTS PASS** (unit + live end-to-end in Chromium). Chromium is
 the engine of WebView2 (Windows) and Android System WebView, not of WKWebView (macOS/iOS).
@@ -257,3 +257,16 @@ run on a fresh database (as CI does), not one that also holds rows from a live e
 | Package — Windows x64 (`windows-2022`) | **success**, artifact `aiol-Windows` (unsigned, not installed or run on a device) |
 | Package — Android | failed in `android-actions/setup-android@v3` (Node 20 action on Node 24) — workflow fixed to use the runner's preinstalled SDK |
 | Package — macOS, Build — iOS simulator | cancelled within 1 s, no logs: the `macos-14` label — workflow switched to `macos-latest` |
+
+### CI run 41221954216 (commit 3bb234d)
+
+| Job | Result |
+|-----|--------|
+| Shared UI unit tests · end-to-end · Rust tests | success |
+| Package — Windows x64 | success (second time) |
+| Build — iOS simulator (`macos-latest`) | **success**: `AIOL.app` for arm64 simulator |
+| Package — macOS universal | universal binary **compiled and linked**; bundling failed because empty signing secrets were passed as empty strings (`security import` of a non-existent certificate) — fixed: empty secrets are unset |
+| Package — Android | SDK + NDK installed; failed because `NDK_HOME` was built from `${{ env.ANDROID_HOME }}`, which is empty — fixed: set in the shell |
+
+Merge of `v5-implementation` (8A–9A) into this branch at 77d9485: fresh-DB upgrade to 0049, full backend
+suite 1800 passed / 0 failed, coverage 93.53 %; harness i18n gate with CI's full `--require` list passes.

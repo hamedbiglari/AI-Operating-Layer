@@ -15,6 +15,10 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
   unsigned); Android failed in setup-android; macOS/iOS cancelled (macos-14 label). Both fixed in the
   workflow — check the next run.
 
+- Run 41221954216: Windows built again; **iOS simulator build succeeded**; macOS compiled but bundling failed
+  on empty signing secrets; Android failed on NDK_HOME. Both fixed in the workflow (next run).
+- Branch merged with v5-implementation (77d9485), verified: 1800 backend tests pass.
+
 ## In progress
 - CI "Client suite CI" run 41209523146 on 01b4467:
   https://github.com/hamedbiglari/AI-Operating-Layer/actions/runs/41209523146

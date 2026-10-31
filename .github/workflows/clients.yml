@@ -129,6 +129,11 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
+          # Unset secrets arrive as empty strings; Tauri treats a set-but-empty APPLE_CERTIFICATE as "import this
+          # certificate" and fails. Drop the empty ones so an unsigned build is really unsigned.
+          for v in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!v}" ]; then unset "$v"; fi
+          done
           cd clients
           npm ci --no-audit --no-fund
           npx tauri build ${{ matrix.args }}
@@ -162,9 +167,9 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973"
           rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
       - name: Build
-        env:
-          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.12077973
         run: |
+          # ANDROID_HOME is a runner shell variable, not a workflow env value, so NDK_HOME is set here.
+          export NDK_HOME="$ANDROID_HOME/ndk/27.0.12077973"
           cd clients
           npm ci --no-audit --no-fund
           scripts/mobile-setup.sh android
@@ -191,3 +196,8 @@ jobs:
           npm ci --no-audit --no-fund
           scripts/mobile-setup.sh ios
           npx tauri ios build --target aarch64-sim --debug
+      - uses: actions/upload-artifact@v7
+        with:
+          name: aiol-ios-simulator
+          path: clients/src-tauri/gen/apple/build/arm64-sim/AIOL.app
+          retention-days: 14
