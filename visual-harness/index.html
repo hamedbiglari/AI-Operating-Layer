@@ -3881,29 +3881,19 @@ button.card { color: inherit; font: inherit; }
       <button class="card" style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
         <span style="color:var(--primary)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="24px" height="24px" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7zM14 3v4h4M9.5 12.5h1.2a1.1 1.1 0 0 1 0 2.2H9.5V17M14 12.5h1.5a1.5 1.5 0 0 1 1.5 1.5v1.5a1.5 1.5 0 0 1-1.5 1.5H14z"/></svg></span>
         <span style="font-weight:var(--weight-semibold)">Document</span>
-        <span style="color:var(--text-muted);font-size:var(--text-sm)">PDF, DOCX, XLSX, PPTX</span>
+        <span style="color:var(--text-muted);font-size:var(--text-sm)"><bdi class="identifier">PDF, DOCX, XLSX, PPTX</bdi></span>
       </button>
       <button class="card" style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
         <span style="color:var(--primary)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="24px" height="24px" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.3 9h17.4M3.3 15h17.4M12 3c-2.4 2.5-3.6 5.5-3.6 9s1.2 6.5 3.6 9c2.4-2.5 3.6-5.5 3.6-9S14.4 5.5 12 3z"/></svg></span>
         <span style="font-weight:var(--weight-semibold)">Web page</span>
         <span style="color:var(--text-muted);font-size:var(--text-sm)">A public URL to fetch</span>
       </button>
-      <button class="card" style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
-        <span style="color:var(--primary)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="24px" height="24px" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4zM4 9h16M7 12.5h7M7 15.5h5"/></svg></span>
-        <span style="font-weight:var(--weight-semibold)">Site article</span>
-        <span style="color:var(--text-muted);font-size:var(--text-sm)">Content already on toranjebin.ir</span>
-      </button>
-      <button class="card" style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
+      <button class="card" data-debt-hidden style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
         <span style="color:var(--primary)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="24px" height="24px" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7zM14 3v4h4M11 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM12.8 13.8 15 16"/></svg></span>
         <span style="font-weight:var(--weight-semibold)">Research</span>
         <span style="color:var(--text-muted);font-size:var(--text-sm)">DOI, PMID, or a paper you hold</span>
       </button>
-      <button class="card" style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
-        <span style="color:var(--primary)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="24px" height="24px" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c4.4 0 8-1 8-2.25S16.4 3 12 3 4 4 4 5.25 7.6 7.5 12 7.5zM4 5.25v13.5C4 20 7.6 21 12 21s8-1 8-2.25V5.25M4 12c0 1.25 3.6 2.25 8 2.25s8-1 8-2.25"/></svg></span>
-        <span style="font-weight:var(--weight-semibold)">Dataset</span>
-        <span style="color:var(--text-muted);font-size:var(--text-sm)">CSV or spreadsheet of records</span>
-      </button>
-      <button class="card" style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
+      <button class="card" data-debt-hidden style="text-align:start;cursor:pointer;display:grid;gap:var(--space-2);justify-items:start">
         <span style="color:var(--primary)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="24px" height="24px" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM9 13.8 8 21l4-2 4 2-1-7.2"/></svg></span>
         <span style="font-weight:var(--weight-semibold)">Supplier document</span>
         <span style="color:var(--text-muted);font-size:var(--text-sm)">Certificates, lab panels, batch records</span>
@@ -9558,6 +9548,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-detail': { kind: 'detail', title: 'Source detail (Cloud Core)', compact: true },
     'screen-processing': { kind: 'processing', title: 'Document processing (Cloud Core)', compact: true },
     'screen-provenance': { kind: 'provenance', title: 'Provenance (Cloud Core)', compact: true },
+    'screen-add': { kind: 'add', title: 'Add source (Cloud Core)', compact: true },
     'screen-visibility': { kind: 'table', title: 'AI visibility projects (Cloud Core)', endpoint: '/visibility/projects',
       cols: [['Project', 'name'], ['Platforms', 'platforms', 'list'], ['Target brand', 'target_brand'], ['Created', 'created_at', 'date']] },
     'screen-products': { kind: 'table', title: 'Products (Cloud Core)', endpoint: '/products',
@@ -9600,7 +9591,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function api(path, opts) {
     opts = opts || {};
     var h = { Authorization: 'Bearer ' + LIVE.token }; if (opts.body) h['Content-Type'] = 'application/json';
-    return fetch(LIVE.base + '/api/v1' + path, { method: opts.method || 'GET', headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined })
+    // opts.form (FormData) is sent as is: the browser sets the multipart boundary.
+    return fetch(LIVE.base + '/api/v1' + path, { method: opts.method || 'GET', headers: h, body: opts.form || (opts.body ? JSON.stringify(opts.body) : undefined) })
       .then(function (r) {
         if (r.status === 401 || r.status === 403) { var e = new Error('Permission denied (HTTP ' + r.status + ')'); e.denied = r.status; throw e; }
         if (!r.ok) { var x = new Error('HTTP ' + r.status); x.status = r.status; throw x; }
@@ -10942,6 +10934,90 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__provLoad = function () { return role().then(load); };
     return panel.__provLoad();
   }
+  // Add source (7E): a file (POST /documents/upload, multipart) or a web page (POST /documents/ingest-url)
+  // into an existing source; both answer 202 with a job. On success the screen opens that source's detail.
+  function addSourceScreen(panel) {
+    // Wired once; a later connect only reloads the source list.
+    if (panel.__addLoad) return panel.__addLoad();
+    var body = el('div', 'add-live'); body.setAttribute('data-live-keep', '');
+    var status = messageBox(body);
+    var pick = body.appendChild(el('label', 'field'));
+    var pickLabel = pick.appendChild(el('span', 'field__label')); AIOL_I18N.set(pickLabel, 'Add to source');
+    var select = pick.appendChild(el('select')); select.name = 'source_id';
+    var cards = body.appendChild(el('div'));
+    cards.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px, 100%), 1fr));gap:var(--space-4);max-inline-size:900px;margin-block-start:var(--space-4)';
+    // One card: its heading, hint, field and button, and its own message line.
+    function card(title, hint, label, input, button) {
+      var f = cards.appendChild(el('form', 'card')); f.noValidate = true;
+      var h = f.appendChild(el('h2', 'card__title')); AIOL_I18N.set(h, title);
+      f.appendChild(hint);
+      var l = f.appendChild(el('label', 'field'));
+      var name = l.appendChild(el('span', 'field__label')); AIOL_I18N.set(name, label); l.appendChild(input);
+      var b = f.appendChild(el('button', 'btn btn--primary')); b.type = 'submit'; AIOL_I18N.set(b, button);
+      f.say = messageBox(f); f.button = b;
+      return f;
+    }
+    var fileHint = el('p', 'add-hint'); fileHint.appendChild(identifier('PDF, DOCX, XLSX, PPTX'));
+    var file = el('input'); file.type = 'file'; file.name = 'file';
+    var up = card('Document', fileHint, 'File', file, 'Upload'); up.id = 'add-upload';
+    var urlHint = el('p', 'add-hint'); AIOL_I18N.set(urlHint, 'A public URL to fetch');
+    var addr = el('input'); addr.type = 'url'; addr.name = 'url'; addr.dir = 'ltr'; addr.maxLength = 2048;
+    var web = card('Web page', urlHint, 'Web address', addr, 'Add web page'); web.id = 'add-url';
+    panel.insertAdjacentElement('afterend', body);
+
+    function busy(on) { up.button.disabled = web.button.disabled = on || !select.value; }
+    function failed(f, e, tpl) {
+      if (e.denied === 403) f.say('denied', 'Your role is not allowed to add documents (HTTP 403).');
+      else if (e.denied === 401) f.say('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+      else f.say('error', tpl, { error: e.message });
+    }
+    // The job runs in the worker; the source's detail shows its documents as they arrive.
+    function done(f, text, sourceId) {
+      f.say('done', text); f.reset();
+      location.hash = '#screen-detail?id=' + encodeURIComponent(sourceId);
+    }
+    up.addEventListener('submit', function (e) {
+      e.preventDefault(); up.say(''); web.say('');
+      if (!file.files.length) { up.say('error', 'Choose a file first.'); return; }
+      var sourceId = select.value, fd = new FormData();
+      fd.append('source_id', sourceId); fd.append('file', file.files[0]);
+      busy(true); up.say('loading', 'Uploading…');
+      api('/documents/upload', { method: 'POST', form: fd })
+        .then(function () { done(up, 'Uploaded and queued for processing.', sourceId); },
+          function (err) { failed(up, err, 'Upload failed ({error}).'); })
+        .then(function () { busy(false); });
+    });
+    web.addEventListener('submit', function (e) {
+      e.preventDefault(); up.say(''); web.say('');
+      var u = addr.value.trim();
+      if (!u) { web.say('error', 'Enter a web address first.'); return; }
+      var sourceId = select.value;
+      busy(true); web.say('loading', 'Adding…');
+      api('/documents/ingest-url', { method: 'POST', body: { source_id: sourceId, url: u } })
+        .then(function () { done(web, 'Web page queued for processing.', sourceId); },
+          function (err) { failed(web, err, 'Could not add the web page ({error}).'); })
+        .then(function () { busy(false); });
+    });
+    // 100 is the backend's page limit for /sources/overview.
+    function load() {
+      status('loading', 'Loading…'); up.say(''); web.say(''); select.textContent = ''; busy(true);
+      return api('/sources/overview?limit=100').then(function (page) {
+        state(panel, 'ready');
+        page.items.forEach(function (s) { var o = select.appendChild(el('option', null, s.title)); o.value = s.id; });
+        if (page.items.length) status(''); else status('empty', 'No sources yet. Create one with the form above first.');
+        busy(false);
+      }).catch(function (e) {
+        state(panel, 'ready');
+        if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else status('error', 'Could not load sources ({error}).', { error: e.message }, 'Retry', load);
+      });
+    }
+    // The list is read when the screen is shown, not on every connect elsewhere.
+    var screen = document.getElementById('screen-add');
+    document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-add' && LIVE) load(); });
+    panel.__addLoad = function () { return screen.classList.contains('is-active') ? load() : Promise.resolve(); };
+    return panel.__addLoad();
+  }
   function dashboardCards(panel) {
     var grid = document.getElementById('dash-stats');
     function card(name, value, tpl, args) {
@@ -11050,6 +11126,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       else if (cfg.kind === 'detail') sourceDetail(panel);
       else if (cfg.kind === 'processing') processingScreen(panel);
       else if (cfg.kind === 'provenance') provenanceScreen(panel);
+      else if (cfg.kind === 'add') addSourceScreen(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
@@ -13666,7 +13743,26 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     ". It is not presented as settled anywhere in the product.": " علامت خورده است و در هیچ جای محصول قطعی نمایش داده نمی‌شود.",
     "Review the conflict": "بررسی تعارض",
     "Evidence": "شواهد",
-    "Approved": "تأییدشده"
+    "Approved": "تأییدشده",
+    // Add source (Step 7E)
+    "Add a source": "افزودن منبع",
+    "Pick where it comes from. The system records the origin, not just the file.": "مشخص کنید از کجا می‌آید. سامانه خاستگاه را ثبت می‌کند، نه فقط فایل را.",
+    "Web page": "صفحهٔ وب",
+    "A public URL to fetch": "یک نشانی عمومی برای دریافت",
+    "Add to source": "افزودن به منبع",
+    "File": "فایل",
+    "Web address": "نشانی وب",
+    "Add web page": "افزودن صفحهٔ وب",
+    "Choose a file first.": "ابتدا یک فایل انتخاب کنید.",
+    "Enter a web address first.": "ابتدا یک نشانی وب وارد کنید.",
+    "Uploading…": "در حال بارگذاری…",
+    "Adding…": "در حال افزودن…",
+    "Uploaded and queued for processing.": "بارگذاری شد و در صف پردازش قرار گرفت.",
+    "Web page queued for processing.": "صفحهٔ وب در صف پردازش قرار گرفت.",
+    "Upload failed ({error}).": "بارگذاری ناموفق بود ({error}).",
+    "Could not add the web page ({error}).": "افزودن صفحهٔ وب ناموفق بود ({error}).",
+    "Your role is not allowed to add documents (HTTP 403).": "نقش شما اجازهٔ افزودن سند را ندارد (HTTP 403).",
+    "No sources yet. Create one with the form above first.": "هنوز منبعی وجود ندارد. ابتدا با فرم بالا یکی بسازید."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

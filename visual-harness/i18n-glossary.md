@@ -489,3 +489,29 @@ aggregate (ClaimEvidenceStrength), not one study's rating.
 | conflicting | متعارض |
 | . It is not presented as settled anywhere in the product. |  علامت خورده است و در هیچ جای محصول قطعی نمایش داده نمی‌شود. |
 | Review the conflict | بررسی تعارض |
+
+## Add source (Step 7E)
+
+Terms for the live Add source screen (upload a file or queue a web page into
+an existing source) and its sample cards. Format names stay Latin as identifiers.
+
+| English | Persian |
+|---|---|
+| Add a source | افزودن منبع |
+| Pick where it comes from. The system records the origin, not just the file. | مشخص کنید از کجا می‌آید. سامانه خاستگاه را ثبت می‌کند، نه فقط فایل را. |
+| Web page | صفحهٔ وب |
+| A public URL to fetch | یک نشانی عمومی برای دریافت |
+| Add to source | افزودن به منبع |
+| File | فایل |
+| Web address | نشانی وب |
+| Add web page | افزودن صفحهٔ وب |
+| Choose a file first. | ابتدا یک فایل انتخاب کنید. |
+| Enter a web address first. | ابتدا یک نشانی وب وارد کنید. |
+| Uploading… | در حال بارگذاری… |
+| Adding… | در حال افزودن… |
+| Uploaded and queued for processing. | بارگذاری شد و در صف پردازش قرار گرفت. |
+| Web page queued for processing. | صفحهٔ وب در صف پردازش قرار گرفت. |
+| Upload failed ({error}). | بارگذاری ناموفق بود ({error}). |
+| Could not add the web page ({error}). | افزودن صفحهٔ وب ناموفق بود ({error}). |
+| Your role is not allowed to add documents (HTTP 403). | نقش شما اجازهٔ افزودن سند را ندارد (HTTP 403). |
+| No sources yet. Create one with the form above first. | هنوز منبعی وجود ندارد. ابتدا با فرم بالا یکی بسازید. |
