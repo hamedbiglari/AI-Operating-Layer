@@ -739,3 +739,47 @@ Terms for the Chat settings screen. Option text inside the dropdowns stays Engli
 | The answer length and the knowledge budget are both required. | طول پاسخ و بودجهٔ دانش هر دو الزامی‌اند. |
 | Saving… | در حال ذخیره… |
 | Saved. The website chat uses these settings from the next question. | ذخیره شد. گفت‌وگوی وب‌سایت از پرسش بعدی این تنظیمات را به کار می‌برد. |
+
+## AI Catalog (Step 9D)
+
+Terms for the AI Catalog screen. Type and status labels are the filter options' own text (type values like RESEARCH_TOOL, status values like official_source_verified); resource names and URLs stay as sent.
+
+| English | Persian |
+|---|---|
+| Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay "Discovered" until verified from an official source; API and pricing information stays empty until then. This screen reads live from Cloud Core — no sample data. | هر منبع هوش مصنوعی که سامانه می‌شناسد — ارائه‌دهنده‌ها، APIها، مدل‌ها، برنامه‌ها و ابزارهای پژوهشی. مدخل‌ها تا زمانی که از یک منبع رسمی راستی‌آزمایی نشوند «کشف‌شده» می‌مانند؛ اطلاعات API و قیمت تا آن زمان خالی می‌ماند. این صفحه زنده از Cloud Core می‌خواند — بدون دادهٔ نمونه. |
+| Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your Cloud Core URL and token here. | وصل نیست. از صفحهٔ داشبورد، اجراهای هوش مصنوعی یا مرکز هوش مصنوعی وصل شوید — یا نشانی Cloud Core و توکن خود را اینجا وارد کنید. |
+| All types | همهٔ انواع |
+| Application | برنامه |
+| Research tool | ابزار پژوهشی |
+| Document tool | ابزار سند |
+| Search tool | ابزار جست‌وجو |
+| Academic tool | ابزار دانشگاهی |
+| Parsing tool | ابزار تجزیه |
+| Writing tool | ابزار نگارش |
+| Education tool | ابزار آموزشی |
+| Vision tool | ابزار بینایی |
+| Audio tool | ابزار صوتی |
+| Multimodal tool | ابزار چندوجهی |
+| All statuses | همهٔ وضعیت‌ها |
+| Discovered | کشف‌شده |
+| Identified | شناسایی‌شده |
+| Official source verified | منبع رسمی راستی‌آزمایی‌شده |
+| Api capability checked | توانایی API بررسی‌شده |
+| Credential method verified | روش اعتبارنامه راستی‌آزمایی‌شده |
+| Capability verified | توانایی راستی‌آزمایی‌شده |
+| Health checked | سلامت بررسی‌شده |
+| Active | فعال |
+| Application only | فقط برنامه |
+| Model only | فقط مدل |
+| Specialized research tool | ابزار پژوهشی تخصصی |
+| No verified api | بدون API راستی‌آزمایی‌شده |
+| Not verified | راستی‌آزمایی‌نشده |
+| Blocked external dependency | وابستگی بیرونی مسدودشده |
+| Disabled | غیرفعال |
+| Import initial list | وارد کردن فهرست اولیه |
+| {n|resource in catalog|resources in catalog} | {n} منبع در فهرست |
+| No results matching the current filters. | با فیلترهای کنونی نتیجه‌ای پیدا نشد. |
+| Connected to {base}. | به {base} وصل است. |
+| Could not load the catalog ({error}). | بارگذاری فهرست ناموفق بود ({error}). |
+| Imported {inserted} new, {present} already present. | {inserted} مورد تازه وارد شد، {present} مورد از پیش بود. |
+| Could not import the list ({error}). | وارد کردن فهرست ناموفق بود ({error}). |
