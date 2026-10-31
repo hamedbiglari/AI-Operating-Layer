@@ -121,15 +121,15 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 1b603f3
+- sha (last non-docs commit): 41f187d
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: green @ 7c97cbb (8B-1, Backend CI run 77). 1b603f3 (8B-2) was pushed
-  after it; its run had not finished when v14 was written.
-- last code commit: "feat(knowledge): live knowledge detail screen
-  (8B-2)" @ 1b603f3
-- last feature commit: "feat(knowledge): live knowledge detail screen
-  (8B-2)" @ 1b603f3
+- last_ci: in_progress @ 41f187d (8B-3). 1b603f3 (8B-2) was green (user
+  checked GitHub Actions).
+- last code commit: "feat(knowledge): link list to detail and update
+  build.js (8B-3)" @ 41f187d
+- last feature commit: "feat(knowledge): link list to detail and update
+  build.js (8B-3)" @ 41f187d
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -283,8 +283,16 @@ file from scratch (do not diff). Output only the file content.
     #screen-knowledge-detail; i18n-coverage.js skips nested
     [data-debt-hidden] elements whole. 11 FA entries, 5 KNOWN words.
     e2e/knowledge-detail.js (21); gap.js tightened; --require adds
-    screen-knowledge-detail. build.js (old generator) still lists the
-    four pages.
+    screen-knowledge-detail.
+  - 8B-3 @ 41f187d — Knowledge list names (table and cards) link to
+    #screen-knowledge-detail?id=; the post-create "Open" goes there too.
+    The inline panel stays, opened only by the Research workspace
+    button (openDetail(it), no toWorkspace flag). build.js now builds
+    one screen-knowledge-detail (first object, the two cards hidden)
+    and its links point there; it was syntax-checked, not run (running
+    it would overwrite the hand-edited index.html). knowledge-list.js
+    108 checks (+2), knowledge-quickfix.js opens the workspace by its
+    button. Step 8 is 100% complete.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -298,12 +306,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 5. In progress — next step
 
-- Step 8 is almost complete: 8A, 8B-1, 8B-2, 8C, 8D done (see §4).
-- Next up: 8B-3 — link the live Knowledge list rows to
-  #screen-knowledge-detail?id= (today they open the list's own inline
-  panel; knowledge-list.js has 106 checks on that screen). Optional
-  8B-4: archive/delete and publish on the detail, EDIT_ROLES only.
-  Then Step 9 (AI).
+- Step 8 (Knowledge tools) is DONE: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D
+  (see §4). Optional later: archive/delete and publish on Knowledge
+  detail (EDIT_ROLES only).
+- Next up is Step 9 (AI). Needs investigation before coding.
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
   link is the first entry point into #screen-provenance?id=
@@ -321,10 +327,11 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the next step investigation prompt.
+State in sync → user says "go" → send the Step 9 (AI) investigation
+prompt (9A: which AI screens exist, which are live, their endpoints).
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the next step investigation prompt.
+Case B — user says "go": send the Step 9 (AI) investigation prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -383,6 +390,8 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v14 @ 1b603f3 — 8B-1 (7c97cbb) and 8B-2 shipped: live Knowledge
   detail, the 4 sample pages collapsed into one. v13's last_ci
   "in_progress @ 75e09ef" is corrected: 75e09ef was green.
+- v15 @ 41f187d — 8B-3 shipped (Knowledge list -> detail links, build.js
+  updated). Step 8 is complete; Step 9 (AI) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -586,8 +595,7 @@ Session / memory:
 - 7C Processing — done (see §4). 7D and 7E remain.
 - 7D Provenance (frontend only, 3+3N calls).
 - 7E Add source (Upload + URL only, ~1h).
-- Step 8 (Knowledge tools) almost complete: 8A, 8B-1, 8B-2, 8C, 8D
-  done; 8B-3 (Knowledge list -> detail link) remains.
+- Step 8 (Knowledge tools) complete: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D.
   V5-matrix-coverage-runtime-fa is OPEN.
 - Steps 9–14 (AI, Visibility, Commerce, Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
