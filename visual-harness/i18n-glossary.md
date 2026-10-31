@@ -426,3 +426,66 @@ Retrying and Cancelled reuse the Statuses row above.
    not fail on them; static strings and code-level templates stay strict.
 8. Error text from the browser or server (the `{error}` slot) is shown as it
    is, in English, inside `<bdi>`, as in convention 7.
+
+## Provenance (Step 7D-2)
+
+Terms for the live Provenance screen and its sample. Strength is the claim's
+aggregate (ClaimEvidenceStrength), not one study's rating.
+
+| English | Persian |
+|---|---|
+| Provenance | منشأ |
+| Claim | ادعا |
+| Claims shown: {shown} of {total} | ادعاهای نمایش‌داده‌شده: {shown} از {total} |
+| Pending review | در انتظار بررسی |
+| Rejected | ردشده |
+| Disputed | مورد مناقشه |
+| Deprecated | منسوخ |
+| Verified | راستی‌آزمایی‌شده |
+| Direct | مستقیم |
+| Indirect | غیرمستقیم |
+| Supports | حمایت می‌کند |
+| Contradicts | نقض می‌کند |
+| Mixed | دوپهلو |
+| Neutral | خنثی |
+| Aggregate strength: unverified | قوت کلی شواهد: تأییدنشده |
+| Aggregate strength: insufficient | قوت کلی شواهد: ناکافی |
+| Aggregate strength: weak | قوت کلی شواهد: ضعیف |
+| Aggregate strength: moderate | قوت کلی شواهد: متوسط |
+| No evidence is linked to this claim. | هیچ شاهدی به این ادعا پیوند داده نشده است. |
+| This knowledge object has no claims yet. | این پرونده دانش هنوز هیچ ادعایی ندارد. |
+| No knowledge object selected. Open one from Knowledge. | هیچ پرونده دانشی انتخاب نشده است. یکی را از «دانش» باز کنید. |
+| This knowledge object was not found. | این پرونده دانش پیدا نشد. |
+| Could not load provenance ({error}). | بارگذاری منشأ ناموفق بود ({error}). |
+| Remove this evidence link? The evidence record, its document and its source are kept. | پیوند این شاهد حذف شود؟ خود شاهد، سند و منبع آن حفظ می‌شوند. |
+| Evidence link removed. | پیوند شاهد حذف شد. |
+| Your role is not allowed to remove evidence links (HTTP 403). | نقش شما اجازهٔ حذف پیوند شواهد را ندارد (HTTP 403). |
+| Could not remove the link ({error}). | حذف پیوند ناموفق بود ({error}). |
+| Remove this evidence link from the claim — the evidence record itself is kept | حذف پیوند این شاهد از ادعا — خود شاهد حفظ می‌شود |
+| Remove this evidence link | حذف پیوند این شاهد |
+| Toranjebin Scientific Review | مرور علمی ترنجبین |
+| Where the statement “contains mannitol” actually comes from, in both directions. | گزارهٔ «حاوی مانیتول است» واقعاً از کجا آمده است، در هر دو جهت. |
+| Knowledge back to source | از دانش تا منبع |
+| (Toranjebin) | (ترنجبین) |
+| Published · updated 4 Sep 2026 | منتشرشده · به‌روزرسانی ۱۳ شهریور ۱۴۰۵ |
+| Contains mannitol | حاوی مانیتول |
+| Approved · aggregate strength: moderate | تأییدشده · قوت کلی شواهد: متوسط |
+| · compositional analysis | · تحلیل ترکیبی |
+| Verified · direct · supports | راستی‌آزمایی‌شده · مستقیم · حمایت می‌کند |
+| Canonical Markdown, chunk 118 | مارک‌داون مرجع، قطعهٔ ۱۱۸ |
+| Toranjebin — Scientific Review 2025 | ترنجبین — مرور علمی ۲۰۲۵ |
+| Full text accessible · | متن کامل در دسترس · |
+| One claim, several sources | یک ادعا، چند منبع |
+| Three support it; one contradicts it. That is shown, not averaged away. | سه منبع از آن حمایت می‌کنند و یکی آن را نقض می‌کند. این اختلاف نشان داده می‌شود، نه اینکه در میانگین گم شود. |
+| Scientific Review 2025 | مرور علمی ۲۰۲۵ |
+| Verified · direct | راستی‌آزمایی‌شده · مستقیم |
+| Compositional analysis, | تحلیل ترکیبی، |
+| Verified · direct · abstract only | راستی‌آزمایی‌شده · مستقیم · فقط چکیده |
+| Pending review · counts toward nothing yet | در انتظار بررسی · هنوز در هیچ محاسبه‌ای شمرده نمی‌شود |
+| Regional chemotype survey, 2023 | بررسی منطقه‌ای کموتیپ‌ها، ۲۰۲۳ |
+| Verified · indirect · different species | راستی‌آزمایی‌شده · غیرمستقیم · گونهٔ دیگر |
+| This removes the link between one evidence record and this claim — a real, immediate action already supported today. It never deletes the underlying evidence, the document, or the source. | این کار فقط پیوند میان یک شاهد و این ادعا را حذف می‌کند — اقدامی واقعی و فوری که همین امروز پشتیبانی می‌شود. خود شاهد، سند و منبع هرگز حذف نمی‌شوند. |
+| This claim is marked | این ادعا به‌عنوان |
+| conflicting | متعارض |
+| . It is not presented as settled anywhere in the product. |  علامت خورده است و در هیچ جای محصول قطعی نمایش داده نمی‌شود. |
+| Review the conflict | بررسی تعارض |

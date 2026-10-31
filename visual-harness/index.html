@@ -2899,6 +2899,10 @@ body[data-live="on"] .screen[data-live-wired] > :not(.page-header):not(.breadcru
 /* Source detail: in live mode its own breadcrumbs and header replace the sample ones. */
 body[data-live="on"] #screen-detail > .breadcrumbs, body[data-live="on"] #screen-detail > .page-header { display: none !important; }
 body[data-live="on"] #screen-processing > .breadcrumbs, body[data-live="on"] #screen-processing > .page-header { display: none !important; }
+body[data-live="on"] #screen-provenance > .breadcrumbs, body[data-live="on"] #screen-provenance > .page-header { display: none !important; }
+.prov-claims { display: grid; gap: var(--space-4); margin-top: var(--space-4); }
+.prov-claims .trail li[data-kind="conflict"] .trail__node { color: var(--warning); border-color: var(--warning); background: var(--warning-tint); }
+.prov-none { color: var(--text-subtle); font-size: var(--text-sm); margin: var(--space-2) 0 0; }
 .src-detail-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
 .src-doc-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 .src-doc-text pre { margin: 0; max-block-size: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -4042,7 +4046,7 @@ button.card { color: inherit; font: inherit; }
         <li data-kind="evidence"><span class="trail__node"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4 3 7.3 7 9 4-1.7 7-5 7-9V6zM9.2 12l2 2 3.6-3.8"/></svg></span>
           <span><span class="trail__kind">Evidence</span><br><span class="trail__value"><bdi class="identifier">EV-1042</bdi> · compositional analysis</span><span class="trail__meta">Verified · direct · supports</span></span></li>
         <li data-kind="document"><span class="trail__node"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v4h4"/><path d="M3 8v11a3 3 0 0 0 3 3h9" opacity=".45"/></svg></span>
-          <span><span class="trail__kind">Document</span><br><span class="trail__value">Canonical Markdown, chunk 118</span><span class="trail__meta">MarkItDown 0.1.7</span></span></li>
+          <span><span class="trail__kind">Document</span><br><span class="trail__value">Canonical Markdown, chunk 118</span><span class="trail__meta"><bdi class="identifier">MarkItDown 0.1.7</bdi></span></span></li>
         <li data-kind="source"><span class="trail__node"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7zM14 3v4h4"/></svg></span>
           <span><span class="trail__kind">Source</span><br><span class="trail__value">Toranjebin — Scientific Review 2025</span><span class="trail__meta">Full text accessible · <bdi class="identifier">10.1016/j.jep.2025.119104</bdi></span></span></li>
       </ol>
@@ -9553,6 +9557,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-sources': { kind: 'sources', title: 'Sources (Cloud Core)', compact: true },
     'screen-detail': { kind: 'detail', title: 'Source detail (Cloud Core)', compact: true },
     'screen-processing': { kind: 'processing', title: 'Document processing (Cloud Core)', compact: true },
+    'screen-provenance': { kind: 'provenance', title: 'Provenance (Cloud Core)', compact: true },
     'screen-visibility': { kind: 'table', title: 'AI visibility projects (Cloud Core)', endpoint: '/visibility/projects',
       cols: [['Project', 'name'], ['Platforms', 'platforms', 'list'], ['Target brand', 'target_brand'], ['Created', 'created_at', 'date']] },
     'screen-products': { kind: 'table', title: 'Products (Cloud Core)', endpoint: '/products',
@@ -10157,7 +10162,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     processing: 'M12 3a9 9 0 1 0 9 9M21 3v6h-6',
     warning: 'M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
     failed: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.8 9.2 9.2 14.8M9.2 9.2l5.6 5.6',
-    queued: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 1.8'
+    queued: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 1.8',
+    claim: 'M9.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3M18.5 6.5c-2 0-3.5 1.6-3.5 3.6 0 1.9 1.4 3.4 3.3 3.4-.2 1.6-1.3 2.7-3 3.3',
+    conflict: 'M12 2.5 3 7v6.5c0 4.6 3.7 8.4 9 10 5.3-1.6 9-5.4 9-10V7zM12 7.8v5M12 16.4h.01',
+    remove: 'M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5 7.4 20a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-13.5M10.3 10.5v6.5M13.7 10.5v6.5'
   };
   // [header, data-label, cell class]; the last header is for screen readers only.
   var SOURCE_COLS = [['Source', 'Source'], ['Status', 'Status'], ['Knowledge', 'Knowledge', 'num'], ['Claims', 'Claims', 'num'],
@@ -10184,6 +10192,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return b;
   }
   function identifier(text) { var b = el('bdi', 'identifier', text); b.dir = 'ltr'; return b; }
+  // Roles that may change knowledge (KNOWLEDGE_EDITOR_ROLES on the backend). Shared by Source detail and Provenance.
+  var EDIT_ROLES = ['owner', 'admin', 'researcher', 'editor'];
+  // The signed-in role, read once per connection (GET /auth/me) and shared by Source detail and Provenance.
+  // This listener is added before the screens' own, so a new connection resets it first.
+  var rolePromise = null;
+  document.addEventListener('aiol:live', function () { rolePromise = null; });
+  function connectionRole() {
+    if (!rolePromise) rolePromise = api('/auth/me').then(function (me) { return me.user ? me.user.role : null; }, function () { return null; });
+    return rolePromise;
+  }
   // A message with at most one action; returns the function that sets it.
   // Shared by Source detail and Document processing.
   function messageBox(parent) {
@@ -10525,7 +10543,6 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var kb = bytes < 1048576, s = el('span');
       return AIOL_I18N.set(s, kb ? '{n} KB' : '{n} MB', { n: kb ? Math.max(1, Math.round(bytes / 1024)) : Math.round(bytes / 104857.6) / 10 });
     }
-    var EDIT_ROLES = ['owner', 'admin', 'researcher', 'editor'];   // KNOWLEDGE_EDITOR_ROLES on the backend
     // A button whose visible label is the same on every row; the spoken name carries the title.
     function rowButton(label, spokenLabel, name) {
       var btn = el('button', 'btn btn--quiet'), shown = btn.appendChild(el('span')), spoken = btn.appendChild(el('span', 'visually-hidden'));
@@ -10668,7 +10685,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         return null;
       });
     }
-    function role() { return api('/auth/me').then(function (me) { st.role = me.user ? me.user.role : null; }).catch(function () { st.role = null; }); }
+    function role() { return connectionRole().then(function (r) { st.role = r; }); }
     document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-detail' && LIVE) load(); });
     // The role decides whether rows offer Reprocess, so it is read before they are drawn.
     panel.__detailLoad = function () { return role().then(load); };
@@ -10802,6 +10819,129 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__procLoad = load;
     return load();
   }
+  // Provenance (7D-2): one GET /knowledge/{id}/provenance per object (Rule 17). Each claim is a fan of
+  // its evidence links; evidence and sources are looked up in the response's maps, keyed by id.
+  var CLAIM_STATUS = { draft: 'Draft', pending_review: 'Pending review', approved: 'Approved', rejected: 'Rejected',
+    disputed: 'Disputed', deprecated: 'Deprecated' };
+  var CLAIM_STRENGTH = { unverified: 'Aggregate strength: unverified', insufficient: 'Aggregate strength: insufficient',
+    weak: 'Aggregate strength: weak', moderate: 'Aggregate strength: moderate' };
+  var EVIDENCE_STATUS = { draft: 'Draft', pending_review: 'Pending review', verified: 'Verified', rejected: 'Rejected' };
+  var DIRECTNESS = { direct: 'Direct', indirect: 'Indirect' };
+  var RELATION = { supports: 'Supports', contradicts: 'Contradicts', mixed: 'Mixed', neutral: 'Neutral' };
+  function provenanceScreen(panel) {
+    // Wired once; a later connect only reloads.
+    if (panel.__provLoad) return panel.__provLoad();
+    var screen = document.getElementById('screen-provenance');
+    var st = { seq: 0, role: null };
+    // In live mode these replace the sample breadcrumbs and header (CSS).
+    var top = el('div'); top.setAttribute('data-live-keep', '');
+    var crumbs = top.appendChild(screen.querySelector(':scope > .breadcrumbs').cloneNode(true)), up = crumbs.querySelector('a');
+    up.href = '#screen-knowledge'; AIOL_I18N.set(up, 'Knowledge');
+    var head = top.appendChild(el('div', 'page-header')), titles = head.appendChild(el('div'));
+    var h1 = titles.appendChild(el('h1')); h1.id = 'h-prov-live';
+    var count = titles.appendChild(el('p', 'prov-count'));
+    screen.insertBefore(top, screen.firstChild);
+    screen.setAttribute('aria-labelledby', 'h-prov-live');
+    var body = el('div'); body.setAttribute('data-live-keep', '');
+    var status = messageBox(body), say = messageBox(body);
+    var list = body.appendChild(el('div', 'prov-claims'));
+    panel.insertAdjacentElement('afterend', body);
+
+    // A known value is translated; anything else is shown as sent.
+    function word(parent, map, v) {
+      if (map[v]) AIOL_I18N.set(parent.appendChild(el('span')), map[v]); else parent.appendChild(el('bdi', null, v));
+    }
+    function sep(parent) { parent.appendChild(document.createTextNode(' · ')); }
+    function node(kind) { var n = el('span', 'trail__node'); n.appendChild(icon(kind)); return n; }
+    function removeButton(l) {
+      var btn = el('button', 'icon-button'); btn.type = 'button';
+      btn.setAttribute('aria-label', 'Remove this evidence link from the claim — the evidence record itself is kept');
+      btn.title = 'Remove this evidence link'; btn.appendChild(icon('remove'));
+      btn.addEventListener('click', function () {
+        var ask = 'Remove this evidence link? The evidence record, its document and its source are kept.';
+        if (!window.confirm(AIOL_I18N.format(ask, null, AIOL_I18N.lang()))) return;
+        btn.disabled = true;
+        api('/claim-evidence/' + encodeURIComponent(l.link_id), { method: 'DELETE' }).then(function () {
+          say('done', 'Evidence link removed.');
+          return load(true);   // the response is the source of truth for the links and totals
+        }).catch(function (e) {
+          // A role changed mid-session: say so and leave the button where it is.
+          if (e.denied === 403) say('denied', 'Your role is not allowed to remove evidence links (HTTP 403).');
+          else say('error', 'Could not remove the link ({error}).', { error: e.message });
+          btn.disabled = false;
+        });
+      });
+      return btn;
+    }
+    function linkRow(l, p) {
+      var ev = p.evidence[l.evidence_id], src = p.sources[ev.source_id], against = l.relation === 'contradicts';
+      var li = el('li'); li.dataset.kind = against ? 'conflict' : 'evidence'; li.setAttribute('data-fan', '');
+      li.appendChild(node(against ? 'conflict' : 'completed'));
+      var t = li.appendChild(el('span')); t.style.minInlineSize = '0';
+      word(t.appendChild(el('span', 'trail__kind')), RELATION, l.relation); t.appendChild(el('br'));
+      t.appendChild(el('span', 'trail__value')).appendChild(el('bdi', null, ev.summary)).dir = 'auto';
+      var meta = t.appendChild(el('span', 'trail__meta')), a = meta.appendChild(el('a'));
+      a.href = '#screen-detail?id=' + encodeURIComponent(src.id); a.appendChild(el('bdi', null, src.title)).dir = 'auto';
+      sep(meta); word(meta, EVIDENCE_STATUS, ev.status);
+      sep(meta); word(meta, DIRECTNESS, ev.directness);
+      if (EDIT_ROLES.indexOf(st.role) !== -1) li.appendChild(removeButton(l));
+      return li;
+    }
+    function claimCard(c, p) {
+      var card = el('div', 'card'), ol = card.appendChild(el('ol', 'trail trail--fan'));
+      var li = ol.appendChild(el('li')); li.dataset.kind = 'claim';
+      li.appendChild(node('claim'));
+      var t = li.appendChild(el('span'));
+      var kind = t.appendChild(el('span', 'trail__kind')); AIOL_I18N.set(kind, 'Claim'); t.appendChild(el('br'));
+      t.appendChild(el('span', 'trail__value')).appendChild(el('bdi', null, c.text)).dir = 'auto';
+      var meta = t.appendChild(el('span', 'trail__meta'));
+      word(meta, CLAIM_STATUS, c.status); sep(meta); word(meta, CLAIM_STRENGTH, c.evidence_strength);
+      c.links.forEach(function (l) { ol.appendChild(linkRow(l, p)); });
+      if (!c.links.length) { var none = card.appendChild(el('p', 'prov-none')); AIOL_I18N.set(none, 'No evidence is linked to this claim.'); }
+      return card;
+    }
+    // .prov-claims sets display, so [hidden] would not hide it.
+    function shown(on) {
+      list.style.display = on ? '' : 'none'; count.hidden = !on;
+      if (!on) { list.textContent = ''; h1.textContent = ''; h1.appendChild(AIOL_I18N.set(el('span'), 'Provenance')); }
+    }
+    function render(p) {
+      h1.textContent = ''; h1.appendChild(el('bdi', null, p.knowledge_object.canonical_name)).dir = 'auto';
+      AIOL_I18N.set(count, 'Claims shown: {shown} of {total}', { shown: p.claims.length, total: p.total_claims });
+      list.textContent = ''; p.claims.forEach(function (c) { list.appendChild(claimCard(c, p)); });
+      shown(true);
+      if (!p.claims.length) { count.hidden = true; status('empty', 'This knowledge object has no claims yet.'); }
+    }
+    function hashId() {
+      var h = location.hash;
+      return h.indexOf('#screen-provenance?') === 0 ? new URLSearchParams(h.slice(h.indexOf('?') + 1)).get('id') : null;
+    }
+    function role() { return connectionRole().then(function (r) { st.role = r; }); }
+    // keepSay: a reload after removing a link keeps the "removed" message.
+    function load(keepSay) {
+      var seq = ++st.seq, id = hashId();
+      if (keepSay !== true) say('');
+      shown(false);
+      if (!id) { status('empty', 'No knowledge object selected. Open one from Knowledge.'); return Promise.resolve(null); }
+      status('loading', 'Loading…');
+      // 200 is the backend's page limit; the count line says when an object has more claims.
+      return api('/knowledge/' + encodeURIComponent(id) + '/provenance?limit=200').then(function (p) {
+        if (seq !== st.seq) return null;        // a newer request owns the screen
+        state(panel, 'ready'); status(''); render(p); return p;
+      }).catch(function (e) {
+        if (seq !== st.seq) return null;
+        state(panel, 'ready');
+        // An unknown id, another organization's (404) or a malformed one (422): one sentence.
+        if (e.status === 404 || e.status === 422) status('empty', 'This knowledge object was not found.');
+        else if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else status('error', 'Could not load provenance ({error}).', { error: e.message }, 'Retry', load);
+        return null;
+      });
+    }
+    document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === 'screen-provenance' && LIVE) load(); });
+    panel.__provLoad = function () { return role().then(load); };
+    return panel.__provLoad();
+  }
   function dashboardCards(panel) {
     var grid = document.getElementById('dash-stats');
     function card(name, value, tpl, args) {
@@ -10909,6 +11049,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       else if (cfg.kind === 'sources') sourcesList(panel);
       else if (cfg.kind === 'detail') sourceDetail(panel);
       else if (cfg.kind === 'processing') processingScreen(panel);
+      else if (cfg.kind === 'provenance') provenanceScreen(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
@@ -13468,6 +13609,62 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Queued": "در صف",
     "Retrying": "تلاش دوباره",
     "Cancelled": "لغوشده",
+    // Provenance (Step 7D-2)
+    "Provenance": "منشأ",
+    "Claim": "ادعا",
+    "Claims shown: {shown} of {total}": "ادعاهای نمایش‌داده‌شده: {shown} از {total}",
+    "Pending review": "در انتظار بررسی",
+    "Rejected": "ردشده",
+    "Disputed": "مورد مناقشه",
+    "Deprecated": "منسوخ",
+    "Verified": "راستی‌آزمایی‌شده",
+    "Direct": "مستقیم",
+    "Indirect": "غیرمستقیم",
+    "Supports": "حمایت می‌کند",
+    "Contradicts": "نقض می‌کند",
+    "Mixed": "دوپهلو",
+    "Neutral": "خنثی",
+    "Aggregate strength: unverified": "قوت کلی شواهد: تأییدنشده",
+    "Aggregate strength: insufficient": "قوت کلی شواهد: ناکافی",
+    "Aggregate strength: weak": "قوت کلی شواهد: ضعیف",
+    "Aggregate strength: moderate": "قوت کلی شواهد: متوسط",
+    "No evidence is linked to this claim.": "هیچ شاهدی به این ادعا پیوند داده نشده است.",
+    "This knowledge object has no claims yet.": "این پرونده دانش هنوز هیچ ادعایی ندارد.",
+    "No knowledge object selected. Open one from Knowledge.": "هیچ پرونده دانشی انتخاب نشده است. یکی را از «دانش» باز کنید.",
+    "This knowledge object was not found.": "این پرونده دانش پیدا نشد.",
+    "Could not load provenance ({error}).": "بارگذاری منشأ ناموفق بود ({error}).",
+    "Remove this evidence link? The evidence record, its document and its source are kept.": "پیوند این شاهد حذف شود؟ خود شاهد، سند و منبع آن حفظ می‌شوند.",
+    "Evidence link removed.": "پیوند شاهد حذف شد.",
+    "Your role is not allowed to remove evidence links (HTTP 403).": "نقش شما اجازهٔ حذف پیوند شواهد را ندارد (HTTP 403).",
+    "Could not remove the link ({error}).": "حذف پیوند ناموفق بود ({error}).",
+    "Remove this evidence link from the claim — the evidence record itself is kept": "حذف پیوند این شاهد از ادعا — خود شاهد حفظ می‌شود",
+    "Remove this evidence link": "حذف پیوند این شاهد",
+    "Toranjebin Scientific Review": "مرور علمی ترنجبین",
+    "Where the statement “contains mannitol” actually comes from, in both directions.": "گزارهٔ «حاوی مانیتول است» واقعاً از کجا آمده است، در هر دو جهت.",
+    "Knowledge back to source": "از دانش تا منبع",
+    "(Toranjebin)": "(ترنجبین)",
+    "Published · updated 4 Sep 2026": "منتشرشده · به‌روزرسانی ۱۳ شهریور ۱۴۰۵",
+    "Contains mannitol": "حاوی مانیتول",
+    "Approved · aggregate strength: moderate": "تأییدشده · قوت کلی شواهد: متوسط",
+    "· compositional analysis": "· تحلیل ترکیبی",
+    "Verified · direct · supports": "راستی‌آزمایی‌شده · مستقیم · حمایت می‌کند",
+    "Canonical Markdown, chunk 118": "مارک‌داون مرجع، قطعهٔ ۱۱۸",
+    "Toranjebin — Scientific Review 2025": "ترنجبین — مرور علمی ۲۰۲۵",
+    "Full text accessible ·": "متن کامل در دسترس ·",
+    "One claim, several sources": "یک ادعا، چند منبع",
+    "Three support it; one contradicts it. That is shown, not averaged away.": "سه منبع از آن حمایت می‌کنند و یکی آن را نقض می‌کند. این اختلاف نشان داده می‌شود، نه اینکه در میانگین گم شود.",
+    "Scientific Review 2025": "مرور علمی ۲۰۲۵",
+    "Verified · direct": "راستی‌آزمایی‌شده · مستقیم",
+    "Compositional analysis,": "تحلیل ترکیبی،",
+    "Verified · direct · abstract only": "راستی‌آزمایی‌شده · مستقیم · فقط چکیده",
+    "Pending review · counts toward nothing yet": "در انتظار بررسی · هنوز در هیچ محاسبه‌ای شمرده نمی‌شود",
+    "Regional chemotype survey, 2023": "بررسی منطقه‌ای کموتیپ‌ها، ۲۰۲۳",
+    "Verified · indirect · different species": "راستی‌آزمایی‌شده · غیرمستقیم · گونهٔ دیگر",
+    "This removes the link between one evidence record and this claim — a real, immediate action already supported today. It never deletes the underlying evidence, the document, or the source.": "این کار فقط پیوند میان یک شاهد و این ادعا را حذف می‌کند — اقدامی واقعی و فوری که همین امروز پشتیبانی می‌شود. خود شاهد، سند و منبع هرگز حذف نمی‌شوند.",
+    "This claim is marked": "این ادعا به‌عنوان",
+    "conflicting": "متعارض",
+    ". It is not presented as settled anywhere in the product.": " علامت خورده است و در هیچ جای محصول قطعی نمایش داده نمی‌شود.",
+    "Review the conflict": "بررسی تعارض",
     "Evidence": "شواهد",
     "Approved": "تأییدشده"
   };

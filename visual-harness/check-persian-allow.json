@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "pair": [
+      "06f1 06f3",
+      "06f3 06f1"
+    ],
+    "reason": "Two numbers: 13 (13 Shahrivar, Provenance sample date) and 31 (31 evidence records, Knowledge sample)."
+  }
+]
