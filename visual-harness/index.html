@@ -4614,7 +4614,7 @@ button.card { color: inherit; font: inherit; }
   </div>
 </section>
 
-<section class="screen" id="screen-chat-settings" aria-labelledby="h-chat-settings">
+<section class="screen" id="screen-chat-settings" aria-labelledby="h-chat-settings" data-live-wired>
   <div class="page-header"><div><h1 id="h-chat-settings">Chat settings</h1>
     <div class="callout page-intro" role="note"><p>Controls for the knowledge chat on the public website. Choose which knowledge topics it may read, whether it may ask to research online, which AI resource pays for it, and the limits per person. The chat stays off until you enable it here, and every rule on this screen is enforced on the server — not in the browser.</p></div></div></div>
   <div class="card live-panel">
@@ -13301,20 +13301,23 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           if (!r.ok) throw new Error((b.error && b.error.message) || (typeof b.detail === 'string' ? b.detail : '') || ('HTTP ' + r.status));
           return b; }); });
   }
-  function say(m, bad) { var n = $('cs-msg'); if (!n) return; n.textContent = m || ''; n.className = bad ? 'otp-message otp-message--error' : 'otp-message'; }
+  // Every visible string goes through AIOL_I18N.set, so it follows the language switch (9C).
+  // A server's own message is shown as sent, in the {error} slot.
+  function say(tpl, args, bad) { var n = $('cs-msg'); if (!n) return; AIOL_I18N.set(n, tpl || '', args); n.className = bad ? 'otp-message otp-message--error' : 'otp-message'; }
+  function failed(e) { say('{error}', { error: e.message }, true); }
   function num(id) { var v = $(id).value.trim(); return v === '' ? null : Number(v); }
 
   var current = null;
 
   function paintTopics(all, allowed) {
     var box = $('cs-topics'); box.textContent = '';
-    if (!all.length) { box.appendChild(el('p', 'aic-empty', 'This workspace has no knowledge topics yet. Add sources and build a topic first.')); return; }
+    if (!all.length) { var none = box.appendChild(el('p', 'aic-empty')); AIOL_I18N.set(none, 'This workspace has no knowledge topics yet. Add sources and build a topic first.'); return; }
     var chosen = {}; (allowed || []).forEach(function (id) { chosen[id] = true; });
     all.forEach(function (k) {
       var row = el('label', 'field field--inline');
       var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = k.id;
       cb.className = 'cs-topic'; cb.checked = !!chosen[k.id];
-      var name = el('span', null, k.canonical_name + ' (' + k.object_type + ')'); name.dir = 'auto';
+      var name = el('bdi', null, k.canonical_name + ' (' + k.object_type + ')'); name.dir = 'auto';
       row.appendChild(cb); row.appendChild(name); box.appendChild(row);
     });
   }
@@ -13331,12 +13334,15 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     $('cs-retention').value = s.retention_days === null ? '' : s.retention_days;
     $('cs-citations').value = s.show_citations ? 'true' : 'false';
     $('cs-feedback').value = s.collect_feedback ? 'true' : 'false';
-    var state = $('cs-state');
-    state.textContent = s.configured
-      ? (s.enabled ? 'The website chat is ON.' : 'Saved, but the website chat is OFF.')
-      : 'Never configured: the website chat is OFF for this workspace.';
+    var state = $('cs-state'); state.textContent = '';
+    var line = state.appendChild(el('span'));
+    if (!s.configured) AIOL_I18N.set(line, 'Never configured: the website chat is OFF for this workspace.');
+    else if (s.enabled) AIOL_I18N.set(line, 'The website chat is ON.');
+    else AIOL_I18N.set(line, 'Saved, but the website chat is OFF.');
     if (s.configured && s.enabled && !s.routing_policy_id) {
-      state.textContent += ' No AI resource is chosen, so questions are answered as "provider unavailable" rather than guessed.';
+      state.appendChild(document.createTextNode(' '));
+      var warn = state.appendChild(el('span'));
+      AIOL_I18N.set(warn, 'No AI resource is chosen, so questions are answered as "provider unavailable" rather than guessed.');
     }
   }
 
@@ -13352,7 +13358,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       (r[1].items || []).forEach(function (p) { var o = el('option', null, p.name + ' (' + p.mode + ')'); o.value = p.id; sel.appendChild(o); });
       paintTopics(r[2].items || [], r[0].allowed_knowledge_object_ids);
       paint(r[0]);
-    }).catch(function (e) { say(e.message, true); });
+    }).catch(failed);
   }
 
   function save() {
@@ -13372,12 +13378,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       collect_feedback: $('cs-feedback').value === 'true'
     };
     if (body.max_output_tokens === null || body.context_token_budget === null) {
-      say('The answer length and the knowledge budget are both required.', true); return;
+      say('The answer length and the knowledge budget are both required.', null, true); return;
     }
-    $('cs-save').disabled = true; say('Saving...');
+    $('cs-save').disabled = true; say('Saving…');
     api('/chat/settings', 'PUT', body).then(function (s) {
       paint(s); say('Saved. The website chat uses these settings from the next question.');
-    }).catch(function (e) { say(e.message, true); })
+    }).catch(failed)
       .then(function () { $('cs-save').disabled = false; });
   }
 
@@ -13966,7 +13972,40 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Preparing the export…": "در حال آماده‌سازی خروجی…",
     "Exported as {format}.": "خروجی با قالب {format} گرفته شد.",
     "Only an owner or admin can export memory.": "فقط مالک یا مدیر می‌تواند از حافظه خروجی بگیرد.",
-    "Could not export ({error}).": "خروجی‌گیری ناموفق بود ({error})."
+    "Could not export ({error}).": "خروجی‌گیری ناموفق بود ({error}).",
+    // Chat settings (Step 9C)
+    "Controls for the knowledge chat on the public website. Choose which knowledge topics it may read, whether it may ask to research online, which AI resource pays for it, and the limits per person. The chat stays off until you enable it here, and every rule on this screen is enforced on the server — not in the browser.": "تنظیمات گفت‌وگوی دانش در وب‌سایت عمومی. انتخاب کنید کدام موضوعات دانش را بخواند، آیا می‌تواند برای پژوهش آنلاین اجازه بخواهد، کدام منبع هوش مصنوعی هزینه‌اش را می‌پردازد، و محدودیت‌های هر نفر. گفت‌وگو تا وقتی اینجا روشنش نکنید خاموش می‌ماند، و هر قاعدهٔ این صفحه روی سرور اعمال می‌شود — نه در مرورگر.",
+    "Save settings": "ذخیرهٔ تنظیمات",
+    "Chat on the website": "گفت‌وگو در وب‌سایت",
+    "Off": "خاموش",
+    "On": "روشن",
+    "Online research": "پژوهش آنلاین",
+    "Never — answer only from stored knowledge": "هرگز — فقط از دانش ذخیره‌شده پاسخ بده",
+    "Ask the person every time": "هر بار از کاربر بپرس",
+    "Allowed without asking each time": "بدون پرسیدن در هر بار مجاز است",
+    "AI resource that pays for answers": "منبع هوش مصنوعی که هزینهٔ پاسخ‌ها را می‌پردازد",
+    "None — the chat cannot call a model": "هیچ — گفت‌وگو نمی‌تواند مدلی را فراخوانی کند",
+    "Answers per person per day": "پاسخ برای هر نفر در روز",
+    "Longest answer (output tokens)": "بلندترین پاسخ (توکن‌های خروجی)",
+    "Knowledge per answer (context tokens)": "دانش در هر پاسخ (توکن‌های زمینه)",
+    "Cost ceiling per answer": "سقف هزینهٔ هر پاسخ",
+    "Keep conversations for (days)": "نگهداری گفت‌وگوها (روز)",
+    "Show sources under each answer": "نمایش منابع زیر هر پاسخ",
+    "Yes": "بله",
+    "No": "خیر",
+    "Collect answer feedback": "گردآوری بازخورد پاسخ",
+    "Knowledge topics the chat may read": "موضوعات دانشی که گفت‌وگو می‌تواند بخواند",
+    "Select none to allow every topic in this workspace. Selecting some makes the list exact: the chat can read nothing else, and a question outside it is answered as a knowledge gap rather than guessed.": "هیچ‌کدام را انتخاب نکنید تا همهٔ موضوعات این فضای کاری مجاز باشند. انتخاب برخی، فهرست را دقیق می‌کند: گفت‌وگو چیز دیگری نمی‌تواند بخواند، و به پرسشی خارج از آن به‌جای حدس زدن، به‌عنوان شکاف دانش پاسخ داده می‌شود.",
+    "no ceiling": "بدون سقف",
+    "keep until deleted": "نگهداری تا زمان حذف",
+    "This workspace has no knowledge topics yet. Add sources and build a topic first.": "این فضای کاری هنوز موضوع دانشی ندارد. ابتدا منبع بیفزایید و یک موضوع بسازید.",
+    "Never configured: the website chat is OFF for this workspace.": "هرگز پیکربندی نشده: گفت‌وگوی وب‌سایت برای این فضای کاری خاموش است.",
+    "The website chat is ON.": "گفت‌وگوی وب‌سایت روشن است.",
+    "Saved, but the website chat is OFF.": "ذخیره شد، اما گفت‌وگوی وب‌سایت خاموش است.",
+    "No AI resource is chosen, so questions are answered as \"provider unavailable\" rather than guessed.": "هیچ منبع هوش مصنوعی انتخاب نشده است، پس به پرسش‌ها به‌جای حدس زدن، با «ارائه‌دهنده در دسترس نیست» پاسخ داده می‌شود.",
+    "The answer length and the knowledge budget are both required.": "طول پاسخ و بودجهٔ دانش هر دو الزامی‌اند.",
+    "Saving…": "در حال ذخیره…",
+    "Saved. The website chat uses these settings from the next question.": "ذخیره شد. گفت‌وگوی وب‌سایت از پرسش بعدی این تنظیمات را به کار می‌برد."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

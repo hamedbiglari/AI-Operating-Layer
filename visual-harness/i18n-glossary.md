@@ -700,3 +700,42 @@ Terms for the Memory Center screen. Kind and change labels stand for API values;
 | Exported as {format}. | خروجی با قالب {format} گرفته شد. |
 | Only an owner or admin can export memory. | فقط مالک یا مدیر می‌تواند از حافظه خروجی بگیرد. |
 | Could not export ({error}). | خروجی‌گیری ناموفق بود ({error}). |
+
+## Chat settings (Step 9C)
+
+Terms for the Chat settings screen. Option text inside the dropdowns stays English at runtime (the Persian layer skips select), but the rows are kept for the static scan. Topic names, types and policy names stay as sent.
+
+| English | Persian |
+|---|---|
+| Controls for the knowledge chat on the public website. Choose which knowledge topics it may read, whether it may ask to research online, which AI resource pays for it, and the limits per person. The chat stays off until you enable it here, and every rule on this screen is enforced on the server — not in the browser. | تنظیمات گفت‌وگوی دانش در وب‌سایت عمومی. انتخاب کنید کدام موضوعات دانش را بخواند، آیا می‌تواند برای پژوهش آنلاین اجازه بخواهد، کدام منبع هوش مصنوعی هزینه‌اش را می‌پردازد، و محدودیت‌های هر نفر. گفت‌وگو تا وقتی اینجا روشنش نکنید خاموش می‌ماند، و هر قاعدهٔ این صفحه روی سرور اعمال می‌شود — نه در مرورگر. |
+| Save settings | ذخیرهٔ تنظیمات |
+| Chat on the website | گفت‌وگو در وب‌سایت |
+| Off | خاموش |
+| On | روشن |
+| Online research | پژوهش آنلاین |
+| Never — answer only from stored knowledge | هرگز — فقط از دانش ذخیره‌شده پاسخ بده |
+| Ask the person every time | هر بار از کاربر بپرس |
+| Allowed without asking each time | بدون پرسیدن در هر بار مجاز است |
+| AI resource that pays for answers | منبع هوش مصنوعی که هزینهٔ پاسخ‌ها را می‌پردازد |
+| None — the chat cannot call a model | هیچ — گفت‌وگو نمی‌تواند مدلی را فراخوانی کند |
+| Answers per person per day | پاسخ برای هر نفر در روز |
+| Longest answer (output tokens) | بلندترین پاسخ (توکن‌های خروجی) |
+| Knowledge per answer (context tokens) | دانش در هر پاسخ (توکن‌های زمینه) |
+| Cost ceiling per answer | سقف هزینهٔ هر پاسخ |
+| Keep conversations for (days) | نگهداری گفت‌وگوها (روز) |
+| Show sources under each answer | نمایش منابع زیر هر پاسخ |
+| Yes | بله |
+| No | خیر |
+| Collect answer feedback | گردآوری بازخورد پاسخ |
+| Knowledge topics the chat may read | موضوعات دانشی که گفت‌وگو می‌تواند بخواند |
+| Select none to allow every topic in this workspace. Selecting some makes the list exact: the chat can read nothing else, and a question outside it is answered as a knowledge gap rather than guessed. | هیچ‌کدام را انتخاب نکنید تا همهٔ موضوعات این فضای کاری مجاز باشند. انتخاب برخی، فهرست را دقیق می‌کند: گفت‌وگو چیز دیگری نمی‌تواند بخواند، و به پرسشی خارج از آن به‌جای حدس زدن، به‌عنوان شکاف دانش پاسخ داده می‌شود. |
+| no ceiling | بدون سقف |
+| keep until deleted | نگهداری تا زمان حذف |
+| This workspace has no knowledge topics yet. Add sources and build a topic first. | این فضای کاری هنوز موضوع دانشی ندارد. ابتدا منبع بیفزایید و یک موضوع بسازید. |
+| Never configured: the website chat is OFF for this workspace. | هرگز پیکربندی نشده: گفت‌وگوی وب‌سایت برای این فضای کاری خاموش است. |
+| The website chat is ON. | گفت‌وگوی وب‌سایت روشن است. |
+| Saved, but the website chat is OFF. | ذخیره شد، اما گفت‌وگوی وب‌سایت خاموش است. |
+| No AI resource is chosen, so questions are answered as "provider unavailable" rather than guessed. | هیچ منبع هوش مصنوعی انتخاب نشده است، پس به پرسش‌ها به‌جای حدس زدن، با «ارائه‌دهنده در دسترس نیست» پاسخ داده می‌شود. |
+| The answer length and the knowledge budget are both required. | طول پاسخ و بودجهٔ دانش هر دو الزامی‌اند. |
+| Saving… | در حال ذخیره… |
+| Saved. The website chat uses these settings from the next question. | ذخیره شد. گفت‌وگوی وب‌سایت از پرسش بعدی این تنظیمات را به کار می‌برد. |
