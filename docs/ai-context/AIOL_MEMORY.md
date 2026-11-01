@@ -121,16 +121,16 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 6965956
+- sha (last non-docs commit): 622d417
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 6965956 (merge of the native apps; pushed
-  without waiting, as the user authorised). 196c733 (9E-2), ca0ec2d and
-  e0da56f (Step 11) were in progress at push time; rebrand (e3709ce)
-  green; Step 10 (79a19fb, run 89) green; 9F (192c302, run 87) green.
+- last_ci: in_progress @ 622d417 (12B; pushed right behind 12A a520f3e
+  without waiting, as the user authorised; 25 browser suites green
+  locally, 612 checks). Merge 6965956: Backend CI and Client suite CI
+  green. 196c733 (9E-2), e0da56f (Step 11), e3709ce (rebrand) green.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(ai): delete buttons and full runtime translation (9E-2)" @ 196c733
+- last code commit: "feat(web): translate website screens (12B)" @ 622d417
 - last feature commit: "feat(ai): delete buttons and full runtime translation (9E-2)" @ 196c733
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
@@ -423,6 +423,30 @@ file from scratch (do not diff). Output only the file content.
   files that still had it. 23 browser suites (578 checks) green
   locally; full backend suite left to CI (Rule 21). The client suite
   has its own workflow (.github/workflows/clients.yml).
+- 12A @ a520f3e — auth screens, frontend only (user approved): #screen-login
+  calls POST /auth/login-code/request and /verify when AI Core is
+  connected or named by <html data-core-url>; otherwise the sample
+  fixture (123456). Messages are the page's own, by HTTP status (401;
+  423 with Retry-After 3600/86400 -> 1 h / 24 h; 429 cooldown -> the code
+  step; 503). Success calls AIOL_LIVE_CONNECT with the token. Lockout
+  text checked against login_code_service (5 min code, 3 wrong -> 1 h,
+  3 more -> 24 h): unchanged. Hidden as debt: both Google buttons and
+  dividers (existing row CLIENT-oidc), sign-up website field and
+  marketing opt-in. New rows, all OPEN: V5-signup-website-field,
+  V5-signup-marketing-optin, V5-signup-terms-record (checkbox is a
+  client-side gate only). 68 FA entries; brand name and avatar initials
+  marked .identifier.identifier--plain. e2e/auth.js (18).
+- 12B @ 622d417 — website screens (blog, sections, subscribers; already
+  live via the ADR-118 script) translated: messages, headers, labels,
+  buttons through AIOL_I18N.set, dates via {d}, controls named by hidden
+  translated labels (aria-labelledby). 54 FA entries. e2e/website.js (15).
+- Gotchas found in 12: (1) i18n-coverage.js removes a [data-debt-hidden]
+  element by its closing tag, so never put the attribute on a void
+  element (<input>): wrap it in a <div>. (2) The Persian layer
+  translates each text node, but the coverage tool joins text around a
+  removed <bdi>/.identifier: add a fragment key too (fixed Step 10's
+  User-Agent sentence; check in e2e/visibility.js). (3) .auth-check has
+  display:flex !important, which beats [data-debt-hidden]: wrap it.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -431,8 +455,8 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel
-  and 23 browser suites (578 checks at 6965956).
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel,screen-login,screen-signup,screen-login-code,screen-site-blog,screen-site-sections,screen-site-subscribers
+  and 25 browser suites (612 checks at 622d417).
 
 ## 5. In progress — next step
 
@@ -441,8 +465,9 @@ file from scratch (do not diff). Output only the file content.
 - Step 9 is 100% complete including 9E-2 (see §4).
 - Step 10 (Visibility) and Step 11 (Commerce) are complete (see §4).
 - The native apps and Device Intelligence are merged (see §4).
-- Next up: Step 12 (Website + Auth). Still open: the four
-  V5-visibility/V5-access rows, the four Step 11 rows,
+- Step 12 (Website + Auth) is 100% complete: 12A + 12B (see §4).
+- Next up: Step 13 (Settings). Still open: the three V5-signup-* rows,
+  CLIENT-oidc, the four V5-visibility/V5-access rows, the four Step 11 rows,
   V5-command-workspace-runtime-fa and the duplicate discovery read on
   connect.
 - Debt rows added in 9A: V5-ai-prompts OPEN; V5-ai-center-deletes CLOSED (9E-2).
@@ -463,10 +488,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the Step 12 (Website + Auth) prompt.
+State in sync → user says "go" → send the Step 13 (Settings) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the Step 12 (Website + Auth) prompt.
+Case B — user says "go": send the Step 13 (Settings) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -548,6 +573,8 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v24 @ 6965956 — native apps and Device Intelligence merged from
   claude/nice-fermi-du1d71 (5 conflicts resolved, 71 files rebranded).
   Step 12 (Website + Auth) is next.
+- v25 @ 622d417 — Step 12 shipped: 12A live auth screens (a520f3e), 12B
+  website screens translated (622d417). Step 13 (Settings) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -768,8 +795,9 @@ Session / memory:
 - Step 9 (AI) complete: 9A-9F done (V5-ai-center-runtime-fa and
   V5-command-workspace-runtime-fa open).
 - Step 10 (Visibility) complete @ 79a19fb; Step 11 (Commerce: Products)
-  complete @ e0da56f; 9E-2 complete @ 196c733. Step 12 is next.
-- Steps 12–14 (Website+Auth, Settings, Admin)
+  complete @ e0da56f; 9E-2 complete @ 196c733; Step 12 complete @ 622d417.
+  Step 13 (Settings) is next.
+- Steps 13–14 (Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
 - Design elevation across all screens — baseline Knowledge critique
