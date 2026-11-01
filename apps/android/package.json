@@ -12,6 +12,6 @@
     "build": "tauri android build --aab"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.12.2"
+    "@tauri-apps/cli": "2.12.4"
   }
 }
