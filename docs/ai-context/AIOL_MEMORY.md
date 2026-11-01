@@ -121,21 +121,19 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 26e1829
+- sha (last non-docs commit): 745a087
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 26e1829 (14A/14C; pushed together with 14B
-  0fe44e1 without waiting, as the user authorised). Locally: 27 browser
-  suites green (646 checks); test_platform_admin.py 5 passed; the wider
-  auth/tenant/integrity backend run was still going at push time (no
-  failures seen). 13A-13C (3c3c5af, 48e7073, 889db79) pushed without
-  waiting; merge 6965956 Backend CI + Client suite CI green.
+- last_ci: in_progress @ 745a087 (polish phases 2-4 pushed without
+  waiting, as the user authorised: 1e1c69a, f8599a7, b9c9e9b, 745a087).
+  Polish phase 1 bacec45 Backend CI green. Locally: 28 browser suites
+  green after phase 2; apps/shared unit tests 41/41; test_federated_research
+  36/36, test_platform_admin 6/6.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(admin): live admin screens and user detail (14A, 14C)" @ 26e1829
+- last code commit: "test(e2e): add real API key integration testing suite" @ 745a087
 - last feature commit: "feat(admin): live admin screens and user detail (14A, 14C)" @ 26e1829
-- last fix commit: "fix(processing): cast to text in 0047 backfill
-  (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
+- last fix commit: "fix(apps): resolve native client integration issues" @ b9c9e9b
 
 ## 4. Completed steps (compact)
 
@@ -493,6 +491,38 @@ file from scratch (do not diff). Output only the file content.
   non-admins are told so and nothing is requested). Debt rows, all OPEN:
   V5-admin-billing, V5-admin-trash, V5-admin-user-actions, V5-admin-grant.
   71 FA entries; e2e/admin.js (20). Step 14 is complete.
+- Polish phase 1 (debt) @ bacec45 — GET /research/sources/summaries?ids=
+  (up to 50, org-scoped, one call; the Research card uses it: Rule 17);
+  POST /admin/grant (user_id or email) and DELETE /admin/grant/{user_id}
+  (platform admin only, audit-logged, idempotent, 409 on self-revoke) with
+  Grant admin / Make admin / Revoke on #screen-admin-users; every runtime
+  string of the Research engine card is a template (130 FA entries; the
+  evidence-graph edge lines inside bdi stay as sent). Rows
+  V5-research-sources-n-plus-one, V5-admin-grant,
+  V5-settings-research-runtime-fa CLOSED. New e2e/research.js (7) in CI;
+  e2e/admin.js now 23.
+- Polish phase 2 (design) @ 1e1c69a (+ f8599a7 restores index.html's
+  mixed line endings after a sed edit) — one scoped style block for
+  #screen-dashboard, #screen-sources, #screen-knowledge: larger stat
+  figures, card lift on hover, tinted needs-review card, divided
+  label/figure rows in the dashboard panels (.dash-panels replaces an
+  inline grid style), framed tables, source icon tiles, framed knowledge
+  toolbar. Tokens and logical properties only; no letter-spacing on
+  Persian; reduced-motion respected. No logic or ID changes.
+- Polish phase 3 (apps) @ b9c9e9b — Windows fixes in apps/shared:
+  export-platforms keys '/'-joined (export --check had flagged all 194
+  files), the design-sync test uses fileURLToPath, e2e/run.mjs honours
+  PW_EXE. Unit tests 41/41 (were 38/41 on Windows). Shared-UI e2e against
+  a local AI Core 24/26: the two misses come from the local venv's
+  FastAPI 0.115.0 (requirements pin 0.136.3) closing the DB session before
+  the chat stream body runs; CI installs the pin. No cargo locally.
+- Polish phase 4 (real keys) @ 745a087 — visual-harness/e2e/real-keys.js
+  (AI Center provider/account/credential through the forms + Test
+  connection PASS; model + routing policy; a synthesis command Planned
+  and Run on #screen-chat; the succeeded execution on
+  #screen-ai-executions; the credential revoked at the end) and
+  docs/e2e-real-keys.md. Not in CI; never run automatically. AI Center
+  accounts have an Anthropic adapter only.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -502,7 +532,7 @@ file from scratch (do not diff). Output only the file content.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
   screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel,screen-login,screen-signup,screen-login-code,screen-site-blog,screen-site-sections,screen-site-subscribers,screen-settings,screen-admin-users,screen-admin-user-detail,screen-admin-overview,screen-admin-orgs
-  and 27 browser suites (646 checks at 26e1829).
+  and 28 browser suites (the last is research.js).
 
 ## 5. In progress — next step
 
@@ -515,13 +545,14 @@ file from scratch (do not diff). Output only the file content.
 - Step 13 (Settings) is 100% complete: 13A + 13B + 13C (see §4).
 - Step 14 (Admin) is 100% complete: 14B + 14A/14C (see §4).
 - ALL STEPS 5–14 ARE 100% COMPLETE — the visual-harness phase is finished.
-- Next up: no step is planned yet; the user decides the next phase
-  (candidates: the open debt rows, design elevation, Research runtime FA).
-  Still open: the four Step 14 rows, the seven Step 13 rows,
-  the three V5-signup-* rows,
-  CLIENT-oidc, the four V5-visibility/V5-access rows, the four Step 11 rows,
+- All Steps (5-14) and final polish (Debt, Design, Apps, E2E) are complete.
+- Next up: no phase is planned; the user decides. Still open: three Step 14
+  rows (V5-admin-billing, V5-admin-trash, V5-admin-user-actions), the seven
+  Step 13 rows, the three V5-signup-* rows, CLIENT-oidc, the four
+  V5-visibility/V5-access rows, the four Step 11 rows,
   V5-command-workspace-runtime-fa and the duplicate discovery read on
-  connect.
+  connect. Local env note: cloud-core/.venv has FastAPI 0.115.0; run
+  pip install -r requirements.txt when online.
 - Debt rows added in 9A: V5-ai-prompts OPEN; V5-ai-center-deletes CLOSED (9E-2).
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
@@ -633,6 +664,9 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v27 @ 26e1829 — Step 14 shipped: 14B platform admin API and auth
   (0fe44e1), 14A/14C live admin screens and user detail (26e1829). The
   whole Step 5–14 phase is finished.
+- v28 @ 745a087 — final polish shipped: debt (bacec45), design (1e1c69a,
+  f8599a7), native apps (b9c9e9b), real-key e2e (745a087). All Steps
+  (5-14) and final polish (Debt, Design, Apps, E2E) are complete.
 
 ## 10. Historical context (from two prior sessions)
 
