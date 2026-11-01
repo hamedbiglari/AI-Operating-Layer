@@ -1,4 +1,28 @@
-version: "3.9"
+# AIOL deployment stack. Copy .env.example to .env, fill in the required values, then:
+#   docker compose up -d --build
+# Services: postgres (pgvector), redis, migrate (one-shot `alembic upgrade head`), cloud-core (FastAPI),
+# celery-worker, celery-beat, visual-harness (nginx serving the static harness).
+# The cloud-core image starts in production mode and refuses to boot while SECRET_KEY or the database
+# password still hold development defaults (security audit SEC-09); set APP_ENV=development in .env for
+# local work. Postgres and Redis listen on 127.0.0.1 only: reachable from this machine (tests, a local
+# backend), never from the network.
+
+x-cloud-core: &cloud-core
+  build:
+    context: ./cloud-core
+    dockerfile: Dockerfile
+  image: aiol/cloud-core:local
+  restart: unless-stopped
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    # Inside the stack the services are reached by name, whatever .env says for local (non-Docker) runs.
+    DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-aiol}:${POSTGRES_PASSWORD:-aiol_dev_password}@postgres:5432/${POSTGRES_DB:-aiol}
+    REDIS_URL: ${REDIS_URL_INTERNAL:-redis://redis:6379/0}
+  volumes:
+    # Uploaded source files: written by the API, read by the worker that converts them.
+    - sources:/var/lib/aiol/sources
 
 services:
   postgres:
@@ -10,7 +34,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aiol_dev_password}
       POSTGRES_DB: ${POSTGRES_DB:-aiol}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -24,75 +48,85 @@ services:
     container_name: aiol_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  api:
-    build:
-      context: ./cloud-core
-      dockerfile: Dockerfile
+  # Applies every pending migration, then exits. The API and the workers start only after it succeeds.
+  migrate:
+    <<: *cloud-core
+    container_name: aiol_migrate
+    restart: "no"
+    volumes: []
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cloud-core:
+    <<: *cloud-core
     container_name: aiol_api
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://aiol:aiol_dev_password@postgres:5432/aiol}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
-    volumes:
-      - ./cloud-core:/app
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/api/v1/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
 
-  # Phase 17: the Celery worker (all async jobs) and Celery beat (periodic
-  # jobs — today only ai_executions.reclaim_stale). Before Phase 17 this file
-  # defined no worker at all, and its build context pointed at a ./backend
-  # directory that does not exist in this repository (the code lives in
-  # ./cloud-core) — both corrected here because stale-execution recovery
-  # cannot run without them.
-  worker:
-    build:
-      context: ./cloud-core
-      dockerfile: Dockerfile
+  # All asynchronous work: document conversion, AI jobs, workspace runs, research.
+  celery-worker:
+    <<: *cloud-core
     container_name: aiol_worker
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://aiol:aiol_dev_password@postgres:5432/aiol}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     command: ["celery", "-A", "app.workers.celery_app", "worker", "--loglevel=info"]
-
-  beat:
-    build:
-      context: ./cloud-core
-      dockerfile: Dockerfile
-    container_name: aiol_beat
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
-    # Exactly one beat process per deployment, or jobs are scheduled twice.
+
+  # Periodic jobs (stale AI-execution reclaim, AI-job recovery, device-observation purge).
+  # Exactly one beat process per deployment, or jobs are scheduled twice.
+  celery-beat:
+    <<: *cloud-core
+    container_name: aiol_beat
+    volumes: []
     command: ["celery", "-A", "app.workers.celery_app", "beat", "--loglevel=info",
               "--schedule=/tmp/celerybeat-schedule"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  # The visual harness is static HTML; nginx serves it read-only. Add its origin
+  # (http://localhost:${HARNESS_PORT}) to CORS_ALLOWED_ORIGINS so it can call cloud-core.
+  visual-harness:
+    image: nginx:1.27-alpine
+    container_name: aiol_harness
+    restart: unless-stopped
+    ports:
+      - "${HARNESS_PORT:-8080}:80"
+    volumes:
+      - ./visual-harness:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/index.html"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   pgdata:
+  redisdata:
+  sources:

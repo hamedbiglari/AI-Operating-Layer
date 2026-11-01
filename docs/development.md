@@ -28,17 +28,17 @@ Each phase must leave the repository runnable via
 ## Local workflow
 
 ```bash
-cp .env.example .env
-docker compose up --build          # start api + postgres(pgvector) + redis
-docker compose exec api alembic upgrade head
-docker compose exec api pytest -v
+cp .env.example .env               # set APP_ENV=development and a SECRET_KEY for local work
+docker compose up --build          # postgres(pgvector), redis, migrate, cloud-core, celery-worker, celery-beat, visual-harness
+                                   # (the one-shot migrate service runs `alembic upgrade head` before the API starts)
+docker compose exec cloud-core pytest -v
 ```
 
 ## Adding a new migration (from Phase 1 onward)
 
 ```bash
-docker compose exec api alembic revision --autogenerate -m "add organizations and users"
-docker compose exec api alembic upgrade head
+docker compose exec cloud-core alembic revision --autogenerate -m "add organizations and users"
+docker compose exec cloud-core alembic upgrade head
 ```
 
 Autogenerate only picks up models imported in `app/models/__init__.py`
@@ -57,8 +57,8 @@ Docker. This is a convenience for quick unit-test iteration — it is
 ```bash
 # 1. Via Docker (recommended, matches production topology)
 docker compose up -d postgres
-docker compose exec api alembic upgrade head
-docker compose exec api pytest -v
+docker compose exec cloud-core alembic upgrade head
+docker compose exec cloud-core pytest -v
 
 # 2. Against a local Postgres (what was actually used to validate Phase 1)
 alembic upgrade head
