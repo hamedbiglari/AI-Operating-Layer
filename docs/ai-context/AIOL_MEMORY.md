@@ -122,17 +122,17 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 745a087
+- sha (last non-docs commit): afb9d8d
 - branch: v5-implementation
-- working_tree: clean
-- last_ci: in_progress @ 745a087 (polish phases 2-4 pushed without
-  waiting, as the user authorised: 1e1c69a, f8599a7, b9c9e9b, 745a087).
-  Polish phase 1 bacec45 Backend CI green. Locally: 28 browser suites
-  green after phase 2; apps/shared unit tests 41/41; test_federated_research
-  36/36, test_platform_admin 6/6.
+- working_tree: clean (untracked: cloud-core/.venv-freeze-backup-20261101-191359.txt, a local pip-freeze backup)
+- last_ci: in_progress @ afb9d8d (release phases pushed without waiting, as
+  the user authorised). Green: 3bfcfb3 (Backend), 7ddb7ac (Backend + Client
+  suite); 9953211 job "Deployment stack (docker compose)" green (stack builds,
+  migrates, serves), its test job still running at write time. Locally: 28
+  browser suites green after release phase 1; apps/shared unit tests 41/41.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "test(e2e): add real API key integration testing suite" @ 745a087
+- last code commit: "test(e2e): add one-click real-key testing script" @ afb9d8d
 - last feature commit: "feat(admin): live admin screens and user detail (14A, 14C)" @ 26e1829
 - last fix commit: "fix(apps): resolve native client integration issues" @ b9c9e9b
 
@@ -524,6 +524,31 @@ file from scratch (do not diff). Output only the file content.
   #screen-ai-executions; the credential revoked at the end) and
   docs/e2e-real-keys.md. Not in CI; never run automatically. AI Center
   accounts have an Anthropic adapter only.
+- Release phase 1 (design) @ 3bfcfb3 — the scoped style block extended to
+  #screen-settings, #screen-admin-overview, #screen-admin-users,
+  #screen-ai-center, #screen-ai-executions, #screen-memory: single gap under
+  the intro note, card shadows and section-sized titles, Settings divided
+  rows, Dashboard-style stat grids, framed tables, AI Center sub-forms in a
+  band. CSS only; EN/FA x light/dark x desktop/390px checked.
+- Release phase 2 (apps) @ 7ddb7ac — @tauri-apps/cli 2.12.2 -> 2.12.4 in all
+  five app folders (lockfile from registry metadata; npm ci verified). Rust
+  crates not refreshed (no toolchain here): V5-apps-cargo-update OPEN.
+- Release phase 3 (deploy) @ 9953211 — docker-compose.yml: postgres
+  (pgvector), redis, migrate (one-shot alembic), cloud-core (was api),
+  celery-worker (was worker), celery-beat, visual-harness (nginx :8080);
+  Postgres/Redis on 127.0.0.1; .env optional. Root .env.example documents
+  every setting (optional ones commented: empty values are read as "" and
+  an empty boolean refuses to start). CI job "Deployment stack (docker
+  compose)" builds and boots the stack. Runners stay ubuntu-24.04 (=
+  ubuntu-latest; 26.04 is the beta-tier image). development.md uses
+  `exec cloud-core`.
+- Release phase 4 (real-key script) @ afb9d8d — scripts/start-real-e2e.ps1
+  (checks ANTHROPIC_API_KEY, AI_CREDENTIAL_KEY, AIOL_TOKEN, AIOL_TOPIC_ID;
+  compose up postgres/redis/celery-worker; local backend on 8010; runs
+  real-keys.js; always stops the backend). Compose passes APP_ENV and
+  AI_CREDENTIAL_KEY through from the shell. Never run with real keys here.
+- Local env: cloud-core/.venv still FastAPI 0.115.0 (pin 0.136.3): pip
+  cannot resolve files.pythonhosted.org from this machine (2026-11-01).
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -547,6 +572,10 @@ file from scratch (do not diff). Output only the file content.
 - Step 14 (Admin) is 100% complete: 14B + 14A/14C (see §4).
 - ALL STEPS 5–14 ARE 100% COMPLETE — the visual-harness phase is finished.
 - All Steps (5-14) and final polish (Debt, Design, Apps, E2E) are complete.
+- All development, design, native apps, deployment, and testing phases are complete. The project is ready for production release.
+- Before a release: run scripts/start-real-e2e.ps1 with real keys (never
+  run yet), update cloud-core/.venv to the pins, and close or accept
+  V5-apps-cargo-update (cargo update + Client suite CI).
 - Next up: no phase is planned; the user decides. Still open: three Step 14
   rows (V5-admin-billing, V5-admin-trash, V5-admin-user-actions), the seven
   Step 13 rows, the three V5-signup-* rows, CLIENT-oidc, the four
@@ -668,6 +697,9 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v28 @ 745a087 — final polish shipped: debt (bacec45), design (1e1c69a,
   f8599a7), native apps (b9c9e9b), real-key e2e (745a087). All Steps
   (5-14) and final polish (Debt, Design, Apps, E2E) are complete.
+- v29 @ afb9d8d — release phases shipped: remaining-screens design
+  (3bfcfb3), app dependencies (7ddb7ac), docker-compose deployment + CI
+  (9953211), one-click real-key script (afb9d8d).
 
 ## 10. Historical context (from two prior sessions)
 
