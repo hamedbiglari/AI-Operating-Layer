@@ -1419,3 +1419,78 @@ Terms for the Device Intelligence admin screen. Categories describe installation
 | Revoke this installation? Its key will never be accepted again; the app creates a new one at its next sign-in. | این نصب باطل شود؟ کلید آن دیگر هرگز پذیرفته نمی‌شود و برنامه در ورود بعدی کلید تازه‌ای می‌سازد. |
 | Installation revoked. | نصب باطل شد. |
 | Could not revoke ({error}). | باطل کردن ناموفق بود ({error}). |
+
+## Auth screens (Step 12A)
+
+Login, sign-up and the login-code step, with the app-shell labels the code page shares. The product name AI Operating Layer and email addresses stay as written; live messages come from the page itself, chosen by HTTP status.
+
+| English | Persian |
+|---|---|
+| Welcome back | خوش آمدید |
+| Log in to your AI Operating Layer workspace. | به فضای کاری AI Operating Layer خود وارد شوید. |
+| Work email | ایمیل کاری |
+| Send login code | ارسال کد ورود |
+| We'll email you a 6-digit code — no password to remember or leak. | یک کد ۶ رقمی برایتان ایمیل می‌کنیم — گذرواژه‌ای نیست که به خاطر بسپارید یا لو برود. |
+| New to AI Operating Layer? | تازه با AI Operating Layer آشنا شده‌اید؟ |
+| Create an account | ساختن حساب |
+| Create your account | حساب خود را بسازید |
+| Start turning product knowledge into AI-ready evidence. | دانش محصول را به شواهدی آماده برای هوش مصنوعی تبدیل کنید. |
+| Full name | نام کامل |
+| Company or workspace name | نام شرکت یا فضای کاری |
+| Leave this empty | این را خالی بگذارید |
+| I agree to the | موافقم با |
+| Terms of Service | شرایط خدمات |
+| and | و |
+| Privacy Policy | سیاست حریم خصوصی |
+| Create account | ساختن حساب |
+| Already have an account? | حساب دارید؟ |
+| Log in | ورود |
+| Use a different email | استفاده از ایمیل دیگر |
+| Check your email | ایمیل خود را بررسی کنید |
+| Enter the 6-digit code we sent to . | کد ۶ رقمی فرستاده‌شده به این نشانی را وارد کنید: . |
+| Enter the 6-digit code we sent to | کد ۶ رقمی فرستاده‌شده به این نشانی را وارد کنید: |
+| Verify and continue | تأیید و ادامه |
+| Resend code | ارسال دوبارهٔ کد |
+| The code expires in 5 minutes. Three wrong attempts lock this email for 1 hour; three more lock it for 24 hours. Never share this code — we will never ask for it. | کد پس از ۵ دقیقه منقضی می‌شود. سه تلاش نادرست این ایمیل را ۱ ساعت قفل می‌کند؛ سه تلاش نادرست دیگر آن را ۲۴ ساعت قفل می‌کند. این کد را با هیچ کس در میان نگذارید — ما هرگز آن را از شما نمی‌خواهیم. |
+| © 2026 AI Operating Layer | © ۲۰۲۶ AI Operating Layer |
+| Privacy | حریم خصوصی |
+| Security | امنیت |
+| 6-digit verification code | کد تأیید ۶ رقمی |
+| Digit 1 of 6 | رقم ۱ از ۶ |
+| Digit 2 of 6 | رقم ۲ از ۶ |
+| Digit 3 of 6 | رقم ۳ از ۶ |
+| Digit 4 of 6 | رقم ۴ از ۶ |
+| Digit 5 of 6 | رقم ۵ از ۶ |
+| Digit 6 of 6 | رقم ۶ از ۶ |
+| Inbox, 3 unread messages | صندوق پیام، ۳ پیام خوانده‌نشده |
+| Account menu | منوی حساب |
+| A separate, privileged surface — shown here only because this fixture has no real authorization boundary to hide it behind | سطحی جداگانه و دارای امتیاز ویژه — اینجا فقط به این دلیل نشان داده می‌شود که این نمونه هیچ مرز مجوز واقعی ندارد که پشت آن پنهان شود |
+| Hide sidebar | پنهان کردن نوار کناری |
+| Resend code ({time}) | ارسال دوبارهٔ کد ({time}) |
+| Too many wrong codes. Sign-in is locked for 24 hours; contact support. | کدهای نادرست زیادی وارد شد. ورود به مدت ۲۴ ساعت قفل است؛ با پشتیبانی تماس بگیرید. |
+| Too many wrong codes. Sign-in is locked for 1 hour. | کدهای نادرست زیادی وارد شد. ورود به مدت ۱ ساعت قفل است. |
+| A code was sent recently. Try again later. | به تازگی کدی فرستاده شد. بعداً دوباره تلاش کنید. |
+| Too many requests. Try again in a moment. | درخواست‌ها بیش از حد است. لحظه‌ای دیگر دوباره تلاش کنید. |
+| Email delivery is not available; no code was sent. | ارسال ایمیل در دسترس نیست؛ هیچ کدی فرستاده نشد. |
+| That code is wrong or has expired. Check the latest email and try again. | این کد نادرست است یا منقضی شده است. آخرین ایمیل را بررسی کنید و دوباره تلاش کنید. |
+| AI Core did not answer as expected (HTTP {status}). | AI Core پاسخ مورد انتظار را نداد (HTTP {status}). |
+| A code was sent recently. Enter it, or wait to request a new one. | به تازگی کدی فرستاده شد. آن را وارد کنید، یا برای درخواست کد تازه صبر کنید. |
+| Could not reach AI Core ({error}). | دسترسی به AI Core ممکن نشد ({error}). |
+| A new code was sent. | کد تازه‌ای فرستاده شد. |
+| Enter all 6 digits. | هر ۶ رقم را وارد کنید. |
+| Checking your code… | در حال بررسی کد شما… |
+| Verified — signing you in… | تأیید شد — در حال ورود… |
+| Incorrect code — {n\|attempt\|attempts} left before a temporary lock. | کد نادرست است — {n} تلاش تا قفل موقت باقی مانده است. |
+| Enter your full name. | نام کامل خود را وارد کنید. |
+| Enter your company or workspace name. | نام شرکت یا فضای کاری خود را وارد کنید. |
+| Enter a valid work email. | یک ایمیل کاری معتبر وارد کنید. |
+| The website must start with https:// | نشانی وب‌سایت باید با https:// آغاز شود |
+| Please accept the Terms of Service and Privacy Policy. | لطفاً شرایط خدمات و سیاست حریم خصوصی را بپذیرید. |
+| Sending your code… | در حال فرستادن کد شما… |
+| Enter all six digits. | هر شش رقم را وارد کنید. |
+| Account created. Opening your workspace… | حساب ساخته شد. در حال باز کردن فضای کاری شما… |
+| Log in · AI Operating Layer | ورود · AI Operating Layer |
+| Create your account · AI Operating Layer | ساختن حساب · AI Operating Layer |
+| Enter your code · AI Operating Layer | وارد کردن کد · AI Operating Layer |
+| A User-Agent header is a claim a request makes about itself, not a verified identity — anyone can send | سرآیند User-Agent ادعایی است که درخواست دربارهٔ خودش می‌کند، نه هویتی تأییدشده — هر کسی می‌تواند این را بفرستد: |
+| . Every row above is | . هر ردیف بالا |
