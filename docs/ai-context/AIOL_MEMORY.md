@@ -121,13 +121,15 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 622d417
+- sha (last non-docs commit): 889db79
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 622d417 (12B; pushed right behind 12A a520f3e
-  without waiting, as the user authorised; 25 browser suites green
-  locally, 612 checks). Merge 6965956: Backend CI and Client suite CI
-  green. 196c733 (9E-2), e0da56f (Step 11), e3709ce (rebrand) green.
+- last_ci: in_progress @ 889db79 (13C; 13A 3c3c5af and 13B 48e7073 were
+  pushed together just before, all without waiting, as the user
+  authorised). 13A's 25 browser suites green locally (612 checks); the
+  26-suite run on 13C was still running at push time. 12A/12B (a520f3e,
+  622d417) pushed without waiting; merge 6965956 Backend CI + Client
+  suite CI green.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
 - last code commit: "feat(web): translate website screens (12B)" @ 622d417
@@ -447,6 +449,27 @@ file from scratch (do not diff). Output only the file content.
   removed <bdi>/.identifier: add a fragment key too (fixed Step 10's
   User-Agent sentence; check in e2e/visibility.js). (3) .auth-check has
   display:flex !important, which beats [data-debt-hidden]: wrap it.
+- 13A @ 3c3c5af — Settings live view: kind 'settings' (no longer the
+  generic 'org' table); the nine Settings blocks carry data-live-keep
+  (data-live-wired had hidden the live Preferences, Shared memory and
+  Background cards); Appearance shows the saved theme and language.
+  V5-topbar-lang-save-bug CLOSED: #topbar-lang sets #pick-lang and fires
+  change, like the theme button.
+- 13B @ 48e7073 — Account card (name, email, role) and a new Organization
+  card from one GET /auth/me per connection (connectionMe; connectionRole
+  uses it); owners/admins rename via PATCH /organizations/me (org() and
+  the generic panel removed). Log out and Reset are client-side (token in
+  memory only; Reset clears localStorage and the pickers without
+  saving). 19 FA entries. Debt rows, all OPEN: V5-settings-self-profile,
+  V5-settings-billing-card, V5-settings-factory-reset,
+  V5-settings-font-picker, V5-settings-reset-backend.
+- 13C @ 889db79 — Settings translated: 113 FA entries (all static text,
+  the Research engine card's included; icon-split sentences get
+  fragment keys; placeholders become Persian examples) plus the runtime
+  text of Preferences, Shared memory and Background processing.
+  e2e/settings.js (14). Debt rows, OPEN: V5-settings-research-runtime-fa
+  (rq-* script, ~120 runtime strings), V5-research-sources-n-plus-one
+  (up to 30 GET /research/sources/{id}/detail after a search).
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -455,8 +478,8 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel,screen-login,screen-signup,screen-login-code,screen-site-blog,screen-site-sections,screen-site-subscribers
-  and 25 browser suites (612 checks at 622d417).
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel,screen-login,screen-signup,screen-login-code,screen-site-blog,screen-site-sections,screen-site-subscribers,screen-settings
+  and 26 browser suites.
 
 ## 5. In progress — next step
 
@@ -466,7 +489,10 @@ file from scratch (do not diff). Output only the file content.
 - Step 10 (Visibility) and Step 11 (Commerce) are complete (see §4).
 - The native apps and Device Intelligence are merged (see §4).
 - Step 12 (Website + Auth) is 100% complete: 12A + 12B (see §4).
-- Next up: Step 13 (Settings). Still open: the three V5-signup-* rows,
+- Step 13 (Settings) is 100% complete: 13A + 13B + 13C (see §4).
+- Next up: Step 14 (Admin) — blocked on a platform-admin API and
+  authorization model (agreed bounds). Still open: the seven Step 13 rows,
+  the three V5-signup-* rows,
   CLIENT-oidc, the four V5-visibility/V5-access rows, the four Step 11 rows,
   V5-command-workspace-runtime-fa and the duplicate discovery read on
   connect.
@@ -488,10 +514,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the Step 13 (Settings) prompt.
+State in sync → user says "go" → send the Step 14 (Admin) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the Step 13 (Settings) prompt.
+Case B — user says "go": send the Step 14 (Admin) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -575,6 +601,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   Step 12 (Website + Auth) is next.
 - v25 @ 622d417 — Step 12 shipped: 12A live auth screens (a520f3e), 12B
   website screens translated (622d417). Step 13 (Settings) is next.
+- v26 @ 889db79 — Step 13 shipped: 13A live view + top-bar language fix
+  (3c3c5af), 13B account and organization (48e7073), 13C translation and
+  tests (889db79). Step 14 (Admin) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -728,6 +757,16 @@ Session / memory:
   (#cat-body, #aic-body) must carry data-live-keep, or the whole live
   content disappears. Text checks still pass on hidden nodes, so a test
   must assert the body is visible (or click inside it).
+- A screen in the generic SCREENS map is marked data-live-wired by the
+  loop, so every direct child without data-live-keep disappears in live
+  mode — Settings lost its three working cards that way until 13A. When a
+  screen mixes sample cards and live cards, mark every card that should
+  stay; check visibility in live mode, not just text.
+- N+1 hides in "detail after a list" code: Research engine reads each
+  found source's detail one by one (Promise.all over ids). Rule 17 fix is
+  a batch read on the backend (details for a list of ids, or inside the
+  run result), never more parallel calls; until then it is a debt row
+  (V5-research-sources-n-plus-one).
 
 ### 10.3 Reversals and abandoned approaches
 
@@ -796,8 +835,8 @@ Session / memory:
   V5-command-workspace-runtime-fa open).
 - Step 10 (Visibility) complete @ 79a19fb; Step 11 (Commerce: Products)
   complete @ e0da56f; 9E-2 complete @ 196c733; Step 12 complete @ 622d417.
-  Step 13 (Settings) is next.
-- Steps 13–14 (Settings, Admin)
+  Step 13 complete @ 889db79. Step 14 (Admin) is next.
+- Step 14 (Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
 - Design elevation across all screens — baseline Knowledge critique
