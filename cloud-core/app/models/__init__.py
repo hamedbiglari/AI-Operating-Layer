@@ -14,6 +14,7 @@ from app.models.ai_agent import AiAgent
 from app.models.audit_log import AuditLog
 from app.models.auth_session import AuthSession
 from app.models.legal_acceptance import LegalAcceptance
+from app.models.platform_admin import PlatformAdmin
 from app.models.device_intelligence import (
     DeviceChallenge, DeviceCredential, DeviceCredentialLink, DeviceObservation,
 )
@@ -99,6 +100,7 @@ from app.models.visibility_budget import VisibilityBudget
 from app.models.wordpress_mapping import WordPressMapping
 
 __all__ = [
+    "PlatformAdmin",
     "Organization",
     "User",
     "Site",

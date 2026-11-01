@@ -31,3 +31,5 @@ class RegisterOrganizationResponse(BaseModel):
 class MeResponse(BaseModel):
     user: UserRead
     organization: OrganizationRead
+    # Step 14B: a platform-admin grant (platform_admins); the admin UI shows only when true.
+    is_platform_admin: bool = False

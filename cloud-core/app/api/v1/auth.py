@@ -33,7 +33,7 @@ from app.schemas.auth import (
     RegisterOrganizationResponse,
     TokenResponse,
 )
-from app.security.dependencies import get_current_user
+from app.security.dependencies import get_current_user, is_platform_admin
 from app.security.tokens import create_access_token
 from app.services import auth_service, auth_session_service, signup_code_service
 
@@ -163,7 +163,8 @@ def login(
 @router.get("/me", response_model=MeResponse)
 def read_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> MeResponse:
     organization = db.get(Organization, current_user.organization_id)
-    return MeResponse(user=current_user, organization=organization)
+    return MeResponse(user=current_user, organization=organization,
+                      is_platform_admin=is_platform_admin(db, current_user.id))
 
 
 

@@ -14,6 +14,7 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -80,3 +81,21 @@ def require_roles(*allowed_roles: UserRole) -> Callable[[User], User]:
         return current_user
 
     return _dependency
+
+
+def is_platform_admin(db: Session, user_id: UUID) -> bool:
+    """True when the user holds a platform-admin grant (platform_admins row). Read from the database on every
+    call: the access token carries no such claim, so a revoked grant takes effect on the next request."""
+    from app.models.platform_admin import PlatformAdmin
+
+    return db.execute(select(PlatformAdmin.id).where(PlatformAdmin.user_id == user_id)).first() is not None
+
+
+def require_platform_admin(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> User:
+    """Gate for /api/v1/admin (Step 14B): 403 unless the signed-in user is a platform admin. Tenant routes never
+    use it, so organization isolation everywhere else is unchanged."""
+    if not is_platform_admin(db, current_user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Platform administrators only")
+    return current_user
