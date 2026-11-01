@@ -1956,3 +1956,21 @@ The New product form on #screen-products (V5-products-create-ui). Slug (نامک
 | Your role cannot add products (owner, admin or editor only). | نقش شما نمی‌تواند محصول اضافه کند (فقط مالک، مدیر یا ویراستار). |
 | A product with this slug or SKU already exists. | محصولی با این نامک یا کد کالا از قبل وجود دارد. |
 | AI Core did not accept these values. Check the fields and try again. | AI Core این مقادیر را نپذیرفت. فیلدها را بررسی کنید و دوباره تلاش کنید. |
+
+## Change and delete access rules (debt, priority 2)
+
+Change and Delete on the live AI access rules (V5-access-policy-edit). Rule (قاعده), Not configured (پیکربندی‌نشده) and the role names follow the glossary; https:// and AI Core stay as written.
+
+| English | Persian |
+|---|---|
+| Terms URL (optional) | نشانی شرایط (اختیاری) |
+| Save rule | ذخیرهٔ قاعده |
+| Change the rule | تغییر قاعده |
+| Rule saved. | قاعده ذخیره شد. |
+| Rule deleted. | قاعده حذف شد. |
+| Not deleted ({error}). | حذف نشد ({error}). |
+| Only an owner or admin can change access rules. | فقط مالک یا مدیر می‌تواند قاعده‌های دسترسی را تغییر دهد. |
+| That rule no longer exists. | این قاعده دیگر وجود ندارد. |
+| The terms link must be a web address starting with https://. | پیوند شرایط باید یک نشانی وب باشد که با https:// شروع می‌شود. |
+| Delete this rule? Clients it matched fall back to the next rule that matches, or to Not configured. | این قاعده حذف شود؟ کلاینت‌هایی که با آن منطبق بودند به قاعدهٔ منطبق بعدی برمی‌گردند، یا به «پیکربندی‌نشده». |
+| Connect to AI Core to change access rules. | برای تغییر قاعده‌های دسترسی به AI Core وصل شوید. |

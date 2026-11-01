@@ -5,8 +5,12 @@
  *           exports are hidden as debt (V5-visibility-detail-aggregates);
  *           the per-platform table (V5-visibility-platform-breakdown); on
  *           AI access the per-agent Access column and its warning
- *           (V5-access-agent-decision) and the Edit/Change links
- *           (V5-access-policy-edit).
+ *           (V5-access-agent-decision). The sample Edit/Change links say to
+ *           connect first.
+ *   Access rules (V5-access-policy-edit): owner/admin get Change and Delete;
+ *           Change = one PUT with the rule's own subject and purpose; a bad
+ *           terms link is refused before sending; Delete asks first, then one
+ *           DELETE; a viewer gets no actions; 403 says who may.
  *   Live:   AI Visibility = GET /visibility/summary + GET /telemetry/agents;
  *           the full report = GET /visibility/observations (one call), a row
  *           opens from the loaded list with no further request; AI access =
@@ -87,7 +91,13 @@ function installMock(data) {
   const page = (items) => reply({ items, total: items.length, limit: 200, offset: 0 });
   window.fetch = (u, opt) => {
     u = String(u); const p = u.slice(u.indexOf('/api/v1') + 7), method = (opt && opt.method) || 'GET';
-    window.__requests.push(method + ' ' + p);
+    window.__requests.push(method + ' ' + p + (opt && opt.body ? ' ' + opt.body : ''));
+    if (p === '/auth/me') return reply({ user: { name: 'Owner', email: 'o@shop.test', role: window.__role || 'admin' }, organization: { name: 'Shop' } });
+    if (p === '/telemetry/access-policies' && method === 'PUT') {
+      if (window.__denyWrite) return reply({ error: { message: 'Insufficient role' } }, 403);
+      return reply(Object.assign({ id: 'px', specificity: 2 }, JSON.parse(opt.body)));
+    }
+    if (/^\/telemetry\/access-policies\/[^/?]+$/.test(p) && method === 'DELETE') return Promise.resolve(new Response(null, { status: 204 }));
     if (window.__fail && p.indexOf(window.__fail) === 0) return reply({}, 500);
     const d = window.__data;
     if (p === '/visibility/summary') return reply(d.summary);
@@ -139,9 +149,14 @@ function installMock(data) {
   check('sample: the report\'s seven no-backend blocks are hidden as debt',
     await shown('#screen-visibility-detail [data-debt-hidden="V5-visibility-detail-aggregates"]'), [false, false, false, false, false, false, false]);
   check('sample: the per-platform table is hidden as debt', await shown('#screen-visibility [data-debt-hidden="V5-visibility-platform-breakdown"]'), [false]);
-  check('sample: Access column (8 rows + header) and its warning hidden; Edit/Change hidden',
+  check('sample: Access column (8 rows + header) and its warning hidden; no Edit/Change debt left',
     [(await shown('#screen-access [data-debt-hidden="V5-access-agent-decision"]')).filter((x) => !x).length,
-      (await shown('#screen-access [data-debt-hidden="V5-access-policy-edit"]')).filter((x) => !x).length], [10, 12]);
+      (await shown('#screen-access [data-debt-hidden="V5-access-policy-edit"]')).length,
+      await page.evaluate(() => document.querySelectorAll('#screen-access [data-access-change]').length)], [10, 0, 12]);
+  await page.evaluate(() => document.querySelector('#screen-access [data-access-change]').click()); await settle();
+  check('sample: Change says to connect first', await page.evaluate(() => [document.getElementById('save-toast').open,
+    document.getElementById('save-toast-text').textContent]), [true, 'Connect to AI Core to change access rules.']);
+  await page.evaluate(() => document.getElementById('save-toast-close').click()); await settle();
 
   // Live: connecting loads each screen once, in parallel per screen.
   await page.evaluate(installMock, DATA);
@@ -187,16 +202,58 @@ function installMock(data) {
   v = await view('screen-access');
   check('access: rules in the order sent (agent, actor type, catch-all)', v.cards[0], { title: 'Rules, most specific first',
     note: '3 rules. The first rule that matches wins and evaluation stops; a client no rule matches is allowed and recorded as Not configured.',
-    rows: [['GPTBot', 'Any', 'Forbidden', 'No corpus collection.'], ['Any AI crawler', 'Training', 'Paid', 'No reason given Terms'],
-      ['Any automated client', 'Any', 'Free', 'No reason given']] });
+    rows: [['GPTBot', 'Any', 'Forbidden', 'No corpus collection.', 'ChangeDelete'], ['Any AI crawler', 'Training', 'Paid', 'No reason given Terms', 'ChangeDelete'],
+      ['Any automated client', 'Any', 'Free', 'No reason given', 'ChangeDelete']] });
   check('access: the terms link', await page.evaluate(() => document.querySelector('#screen-access .vis-live a[target="_blank"]').href), 'https://shop.test/terms');
   check('access: every agent seen', v.cards[1], { title: 'Every agent seen', note: '2 distinct clients. There is no filter that hides unrecognised ones.',
     rows: [['GPTBotOpenAI', 'AI crawler (indexing)', 'Training', 'Detected', '412'], ['odd-botOperator unknown', 'robot_x', 'Not declared', 'Probable', '3']] });
 
+  // Change and delete rules (V5-access-policy-edit).
+  const writes = () => page.evaluate(() => window.__requests.filter((r) => /^(PUT|DELETE) /.test(r)));
+  const amsg = () => page.evaluate(() => document.getElementById('access-msg').textContent);
+  const ruleButton = (row, label) => page.evaluate(([r, l]) => Array.from(document.querySelectorAll('#screen-access .vis-live tbody')[0].rows[r]
+    .querySelectorAll('button')).find((b) => b.textContent === l).click(), [row, label]);
+  const dialogs = []; let answer = true;
+  page.on('dialog', (d) => { dialogs.push(d.message()); if (answer) d.accept(); else d.dismiss(); });
+  await ruleButton(1, 'Change'); await settle();
+  check('Change: the editor opens with the rule (decision, terms, who and purpose)', await page.evaluate(() => {
+    const f = document.getElementById('access-edit');
+    return [f.hidden, document.getElementById('access-tier').value, document.getElementById('access-reason').value,
+      document.getElementById('access-terms').value, f.querySelector('p.aic-hint').textContent]; }),
+    [false, 'paid', '', 'https://shop.test/terms', 'Any AI crawler \u00b7 Training']);
+  await page.selectOption('#access-tier', 'forbidden'); await page.fill('#access-reason', 'No training.');
+  let wb = (await writes()).length; before = (await requests()).length;
+  await page.evaluate(() => document.getElementById('access-edit').requestSubmit()); await settle(); await settle();
+  check('save: one PUT with the rule\'s own subject and purpose; Rule saved.; the list reloads; the editor closes', [(await writes()).slice(wb),
+    await amsg(), (await requests()).slice(before).filter((r) => /^GET /.test(r)), await page.evaluate(() => document.getElementById('access-edit').hidden)],
+    [['PUT /telemetry/access-policies {"agent_id":null,"actor_type":"ai_crawler","purpose":"training","tier":"forbidden","reason":"No training.","terms_url":"https://shop.test/terms"}'],
+      'Rule saved.', ['GET /telemetry/access-policies?limit=200', 'GET /telemetry/agents?limit=200'], true]);
+  await ruleButton(0, 'Change'); await settle();
+  await page.fill('#access-terms', 'ftp://shop.test/terms');
+  wb = (await writes()).length;
+  await page.evaluate(() => document.getElementById('access-edit').requestSubmit()); await settle();
+  check('a terms link that is not a web address is refused before sending', [await amsg(), (await writes()).length - wb],
+    ['The terms link must be a web address starting with https://.', 0]);
+  await page.fill('#access-terms', '');
+  await page.evaluate(() => { window.__denyWrite = true; document.getElementById('access-edit').requestSubmit(); }); await settle();
+  check('403: who may change rules', await amsg(), 'Only an owner or admin can change access rules.');
+  await page.evaluate(() => { window.__denyWrite = false; Array.from(document.querySelectorAll('#access-edit button')).find((b) => b.type === 'button').click(); }); await settle();
+  answer = false; wb = (await writes()).length;
+  await ruleButton(2, 'Delete'); await settle();
+  check('Delete asks first; cancelled = nothing sent', [dialogs[dialogs.length - 1], (await writes()).length - wb],
+    ['Delete this rule? Clients it matched fall back to the next rule that matches, or to Not configured.', 0]);
+  answer = true;
+  await ruleButton(2, 'Delete'); await settle(); await settle();
+  check('Delete: one DELETE for that rule; Rule deleted.', [(await writes()).slice(wb), await amsg()], [['DELETE /telemetry/access-policies/p3'], 'Rule deleted.']);
+  await page.evaluate(() => { window.__role = 'viewer'; }); await connect(); await go('#screen-dashboard'); await go('#screen-access'); await settle();
+  check('a viewer gets no Change or Delete', await page.evaluate(() => document.querySelectorAll('#screen-access .vis-live tbody button').length), 0);
+  await page.evaluate(() => { window.__role = 'admin'; }); await connect(); await go('#screen-dashboard'); await go('#screen-access'); await settle();
+  v = await view('screen-access');
+
   // Persian over live content.
   await lang('fa');
   v = await view('screen-access');
-  check('fa: access rule subject, purpose, badge, reason fallback', v.cards[0].rows[1], [F('anyAiCrawler'), F('training'), F('paid'), F('noReason') + ' ' + F('terms')]);
+  check('fa: access rule subject, purpose, badge, reason fallback', v.cards[0].rows[1].slice(0, 4), [F('anyAiCrawler'), F('training'), F('paid'), F('noReason') + ' ' + F('terms')]);
   check('fa: access note with Persian digits', v.cards[0].note, F('rulesNote').replace('{n}', fa(0x6F3)));
   await go('#screen-visibility');
   v = await view('screen-visibility');
