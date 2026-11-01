@@ -121,19 +121,19 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 889db79
+- sha (last non-docs commit): 26e1829
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 889db79 (13C; 13A 3c3c5af and 13B 48e7073 were
-  pushed together just before, all without waiting, as the user
-  authorised). 13A's 25 browser suites green locally (612 checks); the
-  26-suite run on 13C was still running at push time. 12A/12B (a520f3e,
-  622d417) pushed without waiting; merge 6965956 Backend CI + Client
-  suite CI green.
+- last_ci: in_progress @ 26e1829 (14A/14C; pushed together with 14B
+  0fe44e1 without waiting, as the user authorised). Locally: 27 browser
+  suites green (646 checks); test_platform_admin.py 5 passed; the wider
+  auth/tenant/integrity backend run was still going at push time (no
+  failures seen). 13A-13C (3c3c5af, 48e7073, 889db79) pushed without
+  waiting; merge 6965956 Backend CI + Client suite CI green.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(web): translate website screens (12B)" @ 622d417
-- last feature commit: "feat(ai): delete buttons and full runtime translation (9E-2)" @ 196c733
+- last code commit: "feat(admin): live admin screens and user detail (14A, 14C)" @ 26e1829
+- last feature commit: "feat(admin): live admin screens and user detail (14A, 14C)" @ 26e1829
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -470,6 +470,29 @@ file from scratch (do not diff). Output only the file content.
   e2e/settings.js (14). Debt rows, OPEN: V5-settings-research-runtime-fa
   (rq-* script, ~120 runtime strings), V5-research-sources-n-plus-one
   (up to 30 GET /research/sources/{id}/detail after a search).
+- 14B @ 0fe44e1 — platform admin API and auth (user approved schema +
+  auth): migration 0052 platform_admins (user_id unique, created_at, and
+  the user's organization_id with a composite FK to users — the
+  integrity test requires organization_id on every table; it does not
+  limit what the admin reads). require_platform_admin reads the grant
+  from the database on every request (no token claim). GET /auth/me adds
+  is_platform_admin. /api/v1/admin: GET /overview (organizations total and
+  active; users total and active = distinct audit-log actors in 30 days;
+  failed sync jobs and AI jobs completed_with_failures in 24 h),
+  /organizations (paged, search, user counts from one grouped subquery),
+  /users (paged, search across name, email, organization; status
+  filter), /users/{id}; sorting via apply_sort. Read-only; tenant routes
+  unchanged. test_platform_admin.py (5); admin.py 100% covered. Fresh-DB
+  migration upgrade/downgrade/upgrade verified.
+- 14A/14C @ 26e1829 — admin screens live: Users reads GET /users for an
+  organization admin, /admin/users (with organization column and
+  server-side search) for a platform admin; the five sample user pages
+  collapsed into #screen-admin-user-detail?id= (name, email, organization
+  for platform admins, role, status, joined); #screen-admin-overview and
+  new #screen-admin-orgs for platform admins only (nav hidden otherwise;
+  non-admins are told so and nothing is requested). Debt rows, all OPEN:
+  V5-admin-billing, V5-admin-trash, V5-admin-user-actions, V5-admin-grant.
+  71 FA entries; e2e/admin.js (20). Step 14 is complete.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -478,8 +501,8 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel,screen-login,screen-signup,screen-login-code,screen-site-blog,screen-site-sections,screen-site-subscribers,screen-settings
-  and 26 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel,screen-login,screen-signup,screen-login-code,screen-site-blog,screen-site-sections,screen-site-subscribers,screen-settings,screen-admin-users,screen-admin-user-detail,screen-admin-overview,screen-admin-orgs
+  and 27 browser suites (646 checks at 26e1829).
 
 ## 5. In progress — next step
 
@@ -490,8 +513,11 @@ file from scratch (do not diff). Output only the file content.
 - The native apps and Device Intelligence are merged (see §4).
 - Step 12 (Website + Auth) is 100% complete: 12A + 12B (see §4).
 - Step 13 (Settings) is 100% complete: 13A + 13B + 13C (see §4).
-- Next up: Step 14 (Admin) — blocked on a platform-admin API and
-  authorization model (agreed bounds). Still open: the seven Step 13 rows,
+- Step 14 (Admin) is 100% complete: 14B + 14A/14C (see §4).
+- ALL STEPS 5–14 ARE 100% COMPLETE — the visual-harness phase is finished.
+- Next up: no step is planned yet; the user decides the next phase
+  (candidates: the open debt rows, design elevation, Research runtime FA).
+  Still open: the four Step 14 rows, the seven Step 13 rows,
   the three V5-signup-* rows,
   CLIENT-oidc, the four V5-visibility/V5-access rows, the four Step 11 rows,
   V5-command-workspace-runtime-fa and the duplicate discovery read on
@@ -514,10 +540,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the Step 14 (Admin) prompt.
+State in sync → user says "go" → ask the user which phase comes next (Steps 5–14 are complete).
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the Step 14 (Admin) prompt.
+Case B — user says "go": ask the user which phase comes next (Steps 5–14 are complete).
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -604,6 +630,9 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v26 @ 889db79 — Step 13 shipped: 13A live view + top-bar language fix
   (3c3c5af), 13B account and organization (48e7073), 13C translation and
   tests (889db79). Step 14 (Admin) is next.
+- v27 @ 26e1829 — Step 14 shipped: 14B platform admin API and auth
+  (0fe44e1), 14A/14C live admin screens and user detail (26e1829). The
+  whole Step 5–14 phase is finished.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -835,10 +864,9 @@ Session / memory:
   V5-command-workspace-runtime-fa open).
 - Step 10 (Visibility) complete @ 79a19fb; Step 11 (Commerce: Products)
   complete @ e0da56f; 9E-2 complete @ 196c733; Step 12 complete @ 622d417.
-  Step 13 complete @ 889db79. Step 14 (Admin) is next.
-- Step 14 (Admin)
-  — not started. Admin blocked on backend design for
-  platform-admin API + authorization model.
+  Step 13 complete @ 889db79; Step 14 complete @ 26e1829.
+- The entire Step 5–14 phase is finished. The next phase is not yet
+  chosen.
 - Design elevation across all screens — baseline Knowledge critique
   started; no fixes yet.
 - Full E2E of Memory Center, AI providers, Agent Network — not tested;
