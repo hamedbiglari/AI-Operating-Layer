@@ -217,6 +217,8 @@ const KNOWN = [
   '062c0633062a200c0648062c064806470627 062d0644200c06460634062f064606cc 067e0644062a06410631064506cc 0646064506cc200c062a06480627064606cc062f 062e0648062f062a06270646',
   // Added 2026-11-01 (debt priority 1): self profile, product search, settings reset.
   '064806cc0631062706cc063406af0631 0642062806440627064b 0628063106af0634062a',
+  // Added 2026-11-01 (debt priority 2): new product form.
+  '062a0648063606cc062d0627062a 0645062d063506480644200c0647062706cc 06270636062706410647 064206280644 064506420627062f06cc0631',
 ].join(' ').split(' ').map((h) => String.fromCodePoint(...h.match(/.{4}/g).map((x) => parseInt(x, 16))));
 
 // Persian comma, semicolon and question mark separate words; they are not part of one.

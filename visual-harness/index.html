@@ -6533,7 +6533,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 <section class="screen" id="screen-products" aria-labelledby="h-products">
   <div class="page-header">
     <div><h1 id="h-products"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-1.2 11.1A2 2 0 0 1 16.8 21H7.2a2 2 0 0 1-2-1.9zM8.5 8V6a3.5 3.5 0 0 1 7 0v2"/></svg> Products</h1></div>
-    <div class="page-actions" data-debt-hidden="V5-products-create-ui"><button class="btn btn--primary"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New product</button></div>
+    <div class="page-actions"><button class="btn btn--primary" type="button" id="prod-new" aria-expanded="false" aria-controls="prod-new-card"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New product</button></div>
   </div>
   <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Product identity and commercial Offer are kept separate on purpose (DEC-0006): a Product is what it <em>is</em> — brand, origin, ingredients, certifications; an Offer is where it can be <em>bought</em> — price, stock, availability. A Product can exist, fully described, with zero offers.</p></div></div>
 
@@ -11046,6 +11046,75 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     inp.addEventListener('input', function () {
       var q = inp.value.trim().toLowerCase();
       scr.querySelectorAll('.table-wrap tbody tr').forEach(function (tr) { tr.hidden = !!q && tr.textContent.toLowerCase().indexOf(q) === -1; });
+    });
+  })();
+  // New product (V5-products-create-ui). The header button opens this card. Connected, it holds the create form
+  // (POST /products); a new product starts as Draft and is published from the product itself, not from here.
+  (function () {
+    var btn = document.getElementById('prod-new'), scr = document.getElementById('screen-products');
+    if (!btn || !scr) return;
+    var card = el('section', 'card prod-new'); card.id = 'prod-new-card'; card.hidden = true; card.setAttribute('data-live-keep', '');
+    scr.querySelector(':scope > .page-header').insertAdjacentElement('afterend', card);
+    var head = card.appendChild(el('h2', 'card__title')), off = card.appendChild(el('p', 'profile-missing'));
+    AIOL_I18N.set(head, 'New product');
+    AIOL_I18N.set(off, 'Connect to AI Core to add a product.');
+    var f = card.appendChild(el('form', 'add-live-form')); f.id = 'prod-new-form'; f.noValidate = true; f.hidden = true;
+    var hint = f.appendChild(el('p', 'aic-hint')); hint.style.gridColumn = '1 / -1';
+    AIOL_I18N.set(hint, 'New products start as Draft. Publish one from its page once it has been reviewed.');
+    var inp = {};
+    function field(key, max, required, label) {
+      var lab = f.appendChild(el('label', 'field')), cap = lab.appendChild(el('span', 'field__label'));
+      cap.appendChild(label);
+      if (required) { var star = cap.appendChild(el('span', null, ' *')); star.setAttribute('aria-hidden', 'true'); }
+      var i = lab.appendChild(el(key === 'description' ? 'textarea' : 'input')); i.id = 'prod-new-' + key; i.maxLength = max;
+      if (required) i.setAttribute('aria-required', 'true');
+      if (key === 'slug' || key === 'sku') i.dir = 'ltr';
+      if (key === 'description') { lab.style.gridColumn = '1 / -1'; i.rows = 3; }
+      inp[key] = i;
+    }
+    function word(tpl) { var s = el('span'); AIOL_I18N.set(s, tpl); return s; }
+    field('name', 500, true, word('Name'));
+    field('slug', 500, true, word('Slug'));
+    field('sku', 120, false, word('SKU'));
+    field('brand', 255, false, word('Brand'));
+    field('category', 255, false, word('Category'));
+    field('origin', 255, false, word('Origin'));
+    field('description', 20000, false, word('Description'));
+    // The slug follows the name until it is edited by hand (Latin letters and digits; anything else is left to the user).
+    var slugTouched = false;
+    inp.slug.addEventListener('input', function () { slugTouched = !!inp.slug.value; });
+    inp.name.addEventListener('input', function () {
+      if (!slugTouched) inp.slug.value = inp.name.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    });
+    var actions = f.appendChild(el('div', 'page-actions')); actions.style.gridColumn = '1 / -1';
+    var save = actions.appendChild(el('button', 'btn btn--primary')); save.type = 'submit'; AIOL_I18N.set(save, 'Create product');
+    var cancel = actions.appendChild(el('button', 'btn')); cancel.type = 'button'; AIOL_I18N.set(cancel, 'Cancel');
+    var msg = card.appendChild(el('p', 'aic-hint')); msg.id = 'prod-new-msg'; msg.setAttribute('role', 'status');
+    function open(on) {
+      card.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+      if (on && !f.hidden) inp.name.focus();
+    }
+    btn.addEventListener('click', function () { open(card.hidden); });
+    cancel.addEventListener('click', function () { f.reset(); slugTouched = false; AIOL_I18N.set(msg, ''); open(false); btn.focus(); });
+    document.addEventListener('aiol:live', function () { off.hidden = true; f.hidden = false; });
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var body = {};
+      Object.keys(inp).forEach(function (k) { var v = inp[k].value.trim(); if (v) body[k] = v; });
+      if (!body.name) { AIOL_I18N.set(msg, 'Enter a name.'); inp.name.focus(); return; }
+      if (!body.slug) { AIOL_I18N.set(msg, 'Enter a slug (the product address, e.g. saffron-negin-5g).'); inp.slug.focus(); return; }
+      save.disabled = true; AIOL_I18N.set(msg, 'Saving…');
+      api('/products', { method: 'POST', body: body }).then(function (pr) {
+        f.reset(); slugTouched = false;
+        AIOL_I18N.set(msg, 'Created {name} as Draft.', { name: pr.name });
+        var lp = document.getElementById('live-screen-products'); if (lp && lp.__visLoad) lp.__visLoad();
+      }).catch(function (er) {
+        if (er.denied === 403) AIOL_I18N.set(msg, 'Your role cannot add products (owner, admin or editor only).');
+        else if (er.denied === 401) AIOL_I18N.set(msg, 'Your session expired. Please reconnect.');
+        else if (er.status === 409) AIOL_I18N.set(msg, 'A product with this slug or SKU already exists.');
+        else if (er.status === 422) AIOL_I18N.set(msg, 'AI Core did not accept these values. Check the fields and try again.');
+        else AIOL_I18N.set(msg, 'Not saved ({error}).', { error: er.message });
+      }).then(function () { save.disabled = false; });
     });
   })();
   function prodText(v) {
@@ -15838,7 +15907,17 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "No products match {query}.": "هیچ محصولی با {query} منطبق نیست.",
     "Resetting…": "در حال بازنشانی…",
     "Reset. Your saved preferences are back to their defaults.": "بازنشانی شد. ترجیحات ذخیره‌شدهٔ شما به پیش‌فرض برگشت.",
-    "Not reset ({error}). Nothing was changed.": "بازنشانی نشد ({error}). چیزی تغییر نکرد."
+    "Not reset ({error}). Nothing was changed.": "بازنشانی نشد ({error}). چیزی تغییر نکرد.",
+    "New product": "محصول جدید",
+    "Description": "توضیحات",
+    "Create product": "ساختن محصول",
+    "Connect to AI Core to add a product.": "برای افزودن محصول به AI Core وصل شوید.",
+    "New products start as Draft. Publish one from its page once it has been reviewed.": "محصول‌های جدید به‌صورت پیش‌نویس شروع می‌شوند. پس از بازبینی، آن را از صفحهٔ خودش منتشر کنید.",
+    "Enter a slug (the product address, e.g. saffron-negin-5g).": "یک نامک وارد کنید (نشانی محصول، مثلاً \u2068saffron-negin-5g\u2069).",
+    "Created {name} as Draft.": "{name} به‌صورت پیش‌نویس ساخته شد.",
+    "Your role cannot add products (owner, admin or editor only).": "نقش شما نمی‌تواند محصول اضافه کند (فقط مالک، مدیر یا ویراستار).",
+    "A product with this slug or SKU already exists.": "محصولی با این نامک یا کد کالا از قبل وجود دارد.",
+    "AI Core did not accept these values. Check the fields and try again.": "AI Core این مقادیر را نپذیرفت. فیلدها را بررسی کنید و دوباره تلاش کنید."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

@@ -1939,3 +1939,20 @@ The Settings name and email editor (V5-settings-self-profile), the Products sear
 | Resetting… | در حال بازنشانی… |
 | Reset. Your saved preferences are back to their defaults. | بازنشانی شد. ترجیحات ذخیره‌شدهٔ شما به پیش‌فرض برگشت. |
 | Not reset ({error}). Nothing was changed. | بازنشانی نشد ({error}). چیزی تغییر نکرد. |
+
+## New product form (debt, priority 2)
+
+The New product form on #screen-products (V5-products-create-ui). Slug (نامک), SKU (کد کالا), Draft (پیش‌نویس) and the role names follow the glossary; AI Core and the example slug stay as written.
+
+| English | Persian |
+|---|---|
+| New product | محصول جدید |
+| Description | توضیحات |
+| Create product | ساختن محصول |
+| Connect to AI Core to add a product. | برای افزودن محصول به AI Core وصل شوید. |
+| New products start as Draft. Publish one from its page once it has been reviewed. | محصول‌های جدید به‌صورت پیش‌نویس شروع می‌شوند. پس از بازبینی، آن را از صفحهٔ خودش منتشر کنید. |
+| Enter a slug (the product address, e.g. saffron-negin-5g). | یک نامک وارد کنید (نشانی محصول، مثلاً saffron-negin-5g). |
+| Created {name} as Draft. | {name} به‌صورت پیش‌نویس ساخته شد. |
+| Your role cannot add products (owner, admin or editor only). | نقش شما نمی‌تواند محصول اضافه کند (فقط مالک، مدیر یا ویراستار). |
+| A product with this slug or SKU already exists. | محصولی با این نامک یا کد کالا از قبل وجود دارد. |
+| AI Core did not accept these values. Check the fields and try again. | AI Core این مقادیر را نپذیرفت. فیلدها را بررسی کنید و دوباره تلاش کنید. |

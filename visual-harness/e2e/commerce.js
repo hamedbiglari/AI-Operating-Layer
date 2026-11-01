@@ -2,8 +2,11 @@
 /*
  * Browser checks for the Products screen (Step 11).
  *   Sample: the Offers and Availability columns (V5-products-offer-summary)
- *           and New product (V5-products-create-ui) are hidden as debt; the
- *           search toolbar shows and filters the sample rows.
+ *           are hidden as debt; the search toolbar shows and filters the
+ *           sample rows; New product opens a card that says to connect first.
+ *   New product (V5-products-create-ui): connected, the slug follows the
+ *           name; one POST /products with only the filled fields; the list
+ *           reloads; empty name, 409 and 403 each say why.
  *   Search (V5-products-search): connected, typing asks the server once
  *           (&search=, back to the first page); no match says so.
  *   Live:   GET /products (one call, sorted by name, 50 per page); the
@@ -68,7 +71,13 @@ function installMock(data) {
   const reply = (body, status) => Promise.resolve(new Response(JSON.stringify(body), { status: status || 200 }));
   window.fetch = (u, opt) => {
     u = String(u); const p = u.slice(u.indexOf('/api/v1') + 7), method = (opt && opt.method) || 'GET';
-    window.__requests.push(method + ' ' + p);
+    window.__requests.push(method + ' ' + p + (method === 'POST' && opt && opt.body ? ' ' + opt.body : ''));
+    if (p === '/products' && method === 'POST') {
+      const body = JSON.parse(opt.body);
+      if (window.__role === 'viewer') return reply({ error: { message: 'Insufficient role' } }, 403);
+      if (body.slug === 'taken') return reply({ error: { code: 'CONFLICT', message: 'Duplicate slug' } }, 409);
+      return reply(Object.assign({ id: 'new1', status: 'draft' }, body), 201);
+    }
     if (window.__fail && p.indexOf(window.__fail) === 0) return reply({}, 500);
     const d = window.__data;
     let m = p.match(/^\/products\?limit=50&offset=(\d+)&sort_by=name&sort_dir=asc(&status=(\w+))?(&search=([^&]+))?$/);
@@ -126,7 +135,7 @@ function installMock(data) {
   check('sample: Offers + Availability (3 rows + header) and New product hidden as debt; no search debt left',
     [(await shown('#screen-products [data-debt-hidden="V5-products-offer-summary"]')).filter((x) => !x).length,
       await shown('#screen-products [data-debt-hidden="V5-products-search"]'), await shown('#screen-products [data-debt-hidden="V5-products-create-ui"]')],
-    [8, [], [false]]);
+    [8, [], []]);
   const sampleRows = () => page.evaluate(() => Array.from(document.querySelectorAll('#screen-products .table-wrap tbody tr'))
     .filter((tr) => !tr.hidden).map((tr) => tr.cells[0].textContent.trim()));
   const allSample = await sampleRows();
@@ -137,11 +146,44 @@ function installMock(data) {
     filtered.every((t) => t.toLowerCase().indexOf(firstWord.toLowerCase()) !== -1)], [true, true, true]);
   await page.fill('#screen-products .toolbar input[type=search]', ''); await settle();
   check('sample: clearing the search shows every row again', (await sampleRows()).length, allSample.length);
+  await page.evaluate(() => document.getElementById('prod-new').click()); await settle();
+  check('sample: New product opens a card that says to connect first; no form yet', await page.evaluate(() => {
+    const c = document.getElementById('prod-new-card');
+    return [!c.hidden, document.getElementById('prod-new').getAttribute('aria-expanded'), c.querySelector('.profile-missing').textContent,
+      document.getElementById('prod-new-form').hidden]; }), [true, 'true', 'Connect to AI Core to add a product.', true]);
+  await page.evaluate(() => document.getElementById('prod-new').click()); await settle();
 
   // Live.
   await page.evaluate(installMock, DATA);
   await connect();
   check('connect: one list request', await requests(), ['GET /products?limit=50&offset=0&sort_by=name&sort_dir=asc']);
+  // New product (V5-products-create-ui).
+  const posts = () => page.evaluate(() => window.__requests.filter((r) => /^POST \/products/.test(r)));
+  const msg = () => page.evaluate(() => document.getElementById('prod-new-msg').textContent);
+  const submitNew = () => page.evaluate(() => document.getElementById('prod-new-form').requestSubmit());
+  await page.evaluate(() => document.getElementById('prod-new').click()); await settle();
+  check('live: the form replaces the connect note', await page.evaluate(() => [document.querySelector('#prod-new-card .profile-missing').hidden,
+    document.getElementById('prod-new-form').hidden]), [true, false]);
+  await submitNew(); await settle();
+  check('empty name: refused before sending', [await msg(), (await posts()).length], ['Enter a name.', 0]);
+  await page.fill('#prod-new-name', 'Rose Water 250ml');
+  check('the slug follows the name', await page.inputValue('#prod-new-slug'), 'rose-water-250ml');
+  await page.fill('#prod-new-sku', 'RW-250');
+  let before = (await requests()).length;
+  await submitNew(); await settle(400);
+  check('create: one POST with only the filled fields; Created as Draft; the list reloads', [await posts(), await msg(), (await requests()).slice(before)],
+    [['POST /products {"name":"Rose Water 250ml","slug":"rose-water-250ml","sku":"RW-250"}'], 'Created ' + iso('Rose Water 250ml') + ' as Draft.',
+      ['GET /products?limit=50&offset=0&sort_by=name&sort_dir=asc']]);
+  check('create: the form is cleared for the next product', await page.inputValue('#prod-new-name'), '');
+  await page.fill('#prod-new-name', 'Duplicate'); await page.fill('#prod-new-slug', 'taken');
+  await submitNew(); await settle();
+  check('409: the slug or SKU is taken', await msg(), 'A product with this slug or SKU already exists.');
+  await page.evaluate(() => { window.__role = 'viewer'; });
+  await page.fill('#prod-new-slug', 'other');
+  await submitNew(); await settle();
+  check('403: the role is named', await msg(), 'Your role cannot add products (owner, admin or editor only).');
+  await page.evaluate(() => { window.__role = 'admin'; Array.from(document.querySelectorAll('#prod-new-form button')).find((x) => x.type === 'button').click(); }); await settle();
+  check('Cancel closes the card', await page.evaluate(() => document.getElementById('prod-new-card').hidden), true);
   let v = await view();
   check('list: note, rows (name + SKU, category, origin, knowledge, status), unknown status as sent', [v.title, v.note, v.rows],
     ['Products', '1' + EN + '2 of 120 products.', [
@@ -150,7 +192,7 @@ function installMock(data) {
   check('list: the knowledge link; sample hidden; pager', [v.links, v.sampleShown, v.pager],
     [['#screen-knowledge-detail?id=ko1'], false, [['Previous', true], ['Next', false]]]);
 
-  let before = (await requests()).length;
+  before = (await requests()).length;
   await page.click('#screen-products tbody tr:first-child button'); await settle();
   let d = await detail();
   check('open: one offers request for that product', (await requests()).slice(before), ['GET /products/p1/offers?limit=200']);
