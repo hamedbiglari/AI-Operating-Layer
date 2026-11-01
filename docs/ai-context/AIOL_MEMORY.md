@@ -5,8 +5,9 @@
      subject does NOT start with "docs". Any commit starting with "docs"
      (docs:, docs(i18n):, docs(debt):, docs: AIOL_MEMORY, ...) does NOT
      move `sha:`. All other commits do.
-     Anchor command:
-       git log --oneline -1 --grep='^docs' --invert-grep | cut -c1-7
+     Anchor command (subjects only: --grep also matched body lines such as
+     docs/e2e-real-keys.md and skipped that commit):
+       git log --format='%h %s' | awk '$2 !~ /^docs/' | head -1 | cut -c1-7
 -->
 
 ## 0. How to use this file (read first)
@@ -22,7 +23,7 @@ On load:
        Run and report exactly these four commands, in order, with their
        raw output, no commentary:
          git rev-parse HEAD
-         git log --oneline -1 --grep='^docs' --invert-grep | cut -c1-7
+         git log --format='%h %s' | awk '$2 !~ /^docs/' | head -1 | cut -c1-7
          git status --short
          git log --oneline -5
 
@@ -47,7 +48,7 @@ Drift anchor rule (this is what §3's `sha:` refers to):
   Any commit whose subject starts with "docs" does NOT move the anchor.
   Every other commit DOES move the anchor.
   Anchor is computed with:
-    git log --oneline -1 --grep='^docs' --invert-grep | cut -c1-7
+    git log --format='%h %s' | awk '$2 !~ /^docs/' | head -1 | cut -c1-7
 
 End of session: the user invokes the end ritual. Regenerate this ENTIRE
 file from scratch (do not diff). Output only the file content.
