@@ -1,0 +1,16 @@
+{
+  "name": "aiol-windows",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AIOL for Windows — standalone build folder. GENERATED from apps/shared by apps/shared/scripts/export-platforms.mjs — do not edit here; edit apps/shared and re-run it.",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "configure-release": "node scripts/configure-release.mjs",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.2"
+  }
+}

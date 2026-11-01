@@ -1371,3 +1371,51 @@ Delete and revoke actions, the job panel and live progress, knowledge transfer p
 | Handoff created: {id} — shared-memory checkpoint {checkpoint} | تحویل ساخته شد: {id} — نقطهٔ بازبینی حافظهٔ مشترک {checkpoint} |
 | Handoff {status}. Run the next task with this agent and the handoff ID (step 5). | تحویل {status}. کار بعدی را با این عامل و شناسهٔ تحویل اجرا کنید (گام ۵). |
 | Fill in: {fields} | پر کنید: {fields} |
+
+## Device Intelligence (ADR-138)
+
+Terms for the Device Intelligence admin screen. Categories describe installations, never people. macOS, reason codes, signal names, references and e-mail addresses stay as sent.
+
+| English | Persian |
+|---|---|
+| Device Intelligence | هوش دستگاه |
+| Installations of the official AIOL apps that proved, by signature, that they are the same installation as before. Evidence categories describe installations, never people, and nothing on this screen blocks anyone. Network and Windows installation identifiers appear only as short pseudonymous references. Read live from AI Core — no sample data. | نصب‌های برنامه‌های رسمی AIOL که با امضا ثابت کرده‌اند همان نصب قبلی هستند. دسته‌های شواهد دربارهٔ نصب‌ها هستند، نه افراد، و هیچ چیز در این صفحه کسی را مسدود نمی‌کند. شناسه‌های شبکه و نصب ویندوز فقط به‌صورت مرجع کوتاه مستعار نمایش داده می‌شوند. زنده از AI Core خوانده می‌شود — بدون دادهٔ نمونه. |
+| Revoked | باطل‌شده |
+| Installation | نصب |
+| App version | نسخهٔ برنامه |
+| Last seen | آخرین مشاهده |
+| Evidence categories | دسته‌های شواهد |
+| Web browser | مرورگر وب |
+| Windows | ویندوز |
+| Android | اندروید |
+| iPhone / iPad | آیفون / آیپد |
+| Same registered installation | همان نصب ثبت‌شده |
+| Likely shared client environment | محیط مشترک احتمالی برنامه |
+| Conflicting evidence | شواهد متعارض |
+| Shared network only | فقط شبکهٔ مشترک |
+| Insufficient evidence | شواهد ناکافی |
+| Device credential revoked | اعتبارنامهٔ دستگاه باطل‌شده |
+| {n|installation|installations} | {n} نصب |
+| No installations yet. An installation appears after an official AIOL app signs in with installation verification on. | هنوز نصبی ثبت نشده است. یک نصب پس از ورود یک برنامهٔ رسمی AIOL با تأیید نصب روشن نمایش داده می‌شود. |
+| Could not load installations ({error}). | بارگذاری نصب‌ها ناموفق بود ({error}). |
+| Only owners and administrators can see installations. | فقط مالکان و مدیران می‌توانند نصب‌ها را ببینند. |
+| Details | جزئیات |
+| Installation detail | جزئیات نصب |
+| Linked accounts | حساب‌های متصل |
+| Recent observations | مشاهدات اخیر |
+| Reason codes | کدهای دلیل |
+| Algorithm version | نسخهٔ الگوریتم |
+| Key storage (as reported by the app) | محل نگهداری کلید (به گزارش برنامه) |
+| Network reference | مرجع شبکه |
+| Windows installation reference | مرجع نصب ویندوز |
+| Signals | نشانه‌ها |
+| Event | رویداد |
+| Registered | ثبت شد |
+| Account linked | حساب متصل شد |
+| Signature verified | امضا تأیید شد |
+| Verification failed | تأیید ناموفق بود |
+| Account unlinked | حساب جدا شد |
+| Revoke installation | باطل کردن نصب |
+| Revoke this installation? Its key will never be accepted again; the app creates a new one at its next sign-in. | این نصب باطل شود؟ کلید آن دیگر هرگز پذیرفته نمی‌شود و برنامه در ورود بعدی کلید تازه‌ای می‌سازد. |
+| Installation revoked. | نصب باطل شد. |
+| Could not revoke ({error}). | باطل کردن ناموفق بود ({error}). |

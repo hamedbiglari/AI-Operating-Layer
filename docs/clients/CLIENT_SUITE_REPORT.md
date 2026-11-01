@@ -1,0 +1,297 @@
+# AIOL Official Client Suite — audit, decisions, privacy, threat model, test matrix and acceptance report
+
+Date: 2026-10-31 · Branch: `claude/nice-fermi-du1d71` · ADRs: 137 (client suite), 138 (Device Intelligence)
+
+Status vocabulary for platforms is the master prompt's (§36). Every status below is backed by a command
+that was actually run in this session, or says it was not run.
+
+---
+
+## 1. Executive summary
+
+* **Built and verified here:** the AI Core additions (native session, chat idempotency, client config,
+  Device Intelligence registry, migration 0049), the shared client UI, and the Tauri native shell's Rust
+  layer. The shared UI was driven end-to-end in Chromium against a live AI Core + PostgreSQL:
+  sign in → chat → history → continue → settings → usage → Persian/RTL → device verification → account
+  switch → sign out → sign in → server continuity, plus a phone viewport.
+* **Not built here:** no Windows, macOS, Android or iOS **package** exists yet. This environment is Linux
+  with no Windows/macOS SDKs, no Xcode, and `dl.google.com` (Android SDK) is blocked by the network
+  policy. `.github/workflows/clients.yml` builds Windows and macOS packages on GitHub-hosted runners and
+  attempts Android (debug APK) and iOS (simulator); none of those jobs has run yet.
+* **Production readiness: NOT READY** (see §21).
+
+## 2. Existing architecture reused (forensic audit)
+
+| Area | Evidence (file) | Classification | Used by the clients as |
+|------|-----------------|----------------|------------------------|
+| FastAPI AI Core, `/api/v1`, error envelope | `app/main.py`, `app/core/errors.py` | VERIFIED (1741 baseline tests) | the only backend |
+| Auth: password, emailed code, browser session with rotation + reuse detection | `api/v1/auth.py`, `services/auth_session_service.py`, ADR-129 | VERIFIED | reused; native routes open the same `auth_sessions` row |
+| OAuth/OIDC identity provider | — | MISSING | not invented (debt `CLIENT-oidc`) |
+| Tenancy + RBAC (`get_current_user`, `require_roles`) | `security/dependencies.py` | VERIFIED | every new route |
+| Knowledge chat: conversations, messages, 8 answer states, citations, research approval | `api/v1/chat.py`, `services/chat_service.py`, ADR-128/130 | VERIFIED (tests) — had **no UI consumer in this repo** | the chat surface |
+| Website chat page (ADR-129) | not in repository | MISSING here | — |
+| Token streaming | — | MISSING | not offered (debt `CLIENT-chat-streaming`) |
+| Idempotent question submission | — | MISSING → **added** (`client_request_id`) | retry safety |
+| User preferences (language en/fa, theme) | `api/v1/preferences.py` | VERIFIED | Settings, Language |
+| Billing usage, wallet, quotas | `api/v1/billing.py`, `billing_service.usage_summary` | VERIFIED | Usage |
+| Subscription plans | `models/_draft_billing_not_wired/` | PARTIALLY_IMPLEMENTED (draft, not wired) | not shown; Usage says plans are not offered |
+| Design tokens + icon registry | `frontend/design-system/`, `frontend/icons/icon-paths.json` | VERIFIED (canonical) | copied byte-identically by `apps/shared/scripts/sync-design-system.mjs`, parity-tested |
+| Persian i18n conventions, KNOWN-word reversal check | `visual-harness/check-persian.js` | VERIFIED | client catalogue is checked against the same KNOWN list |
+| Device Intelligence ("previously specified Web Device Intelligence Engine") | searched models/services/docs for device, fingerprint, MachineGuid, installation key | MISSING | **built** (ADR-138) |
+| Free-quota / abuse policy engine | — | MISSING | not invented (debt `CLIENT-free-quota-policy-engine`) |
+| Admin dashboard | `visual-harness/index.html` | VERIFIED | Device Intelligence admin API **and** screen `#screen-device-intel` added (owner/admin nav, live, EN/FA) |
+| CI | `.github/workflows/ci.yml` | VERIFIED | untouched; new `clients.yml` |
+| Native/mobile/PWA client code | — | MISSING | **built** |
+
+## 3. Architecture and technology decision (ADR-137)
+
+* **FACT:** every existing UI is plain HTML/CSS/JS with no bundler; there is exactly one design system and
+  one icon registry, and START_HERE forbids a second. The chat, auth, preferences and usage contracts are
+  JSON over HTTPS with bearer tokens.
+* **SIGNAL:** Tauri 2 targets Windows, macOS, Android and iOS from one Rust core with system WebViews; the
+  OS credential stores are reachable from Rust (`keyring`: Credential Manager, Keychain) and Android
+  Keystore from a Kotlin plugin.
+* **INFERENCE:** a shared web UI inside Tauri reuses the tokens and icons byte-for-byte and keeps one
+  native layer to secure. Flutter would require re-implementing the design system in Dart.
+* **UNKNOWN:** WebView differences (WKWebView on iOS 15 vs WebView2) for `<dialog>`, `interactive-widget`
+  keyboard resizing and IndexedDB were not tested on devices.
+* **DECISION:** shared ES-module UI (`clients/app`) + Tauri 2 (`apps/shared/src-tauri`).
+* **TRADE-OFF:** a WebView UI is less native than SwiftUI/Compose; iOS/Android keyboard and gesture details
+  need on-device tuning. Desktop/iOS device keys are OS-protected software keys, not Secure Enclave keys.
+
+Layering: shared domain logic (`app/src/core`) · shared presentation (`app/src/ui`, `styles/app.css`) ·
+responsive platform adaptation (CSS drawer < 768 px, safe areas, touch targets) · native integration
+(`src-tauri/src`, `mobile/android`) · API adapters (`core/http.js`) · security-sensitive services
+(vault, device key — Rust/Kotlin only) · build config (`tauri.conf.json`, `clients.yml`).
+
+## 4–7. Platform status
+
+| Platform | Status | Evidence | Missing for the next status |
+|----------|--------|----------|-----------------------------|
+| Windows | **PACKAGE GENERATED** (unsigned) | CI runs 41209523146, 41221954216, 41223589699: "Package — Windows x64" succeeded; artifact `aiol-Windows` (2.8 MB, NSIS + MSI) | Authenticode signing; install and test on real Windows devices |
+| macOS | **PACKAGE GENERATED** (unsigned, universal) | CI run 41223589699 "Package — macOS universal" succeeded; artifact `aiol-macOS` (6.7 MB, `.app` + `.dmg`) | Developer ID signing + notarization; real-device test |
+| Android | **PACKAGE GENERATED** (unsigned debug APK) | CI run 41223589699 "Package — Android" succeeded — this compiled the Kotlin Keystore plugin; artifact `aiol-android-debug` (122 MB, debug APKs) | release AAB with an upload keystore; real-device test (Keystore, keyboard, back navigation) |
+| iOS / iPadOS | **BUILD VERIFIED** (simulator, arm64, unsigned) | CI runs 41221954216 and 41223589699: "Finished 1 iOS Bundle"; artifact `aiol-ios-simulator` (19 MB `AIOL.app`) | device build needs an Apple team + provisioning; simulator/device test |
+
+The **shared UI** that all four load is at **TESTS PASS** (unit + live end-to-end in Chromium). Chromium is
+the engine of WebView2 (Windows) and Android System WebView, not of WKWebView (macOS/iOS).
+
+## 8. Authentication and session security
+
+* `POST /auth/native/session` (`grant: login_code | password`) reuses the existing verification services,
+  throttles, lockout and indistinguishable failures, and opens an `auth_sessions` row.
+* The refresh secret is returned in the body, stored only in the OS vault (Rust allows only the name
+  `aiol.refresh` from the WebView), rotated on every refresh, and replay of a rotated secret revokes the
+  session for every holder. Access tokens live in memory for 15 minutes; refresh is single-flight.
+* Sign-out calls `/auth/native/session/end`, then always clears local state; it never deletes server
+  conversations (unit test asserts no chat DELETE is sent).
+* Not applicable today: PKCE / system-browser / app-link callbacks — AIOL has no OAuth IdP. When one is
+  added, the native clients must use authorization code + PKCE with the system browser (debt `CLIENT-oidc`).
+
+## 9. Chat and conversation synchronisation
+
+Server-backed only. A question is shown `pending`, becomes `confirmed` only when the server returns its
+answer (then the thread is reloaded so positions come from the server), `failed` on error (Retry re-sends
+the same `client_request_id`, so the server stores the question once — unit + backend tests), and
+`unknown` when the user stops waiting or the request times out ("the answer may still have been saved").
+History: search (title + content, server-side), rename, archive, delete, pagination of lists and of older
+messages. The answer state, limitation, citations (with page and contested flag) and pending research
+approvals are rendered from the server's data with `textContent` only.
+
+## 10. Account, settings, usage and upgrade
+
+Account menu (reference hierarchy): account email + role · Settings · Usage · Language · Get help
+(only if configured) · Upgrade plan · Get apps · Learn more (only if configured) · Log out.
+Settings: theme (account-wide, persisted via `/users/me/preferences`), installation verification
+(this installation), linked installations, version, server, legal links. Usage: wallet and quota meters
+from `/billing/usage`, chat daily limit from `/chat/config`, and the explicit statement that plans are not
+offered. Upgrade: truthful "not available" until `CLIENT_UPGRADE_URL` is set, and withheld on Android/iOS.
+Get apps: "nothing published" until `CLIENT_RELEASES_JSON` lists a release.
+
+## 11. Device Intelligence integration (ADR-138)
+
+Proof-of-possession of an ES256 installation key, per account, with single-use bound challenges.
+Provenance per observation (`WEB_BROWSER`, `WINDOWS_CLIENT`, `MACOS_CLIENT`, `ANDROID_CLIENT`, `IOS_CLIENT`,
+`SERVER_OBSERVATION`). Evidence-only assessment (`di-assess-v1`). Optional in the client: runs after the app
+is usable, never blocks sign-in, every failure becomes a status in Settings. Users can turn it off
+(server unlink + local key deletion). Admin API with audited reads and revocation.
+
+## 12. Privacy and data inventory
+
+| Signal | Source | Purpose | Raw persisted? | Protection | Retention | Who can see | Disclosure |
+|--------|--------|---------|----------------|------------|-----------|-------------|------------|
+| Installation public key | client | verify continuity signatures | yes (public by nature) | tenant-scoped row; API shows a 12-hex reference only | until revoked/unlinked + account deletion cascade | admin (reference only) | Settings text |
+| Key storage claim | client | show how the key is protected (as a claim) | yes | — | as above | admin | — |
+| App version, OS family/version | client | support, compatibility | yes, truncated to 40 chars | — | as above | admin, the user | — |
+| Client IP | request | same/different network evidence | **no** | keyed HMAC (versioned) of IP and of /24 or /48 | 90 days (`DEVICE_OBSERVATION_RETENTION_DAYS`) | admin sees 10-hex prefix of the prefix pseudonym | Settings text |
+| Linked accounts per installation | server | shared-device / account-switch evidence | yes | tenant-scoped | until unlink | admin of that tenant only | Settings text |
+| Challenge nonce | server | replay protection | SHA-256 hash only | single use, 120 s | purged 1 h after expiry/use | nobody | — |
+| Windows MachineGuid (§16.1) | Windows client, read-only registry, only while verification is on | tell reinstall / second copy / several accounts on one Windows install from distinct machines | **no** | keyed versioned HMAC on arrival (`os_install_pseudonym`) | 90 days | admin sees a 10-hex reference | Settings text (EN/FA) |
+| GDID | — | — | **not collected** — capability-gated, recorded as `unsupported` (no verifiable API) | — | — | — | — |
+| Hardware serials, IMEI, UDID, MAC, ANDROID_ID, browser fingerprint | — | — | **not collected** | — | — | — | — |
+
+Legal status: **not reviewed.** The Settings disclosure text, the legal basis (consent vs legitimate
+interest) for each jurisdiction, and Apple/Google privacy declarations need qualified review before
+release. The retention purge exists and is tested but is not scheduled (debt).
+
+## 13. Threat model and security findings
+
+| Threat | Mitigation | Verified by |
+|--------|------------|-------------|
+| Token theft from storage | refresh secret only in OS vault; access token memory-only; no tokens in URLs, logs, localStorage | unit test (no secret written to localStorage), e2e (storage scan) |
+| Refresh-secret replay | rotation + reuse detection (existing ADR-129 service) | backend test `test_refresh_rotates_and_the_old_secret_dies` |
+| Device registration spoofing (public key without private key) | signature over server-built input | `test_a_public_key_without_the_private_key_cannot_register` |
+| Challenge replay / expiry / forged nonce | single-use row lock, TTL, nonce hash compare; failed signature burns the challenge | 4 backend tests |
+| Moving a signature between users / credentials | input binds org, user, purpose, credential | 2 backend tests |
+| IDOR / cross-tenant device or conversation access | all lookups scoped by organization (+ user for conversations); 404 not 403 | backend tests (devices, chat key reuse) |
+| Privilege escalation to device evidence | owner/admin only; reads audited | `test_a_non_admin_cannot_read_device_evidence`, audit tests |
+| WebView as a signing oracle | Rust/Kotlin sign only `AIOL-DEVICE-v1\n…` ASCII ≤ 512 bytes | Rust test `refuses_to_sign_anything_but_a_device_challenge` |
+| XSS / prompt-injected content | no HTML-string APIs anywhere in client source (test-enforced); CSP without `unsafe-eval` or inline script | unit test; `tauri.conf.json` |
+| Unsafe external URLs | https/mailto only, checked in JS and again in Rust | JS + Rust tests |
+| Arbitrary API endpoint via crafted link | `?api=` honoured only on a loopback origin in the browser build; production refuses non-https | unit test |
+| Cache leakage between accounts | nothing persisted; store reset on sign-out/switch | unit test, e2e (second account sees no conversations) |
+| Duplicate charges on retry | idempotency key; POST never auto-retried | backend + unit tests |
+| Oversized responses | 5 MB cap | code (`http.js`) |
+| Device-graph poisoning | links require proof of possession per account; platform switch refused; failed checks recorded as conflicting evidence, never as identity | backend tests |
+| Insecure update channel | no updater shipped | — |
+
+Open findings: CSP `connect-src https:` should be narrowed per release (debt); admin list assessments run
+3 queries per row (≤ 200 rows); concurrent first registration of the same key returns 409 `registration_race`.
+
+## 14. Red-team results (synthetic)
+
+All results are from synthetic tests in `test_device_intelligence.py`; they prove protocol behaviour, not
+real-world detection accuracy. No real-world false-positive/negative dataset exists, so no accuracy figure is
+claimed.
+
+| Scenario | Expected | Result |
+|----------|----------|--------|
+| same installation, two accounts (account switching) | linked; `SAME_REGISTERED_INSTALLATION` | PASS (backend + e2e) |
+| same device, IP changes / VPN exit changes ×3 | continuity kept; `INSUFFICIENT_EVIDENCE` | PASS |
+| two devices on one network (office NAT / family Wi-Fi) | `SHARED_NETWORK_ONLY` only | PASS |
+| reinstall (new key) after revocation | registers as a new installation | PASS |
+| revoked key re-registered | 409 `credential_revoked` | PASS |
+| user unlinks one of two accounts | other account keeps continuity | PASS |
+| spoofed payload / replay / expired / wrong nonce / foreign challenge / moved signature | refused | PASS |
+| non-P-256 or garbage key | 422 | PASS |
+| feature disabled | 404 on device routes, sign-in unaffected | PASS |
+| missing signals (no IP) | NULL pseudonym, not a value | PASS |
+| VPN / private browsing / shared network treated as abuse | never | by construction: no route enforces; categories are evidence |
+
+Browser matrix (Chrome/Firefox/Edge/Safari, private modes, restricted storage): **not run** — only
+Chromium was available. In private browsing the WebCrypto/IndexedDB key may be unavailable or ephemeral;
+the client then reports "not available here" and continues.
+
+## 15. Browser and native compatibility
+
+| Engine / platform | Tested |
+|-------------------|--------|
+| Chromium (Playwright, desktop 1280×800 and phone 390×844 touch) | yes — e2e |
+| WebView2 (Windows), WKWebView (macOS/iOS), Android System WebView | no |
+| Real devices | none |
+
+## 16. Automated test results
+
+AI Core: 1794 passed, 0 failed, 3 skipped, coverage 93.54 % (fresh DB). New backend tests: 19 (client suite) + 31 (Device Intelligence). Client unit: 30/30. End-to-end: 39/39. Rust shell: 5/5.
+
+## 17. Build and packaging results
+
+See the bottom of this document ("Command log").
+
+## 18. Artifact locations
+
+No installable package was produced in this environment. Source: `apps/shared/`. CI outputs (when run):
+artifacts `aiol-Windows`, `aiol-macOS`, `aiol-android-debug` of the "Client suite CI" workflow.
+End-to-end screenshots: `apps/shared/e2e/out/` (not committed).
+
+## 19. Unresolved defects and dependencies
+
+Debt rows `CLIENT-*` in `docs/ai-context/DEBT_REGISTER.md`: dashboard Device Intelligence screen,
+retention scheduler, policy engine, cross-tenant correlation, streaming, mobile billing, attestation,
+updater, OIDC, CSP narrowing. Plus: signing credentials for all four platforms; Android SDK access;
+macOS/Xcode host; legal review.
+
+## 20. Known limitations
+
+* "Stop waiting" cannot cancel server work; the server still answers and saves.
+* No offline queue: questions are not sent while offline (stated in the UI).
+* Drafts are kept in memory for the app session only (privacy choice), not across restarts.
+* Desktop and iOS device keys are OS-keychain software keys (`os_keystore`), not hardware-bound.
+* Arabic is not offered (no backend preference or catalogue).
+* Linux is not a release target.
+
+## 21. Production readiness decision
+
+**NOT READY FOR RELEASE.** All four platforms now build in CI (unsigned), but none is signed or device-tested; WebKit engines are
+untested; the privacy disclosure lacks legal review. No
+release-blocking vulnerability is known in the implemented code, and the backend changes are additive and
+reversible (migration 0049 down-migrates cleanly).
+
+---
+
+## Command log (observed outcomes, 2026-10-31)
+
+| Command | Host | Result |
+|---------|------|--------|
+| `alembic upgrade head` → `downgrade 0048` → `upgrade head` | Linux, PostgreSQL 16 + pgvector | 0049 up/down/up clean |
+| `pytest` (full AI Core suite, coverage gate 92 %) on a freshly migrated DB | Linux | 1794 passed, 3 skipped, 0 failed; coverage 93.54 % (gate 92 %) |
+| `npm test` (clients) | Node 22 | 30 passed, 0 failed |
+| `node e2e/run.mjs` vs live AI Core (uvicorn + PostgreSQL + Redis) | Chromium (Playwright) | 39/39 checks passed |
+| `cargo test --locked` (src-tauri) | Linux x86_64 | 5 passed — builds the full Tauri shell for the host |
+| `cargo check --locked --target x86_64-pc-windows-msvc` | Linux | finished; Windows resource (.rc) step skipped: no MSVC toolchain |
+| `cargo check --locked --target aarch64-linux-android` | Linux | finished (includes the Android-only plugin bridge) |
+| `cargo check --target aarch64-apple-darwin` / `aarch64-apple-ios` | Linux | **blocked**: `objc2-exception-helper` compiles Objective-C, needs clang + Apple SDK |
+| `npx tauri icon` | Linux | Windows/macOS/iOS/Android icon sets generated |
+| `npx tauri build` / `tauri android build` / `tauri ios build` | — | **not run** (no Windows/macOS host, Android SDK host blocked, no Xcode) |
+| `git push` | — | **failed: 403** — the session has no GitHub access to the repository, so CI has not run |
+
+Baseline before any change: 1741 passed, 2 failed, 3 skipped; both failures came from this work in
+progress and were fixed. `test_auth_session.py` selects "the last `auth_sessions` row", so the suite must
+run on a fresh database (as CI does), not one that also holds rows from a live end-to-end run.
+
+### CI run 41209523146 (commit 01b4467, GitHub-hosted runners)
+
+| Job | Result |
+|-----|--------|
+| Shared UI — unit tests, design-system parity | success |
+| Shared UI against a live AI Core (Chromium) | success |
+| Native shell — Rust tests (Linux) | success |
+| Package — Windows x64 (`windows-2022`) | **success**, artifact `aiol-Windows` (unsigned, not installed or run on a device) |
+| Package — Android | failed in `android-actions/setup-android@v3` (Node 20 action on Node 24) — workflow fixed to use the runner's preinstalled SDK |
+| Package — macOS, Build — iOS simulator | cancelled within 1 s, no logs: the `macos-14` label — workflow switched to `macos-latest` |
+
+### CI run 41221954216 (commit 3bb234d)
+
+| Job | Result |
+|-----|--------|
+| Shared UI unit tests · end-to-end · Rust tests | success |
+| Package — Windows x64 | success (second time) |
+| Build — iOS simulator (`macos-latest`) | **success**: `AIOL.app` for arm64 simulator |
+| Package — macOS universal | universal binary **compiled and linked**; bundling failed because empty signing secrets were passed as empty strings (`security import` of a non-existent certificate) — fixed: empty secrets are unset |
+| Package — Android | SDK + NDK installed; failed because `NDK_HOME` was built from `${{ env.ANDROID_HOME }}`, which is empty — fixed: set in the shell |
+
+Merge of `v5-implementation` (8A–9A) into this branch at 77d9485: fresh-DB upgrade to 0049, full backend
+suite 1800 passed / 0 failed, coverage 93.53 %; harness i18n gate with CI's full `--require` list passes.
+
+### CI run 41223589699 (commit 33be46e) — all jobs green
+
+| Job | Result | Artifact |
+|-----|--------|----------|
+| Shared UI unit tests · end-to-end vs live AI Core · Rust tests | success | `e2e-screenshots` |
+| Package — Windows x64 | success | `aiol-Windows` 2.8 MB |
+| Package — macOS universal | success (unsigned) | `aiol-macOS` 6.7 MB |
+| Package — Android (debug APK) | success — first compilation of `VaultPlugin.kt` | `aiol-android-debug` 122 MB |
+| Build — iOS simulator | success | `aiol-ios-simulator` 19 MB |
+
+None of these packages has been installed or run on a real device; none is signed; nothing is published.
+
+### Admin dashboard: Device Intelligence screen (§19)
+
+`#screen-device-intel` in the existing dashboard (owner/admin navigation), on the shared live connection:
+installations with platform, version, last seen, status, evidence-category badges and linked-account count;
+state filter; detail (each read audit-logged by AI Core) with linked accounts and recent observations
+showing only 10-hex network / Windows-installation references and signal states; revoke with confirmation.
+English and Persian (44 FA entries, glossary section, 50 KNOWN words). Verified: `e2e/device-intelligence.js`
+(18 checks, mocked API) and a live run against AI Core with a real registered key and MachineGuid — raw
+GUID never on the page, no console errors. All 19 harness browser suites, `check.js`, `check-persian.js`,
+`check-source-chars.js` and the CI `i18n-coverage --require` gate (with `screen-device-intel`) pass.

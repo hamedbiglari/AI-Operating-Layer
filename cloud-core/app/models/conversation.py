@@ -34,7 +34,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     JSON, TIMESTAMP, Boolean, CheckConstraint, ForeignKey, Index, Integer, Numeric, SmallInteger,
-    String, Text, UniqueConstraint,
+    String, Text, UniqueConstraint, text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -122,6 +122,11 @@ class ConversationMessage(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         CheckConstraint("(role = 'user' AND answer_state IS NULL) OR (role = 'assistant' AND answer_state IS NOT NULL)",
                         name="only_assistant_turns_have_an_answer_state"),
         Index("ix_conversation_messages_thread", "conversation_id", "position"),
+        # A client that lost the reply to a question re-sends it with the same id and gets the stored
+        # turn back instead of a second question (ADR-137). Unique per conversation, NULL for turns that
+        # carried none (every turn written before migration 0049).
+        Index("uq_conversation_messages_client_request", "conversation_id", "client_request_id", unique=True,
+              postgresql_where=text("client_request_id IS NOT NULL")),
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     conversation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -147,6 +152,8 @@ class ConversationMessage(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     error: Mapped[str | None] = mapped_column(Text)
     # The user turn this assistant turn answers — set so a retry knows what to ask again.
     answers_message_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("conversation_messages.id", ondelete="SET NULL"))
+    # Client-generated idempotency key, user turns only.
+    client_request_id: Mapped[str | None] = mapped_column(String(64))
 
 
 class ConversationCitation(UUIDPrimaryKeyMixin, TimestampMixin, Base):

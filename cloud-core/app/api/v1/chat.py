@@ -10,6 +10,7 @@ Authenticated knowledge chat API (master prompt §13, §14; ADR-128).
     DELETE /chat/conversations/{id}
     GET    /chat/conversations/{id}/messages            the turns, with their citations
     POST   /chat/conversations/{id}/messages            ask a question -> one answer with a state
+    POST   /chat/conversations/{id}/messages/stream     the same, as Server-Sent Events with real progress
     POST   /chat/messages/{id}/retry                    ask the same question again as a new turn
     POST   /chat/messages/{id}/feedback                 helpful / not_helpful / wrong / incomplete
     GET    /chat/research-requests                      gaps the chat proposed researching
@@ -65,6 +66,10 @@ class ConversationPatch(BaseModel):
 class Ask(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
     attachments: list[UUID] | None = None
+    # Idempotency key chosen by the client (ADR-137). Re-sending a question with the same key returns the
+    # stored answer instead of asking — and paying for — the question twice.
+    client_request_id: str | None = Field(default=None, min_length=8, max_length=64,
+                                          pattern=r"^[A-Za-z0-9_-]+$")
 
 
 class FeedbackIn(BaseModel):
@@ -192,13 +197,94 @@ def list_messages(conversation_id: UUID, p: PaginationParams = Depends(), sort: 
 
 
 @router.post("/conversations/{conversation_id}/messages", status_code=status.HTTP_201_CREATED)
-def ask(conversation_id: UUID, body: Ask, user: User = Reader, db: Session = Depends(get_db)) -> dict:
+def ask(conversation_id: UUID, body: Ask, response: Response, user: User = Reader,
+        db: Session = Depends(get_db)) -> dict:
     convo = _mine(db, user, conversation_id)
     if convo.state == "archived":
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This conversation is archived. Unarchive it to continue.")
-    msg = svc.ask(db, convo=convo, user=user, question=body.question, attachments=body.attachments)
+    if body.client_request_id:
+        replay = svc.find_replay(db, convo=convo, client_request_id=body.client_request_id)
+        if replay is not None:
+            response.status_code = status.HTTP_200_OK
+            response.headers["Idempotent-Replay"] = "true"
+            return svc.message_out(db, replay)
+    msg = svc.ask(db, convo=convo, user=user, question=body.question, attachments=body.attachments,
+                  client_request_id=body.client_request_id)
     return svc.message_out(db, msg)
+
+
+@router.post("/conversations/{conversation_id}/messages/stream")
+def ask_stream(conversation_id: UUID, body: Ask, user: User = Reader, db: Session = Depends(get_db)):
+    """The same question as POST …/messages, answered as Server-Sent Events (ADR-137 §streaming).
+
+    Events, in order: `accepted` (the question is stored) → `retrieved` (how many evidence units matched) →
+    `generating` (the model call starts) → `message` (the stored, grounding-validated assistant turn, exactly what
+    POST …/messages returns) — or `error` {status, reason, message}. Early answers (no topic, nothing retrieved)
+    skip the later progress events. Model text is never streamed before validation: invented citation markers
+    are removed and the answer state decided only after the model has finished, so partial raw text could show
+    citations that do not exist. A comment line every 10 s keeps proxies from closing the connection.
+
+    Everything that can be refused is refused before the stream opens, with a normal HTTP error: an unknown or
+    another user's conversation (404), an archived one (409), and a replayed client_request_id (200 with the
+    stored turn as a single `message` event)."""
+    import json as _json
+    import queue as _queue
+    import threading as _threading
+
+    from fastapi.encoders import jsonable_encoder
+    from fastapi.responses import StreamingResponse
+
+    convo = _mine(db, user, conversation_id)
+    if convo.state == "archived":
+        raise HTTPException(status.HTTP_409_CONFLICT, "This conversation is archived. Unarchive it to continue.")
+
+    def frame(name: str, data) -> str:  # noqa: ANN001
+        return f"event: {name}\ndata: {_json.dumps(jsonable_encoder(data), ensure_ascii=False)}\n\n"
+
+    headers = {"Cache-Control": "no-store", "X-Accel-Buffering": "no"}
+    if body.client_request_id:
+        replay = svc.find_replay(db, convo=convo, client_request_id=body.client_request_id)
+        if replay is not None:
+            out = svc.message_out(db, replay)
+            return StreamingResponse(iter([frame("message", out)]), media_type="text/event-stream",
+                                     headers={**headers, "Idempotent-Replay": "true"})
+
+    events: _queue.Queue = _queue.Queue()
+    done = object()
+
+    def work() -> None:
+        try:
+            msg = svc.ask(db, convo=convo, user=user, question=body.question, attachments=body.attachments,
+                          client_request_id=body.client_request_id,
+                          on_event=lambda name, data: events.put((name, data)))
+            events.put(("message", svc.message_out(db, msg)))
+        except HTTPException as exc:
+            detail = exc.detail
+            reason = detail.get("code") if isinstance(detail, dict) else None
+            message = detail.get("message") if isinstance(detail, dict) else str(detail)
+            events.put(("error", {"status": exc.status_code, "reason": reason, "message": message}))
+        except Exception:  # noqa: BLE001 - reported as a generic error event, never as a stack trace
+            logging.getLogger(__name__).exception("chat stream failed")
+            events.put(("error", {"status": 500, "reason": None, "message": "Something went wrong on the server."}))
+        finally:
+            events.put(done)
+
+    def stream():  # noqa: ANN202
+        worker = _threading.Thread(target=work, daemon=True)
+        worker.start()
+        while True:
+            try:
+                item = events.get(timeout=10)
+            except _queue.Empty:
+                yield ": keep-alive\n\n"
+                continue
+            if item is done:
+                break
+            yield frame(*item)
+        worker.join()
+
+    return StreamingResponse(stream(), media_type="text/event-stream", headers=headers)
 
 
 @router.post("/messages/{message_id}/retry", status_code=status.HTTP_201_CREATED)

@@ -235,6 +235,66 @@ bdi.identifier {
   unicode-bidi: isolate;
 }
 
+/* ---------- Assistant surface (official apps, ADR-137) ----------
+ * The chat apps read like paper: warm neutral greys instead of the dashboard's cool operations greys, a reading
+ * serif for long answers, and AIOL's own violet as the single accent. Scoped to [data-surface="assistant"], so the
+ * dashboard and the WordPress plugin are unchanged. Status hues are inherited, so a state still means the same.
+ */
+[data-surface="assistant"] {
+  /* Warm off-white page, a slightly deeper sidebar and user bubble, hairline warm borders, near-black text. */
+  --canvas:          #faf9f5;
+  --surface:         #ffffff;
+  --surface-sunken:  #f0eee6;
+  --surface-raised:  #ffffff;
+  --sidebar:         #f5f4ed;
+  --border:          #e8e6dc;
+  --border-strong:   #d4d1c4;
+  --text:            #141413;
+  --text-muted:      #5e5d59;
+  --text-subtle:     #87867f;
+  --accent:          #6d4fd8;
+  --accent-contrast: #ffffff;
+  --accent-tint:     #eeeafc;
+  --focus:           #6d4fd8;
+  --font-reading: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  [data-surface="assistant"]:not([data-theme="light"]) {
+    --canvas:          #1f1e1b;
+    --surface:         #2a2925;
+    --surface-sunken:  #33322d;
+    --surface-raised:  #2f2e2a;
+    --sidebar:         #1a1917;
+    --border:          #3b3a35;
+    --border-strong:   #55534c;
+    --text:            #ecebe5;
+    --text-muted:      #b3b0a6;
+    --text-subtle:     #8e8b82;
+    --accent:          #a08bf2;
+    --accent-contrast: #1a1917;
+    --accent-tint:     #2d2742;
+    --focus:           #a08bf2;
+  }
+}
+[data-surface="assistant"][data-theme="dark"] {
+  --canvas:          #1f1e1b;
+  --surface:         #2a2925;
+  --surface-sunken:  #33322d;
+  --surface-raised:  #2f2e2a;
+  --sidebar:         #1a1917;
+  --border:          #3b3a35;
+  --border-strong:   #55534c;
+  --text:            #ecebe5;
+  --text-muted:      #b3b0a6;
+  --text-subtle:     #8e8b82;
+  --accent:          #a08bf2;
+  --accent-contrast: #1a1917;
+  --accent-tint:     #2d2742;
+  --focus:           #a08bf2;
+}
+/* Persian keeps its own face for reading; a Latin serif would only serve the Latin runs. */
+[data-surface="assistant"][lang="fa"] { --font-reading: var(--font-fa); }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

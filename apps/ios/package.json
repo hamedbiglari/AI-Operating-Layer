@@ -1,0 +1,17 @@
+{
+  "name": "aiol-ios",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AIOL for iPhone and iPad — standalone build folder. GENERATED from apps/shared by apps/shared/scripts/export-platforms.mjs — do not edit here; edit apps/shared and re-run it.",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "configure-release": "node scripts/configure-release.mjs",
+    "setup": "bash scripts/mobile-setup.sh ios",
+    "build": "tauri ios build --export-method app-store-connect"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.2"
+  }
+}

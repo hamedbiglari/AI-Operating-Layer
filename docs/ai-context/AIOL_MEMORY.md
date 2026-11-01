@@ -381,7 +381,7 @@ file from scratch (do not diff). Output only the file content.
   /access-decision per agent), V5-access-policy-edit (no rule editor).
   e2e/visibility.js (25); --require adds screen-visibility,
   screen-visibility-detail, screen-access.
-- Rebrand @ e3709ce — "Cloud Core" -> "AI Core" in all text (99 files:
+- Rebrand @ e3709ce — "AI Core" -> "AI Core" in all text (99 files:
   harness, glossary, e2e, docs, backend docstrings, WordPress plugin and
   its .po/.pot). Folder cloud-core/, imports, CLOUD_CORE_* and
   http://core.test untouched.
