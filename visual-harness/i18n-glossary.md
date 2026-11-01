@@ -1701,3 +1701,81 @@ The Settings screen: research engine card (static text), appearance, account, pr
 | No AI accounts registered yet (AI Center › Providers & accounts). | هنوز هیچ حساب هوش مصنوعی ثبت نشده است (مرکز هوش مصنوعی › ارائه‌دهنده‌ها و حساب‌ها). |
 | (no credential) | (بدون اعتبارنامه) |
 | Choose a task type. | یک نوع کار انتخاب کنید. |
+
+## Admin (Step 14)
+
+Admin users, the user detail template, the platform overview and organizations, and the shared admin dialogs. Names, emails, organization names and slugs are shown as sent; code-split sentences also have fragment keys.
+
+| English | Persian |
+|---|---|
+| Users & organizations | کاربران و سازمان‌ها |
+| Search, edit, delete, or open any user's wallet and activity history. Search and sort are real in this fixture; a live backend paginates server-side the same way Sources & Documents does. | جست‌وجو، ویرایش، حذف، یا باز کردن کیف پول و تاریخچهٔ فعالیت هر کاربر. جست‌وجو و مرتب‌سازی در این نمونه واقعی‌اند؛ یک پشتیبان زنده مانند «منابع و اسناد» در سمت سرور صفحه‌بندی می‌کند. |
+| Search users | جست‌وجوی کاربران |
+| All platform users | همهٔ کاربران پلتفرم |
+| Last login | آخرین ورود |
+| Past due | سررسید گذشته |
+| Showing all 5 users. | همهٔ ۵ کاربر نمایش داده می‌شوند. |
+| of | از |
+| Search by name, email or organization… | جست‌وجو با نام، ایمیل یا سازمان… |
+| Open account details | باز کردن جزئیات حساب |
+| Users pages | صفحه‌های کاربران |
+| First page | صفحهٔ اول |
+| Previous page | صفحهٔ قبلی |
+| Go to page | رفتن به صفحه |
+| Next page | صفحهٔ بعدی |
+| Last page | صفحهٔ آخر |
+| One user: name, email, role and status — and, for a platform administrator, the organization. Open a user from the Users screen after connecting to AI Core. | یک کاربر: نام، ایمیل، نقش و وضعیت — و برای مدیر پلتفرم، سازمان. پس از اتصال به AI Core، کاربری را از صفحهٔ کاربران باز کنید. |
+| Platform overview | نمای کلی پلتفرم |
+| Illustrative fixture — a real admin overview reads / read models ( ), not this static data. | نمونهٔ نمایشی — نمای کلی واقعی مدیریت این مدل‌ها را می‌خواند: / (مدل‌های خواندنی؛ )، نه این دادهٔ ثابت را. |
+| Illustrative fixture — a real admin overview reads | نمونهٔ نمایشی — نمای کلی واقعی مدیریت این مدل‌ها را می‌خواند: |
+| read models ( | (مدل‌های خواندنی؛ |
+| ), not this static data. | )، نه این دادهٔ ثابت را. |
+| Organizations | سازمان‌ها |
+| Active users (30d) | کاربران فعال (۳۰ روز) |
+| Failed jobs (24h) | کارهای ناموفق (۲۴ ساعت) |
+| This surface is authorization-separated from the merchant dashboard by design — an ordinary user account has no route into anything under , the same boundary the real backend must enforce server-side (never a frontend-only check). | این بخش عمداً از داشبورد فروشنده از نظر مجوز جداست — یک حساب کاربری عادی هیچ راهی به چیزی زیر این نشانی ندارد: ، همان مرزی که پشتیبان واقعی باید در سمت سرور اعمال کند (هرگز فقط یک بررسی در رابط کاربری). |
+| This surface is authorization-separated from the merchant dashboard by design — an ordinary user account has no route into anything under | این بخش عمداً از داشبورد فروشنده از نظر مجوز جداست — یک حساب کاربری عادی هیچ راهی به چیزی زیر این نشانی ندارد: |
+| , the same boundary the real backend must enforce server-side (never a frontend-only check). | ، همان مرزی که پشتیبان واقعی باید در سمت سرور اعمال کند (هرگز فقط یک بررسی در رابط کاربری). |
+| Every organization on the platform, with how many users each has. Platform administrators only. | همهٔ سازمان‌های پلتفرم، با تعداد کاربران هر کدام. فقط برای مدیران پلتفرم. |
+| Square images work best — at least 200×200px. JPG or PNG, up to 5MB. | تصویرهای مربعی بهترند — دست‌کم 200×200px. JPG یا PNG، تا 5MB. |
+| Upload photo | بارگذاری عکس |
+| Remove photo | حذف عکس |
+| Done | انجام شد |
+| All set! | همه‌چیز آماده است! |
+| Information saved successfully | اطلاعات با موفقیت ذخیره شد |
+| Save your changes? | تغییرات ذخیره شوند؟ |
+| Please check the details below before saving. | لطفاً پیش از ذخیره، جزئیات زیر را بررسی کنید. |
+| Keep editing | ادامهٔ ویرایش |
+| Yes, save changes | بله، تغییرات ذخیره شوند |
+| Delete this account? | این حساب حذف شود؟ |
+| This account will be moved to the trash. You can restore it from there until it is permanently deleted. | این حساب به سطل زباله منتقل می‌شود. تا پیش از حذف دائمی می‌توانید آن را از آنجا بازگردانید. |
+| Sure | مطمئنم |
+| Profile photo preview | پیش‌نمایش عکس نمایه |
+| Search by name, email or organization | جست‌وجو با نام، ایمیل یا سازمان |
+| Every user on the platform: {n\|user\|users}. | همهٔ کاربران پلتفرم: {n} کاربر. |
+| Users of your organization: {n\|user\|users}. | کاربران سازمان شما: {n} کاربر. |
+| Joined | پیوستن |
+| Every user on the platform | همهٔ کاربران پلتفرم |
+| Users of your organization | کاربران سازمان شما |
+| No users match. | هیچ کاربری منطبق نیست. |
+| Could not load the users ({error}). | بارگذاری کاربران ممکن نشد ({error}). |
+| Open a user from the Users screen. | کاربری را از صفحهٔ کاربران باز کنید. |
+| This user was not found. | این کاربر پیدا نشد. |
+| Could not load the user ({error}). | بارگذاری کاربر ممکن نشد ({error}). |
+| {n} active | {n} فعال |
+| With recorded activity in the last 30 days | با فعالیت ثبت‌شده در ۳۰ روز گذشته |
+| Sync {sync} · AI {ai} | همگام‌سازی {sync} · هوش مصنوعی {ai} |
+| Could not load the platform overview ({error}). | بارگذاری نمای کلی پلتفرم ممکن نشد ({error}). |
+| Search by name or address | جست‌وجو با نام یا نشانی |
+| Created | ساخته‌شده |
+| Every organization on the platform | همهٔ سازمان‌های پلتفرم |
+| {n\|organization\|organizations} on the platform. | {n} سازمان در پلتفرم. |
+| No organizations match. | هیچ سازمانی منطبق نیست. |
+| Could not load the organizations ({error}). | بارگذاری سازمان‌ها ممکن نشد ({error}). |
+| Only platform administrators can see this screen. | فقط مدیران پلتفرم می‌توانند این صفحه را ببینند. |
+| Invited | دعوت‌شده |
+| Deactivated | غیرفعال‌شده |
+| Users (AI Core) | کاربران (AI Core) |
+| User (AI Core) | کاربر (AI Core) |
+| Platform overview (AI Core) | نمای کلی پلتفرم (AI Core) |
+| Organizations (AI Core) | سازمان‌ها (AI Core) |
