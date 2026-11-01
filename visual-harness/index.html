@@ -12115,14 +12115,23 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var el_=function(id,txt){ if($(id)) $(id).textContent=txt; };
       el_('mem-semantic-val', m.backend+' — '+m.status+(m.detail?' ('+m.detail+')':''));
       el_('aic-mem-backend-status', m.status);
-    }).catch(function(e){ if($('mem-semantic-val')) $('mem-semantic-val').textContent='Error: '+e.message; });
+    }).catch(function(e){ if($('mem-semantic-val')) AIOL_I18N.set($('mem-semantic-val'), 'Could not load: {error}', { error: e.message }); });
     api('/agent-network/memory-profiles').then(function(rows){
       var list=$('mem-profiles-list'); if(!list) return; list.textContent='';
-      if(!rows.length){ list.appendChild(el('p','profile-missing','No profiles yet. Add one below.')); return; }
+      if(!rows.length){ var none=list.appendChild(el('p','profile-missing')); AIOL_I18N.set(none, 'No profiles yet. Add one below.'); return; }
       var ul=el('ul'); ul.style.margin='0'; ul.style.paddingInlineStart='var(--space-4)';
-      rows.forEach(function(r){ var li=el('li'); li.textContent=r.name+' ('+r.scope+', '+r.semantic_backend+')'; ul.appendChild(li); });
+      // A profile: its name as sent, then scope and backend with the form's own option labels (13C).
+      var SCOPE=optionLabels('mem-scope'), BACKEND=optionLabels('mem-backend');
+      rows.forEach(function(r){ var li=el('li'); li.appendChild(el('bdi',null,r.name)).dir='auto'; li.appendChild(document.createTextNode(' ('));
+        li.appendChild(SCOPE[r.scope] ? AIOL_I18N.set(el('span'), SCOPE[r.scope]) : el('bdi',null,r.scope)); li.appendChild(document.createTextNode(', '));
+        li.appendChild(BACKEND[r.semantic_backend] ? AIOL_I18N.set(el('span'), BACKEND[r.semantic_backend]) : el('bdi',null,r.semantic_backend));
+        li.appendChild(document.createTextNode(')')); ul.appendChild(li); });
       list.appendChild(ul);
-      var list2=$('aic-mem-profiles-list'); if(list2){ list2.textContent=''; list2.appendChild(ul.cloneNode(true)); }
+      var list2=$('aic-mem-profiles-list'); if(list2){ list2.textContent=''; var copy=ul.cloneNode(true);
+        // A clone carries no translation records: copy the live templates so the second list follows the language too.
+        var src=ul.querySelectorAll('[data-i18n]'), dst=copy.querySelectorAll('[data-i18n]');
+        Array.prototype.forEach.call(dst, function(n,i){ AIOL_I18N.set(n, src[i].__i18n.tpl, src[i].__i18n.args); });
+        list2.appendChild(copy); }
     }).catch(function(){});
   }
   if($('mem-add-profile-btn')){
@@ -12132,7 +12141,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       e.preventDefault(); var nm=$('mem-name').value.trim(); if(!nm) return;
       api('/agent-network/memory-profiles','POST',{name:nm,scope:$('mem-scope').value,semantic_backend:$('mem-backend').value,retention_days:parseInt($('mem-retention').value)||null})
         .then(function(){$('mem-add-form').hidden=true;$('mem-name').value='';loadMemSettings();})
-        .catch(function(e){alert('Error: '+e.message);});
+        .catch(function(e){alert(AIOL_I18N.format('Could not create the profile ({error}).', { error: e.message }, AIOL_I18N.lang()));});
     });
   }
 
@@ -12161,11 +12170,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return Promise.all([api('/ai-center/accounts?limit=100'), api('/ai-center/routing-policies?limit=100')]).then(function(r){
       bgAccounts = {}; bgPolicies = {};
       var box=$('bg-accounts-list'); box.textContent='';
-      if(!r[0].items.length){ box.appendChild(el('p','profile-missing','No AI accounts registered yet (AI Center › Providers & accounts).')); }
+      if(!r[0].items.length){ var none=box.appendChild(el('p','profile-missing')); AIOL_I18N.set(none, 'No AI accounts registered yet (AI Center › Providers & accounts).'); }
       r[0].items.forEach(function(a){ bgAccounts[a.id]=a;
         var l=el('label'); l.style.display='flex'; l.style.alignItems='center'; l.style.gap='var(--space-2)'; l.style.marginBlock='var(--space-1)';
         var cb=el('input'); cb.type='checkbox'; cb.value=a.id; cb.className='bg-acct';
-        var tx=el('span'); tx.textContent=a.label+(a.credential_set?'':' (no credential)')+(a.enabled===false?' (disabled)':'');
+        var tx=el('span'); tx.appendChild(el('bdi',null,a.label));
+        if(!a.credential_set){ tx.appendChild(document.createTextNode(' ')); tx.appendChild(AIOL_I18N.set(el('span'),'(no credential)')); }
+        if(a.enabled===false){ tx.appendChild(document.createTextNode(' ')); tx.appendChild(AIOL_I18N.set(el('span'),'(disabled)')); }
         l.appendChild(cb); l.appendChild(tx); box.appendChild(l); });
       var sel=$('bg-routing-policy'); while(sel.options.length>1) sel.remove(1);
       r[1].items.forEach(function(p){ bgPolicies[p.id]=p; var o=el('option',null,p.name+' ('+p.mode.replace(/_/g,' ')+')'); o.value=p.id; sel.appendChild(o); });
@@ -12175,33 +12186,37 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     if(!live()) return;
     loadBgChoices().then(function(){ return api('/agent-network/background-policies'); }).then(function(rows){
       var list=$('bg-policies-list'); list.textContent='';
-      if(!rows.length){ list.appendChild(el('p','profile-missing','No task types configured. Connected accounts do nothing in the background until you configure a task type.')); return; }
+      if(!rows.length){ var none=list.appendChild(el('p','profile-missing')); AIOL_I18N.set(none, 'No task types configured. Connected accounts do nothing in the background until you configure a task type.'); return; }
       var tbl=el('table','table'), h=el('thead'), hr=el('tr'), cols=['Task type','Allowed accounts','Max cost','Enabled'];
-      cols.forEach(function(c){var th=el('th',null,c);th.scope='col';hr.appendChild(th);}); h.appendChild(hr); tbl.appendChild(h);
+      cols.forEach(function(c){var th=el('th');AIOL_I18N.set(th,c);th.scope='col';hr.appendChild(th);}); h.appendChild(hr); tbl.appendChild(h);
       var bd=el('tbody');
       rows.forEach(function(r){ var tr=el('tr');
-        var names=(r.allowed_account_ids||[]).map(function(i){ return bgAccounts[i]?bgAccounts[i].label:i; }).join(', ')||'None';
-        [r.task_type.replace(/_/g,' '), names, r.max_cost_per_run!=null?String(r.max_cost_per_run):'No limit', null].forEach(function(c,i){
+        var names=(r.allowed_account_ids||[]).map(function(i){ return bgAccounts[i]?bgAccounts[i].label:i; }).join(', ');
+        // Task types use the form's own option labels; None and No limit are translated (13C).
+        var TASK=optionLabels('bg-task-type');
+        [TASK[r.task_type]?AIOL_I18N.set(el('span'),TASK[r.task_type]):r.task_type.replace(/_/g,' '), names||AIOL_I18N.set(el('span'),'None'),
+         r.max_cost_per_run!=null?String(r.max_cost_per_run):AIOL_I18N.set(el('span'),'No limit'), null].forEach(function(c,i){
           var td=el('td'); td.setAttribute('data-label',cols[i]);
-          if(i===3) td.appendChild(badge(r.enabled?'active':'disabled')); else { var b=el('bdi'); b.textContent=c; td.appendChild(b); }
+          if(i===3){ var eb=el('span','badge '+(r.enabled?'badge--success':'badge--unknown')); AIOL_I18N.set(eb, r.enabled?'Enabled':'Disabled'); td.appendChild(eb); }
+          else if(c instanceof Node) td.appendChild(c); else { var b=el('bdi'); b.textContent=c; td.appendChild(b); }
           tr.appendChild(td); }); bd.appendChild(tr); });
       tbl.appendChild(bd); var w=el('div','table-wrap'); w.appendChild(tbl); list.appendChild(w);
-    }).catch(function(e){ $('bg-policies-list').textContent='Could not load: '+e.message; });
+    }).catch(function(e){ AIOL_I18N.set($('bg-policies-list'), 'Could not load: {error}', { error: e.message }); });
   }
   loadBgPolicies = loadBgPolicies2;
   if($('bg-add-btn')){
-    $('bg-add-btn').addEventListener('click',function(){ if(!live()){ $('bg-form-msg').textContent='Connect to AI Core first.'; }
+    $('bg-add-btn').addEventListener('click',function(){ if(!live()){ AIOL_I18N.set($('bg-form-msg'), 'Connect to AI Core first.'); }
       $('bg-add-form').hidden=false; $('bg-task-type').focus(); if(live()) loadBgChoices(); });
     $('bg-add-cancel').addEventListener('click',function(){$('bg-add-form').hidden=true;});
     $('bg-add-form').addEventListener('submit',function(e){
-      e.preventDefault(); var tt=$('bg-task-type').value; if(!tt){ $('bg-form-msg').textContent='Choose a task type.'; return; }
+      e.preventDefault(); var tt=$('bg-task-type').value; if(!tt){ AIOL_I18N.set($('bg-form-msg'), 'Choose a task type.'); return; }
       var accts=[].map.call(document.querySelectorAll('#bg-accounts-list .bg-acct:checked'),function(c){return c.value;});
       var body={enabled:$('bg-enabled').checked, allowed_account_ids:accts,
                 routing_policy_id:$('bg-routing-policy').value||null, max_cost_per_run:$('bg-cost').value===''?null:parseFloat($('bg-cost').value)};
-      $('bg-form-msg').textContent='Saving…';
+      AIOL_I18N.set($('bg-form-msg'), 'Saving…');
       api('/agent-network/background-policies/'+encodeURIComponent(tt),'PUT',body)
-        .then(function(){ $('bg-form-msg').textContent='Saved.'; $('bg-add-form').hidden=true; loadBgPolicies(); })
-        .catch(function(err){ $('bg-form-msg').textContent='Not saved: '+err.message; });
+        .then(function(){ AIOL_I18N.set($('bg-form-msg'), 'Saved.'); $('bg-add-form').hidden=true; loadBgPolicies(); })
+        .catch(function(err){ AIOL_I18N.set($('bg-form-msg'), 'Not saved ({error}).', { error: err.message }); });
     });
   }
 
@@ -12435,13 +12450,15 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (pf.theme === 'light' || pf.theme === 'dark') setPicker('pick-theme', pf.theme);
       document.querySelectorAll('[data-pref-notif]').forEach(function (c) { c.checked = !!pf.notifications[c.getAttribute('data-pref-notif')]; });
       $('pref-notifications').disabled = false;
-      $('pref-status').className = ''; $('pref-status').textContent = pf.persisted ? 'Saved to your account' + (pf.updated_at ? ' (last change ' + new Date(pf.updated_at).toLocaleString() + ').' : '.') : 'Using defaults — nothing saved yet. Any change you make is saved to your account.';
-    }).catch(function (e) { $('pref-status').textContent = 'Could not load preferences: ' + e.message; });
+      $('pref-status').className = ''; if (!pf.persisted) AIOL_I18N.set($('pref-status'), 'Using defaults — nothing saved yet. Any change you make is saved to your account.');
+      else if (pf.updated_at) AIOL_I18N.set($('pref-status'), 'Saved to your account (last change {d}).', { d: { date: pf.updated_at } });
+      else AIOL_I18N.set($('pref-status'), 'Saved to your account.');
+    }).catch(function (e) { AIOL_I18N.set($('pref-status'), 'Could not load preferences: {error}', { error: e.message }); });
   }
   function savePrefs(body) {
     if (!live() || applying) return;
-    api('/users/me/preferences', 'PUT', body).then(function (pf) { showSaved(pf); $('pref-status').className = ''; $('pref-status').textContent = 'Saved to your account (' + new Date(pf.updated_at).toLocaleString() + ').'; })
-      .catch(function (e) { $('pref-status').textContent = 'Not saved: ' + e.message; });
+    api('/users/me/preferences', 'PUT', body).then(function (pf) { showSaved(pf); $('pref-status').className = ''; AIOL_I18N.set($('pref-status'), 'Saved to your account ({d}).', { d: { date: pf.updated_at } }); })
+      .catch(function (e) { AIOL_I18N.set($('pref-status'), 'Not saved ({error}).', { error: e.message }); });
   }
   ['pick-lang', 'pick-theme'].forEach(function (id) { var sel = $(id); if (!sel) return;
     sel.addEventListener('change', function () { if (!applying) touched[id] = true;
@@ -15510,7 +15527,120 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Suspended": "معلق",
     "Light": "روشن",
     "Dark": "تیره",
-    "Same as the device": "مانند دستگاه"
+    "Same as the device": "مانند دستگاه",
+    "Preferences for this account. Nothing here touches Knowledge Objects, sources, wallet or billing history — resetting a preference is never a data-deletion action (see \"Reset all settings\" below).": "ترجیحات این حساب. هیچ چیز اینجا به اشیای دانش، منابع، کیف پول یا تاریخچهٔ صورتحساب دست نمی‌زند — بازنشانی یک ترجیح هرگز داده‌ای را حذف نمی‌کند («بازنشانی همهٔ تنظیمات» را در پایین ببینید).",
+    "Research engine (AI Core)": "موتور پژوهش (AI Core)",
+    "Searches Crossref, PubMed and Europe PMC together. Discovery only creates": "در \u2068Crossref\u2069، \u2068PubMed\u2069 و \u2068Europe PMC\u2069 با هم جست‌وجو می‌کند. کشف فقط",
+    "sources": "منبع می‌سازد",
+    "; nothing becomes evidence until a person reviews it. A source that was found is not a source that was read.": "؛ هیچ چیز تا وقتی کسی بازبینی‌اش نکند شاهد نمی‌شود. منبعی که پیدا شده، منبعی نیست که خوانده شده باشد.",
+    "Search with keywords": "جست‌وجو با کلیدواژه‌ها",
+    "Keywords": "کلیدواژه‌ها",
+    "One keyword": "یک کلیدواژه",
+    "Several keywords (OR)": "چند کلیدواژه (\u2068OR\u2069)",
+    "Exact phrase": "عبارت دقیق",
+    "AND / OR query": "پرسش \u2068AND / OR\u2069",
+    "Expanded by the research agent": "گسترش‌یافته توسط عامل پژوهش",
+    "Query (AND, OR, NOT, \"phrases\", parentheses)": "پرسش (\u2068AND, OR, NOT\u2069، «عبارت‌ها»، پرانتز)",
+    "Search all providers": "جست‌وجو در همهٔ ارائه‌دهنده‌ها",
+    "Research question": "پرسش پژوهشی",
+    "Subject (plant / product)": "موضوع (گیاه / محصول)",
+    "Compounds (comma-separated, optional)": "ترکیب‌ها (جداشده با ویرگول، اختیاری)",
+    "Related species (comma-separated, optional)": "گونه‌های مرتبط (جداشده با ویرگول، اختیاری)",
+    "Outcome": "پیامد",
+    "Population": "جمعیت",
+    "Investigate": "بررسی",
+    "Each route is searched separately and never merged: the subject itself, each compound in humans, mechanism, subject and compound together, the compounds in combination, preparations containing the subject, and related species. Only a study of the subject itself can be direct evidence for it.": "هر مسیر جداگانه جست‌وجو می‌شود و هرگز ادغام نمی‌شود: خود موضوع، هر ترکیب در انسان، سازوکار، موضوع و ترکیب با هم، ترکیب‌ها در کنار هم، فراورده‌های دارای موضوع، و گونه‌های مرتبط. تنها پژوهشی روی خود موضوع می‌تواند شاهد مستقیم برای آن باشد.",
+    "Research questions": "پرسش‌های پژوهشی",
+    "Appearance": "نمای ظاهری",
+    "Theme": "پوسته",
+    "Light / Dark": "روشن / تیره",
+    "— also toggled from in the top bar": "— همچنین با دکمهٔ نوار بالا تغییر می‌کند",
+    "— also toggled from": "— همچنین با دکمهٔ",
+    "in the top bar": "در نوار بالا تغییر می‌کند",
+    "Font": "قلم",
+    "System default": "پیش‌فرض سیستم",
+    "— also toggled from in the top bar; persists across logout/login until changed again": "— همچنین با دکمهٔ نوار بالا تغییر می‌کند؛ پس از خروج و ورود دوباره هم تا تغییر بعدی باقی می‌ماند",
+    "in the top bar; persists across logout/login until changed again": "در نوار بالا تغییر می‌کند؛ پس از خروج و ورود دوباره هم تا تغییر بعدی باقی می‌ماند",
+    "Site": "سایت",
+    "Sign-in method": "روش ورود",
+    "Email code": "کد ایمیلی",
+    "Preferences saved to your account": "ترجیحات ذخیره‌شده در حساب شما",
+    "Language, theme and notifications are stored in AI Core for your user and restored on any device after you connect.": "زبان، پوسته و اعلان‌ها در AI Core برای کاربر شما ذخیره می‌شوند و پس از اتصال روی هر دستگاهی بازیابی می‌شوند.",
+    "Not connected to AI Core — changes apply to this page only.": "به AI Core وصل نیست — تغییرها فقط روی همین صفحه اعمال می‌شوند.",
+    "Email notifications": "اعلان‌های ایمیلی",
+    "Processing failures": "خطاهای پردازش",
+    "AI budget and quota warnings": "هشدارهای بودجه و سهمیهٔ هوش مصنوعی",
+    "Security alerts": "هشدارهای امنیتی",
+    "Weekly summary": "خلاصهٔ هفتگی",
+    "PostgreSQL (ai_working_memory) is the canonical, always-on memory store. No action can replace it.": "\u2068PostgreSQL (ai_working_memory)\u2069 انبار مرجع و همیشه‌فعال حافظه است. هیچ کاری نمی‌تواند جای آن را بگیرد.",
+    "PostgreSQL — locked": "\u2068PostgreSQL\u2069 — قفل‌شده",
+    "Not connected": "وصل نیست",
+    "Memory profiles": "نمایه‌های حافظه",
+    "Not connected to AI Core": "به AI Core وصل نیست",
+    "Add memory profile": "افزودن نمایهٔ حافظه",
+    "Name *": "نام *",
+    "Project": "پروژه",
+    "Tenant": "مستأجر",
+    "Native only": "فقط بومی",
+    "Native + Walrus (optional mirror)": "بومی + \u2068Walrus\u2069 (آینهٔ اختیاری)",
+    "Retention (days)": "مدت نگهداری (روز)",
+    "Create profile": "ساختن نمایه",
+    "Background AI processing": "پردازش هوش مصنوعی در پس‌زمینه",
+    "A connected account is": "حساب متصل",
+    "not": "به‌طور خودکار",
+    "automatically eligible for background processing — you must enable each task type explicitly.": "برای پردازش پس‌زمینه واجد شرایط نیست — باید هر نوع کار را صریحاً فعال کنید.",
+    "Configure a task type": "پیکربندی یک نوع کار",
+    "Task type *": "نوع کار *",
+    "Choose…": "انتخاب کنید…",
+    "Source extraction": "استخراج منبع",
+    "Evidence analysis": "تحلیل شواهد",
+    "Knowledge generation": "تولید دانش",
+    "Knowledge refresh": "تازه‌سازی دانش",
+    "Keyword analysis": "تحلیل کلیدواژه",
+    "Content generation": "تولید محتوا",
+    "Translation": "ترجمه",
+    "Summarization": "خلاصه‌سازی",
+    "Embedding": "بردارسازی",
+    "AI visibility": "دیده‌شدن در هوش مصنوعی",
+    "Demand analysis": "تحلیل تقاضا",
+    "Agent planning": "برنامه‌ریزی عامل",
+    "Agent review": "بازبینی عامل",
+    "Agent synthesis": "ترکیب عامل",
+    "Routing policy (optional — overrides the job's)": "سیاست مسیریابی (اختیاری — جایگزین سیاست کار می‌شود)",
+    "Use the job's routing policy": "استفاده از سیاست مسیریابی کار",
+    "Max cost per run (blank = no limit)": "بیشینهٔ هزینهٔ هر اجرا (خالی = بدون سقف)",
+    "Accounts allowed to run this work": "حساب‌های مجاز برای اجرای این کار",
+    "Only the accounts you tick can be used. A connected account that is not ticked is never selected.": "فقط حساب‌هایی که علامت می‌زنید استفاده می‌شوند. حساب متصلی که علامت نخورده هرگز انتخاب نمی‌شود.",
+    "Loading accounts…": "در حال بارگذاری حساب‌ها…",
+    "Enable immediately": "فعال‌سازی فوری",
+    "Save policy": "ذخیرهٔ سیاست",
+    "Danger zone": "منطقهٔ خطر",
+    "Reset all settings": "بازنشانی همهٔ تنظیمات",
+    "Restores theme, language, sidebar and table preferences to defaults.": "پوسته، زبان، نوار کناری و ترجیحات جدول را به پیش‌فرض برمی‌گرداند.",
+    "Does not": "هرگز",
+    "touch Knowledge Objects, sources, research, wallet or billing history.": "به اشیای دانش، منابع، پژوهش، کیف پول یا تاریخچهٔ صورتحساب دست نمی‌زند.",
+    "Reset": "بازنشانی",
+    "Taranjabin": "مثلاً: ترنجبین",
+    "Mannitol, Fructose": "مثلاً: مانیتول، فروکتوز",
+    "Alhagi persarum": "مثلاً: Alhagi persarum",
+    "laxative": "مثلاً: ملین",
+    "human": "مثلاً: انسان",
+    "Forever": "برای همیشه",
+    "Using defaults — nothing saved yet. Any change you make is saved to your account.": "پیش‌فرض‌ها استفاده می‌شوند — هنوز چیزی ذخیره نشده است. هر تغییری بدهید در حساب شما ذخیره می‌شود.",
+    "Saved to your account (last change {d}).": "در حساب شما ذخیره شده است (آخرین تغییر {d}).",
+    "Saved to your account.": "در حساب شما ذخیره شده است.",
+    "Could not load preferences: {error}": "بارگذاری ترجیحات ممکن نشد: {error}",
+    "Saved to your account ({d}).": "در حساب شما ذخیره شد ({d}).",
+    "No profiles yet. Add one below.": "هنوز نمایه‌ای نیست. یکی در پایین بیفزایید.",
+    "Could not create the profile ({error}).": "ساختن نمایه ممکن نشد ({error}).",
+    "No task types configured. Connected accounts do nothing in the background until you configure a task type.": "هیچ نوع کاری پیکربندی نشده است. حساب‌های متصل تا وقتی نوع کاری را پیکربندی نکنید در پس‌زمینه کاری انجام نمی‌دهند.",
+    "Allowed accounts": "حساب‌های مجاز",
+    "Max cost": "بیشینهٔ هزینه",
+    "Enabled": "فعال",
+    "No limit": "بدون سقف",
+    "No AI accounts registered yet (AI Center › Providers & accounts).": "هنوز هیچ حساب هوش مصنوعی ثبت نشده است (مرکز هوش مصنوعی › ارائه‌دهنده‌ها و حساب‌ها).",
+    "(no credential)": "(بدون اعتبارنامه)",
+    "Choose a task type.": "یک نوع کار انتخاب کنید."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

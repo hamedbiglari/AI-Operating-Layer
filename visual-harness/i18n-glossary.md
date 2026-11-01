@@ -1581,3 +1581,123 @@ The Settings messages added with the account, organization, reset and log-out wi
 | Light | روشن |
 | Dark | تیره |
 | Same as the device | مانند دستگاه |
+
+## Settings (Step 13C)
+
+The Settings screen: research engine card (static text), appearance, account, preferences, shared memory, background processing and the danger zone. Sentences split by an icon also have fragment keys; placeholders become Persian examples.
+
+| English | Persian |
+|---|---|
+| Preferences for this account. Nothing here touches Knowledge Objects, sources, wallet or billing history — resetting a preference is never a data-deletion action (see "Reset all settings" below). | ترجیحات این حساب. هیچ چیز اینجا به اشیای دانش، منابع، کیف پول یا تاریخچهٔ صورتحساب دست نمی‌زند — بازنشانی یک ترجیح هرگز داده‌ای را حذف نمی‌کند («بازنشانی همهٔ تنظیمات» را در پایین ببینید). |
+| Research engine (AI Core) | موتور پژوهش (AI Core) |
+| Searches Crossref, PubMed and Europe PMC together. Discovery only creates | در Crossref، PubMed و Europe PMC با هم جست‌وجو می‌کند. کشف فقط |
+| sources | منبع می‌سازد |
+| ; nothing becomes evidence until a person reviews it. A source that was found is not a source that was read. | ؛ هیچ چیز تا وقتی کسی بازبینی‌اش نکند شاهد نمی‌شود. منبعی که پیدا شده، منبعی نیست که خوانده شده باشد. |
+| Search with keywords | جست‌وجو با کلیدواژه‌ها |
+| Keywords | کلیدواژه‌ها |
+| One keyword | یک کلیدواژه |
+| Several keywords (OR) | چند کلیدواژه (OR) |
+| Exact phrase | عبارت دقیق |
+| AND / OR query | پرسش AND / OR |
+| Expanded by the research agent | گسترش‌یافته توسط عامل پژوهش |
+| Query (AND, OR, NOT, "phrases", parentheses) | پرسش (AND, OR, NOT، «عبارت‌ها»، پرانتز) |
+| Search all providers | جست‌وجو در همهٔ ارائه‌دهنده‌ها |
+| Research question | پرسش پژوهشی |
+| Subject (plant / product) | موضوع (گیاه / محصول) |
+| Compounds (comma-separated, optional) | ترکیب‌ها (جداشده با ویرگول، اختیاری) |
+| Related species (comma-separated, optional) | گونه‌های مرتبط (جداشده با ویرگول، اختیاری) |
+| Outcome | پیامد |
+| Population | جمعیت |
+| Investigate | بررسی |
+| Each route is searched separately and never merged: the subject itself, each compound in humans, mechanism, subject and compound together, the compounds in combination, preparations containing the subject, and related species. Only a study of the subject itself can be direct evidence for it. | هر مسیر جداگانه جست‌وجو می‌شود و هرگز ادغام نمی‌شود: خود موضوع، هر ترکیب در انسان، سازوکار، موضوع و ترکیب با هم، ترکیب‌ها در کنار هم، فراورده‌های دارای موضوع، و گونه‌های مرتبط. تنها پژوهشی روی خود موضوع می‌تواند شاهد مستقیم برای آن باشد. |
+| Research questions | پرسش‌های پژوهشی |
+| Appearance | نمای ظاهری |
+| Theme | پوسته |
+| Light / Dark | روشن / تیره |
+| — also toggled from in the top bar | — همچنین با دکمهٔ نوار بالا تغییر می‌کند |
+| — also toggled from | — همچنین با دکمهٔ |
+| in the top bar | در نوار بالا تغییر می‌کند |
+| Font | قلم |
+| System default | پیش‌فرض سیستم |
+| — also toggled from in the top bar; persists across logout/login until changed again | — همچنین با دکمهٔ نوار بالا تغییر می‌کند؛ پس از خروج و ورود دوباره هم تا تغییر بعدی باقی می‌ماند |
+| in the top bar; persists across logout/login until changed again | در نوار بالا تغییر می‌کند؛ پس از خروج و ورود دوباره هم تا تغییر بعدی باقی می‌ماند |
+| Site | سایت |
+| Sign-in method | روش ورود |
+| Email code | کد ایمیلی |
+| Preferences saved to your account | ترجیحات ذخیره‌شده در حساب شما |
+| Language, theme and notifications are stored in AI Core for your user and restored on any device after you connect. | زبان، پوسته و اعلان‌ها در AI Core برای کاربر شما ذخیره می‌شوند و پس از اتصال روی هر دستگاهی بازیابی می‌شوند. |
+| Not connected to AI Core — changes apply to this page only. | به AI Core وصل نیست — تغییرها فقط روی همین صفحه اعمال می‌شوند. |
+| Email notifications | اعلان‌های ایمیلی |
+| Processing failures | خطاهای پردازش |
+| AI budget and quota warnings | هشدارهای بودجه و سهمیهٔ هوش مصنوعی |
+| Security alerts | هشدارهای امنیتی |
+| Weekly summary | خلاصهٔ هفتگی |
+| PostgreSQL (ai_working_memory) is the canonical, always-on memory store. No action can replace it. | PostgreSQL (ai_working_memory) انبار مرجع و همیشه‌فعال حافظه است. هیچ کاری نمی‌تواند جای آن را بگیرد. |
+| PostgreSQL — locked | PostgreSQL — قفل‌شده |
+| Not connected | وصل نیست |
+| Memory profiles | نمایه‌های حافظه |
+| Not connected to AI Core | به AI Core وصل نیست |
+| Add memory profile | افزودن نمایهٔ حافظه |
+| Name * | نام * |
+| Project | پروژه |
+| Tenant | مستأجر |
+| Native only | فقط بومی |
+| Native + Walrus (optional mirror) | بومی + Walrus (آینهٔ اختیاری) |
+| Retention (days) | مدت نگهداری (روز) |
+| Create profile | ساختن نمایه |
+| Background AI processing | پردازش هوش مصنوعی در پس‌زمینه |
+| A connected account is | حساب متصل |
+| not | به‌طور خودکار |
+| automatically eligible for background processing — you must enable each task type explicitly. | برای پردازش پس‌زمینه واجد شرایط نیست — باید هر نوع کار را صریحاً فعال کنید. |
+| Configure a task type | پیکربندی یک نوع کار |
+| Task type * | نوع کار * |
+| Choose… | انتخاب کنید… |
+| Source extraction | استخراج منبع |
+| Evidence analysis | تحلیل شواهد |
+| Knowledge generation | تولید دانش |
+| Knowledge refresh | تازه‌سازی دانش |
+| Keyword analysis | تحلیل کلیدواژه |
+| Content generation | تولید محتوا |
+| Translation | ترجمه |
+| Summarization | خلاصه‌سازی |
+| Embedding | بردارسازی |
+| AI visibility | دیده‌شدن در هوش مصنوعی |
+| Demand analysis | تحلیل تقاضا |
+| Agent planning | برنامه‌ریزی عامل |
+| Agent review | بازبینی عامل |
+| Agent synthesis | ترکیب عامل |
+| Routing policy (optional — overrides the job's) | سیاست مسیریابی (اختیاری — جایگزین سیاست کار می‌شود) |
+| Use the job's routing policy | استفاده از سیاست مسیریابی کار |
+| Max cost per run (blank = no limit) | بیشینهٔ هزینهٔ هر اجرا (خالی = بدون سقف) |
+| Accounts allowed to run this work | حساب‌های مجاز برای اجرای این کار |
+| Only the accounts you tick can be used. A connected account that is not ticked is never selected. | فقط حساب‌هایی که علامت می‌زنید استفاده می‌شوند. حساب متصلی که علامت نخورده هرگز انتخاب نمی‌شود. |
+| Loading accounts… | در حال بارگذاری حساب‌ها… |
+| Enable immediately | فعال‌سازی فوری |
+| Save policy | ذخیرهٔ سیاست |
+| Danger zone | منطقهٔ خطر |
+| Reset all settings | بازنشانی همهٔ تنظیمات |
+| Restores theme, language, sidebar and table preferences to defaults. | پوسته، زبان، نوار کناری و ترجیحات جدول را به پیش‌فرض برمی‌گرداند. |
+| Does not | هرگز |
+| touch Knowledge Objects, sources, research, wallet or billing history. | به اشیای دانش، منابع، پژوهش، کیف پول یا تاریخچهٔ صورتحساب دست نمی‌زند. |
+| Reset | بازنشانی |
+| Taranjabin | مثلاً: ترنجبین |
+| Mannitol, Fructose | مثلاً: مانیتول، فروکتوز |
+| Alhagi persarum | مثلاً: Alhagi persarum |
+| laxative | مثلاً: ملین |
+| human | مثلاً: انسان |
+| Forever | برای همیشه |
+| Using defaults — nothing saved yet. Any change you make is saved to your account. | پیش‌فرض‌ها استفاده می‌شوند — هنوز چیزی ذخیره نشده است. هر تغییری بدهید در حساب شما ذخیره می‌شود. |
+| Saved to your account (last change {d}). | در حساب شما ذخیره شده است (آخرین تغییر {d}). |
+| Saved to your account. | در حساب شما ذخیره شده است. |
+| Could not load preferences: {error} | بارگذاری ترجیحات ممکن نشد: {error} |
+| Saved to your account ({d}). | در حساب شما ذخیره شد ({d}). |
+| No profiles yet. Add one below. | هنوز نمایه‌ای نیست. یکی در پایین بیفزایید. |
+| Could not create the profile ({error}). | ساختن نمایه ممکن نشد ({error}). |
+| No task types configured. Connected accounts do nothing in the background until you configure a task type. | هیچ نوع کاری پیکربندی نشده است. حساب‌های متصل تا وقتی نوع کاری را پیکربندی نکنید در پس‌زمینه کاری انجام نمی‌دهند. |
+| Allowed accounts | حساب‌های مجاز |
+| Max cost | بیشینهٔ هزینه |
+| Enabled | فعال |
+| No limit | بدون سقف |
+| No AI accounts registered yet (AI Center › Providers & accounts). | هنوز هیچ حساب هوش مصنوعی ثبت نشده است (مرکز هوش مصنوعی › ارائه‌دهنده‌ها و حساب‌ها). |
+| (no credential) | (بدون اعتبارنامه) |
+| Choose a task type. | یک نوع کار انتخاب کنید. |
