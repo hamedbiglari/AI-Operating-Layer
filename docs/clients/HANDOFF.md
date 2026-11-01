@@ -20,8 +20,7 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
 - Branch merged with v5-implementation (77d9485), verified: 1800 backend tests pass.
 - Platform signals (§16): Windows MachineGuid (HMAC on arrival, migration 0050), GDID unsupported,
   LIKELY_SHARED_CLIENT_ENVIRONMENT. Full suite 1809 passed, coverage 93.54 %.
-- Open: §19 dashboard Device Intelligence screen — waits for the local v5 session to finish editing
-  visual-harness/index.html, to avoid merge conflicts.
+- §19 dashboard Device Intelligence screen: DONE after merging v5-implementation (9B–9D); in CI gates.
 
 - **Run 41223589699 (33be46e): every job green — Windows, macOS, Android (debug APK) and iOS simulator all
   built.** Artifacts: aiol-Windows, aiol-macOS, aiol-android-debug, aiol-ios-simulator (kept 14 days).

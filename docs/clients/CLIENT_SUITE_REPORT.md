@@ -39,7 +39,7 @@ that was actually run in this session, or says it was not run.
 | Persian i18n conventions, KNOWN-word reversal check | `visual-harness/check-persian.js` | VERIFIED | client catalogue is checked against the same KNOWN list |
 | Device Intelligence ("previously specified Web Device Intelligence Engine") | searched models/services/docs for device, fingerprint, MachineGuid, installation key | MISSING | **built** (ADR-138) |
 | Free-quota / abuse policy engine | — | MISSING | not invented (debt `CLIENT-free-quota-policy-engine`) |
-| Admin dashboard | `visual-harness/index.html` (13.8k lines) | VERIFIED | Device Intelligence admin **API** added; dashboard **screen not added** (debt) |
+| Admin dashboard | `visual-harness/index.html` | VERIFIED | Device Intelligence admin API **and** screen `#screen-device-intel` added (owner/admin nav, live, EN/FA) |
 | CI | `.github/workflows/ci.yml` | VERIFIED | untouched; new `clients.yml` |
 | Native/mobile/PWA client code | — | MISSING | **built** |
 
@@ -284,3 +284,14 @@ suite 1800 passed / 0 failed, coverage 93.53 %; harness i18n gate with CI's full
 | Build — iOS simulator | success | `aiol-ios-simulator` 19 MB |
 
 None of these packages has been installed or run on a real device; none is signed; nothing is published.
+
+### Admin dashboard: Device Intelligence screen (§19)
+
+`#screen-device-intel` in the existing dashboard (owner/admin navigation), on the shared live connection:
+installations with platform, version, last seen, status, evidence-category badges and linked-account count;
+state filter; detail (each read audit-logged by Cloud Core) with linked accounts and recent observations
+showing only 10-hex network / Windows-installation references and signal states; revoke with confirmation.
+English and Persian (44 FA entries, glossary section, 50 KNOWN words). Verified: `e2e/device-intelligence.js`
+(18 checks, mocked API) and a live run against Cloud Core with a real registered key and MachineGuid — raw
+GUID never on the page, no console errors. All 19 harness browser suites, `check.js`, `check-persian.js`,
+`check-source-chars.js` and the CI `i18n-coverage --require` gate (with `screen-device-intel`) pass.
