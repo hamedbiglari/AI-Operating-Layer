@@ -28,7 +28,7 @@ it has actually been run.
 """
 
 import uuid as uuid_module
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -119,7 +119,7 @@ def test_mean_dwell_is_null_not_zero_when_no_samples(
     client: TestClient, adapter_credential
 ) -> None:
     org = adapter_credential["org"]
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the UTC day the rows are stored in, not the local date
     _ingest(client, adapter_credential["headers"], [_event(user_agent=GPTBOT_UA)])
     client.post(
         f"/api/v1/telemetry/content-stats/recompute?view_date={today}",
@@ -135,7 +135,7 @@ def test_reported_dwell_is_preserved_and_averaged_over_real_samples(
     client: TestClient, adapter_credential
 ) -> None:
     org = adapter_credential["org"]
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the UTC day the rows are stored in, not the local date
     _ingest(
         client,
         adapter_credential["headers"],
@@ -272,7 +272,7 @@ def test_total_views_equals_the_sum_of_its_parts(client: TestClient, adapter_cre
     """`total_views` is denormalised so the sort is cheap. That is only
     safe if it cannot become a seventh independent number."""
     org = adapter_credential["org"]
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the UTC day the rows are stored in, not the local date
     _ingest(
         client,
         adapter_credential["headers"],
@@ -303,7 +303,7 @@ def test_ai_answer_views_are_not_merged_into_crawler_views(
     quoted this page to a customer" are different facts. A bot/human split
     would collapse them."""
     org = adapter_credential["org"]
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the UTC day the rows are stored in, not the local date
     _ingest(
         client,
         adapter_credential["headers"],
@@ -324,7 +324,7 @@ def test_rollup_is_a_full_recompute_not_an_increment(
     """Running it twice must produce the same numbers. An incremental
     counter that drifts is undetectable."""
     org = adapter_credential["org"]
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the UTC day the rows are stored in, not the local date
     _ingest(client, adapter_credential["headers"], [_event(), _event()])
     url = f"/api/v1/telemetry/content-stats/recompute?view_date={today}"
     client.post(url, headers=org["headers"])
@@ -345,7 +345,7 @@ def test_content_stats_sort_ascending_surfaces_least_seen_first(
     """"Least seen" is half the owner's requirement and is the half a
     descending-only implementation silently drops."""
     org = adapter_credential["org"]
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the UTC day the rows are stored in, not the local date
     events = [_event(path="/popular") for _ in range(3)] + [_event(path="/ignored")]
     _ingest(client, adapter_credential["headers"], events)
     client.post(
