@@ -95,6 +95,27 @@ def get_provider(provider_id: UUID, user: User = Depends(get_current_user), db: 
     return _provider_out(svc.get_or_404(db, AIProvider, provider_id, user.organization_id))
 
 
+def _count(db: Session, stmt) -> int:
+    return db.execute(select(func.count()).select_from(stmt.subquery())).scalar_one()
+
+
+@router.delete("/providers/{provider_id}", status_code=204)
+def delete_provider(provider_id: UUID, user: User = Admin, db: Session = Depends(get_db)):
+    """Refused (409) while accounts or models of this provider exist: their rows would cascade away."""
+    row = svc.get_or_404(db, AIProvider, provider_id, user.organization_id)
+    org = user.organization_id
+    n_acc = _count(db, select(AIProviderAccount.id).where(AIProviderAccount.organization_id == org, AIProviderAccount.provider_id == row.id))
+    n_mod = _count(db, select(AIModel.id).where(AIModel.organization_id == org, AIModel.provider_id == row.id))
+    if n_acc or n_mod:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            f"Cannot delete provider: {n_acc} accounts and {n_mod} models exist. Delete them first.")
+    record_audit_log(db, organization_id=org, user_id=user.id, action="ai_provider.deleted",
+                     resource_type="ai_provider", resource_id=row.id, old_value={"name": row.name})
+    db.delete(row)
+    db.commit()
+    return Response(status_code=204)
+
+
 # ---------------- accounts & credentials ----------------
 class AccountIn(BaseModel):
     provider_id: UUID
@@ -181,6 +202,32 @@ def delete_credential(account_id: UUID, user: User = Admin, db: Session = Depend
     a.health_status = "disconnected"
     db.commit()
     return _account_out(a)
+
+
+ACTIVE_JOB_STATUSES = ("queued", "running", "pause_requested", "cancel_requested")
+
+
+@router.delete("/accounts/{account_id}", status_code=204)
+def delete_account(account_id: UUID, user: User = Admin, db: Session = Depends(get_db)):
+    """Refused (409) while a routing step uses the account (the step would cascade away and silently change
+    the policy) or an active job is forced onto it. Health events and the credential go with the account;
+    past AIExecution rows keep the account id as history."""
+    a = svc.get_or_404(db, AIProviderAccount, account_id, user.organization_id)
+    org = user.organization_id
+    n_steps = _count(db, select(AIRoutingStep.id).where(AIRoutingStep.organization_id == org, AIRoutingStep.account_id == a.id))
+    if n_steps:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            f"Cannot delete account: referenced by {n_steps} routing steps. Update policies first.")
+    n_jobs = _count(db, select(AIJob.id).where(AIJob.organization_id == org, AIJob.forced_account_id == a.id,
+                                                AIJob.status.in_(ACTIVE_JOB_STATUSES)))
+    if n_jobs:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            f"Cannot delete account: {n_jobs} active jobs. Wait or cancel them first.")
+    record_audit_log(db, organization_id=org, user_id=user.id, action="ai_provider_account.deleted",
+                     resource_type="ai_provider_account", resource_id=a.id, old_value={"label": a.label})
+    db.delete(a)
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/accounts/{account_id}/test")
@@ -295,6 +342,25 @@ def update_model_limits(model_id: UUID, body: ModelPatch, user: User = Admin, db
                      resource_type="ai_model", resource_id=row.id, old_value=old, new_value=changes)
     db.commit()
     return ModelOut.model_validate(row)
+
+
+@router.delete("/models/{model_id}", status_code=204)
+def delete_model(model_id: UUID, user: User = Admin, db: Session = Depends(get_db)):
+    """Refused (409) while a routing step names this model on an account of the same provider."""
+    row = svc.get_or_404(db, AIModel, model_id, user.organization_id)
+    org = user.organization_id
+    n_pol = _count(db, select(AIRoutingStep.policy_id).distinct()
+                   .join(AIProviderAccount, AIProviderAccount.id == AIRoutingStep.account_id)
+                   .where(AIRoutingStep.organization_id == org, AIRoutingStep.model == row.name,
+                          AIProviderAccount.provider_id == row.provider_id))
+    if n_pol:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            f"Cannot delete model: referenced by {n_pol} routing policies. Update policies first.")
+    record_audit_log(db, organization_id=org, user_id=user.id, action="ai_model.deleted",
+                     resource_type="ai_model", resource_id=row.id, old_value={"name": row.name})
+    db.delete(row)
+    db.commit()
+    return Response(status_code=204)
 
 
 # ---------------- routing ----------------

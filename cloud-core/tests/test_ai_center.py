@@ -603,3 +603,91 @@ def test_policy_editing_is_admin_only_and_tenant_isolated(client, org, register_
     assert client.post(f"{B}/routing-policies/{pol['id']}/steps", headers=other,
                        json={"account_id": a["id"], "model": "x"}).status_code == 404
     assert client.patch(f"{B}/routing-policies/{pol['id']}").status_code in (401, 403)
+
+
+# ---------------- deletes (9E-2) ----------------
+
+def _role_headers(client, h, role):
+    u = client.post("/api/v1/users", headers=h, json={"email": f"{role[0]}{uuid.uuid4().hex[:6]}@example.com", "name": role,
+                    "password": "role-pass-12345", "role": role})
+    assert u.status_code in (200, 201), u.text
+    tok = client.post("/api/v1/auth/login", data={"username": u.json()["email"], "password": "role-pass-12345"}).json()["access_token"]
+    return {"Authorization": f"Bearer {tok}"}
+
+
+def mk_model(client, h, provider_id, name="claude-x"):
+    r = client.post(f"{B}/models", headers=h, json={"provider_id": provider_id, "name": name})
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def test_delete_provider_without_dependencies_and_refused_with_them(client, org):
+    h = org["headers"]
+    empty = mk_provider(client, h, "Empty")
+    assert client.delete(f"{B}/providers/{empty['id']}", headers=h).status_code == 204
+    assert client.get(f"{B}/providers/{empty['id']}", headers=h).status_code == 404
+    p = mk_provider(client, h)
+    mk_account(client, h, p["id"], "A", with_cred=False)
+    mk_model(client, h, p["id"])
+    r = client.delete(f"{B}/providers/{p['id']}", headers=h)
+    assert r.status_code == 409 and r.json()["error"]["message"] == "Cannot delete provider: 1 accounts and 1 models exist. Delete them first."
+    assert client.get(f"{B}/providers/{p['id']}", headers=h).status_code == 200
+
+
+def test_delete_account_refused_while_routed_or_forced_by_an_active_job(client, db_session, org, no_background):
+    h = org["headers"]
+    p = mk_provider(client, h)
+    a, b = mk_account(client, h, p["id"], "A"), mk_account(client, h, p["id"], "B")
+    pol = mk_policy(client, h, "manual_single", [{"account_id": a["id"], "model": "m"}])
+    r = client.delete(f"{B}/accounts/{a['id']}", headers=h)
+    assert r.status_code == 409 and r.json()["error"]["message"] == "Cannot delete account: referenced by 1 routing steps. Update policies first."
+    # b is in no policy, but a running job was forced onto it
+    job = _job(client, db_session, h, pol, 1)
+    job.forced_account_id, job.status = uuid.UUID(b["id"]), "running"
+    db_session.commit()
+    r = client.delete(f"{B}/accounts/{b['id']}", headers=h)
+    assert r.status_code == 409 and r.json()["error"]["message"] == "Cannot delete account: 1 active jobs. Wait or cancel them first."
+    job.status = "completed"
+    db_session.commit()
+    assert client.delete(f"{B}/accounts/{b['id']}", headers=h).status_code == 204
+    assert client.get(f"{B}/accounts/{b['id']}", headers=h).status_code == 404
+    gone = db_session.execute(text("SELECT count(*) FROM ai_provider_accounts WHERE id=:i"), {"i": b["id"]}).scalar_one()
+    assert gone == 0
+
+
+def test_delete_model_refused_while_a_policy_names_it(client, org):
+    h = org["headers"]
+    p = mk_provider(client, h)
+    a = mk_account(client, h, p["id"], "A")
+    used, free = mk_model(client, h, p["id"], "used-model"), mk_model(client, h, p["id"], "free-model")
+    mk_policy(client, h, "manual_single", [{"account_id": a["id"], "model": "used-model"}])
+    r = client.delete(f"{B}/models/{used['id']}", headers=h)
+    assert r.status_code == 409 and r.json()["error"]["message"] == "Cannot delete model: referenced by 1 routing policies. Update policies first."
+    assert client.delete(f"{B}/models/{free['id']}", headers=h).status_code == 204
+    # a same-named model of another provider is not blocked by this provider's steps
+    other = mk_model(client, h, mk_provider(client, h, "Other")["id"], "used-model")
+    assert client.delete(f"{B}/models/{other['id']}", headers=h).status_code == 204
+
+
+def test_revoke_credential_keeps_the_account(client, org):
+    h = org["headers"]
+    a = mk_account(client, h, mk_provider(client, h)["id"], "A")
+    r = client.delete(f"{B}/accounts/{a['id']}/credential", headers=h)
+    assert r.status_code == 200 and r.json()["credential_set"] is False and r.json()["credential_last4"] is None
+    assert client.get(f"{B}/accounts/{a['id']}", headers=h).json()["credential_set"] is False
+
+
+def test_deletes_are_admin_only_and_tenant_scoped(client, org, register_org):
+    h = org["headers"]
+    p = mk_provider(client, h)
+    a = mk_account(client, h, p["id"], "A")
+    m = mk_model(client, h, p["id"])
+    paths = (f"/providers/{p['id']}", f"/accounts/{a['id']}", f"/models/{m['id']}", f"/accounts/{a['id']}/credential")
+    for role in ("viewer", "editor"):
+        rh = _role_headers(client, h, role)
+        for path in paths:
+            assert client.delete(B + path, headers=rh).status_code == 403, (role, path)
+    other = register_org()["headers"]
+    for path in paths:
+        assert client.delete(B + path, headers=other).status_code == 404
+    assert client.get(f"{B}/accounts/{a['id']}", headers=h).json()["credential_set"] is True
