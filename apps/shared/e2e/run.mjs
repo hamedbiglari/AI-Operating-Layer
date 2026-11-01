@@ -32,6 +32,16 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  — ${detail}` : ''}`);
 }
 
+// Polls `pred` (sync or async) every 200 ms until it is true or `ms` pass; true when it became true. Used instead of
+// fixed sleeps for work the client does in the background, which takes longer on a slow machine or backend.
+async function waitUntil(pred, ms) {
+  for (const end = Date.now() + ms; Date.now() < end;) {
+    if (await pred()) return true;
+    await new Promise((ok) => setTimeout(ok, 200));
+  }
+  return false;
+}
+
 async function api(path, { method = 'GET', body, token, form } = {}) {
   const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -74,6 +84,9 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
   const requests = [];
   page.on('request', (r) => requests.push(r.url()));
+  // Device Intelligence runs in the background after each sign-in and ends with POST …/credentials/{id}/verify.
+  const deviceVerifies = [];
+  page.on('response', (r) => { if (/\/devices\/credentials\/[^/]+\/verify$/.test(new URL(r.url()).pathname)) deviceVerifies.push(r.status()); });
   const url = `http://127.0.0.1:${PORT}/?api=${encodeURIComponent(API)}`;
 
   // 1. open, signed out: no chat request of any kind
@@ -182,12 +195,14 @@ try {
   await page.keyboard.press('Escape');
   check('Escape closes the menu and returns focus', await page.locator('#account-menu').isHidden()
         && await page.evaluate(() => document.activeElement?.id) === 'account-button');
+  // Settings shows the device status as it is when the dialog opens, so first wait (up to 30 s) for the background
+  // registration to finish instead of a fixed delay; if it never does, the status check below reports what it shows.
+  await waitUntil(() => deviceVerifies.length > 0, 30000);
   await page.locator('#account-button').click();
   await page.locator('#menu-settings').click();
   check('Settings has no theme switch', await page.locator('dialog [data-theme]').count() === 0);
 
   // Device Intelligence: registered + verified in the background, visible in Settings and to the admin
-  await page.waitForTimeout(500);
   const status = await page.locator('dialog [role="status"]').first().textContent();
   check('installation verification status shown in Settings', /verified|registered/.test(status ?? ''), status);
   const adminList = await api('/devices/admin/credentials', { token: owner.token });
@@ -246,8 +261,14 @@ try {
   await page.keyboard.press('Escape');
   check('the second account sees none of the first account’s conversations',
         (await page.locator('#history .history__open').count()) === 0);
-  await page.waitForTimeout(800);
-  const after = await api(`/devices/admin/credentials/${cred.id}`, { token: owner.token });
+  // The second account's sign-in links it to the same installation in the background: poll (up to 30 s).
+  let after = { data: {} };
+  if (cred) {
+    await waitUntil(async () => {
+      after = await api(`/devices/admin/credentials/${cred.id}`, { token: owner.token });
+      return (after.data.linked_accounts?.length ?? 0) >= 2;
+    }, 30000);
+  }
   check('account switching on one installation links both accounts (SAME_REGISTERED_INSTALLATION)',
         after.data.linked_accounts?.length === 2 && after.data.assessment.categories.includes('SAME_REGISTERED_INSTALLATION'),
         JSON.stringify(after.data.assessment?.categories));
