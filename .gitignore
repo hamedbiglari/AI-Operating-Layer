@@ -7,3 +7,4 @@ __pycache__/
 cloud-core/.coverage
 cloud-core/coverage.xml
 .impeccable/
+visual-harness/screenshots/

@@ -1278,3 +1278,96 @@ Terms for the Products screen. Product names, SKUs, categories and origins are s
 | bought | خرید |
 | — price, stock, availability. A Product can exist, fully described, with zero offers. | — قیمت، موجودی، موجودبودن. یک محصول می‌تواند کاملاً توصیف‌شده و بدون هیچ پیشنهاد فروشی وجود داشته باشد. |
 | Field set matches the canonical schema (MASTER_SPEC.md §26 products / §27 offers) — sku, brand, category, origin, ingredients, certifications for the product; price, currency, availability, stock, condition for each offer. Nothing here is a WooCommerce mirror; WooCommerce is one possible source that normalizes into this same shape. | مجموعهٔ فیلدها با طرح‌وارهٔ مرجع منطبق است (MASTER_SPEC.md §26 محصولات / §27 پیشنهادهای فروش) — کد کالا، برند، دسته، خاستگاه، ترکیبات و گواهی‌ها برای محصول؛ قیمت، واحد پول، موجودبودن، موجودی و وضعیت کالا برای هر پیشنهاد فروش. هیچ چیز اینجا آینهٔ WooCommerce نیست؛ WooCommerce یکی از منبع‌های ممکن است که به همین شکل یکسان می‌شود. |
+
+## AI Center — Advanced (Step 9E-2)
+
+Delete and revoke actions, the job panel and live progress, knowledge transfer packages, discovery rows, the Walrus line, routing step names, the Agent Network list, the session inspector and the agent orchestration console. Server messages, identifiers and unknown values are shown as sent.
+
+| English | Persian |
+|---|---|
+| Delete | حذف |
+| Revoke credential | باطل کردن اعتبارنامه |
+| Delete provider {name}? This cannot be undone. | ارائه‌دهندهٔ {name} حذف شود؟ این کار برگشت‌پذیر نیست. |
+| Deleted provider {name}. | ارائه‌دهندهٔ {name} حذف شد. |
+| Revoke the credential of {label}? The account stays; calls through it stop until a new credential is set. | اعتبارنامهٔ {label} باطل شود؟ حساب باقی می‌ماند؛ فراخوانی‌ها از طریق آن تا تنظیم اعتبارنامهٔ تازه متوقف می‌شوند. |
+| Credential revoked for {label}. | اعتبارنامهٔ {label} باطل شد. |
+| Delete account {label}? Its credential will also be removed. | حساب {label} حذف شود؟ اعتبارنامهٔ آن هم پاک می‌شود. |
+| Deleted account {label}. | حساب {label} حذف شد. |
+| Delete model {name}? This cannot be undone. | مدل {name} حذف شود؟ این کار برگشت‌پذیر نیست. |
+| Deleted model {name}. | مدل {name} حذف شد. |
+| Your session expired. Please reconnect. | نشست شما منقضی شده است. لطفاً دوباره وصل شوید. |
+| Your role is not allowed to delete (HTTP 403). | نقش شما اجازهٔ حذف ندارد (HTTP 403). |
+| Move step {n} up | انتقال گام {n} به بالا |
+| Move step {n} down | انتقال گام {n} به پایین |
+| Remove step {n} | حذف گام {n} |
+| Paused | متوقف‌شده |
+| Pause requested | توقف درخواست شده |
+| Blocked | مسدود |
+| Cancel requested | لغو درخواست شده |
+| Pause | توقف |
+| Resume | ادامه |
+| Stop reason | دلیل توقف |
+| Total | مجموع |
+| Loading job… | در حال بارگذاری کار… |
+| Export this job’s memory | خروجی گرفتن از حافظهٔ این کار |
+| Latest handoff package | آخرین بستهٔ تحویل |
+| No handoff yet — the job has not switched resources. | هنوز تحویلی نیست — کار منبعش را عوض نکرده است. |
+| Live progress unavailable. | پیشرفت زنده در دسترس نیست. |
+| Connecting to live progress… | در حال اتصال به پیشرفت زنده… |
+| Live: {state} — {completed} done, {pending} pending, {failed} failed of {total}. | زنده: {state} — از {total} مورد، {completed} انجام‌شده، {pending} در انتظار، {failed} ناموفق. |
+| Live: {state} — {completed} done, {pending} pending, {failed} failed of {total}. Stream closed ({end}). | زنده: {state} — از {total} مورد، {completed} انجام‌شده، {pending} در انتظار، {failed} ناموفق. جریان بسته شد ({end}). |
+| Stream closed ({end}). | جریان بسته شد ({end}). |
+| Live progress unavailable: {error} | پیشرفت زنده در دسترس نیست: {error} |
+| Memory exported. | از حافظه خروجی گرفته شد. |
+| Export failed: {error} | خروجی گرفتن ناموفق بود: {error} |
+| Nothing here yet. Import the initial discovery list. | هنوز چیزی اینجا نیست. فهرست اولیهٔ کشف را وارد کنید. |
+| New claim | ادعای تازه |
+| Duplicate | تکراری |
+| Variant | گونهٔ دیگر |
+| No new evidence | بدون شاهد تازه |
+| {n} of {total} | {n} از {total} |
+| Package {id} | بستهٔ {id} |
+| Not used: {reason} | استفاده نشد: {reason} |
+| Rejected — {reason} | رد شد — {reason} |
+| Accepted | پذیرفته شد |
+| Accepted — {evidence} new evidence, {links} new links | پذیرفته شد — {evidence} شاهد تازه، {links} پیوند تازه |
+| Evidence {index} rejected: {code} | شاهد {index} رد شد: {code} |
+| The package carried no claims. | این بسته هیچ ادعایی نداشت. |
+| Open questions | پرسش‌های باز |
+| Gaps | شکاف‌ها |
+| Unknown entities (candidates) | موجودیت‌های ناشناخته (نامزدها) |
+| Conflicts recorded | تعارض‌های ثبت‌شده |
+| Could not load the package: {error} | بارگذاری بسته ممکن نشد: {error} |
+| User | کاربر |
+| AI execution | اجرای هوش مصنوعی |
+| No package with this status. | هیچ بسته‌ای با این وضعیت نیست. |
+| No packages yet. They arrive from AI jobs run with the ktp_v1 output contract. | هنوز هیچ بسته‌ای نیست. بسته‌ها از کارهای هوش مصنوعی می‌آیند که با قرارداد خروجی ktp_v1 اجرا شوند. |
+| Verdicts | رأی‌ها |
+| Walrus: {status} — {detail} | Walrus (حافظهٔ معنایی): {status} — {detail} |
+| No agents registered. Create agents via the API (POST /api/v1/agent-network/agents). | هیچ عاملی ثبت نشده است. عامل‌ها را از طریق API بسازید (POST /api/v1/agent-network/agents). |
+| Protocol | پروتکل |
+| Capabilities | توانایی‌ها |
+| Enter a session ID. | شناسهٔ یک نشست را وارد کنید. |
+| Connect to AI Core first. | ابتدا به AI Core وصل شوید. |
+| Goal: {goal} · status {status} | هدف: {goal} · وضعیت {status} |
+| Tasks ({n}) | کارها ({n}) |
+| Handoffs ({n}) | تحویل‌ها ({n}) |
+| Messages ({n}) | پیام‌ها ({n}) |
+| None. | هیچ. |
+| Task | کار |
+| To | به |
+| Reason | دلیل |
+| Delivered | تحویل‌شده |
+| Acknowledged | تأییدشده |
+| Connect to AI Core first (Connection card above). | ابتدا به AI Core وصل شوید (کارت اتصال در بالا). |
+| Nothing registered yet | هنوز چیزی ثبت نشده |
+| Could not load lists: {error} | بارگذاری فهرست‌ها ممکن نشد: {error} |
+| Agent registered: {name} ({id}) | عامل ثبت شد: {name} ({id}) |
+| Memory access granted ({level}). | دسترسی به حافظه داده شد ({level}). |
+| Session started: {id} | نشست آغاز شد: {id} |
+| Task added: {id} ({status}) | کار افزوده شد: {id} ({status}) |
+| Task {status} ({reason}) — {n\|AI execution\|AI executions}: {ids} | کار {status} ({reason}) — {n} اجرای هوش مصنوعی: {ids} |
+| Task {status} — {n\|AI execution\|AI executions}: {ids} | کار {status} — {n} اجرای هوش مصنوعی: {ids} |
+| Handoff created: {id} — shared-memory checkpoint {checkpoint} | تحویل ساخته شد: {id} — نقطهٔ بازبینی حافظهٔ مشترک {checkpoint} |
+| Handoff {status}. Run the next task with this agent and the handoff ID (step 5). | تحویل {status}. کار بعدی را با این عامل و شناسهٔ تحویل اجرا کنید (گام ۵). |
+| Fill in: {fields} | پر کنید: {fields} |

@@ -4764,7 +4764,7 @@ button.card { color: inherit; font: inherit; }
 
     <div class="aic-pane" data-aic-pane="resources">
       <div class="card"><h2 class="card__title">Providers</h2>
-        <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table"><caption class="visually-hidden">Registered AI providers</caption><thead><tr><th scope="col">Provider</th><th scope="col">Adapter</th><th scope="col">Verification</th><th scope="col">Credential method</th></tr></thead><tbody id="aic-providers"></tbody></table></div>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table"><caption class="visually-hidden">Registered AI providers</caption><thead><tr><th scope="col">Provider</th><th scope="col">Adapter</th><th scope="col">Verification</th><th scope="col">Credential method</th><th scope="col">Actions</th></tr></thead><tbody id="aic-providers"></tbody></table></div>
         <form class="aic-form" id="aic-add-provider" novalidate>
           <h3>Add provider</h3>
           <label class="field"><span class="field__label">Name</span><input name="name" required></label>
@@ -10035,6 +10035,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     if (!rolePromise) rolePromise = api('/auth/me').then(function (me) { return me.user ? me.user.role : null; }, function () { return null; });
     return rolePromise;
   }
+  // AI Center reads the same promise, so a connection asks for the role once (9E-2).
+  window.AIOL_CONNECTION_ROLE = connectionRole;
   // A message with at most one action; returns the function that sets it.
   // Shared by Source detail and Document processing.
   function messageBox(parent) {
@@ -11501,7 +11503,26 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     opt = opt || {}; var h = { Authorization: 'Bearer ' + L.token }; if (opt.json) h['Content-Type'] = 'application/json';
     return fetch(L.base + '/api/v1' + path, { method: opt.method || 'GET', headers: h, body: opt.json ? JSON.stringify(opt.json) : undefined })
       .then(function (r) { return r.text().then(function (t) { var d = t ? JSON.parse(t) : null;
-        if (!r.ok) { var m = (d && d.error && d.error.message) || ('HTTP ' + r.status); throw new Error(r.status === 403 ? 'Permission denied: ' + m : m); } return d; }); });
+        if (!r.ok) { var m = (d && d.error && d.error.message) || ('HTTP ' + r.status); var x = new Error(r.status === 403 ? 'Permission denied: ' + m : m);
+          x.status = r.status; x.server = m; throw x; } return d; }); });
+  }
+  // Deleting (9E-2): owner/admin only, as on the backend; the signed-in role is read once per connection.
+  var role = null, DELETE_ROLES = ['owner', 'admin'];
+  function canDelete() { return DELETE_ROLES.indexOf(role) !== -1; }
+  function ask(tpl, args) { return window.confirm(AIOL_I18N.set(el('span'), tpl, args).textContent); }
+  function delFailed(e) {
+    if (e.status === 401) status('Your session expired. Please reconnect.');
+    else if (e.status === 403) status('Your role is not allowed to delete (HTTP 403).');
+    else status('{error}', { error: e.server || e.message });
+  }
+  // One destructive button: confirm, DELETE, reload the lists, then say what happened.
+  function delButton(label, question, done, args, path) {
+    var btn = el('button', 'btn btn--quiet btn--danger'); btn.type = 'button'; btn.appendChild(ui(label));
+    btn.onclick = function () {
+      if (!ask(question, args)) return;
+      api(path, { method: 'DELETE' }).then(loadResources).then(function () { status(done, args); }).catch(delFailed);
+    };
+    return btn;
   }
   function row(tb, cells) { var tr = el('tr'); var ths = tb.closest('table').querySelectorAll('thead th'); cells.forEach(function (c, i) { var td = el('td'); td.setAttribute('data-label', ths[i] ? ths[i].textContent : ''); if (c instanceof Node) td.appendChild(c); else { var b = el('bdi'); b.textContent = c; td.appendChild(b); } tr.appendChild(td); }); tb.appendChild(tr); return tr; }
   function badge(text, kind) { return el('span', 'badge ' + (kind || 'badge--unknown'), text); }
@@ -11511,11 +11532,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return Promise.all([api('/ai-center/providers?limit=100'), api('/ai-center/accounts?limit=100'), api('/ai-center/models?limit=100')]).then(function (r) {
       providers = r[0].items || r[0]; var accounts = r[1].items || r[1]; renderModels(r[2].items || r[2]);
       var tb = $('aic-providers'); tb.textContent = '';
-      if (!providers.length) row(tb, [ui('No providers registered yet.'), '', '', '']);
+      if (!providers.length) row(tb, [ui('No providers registered yet.'), '', '', '', '']);
       providers.forEach(function (p) {
         var adapter = ui('None');
         if (p.adapter_key) { adapter = el('span'); adapter.appendChild(el('bdi', null, p.adapter_key)); if (!p.adapter_implemented) { adapter.appendChild(document.createTextNode(' ')); adapter.appendChild(ui('(no adapter)')); } }
-        row(tb, [p.name, adapter, badge(p.verification_status), val(p.credential_method)]); });
+        row(tb, [p.name, adapter, badge(p.verification_status), val(p.credential_method),
+          canDelete() ? delButton('Delete', 'Delete provider {name}? This cannot be undone.', 'Deleted provider {name}.', { name: p.name }, '/ai-center/providers/' + p.id) : '']); });
       var ps = $('aic-provider-select'); ps.textContent = ''; providers.forEach(function (p) { var o = el('option', null, p.name); o.value = p.id; ps.appendChild(o); });
       var name = {}; providers.forEach(function (p) { name[p.id] = p.name; });
       var ta = $('aic-accounts'); ta.textContent = ''; var as = $('aic-account-select'); as.textContent = '';
@@ -11527,6 +11549,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         var tg = el('button', 'btn btn--quiet', a.enabled ? 'Disable' : 'Enable'); tg.type = 'button';
         tg.onclick = function () { api('/ai-center/accounts/' + a.id, { method: 'PATCH', json: { enabled: !a.enabled } }).then(loadResources).catch(failed); };
         act.appendChild(t); act.appendChild(tg);
+        if (canDelete()) {
+          if (a.credential_set) act.appendChild(delButton('Revoke credential', 'Revoke the credential of {label}? The account stays; calls through it stop until a new credential is set.',
+            'Credential revoked for {label}.', { label: a.label }, '/ai-center/accounts/' + a.id + '/credential'));
+          act.appendChild(delButton('Delete', 'Delete account {label}? Its credential will also be removed.', 'Deleted account {label}.', { label: a.label }, '/ai-center/accounts/' + a.id));
+        }
         var label = el('span'); label.appendChild(el('bdi', null, a.label)); if (!a.enabled) { label.appendChild(document.createTextNode(' ')); label.appendChild(ui('(disabled)')); }
         var cred = a.credential_set ? AIOL_I18N.set(el('span'), 'Set ••••{last4}', { last4: a.credential_last4 || '' }) : ui('Not set');
         row(ta, [label, name[a.provider_id] || '—', cred, badge(a.health_status, HEALTH[a.health_status]), String(a.failure_count), val(a.remaining_tokens), act]);
@@ -11612,13 +11639,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           li.appendChild(b);
           var acts = el('span', 'aic-step-actions');
           var up = el('button', 'btn btn--sm', 'Move up'); up.type = 'button'; up.disabled = idx === 0;
-          up.setAttribute('aria-label', 'Move step ' + (idx + 1) + ' up');
+          // Each step button is named by a hidden, translated label ("Move step 2 up").
+          var named = function (btn, key, tpl) { var s = el('span', 'visually-hidden'); s.id = 'aic-step-' + p.id + '-' + idx + '-' + key;
+            AIOL_I18N.set(s, tpl, { n: idx + 1 }); li.appendChild(s); btn.setAttribute('aria-labelledby', s.id); };
+          named(up, 'up', 'Move step {n} up');
           up.onclick = function () { moveStep(p.id, s2.position, s2.position - 1); };
           var dn = el('button', 'btn btn--sm', 'Move down'); dn.type = 'button'; dn.disabled = idx === (p.steps.length - 1);
-          dn.setAttribute('aria-label', 'Move step ' + (idx + 1) + ' down');
+          named(dn, 'down', 'Move step {n} down');
           dn.onclick = function () { moveStep(p.id, s2.position, s2.position + 1); };
           var rm = el('button', 'btn btn--sm', 'Remove'); rm.type = 'button';
-          rm.setAttribute('aria-label', 'Remove step ' + (idx + 1));
+          named(rm, 'remove', 'Remove step {n}');
           rm.onclick = function () { api('/ai-center/routing-policies/' + p.id + '/steps/' + s2.position, { method: 'DELETE' })
             .then(loadRouting).then(function () { status('Step removed.'); }).catch(failed); };
           acts.appendChild(up); acts.appendChild(dn); acts.appendChild(rm); li.appendChild(acts); ol.appendChild(li);
@@ -11653,82 +11683,124 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       });
     });
   }
-  function kv(pairs) { var dl = el('dl', 'aic-kv'); pairs.forEach(function (p) { dl.appendChild(el('dt', null, p[0])); var dd = el('dd'); var b = el('bdi'); b.textContent = fmt(p[1]); dd.appendChild(b); dl.appendChild(dd); }); return dl; }
+  var JOB_STATUS = { queued: 'Queued', running: 'Running', paused: 'Paused', pause_requested: 'Pause requested', blocked: 'Blocked',
+    completed: 'Completed', failed: 'Failed', cancelled: 'Cancelled', cancel_requested: 'Cancel requested' };
+  var JOB_ACTION = { pause: 'Pause', resume: 'Resume', cancel: 'Cancel' };
+  // [label, value, labels]: a label for a known value, Unknown for none, numbers in the current language, anything else as sent.
+  function kv(pairs) {
+    var dl = el('dl', 'aic-kv');
+    pairs.forEach(function (p) {
+      var dt = dl.appendChild(el('dt')); AIOL_I18N.set(dt, p[0]);
+      var dd = el('dd'), v = p[1];
+      if (v === null || v === undefined || v === '') dd.appendChild(ui('Unknown'));
+      else if (typeof v === 'number') dd.appendChild(AIOL_I18N.set(el('span'), '{n}', { n: v }));
+      else if (p[2] && p[2][v]) dd.appendChild(ui(p[2][v]));
+      else { var bd = el('bdi'); bd.textContent = String(v); dd.appendChild(bd); }
+      dl.appendChild(dd);
+    });
+    return dl;
+  }
   function openJob(key) {
     var box = $('aic-job'); box.textContent = ''; status('Loading job…');
     Promise.all([api('/ai-center/jobs/' + encodeURIComponent(key)), api('/ai-center/jobs/' + encodeURIComponent(key) + '/handoff').catch(function () { return null; })]).then(function (r) {
       var j = r[0]; status('');
-      box.appendChild(kv([['Goal', j.goal], ['Status', j.status], ['Stop reason', j.stop_reason], ['Stage', j.stage], ['Completed', j.completed], ['Pending', j.pending], ['Failed', j.failed], ['Total', j.total]]));
+      box.appendChild(kv([['Goal', j.goal], ['Status', j.status, JOB_STATUS], ['Stop reason', j.stop_reason], ['Stage', j.stage], ['Completed', j.completed], ['Pending', j.pending], ['Failed', j.failed], ['Total', j.total]]));
       var act = el('div', 'aic-actions');
-      ['pause', 'resume', 'cancel'].forEach(function (a) { var b = el('button', 'btn btn--quiet', a.charAt(0).toUpperCase() + a.slice(1)); b.type = 'button';
+      ['pause', 'resume', 'cancel'].forEach(function (a) { var b = el('button', 'btn btn--quiet'); b.appendChild(ui(JOB_ACTION[a])); b.type = 'button';
         b.onclick = function () { api('/ai-center/jobs/' + encodeURIComponent(key) + '/control', { method: 'POST', json: { action: a } }).then(function () { openJob(key); }).catch(failed); }; act.appendChild(b); });
       var live = el('p', 'aic-live-progress'); live.setAttribute('role', 'status'); live.setAttribute('aria-live', 'polite'); box.appendChild(live);
       window.AIOL_JOB_STREAM && window.AIOL_JOB_STREAM(key, live, function () { openJob(key); });
-      var exp = el('button', 'btn btn--quiet', 'Export this job\u2019s memory'); exp.type = 'button';
-      exp.onclick = function () { window.AIOL_EXPORT_MEMORY && window.AIOL_EXPORT_MEMORY(key, function (m) { status(m); }); };
+      var exp = el('button', 'btn btn--quiet'); exp.appendChild(ui('Export this job\u2019s memory')); exp.type = 'button';
+      exp.onclick = function () { window.AIOL_EXPORT_MEMORY && window.AIOL_EXPORT_MEMORY(key, function (tpl, args) { status(tpl, args); }); };
       act.appendChild(exp);
       box.appendChild(act);
-      box.appendChild(el('h3', null, 'Latest handoff package'));
-      box.appendChild(el('pre', 'aic-pre', r[1] ? JSON.stringify(r[1], null, 2) : 'No handoff yet — the job has not switched resources.'));
+      var hh = box.appendChild(el('h3')); AIOL_I18N.set(hh, 'Latest handoff package');
+      var pre = box.appendChild(el('pre', 'aic-pre'));
+      if (r[1]) pre.textContent = JSON.stringify(r[1], null, 2); else AIOL_I18N.set(pre, 'No handoff yet — the job has not switched resources.');
     }).catch(failed);
   }
+  // Discovery labels: the AI Catalog filter's own option text (types and statuses are the same values).
+  function optionText(id) { var m = {}, s = $(id); if (s) Array.prototype.forEach.call(s.options, function (o) { if (o.value) m[o.value] = o.textContent; }); return m; }
+  var DISC_TYPE = optionText('cat-type'), DISC_STATUS = optionText('cat-status');
   function loadDiscovery() {
     var st = $('aic-disc-status').value;
     return api('/ai-center/discovery?limit=25&offset=' + discOffset + (st ? '&status=' + encodeURIComponent(st) : '')).then(function (d) {
       var tb = $('aic-discovery'); tb.textContent = ''; var items = d.items || d;
-      if (!items.length) row(tb, ['Nothing here yet. Import the initial discovery list.', '', '', '', '']);
-      items.forEach(function (x) { row(tb, [x.name, (x.proposed_types || []).join(', '), badge(x.status), x.last_verified_at ? new Date(x.last_verified_at).toLocaleString() : 'Not verified', fmt(x.api_url)]); });
+      if (!items.length) row(tb, [ui('Nothing here yet. Import the initial discovery list.'), '', '', '', '']);
+      items.forEach(function (x) {
+        var types = el('span'); (x.proposed_types || []).forEach(function (t, i) { if (i) types.appendChild(document.createTextNode(', '));
+          if (DISC_TYPE[t]) types.appendChild(ui(DISC_TYPE[t])); else types.appendChild(el('bdi', null, t)); });
+        var sb = badge(''); if (DISC_STATUS[x.status]) sb.appendChild(ui(DISC_STATUS[x.status])); else sb.appendChild(el('bdi', null, x.status));
+        row(tb, [x.name, types, sb, x.last_verified_at ? AIOL_I18N.set(el('span'), '{d}', { d: { date: x.last_verified_at } }) : ui('Not verified'), val(x.api_url)]); });
       var total = d.total || items.length, end = Math.min(discOffset + items.length, total);
-      $('aic-disc-info').textContent = total ? (discOffset + 1) + '–' + end + ' of ' + total : '';
+      AIOL_I18N.set($('aic-disc-info'), total ? '{from}–{to} of {total}' : '', { from: discOffset + 1, to: end, total: total });
       $('aic-disc-prev').disabled = discOffset === 0; $('aic-disc-next').disabled = end >= total;
     });
   }
   /* Knowledge transfer packages (ADR-134): server-side paging; verdicts rendered as text only. */
   var ktpOffset = 0;
   var KTP_BADGE = { reconciled: 'badge--success', partially_reconciled: 'badge--warning', nothing_accepted: 'badge--warning', invalid: 'badge--danger' };
+  var KTP_STATUS = optionText('aic-ktp-status');
+  var KTP_OUTCOME = { new_claim: 'New claim', duplicate: 'Duplicate', variant: 'Variant', no_new_evidence: 'No new evidence' };
+  function outcomeLabel(k) { return KTP_OUTCOME[k] ? ui(KTP_OUTCOME[k]) : el('bdi', null, k); }
+  // Accepted "3 of 4"; outcomes "New claim: 2, Duplicate: 1", each label translated and each count in the current language.
   function ktpCounts(x) {
     var v = (x.validation && x.validation.claims) || [], o = (x.reconciliation && x.reconciliation.claims) || [], n = {};
     o.forEach(function (c) { n[c.outcome] = (n[c.outcome] || 0) + 1; });
-    return { accepted: v.filter(function (c) { return c.accepted; }).length + ' of ' + v.length,
-      outcomes: Object.keys(n).map(function (k) { return k.replace(/_/g, ' ') + ': ' + n[k]; }).join(', ') || '—' };
+    var acc = AIOL_I18N.set(el('span'), '{n} of {total}', { n: v.filter(function (c) { return c.accepted; }).length, total: v.length });
+    var out = el('span'), keys = Object.keys(n);
+    keys.forEach(function (k, i) { if (i) out.appendChild(document.createTextNode(', ')); out.appendChild(outcomeLabel(k));
+      out.appendChild(document.createTextNode(': ')); out.appendChild(AIOL_I18N.set(el('span'), '{n}', { n: n[k] })); });
+    if (!keys.length) out.textContent = '—';
+    return { accepted: acc, outcomes: out };
   }
   function showKtp(id) {
-    var box = $('aic-ktp-detail'); box.textContent = 'Loading…';
+    var box = $('aic-ktp-detail'); box.textContent = ''; AIOL_I18N.set(box, 'Loading…');
     api('/knowledge-transfer/packages/' + id).then(function (x) {
-      box.textContent = ''; box.appendChild(el('h3', null, 'Package ' + x.id));
-      if (x.invalid_reason) box.appendChild(el('p', null, 'Not used: ' + x.invalid_reason));
+      box.textContent = ''; box.removeAttribute('data-i18n'); box.__i18n = null;
+      var h = box.appendChild(el('h3')); AIOL_I18N.set(h, 'Package {id}', { id: x.id });
+      if (x.invalid_reason) { var nu = box.appendChild(el('p')); AIOL_I18N.set(nu, 'Not used: {reason}', { reason: x.invalid_reason }); }
       var out = {}; ((x.reconciliation && x.reconciliation.claims) || []).forEach(function (c) { out[c.local_id] = c; });
       var ol = el('ol');
       ((x.validation && x.validation.claims) || []).forEach(function (c) {
-        var r = out[c.local_id], li = el('li', null, c.local_id + ': ' + (c.accepted ? 'accepted — ' + (r ? r.outcome.replace(/_/g, ' ') + ', ' + r.evidence_created + ' new evidence, ' + r.links_created + ' new links' : '') : 'rejected — ' + c.reason));
-        (c.rejected_evidence || []).forEach(function (e) { li.appendChild(el('div', 'aic-hint', 'evidence ' + e.index + ' rejected: ' + e.code)); });
+        var r = out[c.local_id], li = el('li');
+        li.appendChild(el('bdi', null, c.local_id)); li.appendChild(document.createTextNode(': '));
+        if (!c.accepted) li.appendChild(AIOL_I18N.set(el('span'), 'Rejected — {reason}', { reason: c.reason }));
+        else if (!r) li.appendChild(ui('Accepted'));
+        else { li.appendChild(AIOL_I18N.set(el('span'), 'Accepted — {evidence} new evidence, {links} new links', { evidence: r.evidence_created, links: r.links_created }));
+          li.appendChild(document.createTextNode(' · ')); li.appendChild(outcomeLabel(r.outcome)); }
+        (c.rejected_evidence || []).forEach(function (e) { var hint = li.appendChild(el('div', 'aic-hint'));
+          AIOL_I18N.set(hint, 'Evidence {index} rejected: {code}', { index: e.index, code: e.code }); });
         ol.appendChild(li);
       });
-      if (ol.children.length) box.appendChild(ol); else if (!x.invalid_reason) box.appendChild(el('p', null, 'The package carried no claims.'));
+      if (ol.children.length) box.appendChild(ol); else if (!x.invalid_reason) box.appendChild(ui('The package carried no claims.'));
       var rc = x.reconciliation || {};
       [['Open questions', rc.open_questions], ['Gaps', rc.gaps], ['Unknown entities (candidates)', rc.entity_candidates], ['Conflicts recorded', rc.conflicts_recorded]].forEach(function (pair) {
-        if (pair[1] && pair[1].length) box.appendChild(el('p', null, pair[0] + ': ' + pair[1].join('; ')));
+        if (!pair[1] || !pair[1].length) return;
+        var line = box.appendChild(el('p')); line.appendChild(ui(pair[0])); line.appendChild(document.createTextNode(': '));
+        line.appendChild(el('bdi', null, pair[1].join('; '))).dir = 'auto';
       });
-    }).catch(function (e) { box.textContent = 'Could not load the package: ' + e.message; });
+    }).catch(function (e) { AIOL_I18N.set(box, 'Could not load the package: {error}', { error: e.message }); });
   }
   function ktpFrom(s) {
     var m = /^(user|execution):(.+)$/.exec(s || '');
     if (!m) return fmt(s);
-    var sp = el('span', null, m[1] === 'user' ? 'User ' : 'AI execution ');
+    var sp = el('span'); sp.appendChild(ui(m[1] === 'user' ? 'User' : 'AI execution')); sp.appendChild(document.createTextNode(' '));
     sp.appendChild(el('bdi', 'identifier', m[2])); return sp;
   }
   function loadKtp() {
     var st = $('aic-ktp-status').value;
     return api('/knowledge-transfer/packages?limit=25&offset=' + ktpOffset + (st ? '&status=' + encodeURIComponent(st) : '')).then(function (d) {
       var tb = $('aic-ktp'); tb.textContent = ''; var items = d.items || [];
-      if (!items.length) row(tb, [st ? 'No package with this status.' : 'No packages yet. They arrive from AI jobs run with the ktp_v1 output contract.', '', '', '', '', '']);
+      if (!items.length) row(tb, [ui(st ? 'No package with this status.' : 'No packages yet. They arrive from AI jobs run with the ktp_v1 output contract.'), '', '', '', '', '']);
       items.forEach(function (x) {
-        var c = ktpCounts(x), b = el('button', 'btn btn--quiet', 'Verdicts'); b.type = 'button'; b.onclick = function () { showKtp(x.id); };
-        row(tb, [new Date(x.created_at).toLocaleString(), x.job_key ? x.job_key + (x.item_key ? ' / ' + x.item_key : '') : ktpFrom(x.submitted_by),
-          badge(x.status.replace(/_/g, ' '), KTP_BADGE[x.status]), c.accepted, c.outcomes, b]);
+        var c = ktpCounts(x), b = el('button', 'btn btn--quiet'); b.appendChild(ui('Verdicts')); b.type = 'button'; b.onclick = function () { showKtp(x.id); };
+        var sb = badge('', KTP_BADGE[x.status]); if (KTP_STATUS[x.status]) sb.appendChild(ui(KTP_STATUS[x.status])); else sb.appendChild(el('bdi', null, x.status));
+        row(tb, [AIOL_I18N.set(el('span'), '{d}', { d: { date: x.created_at } }), x.job_key ? x.job_key + (x.item_key ? ' / ' + x.item_key : '') : ktpFrom(x.submitted_by),
+          sb, c.accepted, c.outcomes, b]);
       });
       var total = d.total || 0, end = Math.min(ktpOffset + items.length, total);
-      $('aic-ktp-info').textContent = total ? (ktpOffset + 1) + '–' + end + ' of ' + total : '';
+      AIOL_I18N.set($('aic-ktp-info'), total ? '{from}–{to} of {total}' : '', { from: ktpOffset + 1, to: end, total: total });
       $('aic-ktp-prev').disabled = ktpOffset === 0; $('aic-ktp-next').disabled = end >= total;
     });
   }
@@ -11738,12 +11810,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function loadAll() {
     status('Loading…');
     Promise.all([loadResources(), loadRouting(), loadDiscovery(), loadKtp(),
-      api('/ai-center/memory/semantic-backend').then(function (w) { $('aic-walrus').textContent = 'Walrus: ' + w.status + ' — ' + w.detail; })])
+      api('/ai-center/memory/semantic-backend').then(function (w) { AIOL_I18N.set($('aic-walrus'), 'Walrus: {status} — {detail}', { status: w.status, detail: w.detail }); })])
       .then(function () { status(''); }).catch(function (e) { status('Could not load: {error}', { error: e.message }); });
   }
   function connected(d) {
     L = { base: d.base, token: d.token };
-    AIOL_I18N.set($('aic-conn-note'), 'Connected to {base}.', { base: L.base }); $('aic-connect').hidden = true; $('aic-body').hidden = false; loadAll();
+    AIOL_I18N.set($('aic-conn-note'), 'Connected to {base}.', { base: L.base }); $('aic-connect').hidden = true; $('aic-body').hidden = false;
+    role = null;
+    (window.AIOL_CONNECTION_ROLE ? window.AIOL_CONNECTION_ROLE() : Promise.resolve(null)).then(function (r) { role = r; }, function () { role = null; }).then(loadAll);
   }
   document.addEventListener('aiol:live', function (e) { if (e.detail) connected(e.detail); });
   $('aic-connect').addEventListener('submit', function (e) { e.preventDefault();
@@ -11775,7 +11849,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         f.elements.capability_source.value = m.capability_source || ''; f.elements.context_window.focus(); };
       var rate = el('span'); [m.rpm_limit, m.tpm_limit].forEach(function (x, i) { if (i) rate.appendChild(document.createTextNode(' / ')); var c = val(x); rate.appendChild(c instanceof Node ? c : el('bdi', null, c)); });
       var source = !m.capability_source ? ui('Unknown') : SOURCE_LABEL[m.capability_source] ? ui(SOURCE_LABEL[m.capability_source]) : m.capability_source;
-      row(tb, [m.name, name[m.provider_id] || '—', val(m.context_window), val(m.max_input_tokens), val(m.max_output_tokens), rate, source, edit]);
+      var acts = el('span', 'aic-actions'); acts.appendChild(edit);
+      if (canDelete()) acts.appendChild(delButton('Delete', 'Delete model {name}? This cannot be undone.', 'Deleted model {name}.', { name: m.name }, '/ai-center/models/' + m.id));
+      row(tb, [m.name, name[m.provider_id] || '—', val(m.context_window), val(m.max_input_tokens), val(m.max_output_tokens), rate, source, acts]);
     });
   }
   $('aic-add-model').addEventListener('submit', function (e) { e.preventDefault(); var f = new FormData(e.target);
@@ -11798,7 +11874,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   $('aic-set-credential').addEventListener('submit', function (e) { e.preventDefault(); var d = formJson(e.target); var id = d.account_id; if (!id || !d.secret) { status('Account and secret are required.'); return; }
     api('/ai-center/accounts/' + id + '/credential', { method: 'PUT', json: { secret: d.secret } }).then(function () { e.target.reset(); status('Credential saved (encrypted; it will not be shown again).'); loadResources(); }).catch(failed); });
   $('aic-job-lookup').addEventListener('submit', function (e) { e.preventDefault(); var k = formJson(e.target).job_key; if (k) openJob(k); });
-  $('aic-import-seed').addEventListener('click', function () { api('/ai-center/discovery/import-seed', { method: 'POST' }).then(function (r) { status('Imported: ' + JSON.stringify(r)); discOffset = 0; loadDiscovery(); }).catch(failed); });
+  $('aic-import-seed').addEventListener('click', function () { api('/ai-center/discovery/import-seed', { method: 'POST' }).then(function (r) {
+    status('Imported {inserted} new, {present} already present.', { inserted: r.inserted, present: r.already_present }); discOffset = 0; loadDiscovery(); }).catch(failed); });
   $('aic-disc-status').addEventListener('change', function () { discOffset = 0; loadDiscovery(); });
   $('aic-disc-prev').addEventListener('click', function () { discOffset = Math.max(0, discOffset - 25); loadDiscovery(); });
   $('aic-disc-next').addEventListener('click', function () { discOffset += 25; loadDiscovery(); });
@@ -11983,42 +12060,46 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   /* ═══════════════════════════════════════════════
      AI CENTER — AGENT NETWORK TAB
   ═══════════════════════════════════════════════ */
+  // Agent states shown with a label; anything else as sent (9E-2).
+  var AGENT_STATUS = { draft: 'Draft', active: 'Active', disabled: 'Disabled' };
+  function agentBadge(s) { var b=el('span','badge '+(BADGES[s]||'badge--unknown')); if(AGENT_STATUS[s]) AIOL_I18N.set(b, AGENT_STATUS[s]); else b.appendChild(el('bdi',null,v(s))); return b; }
   function loadAgents() {
     if(!live()) return;
     api('/agent-network/agents?limit=50').then(function(r){
       var slot=$('aic-agents-list'); if(!slot) return; slot.textContent='';
-      if(!r.items||!r.items.length){ slot.appendChild(el('p','aic-empty','No agents registered. Create agents via the API (POST /api/v1/agent-network/agents).')); return; }
+      if(!r.items||!r.items.length){ var none=slot.appendChild(el('p','aic-empty')); AIOL_I18N.set(none, 'No agents registered. Create agents via the API (POST /api/v1/agent-network/agents).'); return; }
       var w=el('div','table-wrap'),tbl=el('table','table'),h=el('thead'),hr=el('tr');
-      ['Name','Type','Status','Protocol','Capabilities'].forEach(function(c){var th=el('th',null,c);th.scope='col';hr.appendChild(th);});
+      ['Name','Type','Status','Protocol','Capabilities'].forEach(function(c){var th=el('th');AIOL_I18N.set(th,c);th.scope='col';hr.appendChild(th);});
       h.appendChild(hr); tbl.appendChild(h); var bd=el('tbody');
       r.items.forEach(function(a){
         var tr=el('tr');
         [a.name, a.agent_type, null, a.protocol, (a.capabilities||[]).join(', ')].forEach(function(c,i){
           var td=el('td'); td.setAttribute('data-label',['Name','Type','Status','Protocol','Capabilities'][i]);
-          if(i===2){ td.appendChild(badge(a.status)); } else { var b=el('bdi'); b.textContent=v(c); td.appendChild(b); }
+          if(i===2){ td.appendChild(agentBadge(a.status)); } else { var b=el('bdi'); b.textContent=v(c); td.appendChild(b); }
           tr.appendChild(td); });
         bd.appendChild(tr); });
       tbl.appendChild(bd); w.appendChild(tbl); slot.appendChild(w);
-    }).catch(function(e){ var s=$('aic-agents-list'); if(s) s.textContent=e.message; });
+    }).catch(function(e){ var s=$('aic-agents-list'); if(s) AIOL_I18N.set(s, 'Could not load: {error}', { error: e.message }); });
   }
 
+  function when(iso){ return iso ? AIOL_I18N.set(el('span'), '{d}', { d: { date: iso } }) : null; }
   if($('aic-session-form')){
     $('aic-session-form').addEventListener('submit',function(e){
       e.preventDefault(); var sid=$('aic-session-id').value.trim(); var out=$('aic-session-view'); out.textContent='';
-      if(!sid||!live()){ out.textContent=live()?'Enter a session ID.':'Connect to AI Core first.'; return; }
+      if(!sid||!live()){ AIOL_I18N.set(out, live()?'Enter a session ID.':'Connect to AI Core first.'); return; }
       Promise.all([api('/agent-network/sessions/'+sid), api('/agent-network/sessions/'+sid+'/tasks'),
                    api('/agent-network/sessions/'+sid+'/handoffs'), api('/agent-network/sessions/'+sid+'/messages')]).then(function(r){
-        out.appendChild(el('p',null,'Goal: '+v(r[0].goal)+' · status '+r[0].status));
-        function tbl(title, cols, rows, get){ out.appendChild(el('h4',null,title+' ('+rows.length+')'));
-          if(!rows.length){ out.appendChild(el('p','aic-empty','None.')); return; }
+        var head=out.appendChild(el('p')); AIOL_I18N.set(head, 'Goal: {goal} · status {status}', { goal: r[0].goal, status: r[0].status });
+        function tbl(title, cols, rows, get){ var h4=out.appendChild(el('h4')); AIOL_I18N.set(h4, title, { n: rows.length });
+          if(!rows.length){ var none=out.appendChild(el('p','aic-empty')); AIOL_I18N.set(none, 'None.'); return; }
           var w=el('div','table-wrap'),t=el('table','table'),h=el('thead'),hr=el('tr');
-          cols.forEach(function(c){var th=el('th',null,c);th.scope='col';hr.appendChild(th);}); h.appendChild(hr); t.appendChild(h);
-          var b=el('tbody'); rows.forEach(function(x){ var tr=el('tr'); get(x).forEach(function(c,i){ var td=el('td'); td.setAttribute('data-label',cols[i]); var bd=el('bdi'); bd.textContent=v(c); td.appendChild(bd); tr.appendChild(td); }); b.appendChild(tr); });
+          cols.forEach(function(c){var th=el('th');AIOL_I18N.set(th,c);th.scope='col';hr.appendChild(th);}); h.appendChild(hr); t.appendChild(h);
+          var b=el('tbody'); rows.forEach(function(x){ var tr=el('tr'); get(x).forEach(function(c,i){ var td=el('td'); td.setAttribute('data-label',cols[i]); if(c instanceof Node){ td.appendChild(c); } else { var bd=el('bdi'); bd.textContent=v(c); td.appendChild(bd); } tr.appendChild(td); }); b.appendChild(tr); });
           t.appendChild(b); w.appendChild(t); out.appendChild(w); }
-        tbl('Tasks',['Task','Type','Status','AI executions'],r[1],function(x){return [x.task_key,x.task_type,x.status,(x.ai_execution_ids||[]).length];});
-        tbl('Handoffs',['From','To','Reason','Status'],r[2],function(x){return [x.from_agent_id,x.to_agent_id,x.reason,x.status];});
-        tbl('Messages',['Type','Status','Delivered','Acknowledged'],r[3],function(x){return [x.type,x.status,x.delivered_at?new Date(x.delivered_at).toLocaleString():null,x.acknowledged_at?new Date(x.acknowledged_at).toLocaleString():null];});
-      }).catch(function(err){ out.textContent='Could not load: '+err.message; });
+        tbl('Tasks ({n})',['Task','Type','Status','AI executions'],r[1],function(x){return [x.task_key,x.task_type,x.status,(x.ai_execution_ids||[]).length];});
+        tbl('Handoffs ({n})',['From','To','Reason','Status'],r[2],function(x){return [x.from_agent_id,x.to_agent_id,x.reason,x.status];});
+        tbl('Messages ({n})',['Type','Status','Delivered','Acknowledged'],r[3],function(x){return [x.type,x.status,when(x.delivered_at),when(x.acknowledged_at)];});
+      }).catch(function(err){ AIOL_I18N.set(out, 'Could not load: {error}', { error: err.message }); });
     });
   }
 
@@ -12049,7 +12130,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return fetch(L.base + '/api/v1' + path, { method: method || 'GET', headers: Object.assign({ Authorization: 'Bearer ' + L.token }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) throw new Error((b.error && b.error.message) || ('HTTP ' + r.status)); return b; }); });
   }
-  function note(kind, text) { var p = document.createElement('p'); p.className = 'callout' + (kind === 'error' ? ' callout--danger' : ''); p.textContent = text; log.insertBefore(p, log.firstChild); }
+  // Every message is a template, so the log follows the language switch (9E-2).
+  function note(kind, tpl, args) { var p = document.createElement('p'); p.className = 'callout' + (kind === 'error' ? ' callout--danger' : ''); AIOL_I18N.set(p, tpl, args); log.insertBefore(p, log.firstChild); }
   function remember(key, val) { if (!val) return; box.querySelectorAll('[data-remember="' + key + '"]').forEach(function (i) { i.value = val; }); }
   function fill() {
     if (!live()) return;
@@ -12061,38 +12143,38 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       box.querySelectorAll('select[data-fill]').forEach(function (sel) {
         var keep = Array.prototype.map.call(sel.selectedOptions, function (o) { return o.value; });
         sel.textContent = '';
-        if (sel.hasAttribute('data-optional') || !sets[sel.getAttribute('data-fill')].length) { var o0 = document.createElement('option'); o0.value = ''; o0.textContent = sets[sel.getAttribute('data-fill')].length ? 'None' : 'Nothing registered yet'; sel.appendChild(o0); }
+        if (sel.hasAttribute('data-optional') || !sets[sel.getAttribute('data-fill')].length) { var o0 = document.createElement('option'); o0.value = ''; AIOL_I18N.set(o0, sets[sel.getAttribute('data-fill')].length ? 'None' : 'Nothing registered yet'); sel.appendChild(o0); }
         sets[sel.getAttribute('data-fill')].forEach(function (x) { var o = document.createElement('option'); o.value = x[0]; o.textContent = x[1]; if (keep.indexOf(x[0]) >= 0) o.selected = true; sel.appendChild(o); });
       });
-    }).catch(function (e) { note('error', 'Could not load lists: ' + e.message); });
+    }).catch(function (e) { note('error', 'Could not load lists: {error}', { error: e.message }); });
   }
   function val(f, n) { var el = f.elements[n]; return el ? el.value.trim() : ''; }
   var ACTIONS = {
     'create-agent': function (f) { return api('/agent-network/agents', 'POST', { name: val(f, 'name'), agent_type: val(f, 'agent_type'),
         capabilities: val(f, 'capabilities') ? val(f, 'capabilities').split(',').map(function (x) { return x.trim(); }).filter(Boolean) : [],
         allowed_ai_accounts: Array.prototype.map.call(f.elements.allowed_ai_accounts.selectedOptions, function (o) { return o.value; }).filter(Boolean) })
-        .then(function (a) { f.reset(); fill(); return 'Agent registered: ' + a.name + ' (' + a.id + ')'; }); },
+        .then(function (a) { f.reset(); fill(); return ['Agent registered: {name} ({id})', { name: a.name, id: a.id }]; }); },
     'bind-memory': function (f) { return api('/agent-network/agents/' + val(f, 'agent_id') + '/memory-bindings', 'PUT', { memory_profile_id: val(f, 'memory_profile_id'), access_level: val(f, 'access_level') })
-        .then(function () { return 'Memory access granted (' + val(f, 'access_level') + ').'; }); },
+        .then(function () { return ['Memory access granted ({level}).', { level: val(f, 'access_level') }]; }); },
     'create-session': function (f) { var b = { session_key: val(f, 'session_key'), goal: val(f, 'goal') || null }; if (val(f, 'memory_profile_id')) b.memory_profile_id = val(f, 'memory_profile_id');
-        return api('/agent-network/sessions', 'POST', b).then(function (s) { remember('session', s.id); return 'Session started: ' + s.id; }); },
+        return api('/agent-network/sessions', 'POST', b).then(function (s) { remember('session', s.id); return ['Session started: {id}', { id: s.id }]; }); },
     'create-task': function (f) { return api('/agent-network/sessions/' + val(f, 'session_id') + '/tasks', 'POST', { task_type: val(f, 'task_type'), task_key: val(f, 'task_key') })
-        .then(function (t) { remember('task', t.id); return 'Task added: ' + t.id + ' (' + t.status + ')'; }); },
+        .then(function (t) { remember('task', t.id); return ['Task added: {id} ({status})', { id: t.id, status: t.status }]; }); },
     'run-task': function (f) { var b = { agent_id: val(f, 'agent_id'), routing_policy_id: val(f, 'routing_policy_id'), prompt: val(f, 'prompt') }; if (val(f, 'handoff_id')) b.handoff_id = val(f, 'handoff_id');
         return api('/agent-network/sessions/' + val(f, 'session_id') + '/tasks/' + val(f, 'task_id') + '/run', 'POST', b)
-          .then(function (r) { return 'Task ' + r.status + (r.stop_reason ? ' (' + r.stop_reason + ')' : '') + ' — ' + r.ai_execution_ids.length + ' AI execution(s): ' + (r.ai_execution_ids.join(', ') || 'none'); }); },
+          .then(function (r) { return [r.stop_reason ? 'Task {status} ({reason}) — {n|AI execution|AI executions}: {ids}' : 'Task {status} — {n|AI execution|AI executions}: {ids}',             { status: r.status, reason: r.stop_reason, n: r.ai_execution_ids.length, ids: r.ai_execution_ids.join(', ') }]; }); },
     'handoff': function (f) { return api('/agent-network/sessions/' + val(f, 'session_id') + '/tasks/' + val(f, 'task_id') + '/handoff', 'POST', { from_agent_id: val(f, 'from_agent_id'), to_agent_id: val(f, 'to_agent_id') })
-        .then(function (h) { remember('handoff', h.id); return 'Handoff created: ' + h.id + ' — shared-memory checkpoint ' + (h.working_memory_id || 'none'); }); },
+        .then(function (h) { remember('handoff', h.id); return ['Handoff created: {id} — shared-memory checkpoint {checkpoint}', { id: h.id, checkpoint: h.working_memory_id }]; }); },
     'accept': function (f) { return api('/agent-network/handoffs/' + val(f, 'handoff_id') + '/accept', 'POST', { agent_id: val(f, 'agent_id') })
-        .then(function (h) { return 'Handoff ' + h.status + '. Run the next task with this agent and the handoff ID (step 5).'; }); }
+        .then(function (h) { return ['Handoff {status}. Run the next task with this agent and the handoff ID (step 5).', { status: h.status }]; }); }
   };
   box.querySelectorAll('form[data-agent-action]').forEach(function (f) {
     f.addEventListener('submit', function (e) {
       e.preventDefault();
       var missing = Array.prototype.filter.call(f.querySelectorAll('[required]'), function (i) { return !i.value.trim(); });
-      if (missing.length) { note('error', 'Fill in: ' + missing.map(function (i) { return i.closest('label').querySelector('.field__label').textContent; }).join(', ')); return; }
+      if (missing.length) { note('error', 'Fill in: {fields}', { fields: missing.map(function (i) { return i.closest('label').querySelector('.field__label').textContent; }).join(', ') }); return; } if (!live()) { note('error', 'Connect to AI Core first (Connection card above).'); return; }
       var btn = f.querySelector('button[type=submit]'); btn.disabled = true;
-      ACTIONS[f.getAttribute('data-agent-action')](f).then(function (msg) { note('ok', msg); }).catch(function (err) { note('error', err.message); }).then(function () { btn.disabled = false; });
+      ACTIONS[f.getAttribute('data-agent-action')](f).then(function (m) { note('ok', m[0], m[1]); }).catch(function (err) { note('error', '{error}', { error: err.message }); }).then(function () { btn.disabled = false; });
     });
   });
   document.addEventListener('aiol:live', fill);
@@ -12756,20 +12838,30 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   /* ---------- SSE job progress (fetch stream so the bearer header is sent) ---------- */
   var current = null;
   window.AIOL_JOB_STREAM = function (key, out, onEnd) {
-    var L = live(); if (!L || !window.ReadableStream) { out.textContent = 'Live progress unavailable.'; return; }
+    var L = live(); if (!L || !window.ReadableStream) { AIOL_I18N.set(out, 'Live progress unavailable.'); return; }
     if (current) current.abort(); var ctrl = new AbortController(); current = ctrl;
-    out.textContent = 'Connecting to live progress…';
+    AIOL_I18N.set(out, 'Connecting to live progress…');
+    var JOB_STATE = { queued: 'Queued', running: 'Running', paused: 'Paused', pause_requested: 'Pause requested', blocked: 'Blocked',
+      completed: 'Completed', failed: 'Failed', cancelled: 'Cancelled', cancel_requested: 'Cancel requested' }, last = null;
+    // A known state shows its label (translated with the template); anything else as sent.
+    function progress(d, end) {
+      var a = { state: JOB_STATE[d.status] ? AIOL_I18N.format(JOB_STATE[d.status], {}, AIOL_I18N.lang()) : d.status,
+        completed: d.completed, pending: d.pending, failed: d.failed, total: d.total, end: end };
+      if (end === undefined) AIOL_I18N.set(out, 'Live: {state} — {completed} done, {pending} pending, {failed} failed of {total}.', a);
+      else AIOL_I18N.set(out, 'Live: {state} — {completed} done, {pending} pending, {failed} failed of {total}. Stream closed ({end}).', a);
+    }
     fetch(L.base + '/api/v1/ai-center/jobs/' + encodeURIComponent(key) + '/events', { headers: { Authorization: 'Bearer ' + L.token, Accept: 'text/event-stream' }, signal: ctrl.signal })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); var rd = r.body.getReader(), dec = new TextDecoder(), buf = '';
         function pump() { return rd.read().then(function (x) { if (x.done) return; buf += dec.decode(x.value, { stream: true });
           var parts = buf.split('\n\n'); buf = parts.pop();
           parts.forEach(function (blk) { var ev = (blk.match(/^event: (.*)$/m) || [])[1], dt = (blk.match(/^data: (.*)$/m) || [])[1]; if (!ev || !dt) return;
             var d = JSON.parse(dt);
-            if (ev === 'progress') out.textContent = 'Live: ' + d.status + ' — ' + d.completed + ' done, ' + d.pending + ' pending, ' + d.failed + ' failed of ' + d.total + '.';
-            if (ev === 'end') { out.textContent += ' Stream closed (' + d.status + ').'; if (onEnd && d.status !== 'stream_timeout') setTimeout(function () {}, 0); } });
+            if (ev === 'progress') { last = d; progress(d); }
+            if (ev === 'end') { if (last) progress(last, d.status); else AIOL_I18N.set(out, 'Stream closed ({end}).', { end: d.status });
+              if (onEnd && d.status !== 'stream_timeout') setTimeout(function () {}, 0); } });
           return pump(); }); }
         return pump(); })
-      .catch(function (e) { if (e.name !== 'AbortError') out.textContent = 'Live progress unavailable: ' + e.message; });
+      .catch(function (e) { if (e.name !== 'AbortError') AIOL_I18N.set(out, 'Live progress unavailable: {error}', { error: e.message }); });
   };
   /* ---------- memory export (download only after the backend returned the file) ---------- */
   window.AIOL_EXPORT_MEMORY = function (jobKey, report) {
@@ -12778,7 +12870,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       .then(function (r) { if (!r.ok) throw new Error(r.status === 403 ? 'Only an owner or admin can export memory.' : 'HTTP ' + r.status); return r.blob(); })
       .then(function (b) { var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'memory-export' + (jobKey ? '-' + jobKey : '') + '.json';
         document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); report('Memory exported.'); })
-      .catch(function (e) { report('Export failed: ' + e.message); });
+      .catch(function (e) { report('Export failed: {error}', { error: e.message }); });
   };
 })();
 </script>
@@ -14846,7 +14938,93 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "— brand, origin, ingredients, certifications; an Offer is where it can be": "— برند، خاستگاه، ترکیبات، گواهی‌ها؛ پیشنهاد فروش جایی است که می‌توان آن را",
     "bought": "خرید",
     "— price, stock, availability. A Product can exist, fully described, with zero offers.": "— قیمت، موجودی، موجودبودن. یک محصول می‌تواند کاملاً توصیف‌شده و بدون هیچ پیشنهاد فروشی وجود داشته باشد.",
-    "Field set matches the canonical schema (MASTER_SPEC.md §26 products / §27 offers) — sku, brand, category, origin, ingredients, certifications for the product; price, currency, availability, stock, condition for each offer. Nothing here is a WooCommerce mirror; WooCommerce is one possible source that normalizes into this same shape.": "مجموعهٔ فیلدها با طرح‌وارهٔ مرجع منطبق است (\u2068MASTER_SPEC.md §26\u2069 محصولات / \u2068§27\u2069 پیشنهادهای فروش) — کد کالا، برند، دسته، خاستگاه، ترکیبات و گواهی‌ها برای محصول؛ قیمت، واحد پول، موجودبودن، موجودی و وضعیت کالا برای هر پیشنهاد فروش. هیچ چیز اینجا آینهٔ WooCommerce نیست؛ WooCommerce یکی از منبع‌های ممکن است که به همین شکل یکسان می‌شود."
+    "Field set matches the canonical schema (MASTER_SPEC.md §26 products / §27 offers) — sku, brand, category, origin, ingredients, certifications for the product; price, currency, availability, stock, condition for each offer. Nothing here is a WooCommerce mirror; WooCommerce is one possible source that normalizes into this same shape.": "مجموعهٔ فیلدها با طرح‌وارهٔ مرجع منطبق است (\u2068MASTER_SPEC.md §26\u2069 محصولات / \u2068§27\u2069 پیشنهادهای فروش) — کد کالا، برند، دسته، خاستگاه، ترکیبات و گواهی‌ها برای محصول؛ قیمت، واحد پول، موجودبودن، موجودی و وضعیت کالا برای هر پیشنهاد فروش. هیچ چیز اینجا آینهٔ WooCommerce نیست؛ WooCommerce یکی از منبع‌های ممکن است که به همین شکل یکسان می‌شود.",
+    "Delete": "حذف",
+    "Revoke credential": "باطل کردن اعتبارنامه",
+    "Delete provider {name}? This cannot be undone.": "ارائه‌دهندهٔ {name} حذف شود؟ این کار برگشت‌پذیر نیست.",
+    "Deleted provider {name}.": "ارائه‌دهندهٔ {name} حذف شد.",
+    "Revoke the credential of {label}? The account stays; calls through it stop until a new credential is set.": "اعتبارنامهٔ {label} باطل شود؟ حساب باقی می‌ماند؛ فراخوانی‌ها از طریق آن تا تنظیم اعتبارنامهٔ تازه متوقف می‌شوند.",
+    "Credential revoked for {label}.": "اعتبارنامهٔ {label} باطل شد.",
+    "Delete account {label}? Its credential will also be removed.": "حساب {label} حذف شود؟ اعتبارنامهٔ آن هم پاک می‌شود.",
+    "Deleted account {label}.": "حساب {label} حذف شد.",
+    "Delete model {name}? This cannot be undone.": "مدل {name} حذف شود؟ این کار برگشت‌پذیر نیست.",
+    "Deleted model {name}.": "مدل {name} حذف شد.",
+    "Your session expired. Please reconnect.": "نشست شما منقضی شده است. لطفاً دوباره وصل شوید.",
+    "Your role is not allowed to delete (HTTP 403).": "نقش شما اجازهٔ حذف ندارد (\u2068HTTP 403\u2069).",
+    "Move step {n} up": "انتقال گام {n} به بالا",
+    "Move step {n} down": "انتقال گام {n} به پایین",
+    "Remove step {n}": "حذف گام {n}",
+    "Paused": "متوقف‌شده",
+    "Pause requested": "توقف درخواست شده",
+    "Blocked": "مسدود",
+    "Cancel requested": "لغو درخواست شده",
+    "Pause": "توقف",
+    "Resume": "ادامه",
+    "Stop reason": "دلیل توقف",
+    "Total": "مجموع",
+    "Loading job…": "در حال بارگذاری کار…",
+    "Export this job’s memory": "خروجی گرفتن از حافظهٔ این کار",
+    "Latest handoff package": "آخرین بستهٔ تحویل",
+    "No handoff yet — the job has not switched resources.": "هنوز تحویلی نیست — کار منبعش را عوض نکرده است.",
+    "Live progress unavailable.": "پیشرفت زنده در دسترس نیست.",
+    "Connecting to live progress…": "در حال اتصال به پیشرفت زنده…",
+    "Live: {state} — {completed} done, {pending} pending, {failed} failed of {total}.": "زنده: {state} — از {total} مورد، {completed} انجام‌شده، {pending} در انتظار، {failed} ناموفق.",
+    "Live: {state} — {completed} done, {pending} pending, {failed} failed of {total}. Stream closed ({end}).": "زنده: {state} — از {total} مورد، {completed} انجام‌شده، {pending} در انتظار، {failed} ناموفق. جریان بسته شد ({end}).",
+    "Stream closed ({end}).": "جریان بسته شد ({end}).",
+    "Live progress unavailable: {error}": "پیشرفت زنده در دسترس نیست: {error}",
+    "Memory exported.": "از حافظه خروجی گرفته شد.",
+    "Export failed: {error}": "خروجی گرفتن ناموفق بود: {error}",
+    "Nothing here yet. Import the initial discovery list.": "هنوز چیزی اینجا نیست. فهرست اولیهٔ کشف را وارد کنید.",
+    "New claim": "ادعای تازه",
+    "Duplicate": "تکراری",
+    "Variant": "گونهٔ دیگر",
+    "No new evidence": "بدون شاهد تازه",
+    "{n} of {total}": "{n} از {total}",
+    "Package {id}": "بستهٔ {id}",
+    "Not used: {reason}": "استفاده نشد: {reason}",
+    "Rejected — {reason}": "رد شد — {reason}",
+    "Accepted": "پذیرفته شد",
+    "Accepted — {evidence} new evidence, {links} new links": "پذیرفته شد — {evidence} شاهد تازه، {links} پیوند تازه",
+    "Evidence {index} rejected: {code}": "شاهد {index} رد شد: {code}",
+    "The package carried no claims.": "این بسته هیچ ادعایی نداشت.",
+    "Open questions": "پرسش‌های باز",
+    "Gaps": "شکاف‌ها",
+    "Unknown entities (candidates)": "موجودیت‌های ناشناخته (نامزدها)",
+    "Conflicts recorded": "تعارض‌های ثبت‌شده",
+    "Could not load the package: {error}": "بارگذاری بسته ممکن نشد: {error}",
+    "User": "کاربر",
+    "AI execution": "اجرای هوش مصنوعی",
+    "No package with this status.": "هیچ بسته‌ای با این وضعیت نیست.",
+    "No packages yet. They arrive from AI jobs run with the ktp_v1 output contract.": "هنوز هیچ بسته‌ای نیست. بسته‌ها از کارهای هوش مصنوعی می‌آیند که با قرارداد خروجی \u2068ktp_v1\u2069 اجرا شوند.",
+    "Verdicts": "رأی‌ها",
+    "Walrus: {status} — {detail}": "Walrus (حافظهٔ معنایی): {status} — {detail}",
+    "No agents registered. Create agents via the API (POST /api/v1/agent-network/agents).": "هیچ عاملی ثبت نشده است. عامل‌ها را از طریق API بسازید (\u2068POST /api/v1/agent-network/agents\u2069).",
+    "Protocol": "پروتکل",
+    "Capabilities": "توانایی‌ها",
+    "Enter a session ID.": "شناسهٔ یک نشست را وارد کنید.",
+    "Connect to AI Core first.": "ابتدا به AI Core وصل شوید.",
+    "Goal: {goal} · status {status}": "هدف: {goal} · وضعیت {status}",
+    "Tasks ({n})": "کارها ({n})",
+    "Handoffs ({n})": "تحویل‌ها ({n})",
+    "Messages ({n})": "پیام‌ها ({n})",
+    "None.": "هیچ.",
+    "Task": "کار",
+    "To": "به",
+    "Reason": "دلیل",
+    "Delivered": "تحویل‌شده",
+    "Acknowledged": "تأییدشده",
+    "Connect to AI Core first (Connection card above).": "ابتدا به AI Core وصل شوید (کارت اتصال در بالا).",
+    "Nothing registered yet": "هنوز چیزی ثبت نشده",
+    "Could not load lists: {error}": "بارگذاری فهرست‌ها ممکن نشد: {error}",
+    "Agent registered: {name} ({id})": "عامل ثبت شد: {name} ({id})",
+    "Memory access granted ({level}).": "دسترسی به حافظه داده شد ({level}).",
+    "Session started: {id}": "نشست آغاز شد: {id}",
+    "Task added: {id} ({status})": "کار افزوده شد: {id} ({status})",
+    "Task {status} ({reason}) — {n|AI execution|AI executions}: {ids}": "کار {status} ({reason}) — {n} اجرای هوش مصنوعی: {ids}",
+    "Task {status} — {n|AI execution|AI executions}: {ids}": "کار {status} — {n} اجرای هوش مصنوعی: {ids}",
+    "Handoff created: {id} — shared-memory checkpoint {checkpoint}": "تحویل ساخته شد: {id} — نقطهٔ بازبینی حافظهٔ مشترک {checkpoint}",
+    "Handoff {status}. Run the next task with this agent and the handoff ID (step 5).": "تحویل {status}. کار بعدی را با این عامل و شناسهٔ تحویل اجرا کنید (گام ۵).",
+    "Fill in: {fields}": "پر کنید: {fields}"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [
