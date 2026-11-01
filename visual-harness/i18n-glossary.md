@@ -1236,3 +1236,45 @@ Terms for AI Visibility, its full report and AI access. Platform, agent and vend
 | means the header matched a published signature; | یعنی سرآیند با امضایی منتشرشده منطبق شد؛ |
 | means a weaker pattern matched; | یعنی الگویی ضعیف‌تر منطبق شد؛ |
 | would require reverse-DNS or published-IP confirmation and is not built, so nothing in this product can display it. Blocking by header therefore stops honest agents and does not stop dishonest ones — that is a real limit of this control and is stated here rather than in a footnote. | به تأیید reverse-DNS یا IP منتشرشده نیاز دارد و ساخته نشده است، پس هیچ چیز در این محصول نمی‌تواند آن را نشان دهد. بنابراین مسدود کردن بر پایهٔ سرآیند عامل‌های درستکار را متوقف می‌کند و نادرستکاران را نه — این محدودیتی واقعی در این کنترل است و به‌جای پانویس، همین‌جا گفته شده است. |
+
+## Products (Step 11)
+
+Terms for the Products screen. Product names, SKUs, categories and origins are shown as sent; enum values without a label are shown as sent.
+
+| English | Persian |
+|---|---|
+| Products (AI Core) | محصولات (AI Core) |
+| {from}–{to} of {total\|product\|products}. | {from}–{to} از {total} محصول. |
+| No products yet. | هنوز هیچ محصولی نیست. |
+| Not linked | پیوند نشده |
+| Linked | پیوندشده |
+| Offers | پیشنهادهای فروش |
+| Not tracked | پیگیری نمی‌شود |
+| Could not load the offers ({error}). | بارگذاری پیشنهادهای فروش ممکن نشد ({error}). |
+| Could not load products ({error}). | بارگذاری محصولات ممکن نشد ({error}). |
+| No offers yet. A product can be fully described with no offer. | هنوز هیچ پیشنهاد فروشی نیست. یک محصول می‌تواند بدون هیچ پیشنهاد فروشی کامل توصیف شود. |
+| Offers for this product | پیشنهادهای فروش این محصول |
+| Products, one row per SKU family | محصولات، یک ردیف برای هر خانوادهٔ کد کالا |
+| Price | قیمت |
+| Availability | موجودبودن |
+| Stock | موجودی انبار |
+| Condition | وضعیت کالا |
+| Origin | خاستگاه |
+| SKU | کد کالا |
+| Brand | برند |
+| Entered here | واردشده در اینجا |
+| WooCommerce sync | همگام‌سازی WooCommerce |
+| In stock | موجود |
+| Out of stock | ناموجود |
+| Pre-order | پیش‌سفارش |
+| Backorder | سفارش معوق |
+| Discontinued | توقف‌شده |
+| New | جدید |
+| Used | کارکرده |
+| Refurbished | بازسازی‌شده |
+| Product identity and commercial Offer are kept separate on purpose (DEC-0006): a Product is what it | هویت محصول و پیشنهاد فروش تجاری عمداً جدا نگه داشته شده‌اند (DEC-0006): محصول آن چیزی است که |
+| is | هست |
+| — brand, origin, ingredients, certifications; an Offer is where it can be | — برند، خاستگاه، ترکیبات، گواهی‌ها؛ پیشنهاد فروش جایی است که می‌توان آن را |
+| bought | خرید |
+| — price, stock, availability. A Product can exist, fully described, with zero offers. | — قیمت، موجودی، موجودبودن. یک محصول می‌تواند کاملاً توصیف‌شده و بدون هیچ پیشنهاد فروشی وجود داشته باشد. |
+| Field set matches the canonical schema (MASTER_SPEC.md §26 products / §27 offers) — sku, brand, category, origin, ingredients, certifications for the product; price, currency, availability, stock, condition for each offer. Nothing here is a WooCommerce mirror; WooCommerce is one possible source that normalizes into this same shape. | مجموعهٔ فیلدها با طرح‌وارهٔ مرجع منطبق است (MASTER_SPEC.md §26 محصولات / §27 پیشنهادهای فروش) — کد کالا، برند، دسته، خاستگاه، ترکیبات و گواهی‌ها برای محصول؛ قیمت، واحد پول، موجودبودن، موجودی و وضعیت کالا برای هر پیشنهاد فروش. هیچ چیز اینجا آینهٔ WooCommerce نیست؛ WooCommerce یکی از منبع‌های ممکن است که به همین شکل یکسان می‌شود. |

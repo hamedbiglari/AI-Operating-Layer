@@ -2921,6 +2921,8 @@ body[data-live="on"] #screen-knowledge-detail > .breadcrumbs, body[data-live="on
 .vis-agent__meta { color: var(--text-muted); font-size: var(--text-sm); }
 .vis-detail { margin-top: var(--space-4); }
 .vis-question, .vis-answer { white-space: pre-wrap; }
+.prod-bar { margin-block-end: var(--space-4); }
+.prod-bar .field { max-width: 16rem; }
 .live-panel--compact > .live-note { margin: 0; flex: 1 1 18rem; color: var(--text-muted); font-size: var(--text-sm); }
 .live-panel--compact > :not(.card__title):not(.live-note):not(.live-toggle) { flex: 1 0 100%; }
 .live-hint { grid-column: 1 / -1; margin: 0; color: var(--text-muted); font-size: var(--text-sm); }
@@ -6328,11 +6330,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 <section class="screen" id="screen-products" aria-labelledby="h-products">
   <div class="page-header">
     <div><h1 id="h-products"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-1.2 11.1A2 2 0 0 1 16.8 21H7.2a2 2 0 0 1-2-1.9zM8.5 8V6a3.5 3.5 0 0 1 7 0v2"/></svg> Products</h1></div>
-    <div class="page-actions"><button class="btn btn--primary"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New product</button></div>
+    <div class="page-actions" data-debt-hidden="V5-products-create-ui"><button class="btn btn--primary"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New product</button></div>
   </div>
   <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Product identity and commercial Offer are kept separate on purpose (DEC-0006): a Product is what it <em>is</em> — brand, origin, ingredients, certifications; an Offer is where it can be <em>bought</em> — price, stock, availability. A Product can exist, fully described, with zero offers.</p></div></div>
 
-  <div class="toolbar" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;margin-block-end:var(--space-4)">
+  <div class="toolbar" data-debt-hidden="V5-products-search" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;margin-block-end:var(--space-4)">
     <label style="flex:1 1 260px;min-width:200px">
       <span class="visually-hidden">Search products</span>
       <input type="search" placeholder="Search by name or SKU…" style="width:100%;font:inherit;padding:8px 12px;min-height:36px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text)">
@@ -6343,7 +6345,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     <caption class="visually-hidden">Products, one row per SKU family</caption>
     <thead><tr>
       <th scope="col">Product</th><th scope="col">Category</th><th scope="col">Origin</th>
-      <th scope="col">Knowledge</th><th scope="col">Offers</th><th scope="col">Availability</th><th scope="col">Status</th>
+      <th scope="col">Knowledge</th><th scope="col" data-debt-hidden="V5-products-offer-summary">Offers</th><th scope="col" data-debt-hidden="V5-products-offer-summary">Availability</th><th scope="col">Status</th>
     </tr></thead>
     <tbody>
     <tr>
@@ -6351,8 +6353,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <td data-label="Category"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">گیاهان دارویی سنتی</span></bdi></td>
       <td data-label="Origin"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">خراسان جنوبی، ایران</span></bdi></td>
       <td data-label="Knowledge"><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
-      <td data-label="Offers" class="num">1</td>
-      <td data-label="Availability"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>In stock</span></span></td>
+      <td data-label="Offers" data-debt-hidden="V5-products-offer-summary" class="num">1</td>
+      <td data-label="Availability" data-debt-hidden="V5-products-offer-summary"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>In stock</span></span></td>
       <td data-label="Status"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Active</span></span></td>
     </tr>
     <tr>
@@ -6360,8 +6362,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <td data-label="Category"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">ادویه و طعم‌دهنده</span></bdi></td>
       <td data-label="Origin"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">قائنات، خراسان جنوبی</span></bdi></td>
       <td data-label="Knowledge"><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
-      <td data-label="Offers" class="num">2</td>
-      <td data-label="Availability"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>In stock</span></span></td>
+      <td data-label="Offers" data-debt-hidden="V5-products-offer-summary" class="num">2</td>
+      <td data-label="Availability" data-debt-hidden="V5-products-offer-summary"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>In stock</span></span></td>
       <td data-label="Status"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Active</span></span></td>
     </tr>
     <tr>
@@ -6369,8 +6371,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <td data-label="Category"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">روغن‌های گیاهی</span></bdi></td>
       <td data-label="Origin"><bdi lang="fa" dir="rtl"><span lang="fa" dir="rtl">همدان، ایران</span></bdi></td>
       <td data-label="Knowledge"><a href="#screen-knowledge-detail"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path class="brand-lines" d="M12.00 8.80L12.00 3.60M15.04 11.01L17.90 10.08M13.88 14.59L16.47 18.15M10.12 14.59L8.83 16.37M8.96 11.01L5.34 9.84"/><circle class="brand-hub" cx="12" cy="12" r="2.6"/><circle class="brand-node" cx="12.00" cy="3.60" r="1.7"/><circle class="brand-node" cx="17.90" cy="10.08" r="1.35"/><circle class="brand-node" cx="16.47" cy="18.15" r="1.6"/><circle class="brand-node" cx="8.83" cy="16.37" r="1.2"/><circle class="brand-node" cx="5.34" cy="9.84" r="1.5"/></svg>Linked</a></td>
-      <td data-label="Offers" class="num">0</td>
-      <td data-label="Availability"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>No offer yet</span></span></td>
+      <td data-label="Offers" data-debt-hidden="V5-products-offer-summary" class="num">0</td>
+      <td data-label="Availability" data-debt-hidden="V5-products-offer-summary"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>No offer yet</span></span></td>
       <td data-label="Status"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Draft</span></span></td>
     </tr></tbody>
   </table></div>
@@ -9397,9 +9399,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-provenance': { kind: 'provenance', title: 'Provenance (AI Core)', compact: true },
     'screen-add': { kind: 'add', title: 'Add source (AI Core)', compact: true },
     'screen-visibility': { kind: 'visibility', title: 'AI visibility (AI Core)', compact: true },
-    'screen-products': { kind: 'table', title: 'Products (AI Core)', endpoint: '/products',
-      cols: [['Product', 'name'], ['SKU', 'sku'], ['Status', 'status', 'badge'], ['Category', 'category'], ['Updated', 'updated_at', 'date']],
-      detail: 'product' },
+    'screen-products': { kind: 'products', title: 'Products (AI Core)', compact: true },
     'screen-gap': { kind: 'gap', title: 'Knowledge gap (AI Core)', compact: true },
     'screen-visibility-detail': { kind: 'visibilityDetail', title: 'AI visibility report (AI Core)', compact: true },
     'screen-access': { kind: 'access', title: 'AI access (AI Core)', compact: true },
@@ -10994,6 +10994,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function visPlatform(v) { return v === 'other' ? AIOL_I18N.set(el('span'), 'Other platform') : identifier(VIS_PLATFORM[v] || v); }
   function visNum(n) { var s = el('span', 'num'); return AIOL_I18N.set(s, '{n}', { n: n }); }
   function visNA() { return el('span', 'not-available'); }
+  function visNumBox() { return el('span', 'num'); }
   // A table in its own card section; returns the tbody. Cells are nodes.
   function visTable(parent, caption, heads) {
     var wrap = parent.appendChild(el('div', 'table-wrap')), t = wrap.appendChild(el('table', 'table'));
@@ -11154,6 +11155,93 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       });
       if (!ag.items.length) visRow(p.agents, [AIOL_I18N.set(visNA(), 'No automated clients seen yet.')]);
     }, 'Could not load AI access ({error}).');
+  }
+  // Step 11 (Commerce): Products. The list is one call (GET /products, server-side status filter and
+  // pages); opening a product shows the loaded row and reads its offers (one call for that product).
+  var PRODUCT_STATUS = { draft: ['Draft', 'badge--unknown'], in_review: ['In review', 'badge--info'],
+    published: ['Published', 'badge--success'], archived: ['Archived', 'badge--unknown'] };
+  var PRODUCT_SOURCE = { merchant: 'Entered here', woocommerce: 'WooCommerce sync' };
+  var OFFER_AVAILABILITY = { in_stock: ['In stock', 'badge--success'], out_of_stock: ['Out of stock', 'badge--danger'],
+    preorder: ['Pre-order', 'badge--info'], backorder: ['Backorder', 'badge--warning'], discontinued: ['Discontinued', 'badge--unknown'] };
+  var OFFER_CONDITION = { new: 'New', used: 'Used', refurbished: 'Refurbished' };
+  function productsScreen(panel) {
+    var LIMIT = 50, st = { status: '', offset: 0 }, p = {};
+    return visScreen(panel, 'screen-products', function (body) {
+      var bar = body.appendChild(el('div', 'prod-bar')), lab = bar.appendChild(el('label', 'field'));
+      var lt = el('span', 'field__label'); AIOL_I18N.set(lt, 'Status'); lab.appendChild(lt);
+      p.status = lab.appendChild(el('select')); p.status.id = 'prod-status';
+      [['', 'All statuses'], ['draft', 'Draft'], ['in_review', 'In review'], ['published', 'Published'], ['archived', 'Archived']].forEach(function (o) {
+        var opt = el('option'); opt.value = o[0]; AIOL_I18N.set(opt, o[1]); p.status.appendChild(opt);
+      });
+      p.status.addEventListener('change', function () { st.status = p.status.value; st.offset = 0; panel.__visLoad(); });
+      var card = visCard(body, 'Products');
+      p.note = card.appendChild(el('p', 'vis-note'));
+      p.rows = visTable(card, 'Products, one row per SKU family', ['Product', 'Category', 'Origin', 'Knowledge', 'Status', '']);
+      var pg = card.appendChild(el('div', 'live-pager'));
+      p.prev = pg.appendChild(el('button', 'btn')); p.prev.type = 'button'; AIOL_I18N.set(p.prev, 'Previous');
+      p.next = pg.appendChild(el('button', 'btn')); p.next.type = 'button'; AIOL_I18N.set(p.next, 'Next');
+      p.prev.addEventListener('click', function () { st.offset = Math.max(0, st.offset - LIMIT); panel.__visLoad(); });
+      p.next.addEventListener('click', function () { st.offset += LIMIT; panel.__visLoad(); });
+      p.detail = body.appendChild(el('div', 'card vis-detail')); p.detail.id = 'prod-detail'; p.detail.tabIndex = -1;
+      return p;
+    }, function () {
+      return api('/products?limit=' + LIMIT + '&offset=' + st.offset + '&sort_by=name&sort_dir=asc' + (st.status ? '&status=' + st.status : ''));
+    }, function (p, page) {
+      p.rows.textContent = ''; p.detail.hidden = true;
+      AIOL_I18N.set(p.note, '{from}–{to} of {total|product|products}.', { from: page.items.length ? page.offset + 1 : 0, to: page.offset + page.items.length, total: page.total });
+      page.items.forEach(function (it) {
+        var name = el('span', 'vis-agent'), n = name.appendChild(el('bdi', null, it.name)); n.dir = 'auto';
+        if (it.sku) name.appendChild(el('span', 'vis-agent__meta')).appendChild(identifier(it.sku));
+        var open = el('button', 'btn btn--quiet'); AIOL_I18N.set(open, 'Open'); open.type = 'button';
+        open.setAttribute('aria-controls', 'prod-detail');
+        open.addEventListener('click', function () { productDetail(p.detail, it); });
+        visRow(p.rows, [name, prodText(it.category), prodText(it.origin), prodKnowledge(it), visBadge(PRODUCT_STATUS, it.status), open]);
+      });
+      if (!page.items.length) visRow(p.rows, [AIOL_I18N.set(visNA(), 'No products yet.')]);
+      p.prev.disabled = page.offset === 0; p.next.disabled = page.offset + page.items.length >= page.total;
+    }, 'Could not load products ({error}).');
+  }
+  function prodText(v) {
+    if (!v) return AIOL_I18N.set(visNA(), 'Not set');
+    var b = el('bdi', null, v); b.dir = 'auto'; return b;
+  }
+  function prodKnowledge(it) {
+    if (!it.knowledge_object_id) return AIOL_I18N.set(visNA(), 'Not linked');
+    var a = el('a'); a.href = '#screen-knowledge-detail?id=' + encodeURIComponent(it.knowledge_object_id); AIOL_I18N.set(a, 'Linked');
+    return a;
+  }
+  // One product, from the row already loaded; its offers are one request.
+  function productDetail(box, it) {
+    box.textContent = ''; box.hidden = false;
+    var h = box.appendChild(el('h2', 'card__title')), t = h.appendChild(el('bdi', null, it.name)); t.dir = 'auto';
+    var dl = box.appendChild(el('dl', 'kv'));
+    function fact(label, node) { AIOL_I18N.set(dl.appendChild(el('dt')), label); dl.appendChild(el('dd')).appendChild(node); }
+    fact('SKU', it.sku ? identifier(it.sku) : AIOL_I18N.set(visNA(), 'Not set'));
+    fact('Brand', prodText(it.brand));
+    fact('Category', prodText(it.category));
+    fact('Origin', prodText(it.origin));
+    fact('Status', visBadge(PRODUCT_STATUS, it.status));
+    fact('Source', visWord(el('span'), PRODUCT_SOURCE, it.provenance));
+    fact('Knowledge', prodKnowledge(it));
+    fact('Updated', AIOL_I18N.set(el('span'), '{d}', { d: { date: it.updated_at } }));
+    if (it.description) { var d = box.appendChild(el('p', 'vis-answer')).appendChild(el('bdi', null, it.description)); d.dir = 'auto'; }
+    var oh = box.appendChild(el('h3', 'vis-answer__title')); AIOL_I18N.set(oh, 'Offers');
+    var msg = box.appendChild(el('p', 'vis-note')); AIOL_I18N.set(msg, 'Loading…');
+    var rows = visTable(box, 'Offers for this product', ['Price', 'Availability', 'Stock', 'Condition']);
+    box.focus();
+    api('/products/' + encodeURIComponent(it.id) + '/offers?limit=200').then(function (page) {
+      if (box.hidden || !box.contains(msg)) return;
+      AIOL_I18N.set(msg, page.items.length ? '' : 'No offers yet. A product can be fully described with no offer.');
+      page.items.forEach(function (o) {
+        var price = o.price === null || o.price === undefined ? AIOL_I18N.set(visNA(), 'Not set')
+          : AIOL_I18N.set(visNumBox(), '{p} {c}', { p: o.price, c: o.currency || '' });
+        visRow(rows, [price, visBadge(OFFER_AVAILABILITY, o.availability),
+          o.stock_quantity === null || o.stock_quantity === undefined ? AIOL_I18N.set(visNA(), 'Not tracked') : visNum(o.stock_quantity),
+          visWord(el('span'), OFFER_CONDITION, o.condition)]);
+      });
+    }).catch(function (e) {
+      if (box.contains(msg)) AIOL_I18N.set(msg, 'Could not load the offers ({error}).', { error: e.message });
+    });
   }
   // Knowledge detail (8B): GET /knowledge/overview?id= (the object and its counts, one row) and
   // GET /knowledge/{id}/claims, in parallel — two calls, whatever the number of claims (Rule 17).
@@ -11365,6 +11453,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       else if (cfg.kind === 'visibility') visibilityScreen(panel);
       else if (cfg.kind === 'visibilityDetail') visibilityDetailScreen(panel);
       else if (cfg.kind === 'access') accessScreen(panel);
+      else if (cfg.kind === 'products') productsScreen(panel);
       else if (cfg.kind === 'knowledgeDetail') knowledgeDetailScreen(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
@@ -14722,7 +14811,42 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "A User-Agent header is a claim a request makes about itself.": "سرآیند \u2068User-Agent\u2069 ادعایی است که درخواست دربارهٔ خودش می‌کند.",
     "means the header matched a published signature;": "یعنی سرآیند با امضایی منتشرشده منطبق شد؛",
     "means a weaker pattern matched;": "یعنی الگویی ضعیف‌تر منطبق شد؛",
-    "would require reverse-DNS or published-IP confirmation and is not built, so nothing in this product can display it. Blocking by header therefore stops honest agents and does not stop dishonest ones — that is a real limit of this control and is stated here rather than in a footnote.": "به تأیید \u2068reverse-DNS\u2069 یا \u2068IP\u2069 منتشرشده نیاز دارد و ساخته نشده است، پس هیچ چیز در این محصول نمی‌تواند آن را نشان دهد. بنابراین مسدود کردن بر پایهٔ سرآیند عامل‌های درستکار را متوقف می‌کند و نادرستکاران را نه — این محدودیتی واقعی در این کنترل است و به‌جای پانویس، همین‌جا گفته شده است."
+    "would require reverse-DNS or published-IP confirmation and is not built, so nothing in this product can display it. Blocking by header therefore stops honest agents and does not stop dishonest ones — that is a real limit of this control and is stated here rather than in a footnote.": "به تأیید \u2068reverse-DNS\u2069 یا \u2068IP\u2069 منتشرشده نیاز دارد و ساخته نشده است، پس هیچ چیز در این محصول نمی‌تواند آن را نشان دهد. بنابراین مسدود کردن بر پایهٔ سرآیند عامل‌های درستکار را متوقف می‌کند و نادرستکاران را نه — این محدودیتی واقعی در این کنترل است و به‌جای پانویس، همین‌جا گفته شده است.",
+    "Products (AI Core)": "محصولات (AI Core)",
+    "{from}–{to} of {total|product|products}.": "{from}–{to} از {total} محصول.",
+    "No products yet.": "هنوز هیچ محصولی نیست.",
+    "Not linked": "پیوند نشده",
+    "Linked": "پیوندشده",
+    "Offers": "پیشنهادهای فروش",
+    "Not tracked": "پیگیری نمی‌شود",
+    "Could not load the offers ({error}).": "بارگذاری پیشنهادهای فروش ممکن نشد ({error}).",
+    "Could not load products ({error}).": "بارگذاری محصولات ممکن نشد ({error}).",
+    "No offers yet. A product can be fully described with no offer.": "هنوز هیچ پیشنهاد فروشی نیست. یک محصول می‌تواند بدون هیچ پیشنهاد فروشی کامل توصیف شود.",
+    "Offers for this product": "پیشنهادهای فروش این محصول",
+    "Products, one row per SKU family": "محصولات، یک ردیف برای هر خانوادهٔ کد کالا",
+    "Price": "قیمت",
+    "Availability": "موجودبودن",
+    "Stock": "موجودی انبار",
+    "Condition": "وضعیت کالا",
+    "Origin": "خاستگاه",
+    "SKU": "کد کالا",
+    "Brand": "برند",
+    "Entered here": "واردشده در اینجا",
+    "WooCommerce sync": "همگام‌سازی WooCommerce",
+    "In stock": "موجود",
+    "Out of stock": "ناموجود",
+    "Pre-order": "پیش‌سفارش",
+    "Backorder": "سفارش معوق",
+    "Discontinued": "توقف‌شده",
+    "New": "جدید",
+    "Used": "کارکرده",
+    "Refurbished": "بازسازی‌شده",
+    "Product identity and commercial Offer are kept separate on purpose (DEC-0006): a Product is what it": "هویت محصول و پیشنهاد فروش تجاری عمداً جدا نگه داشته شده‌اند (\u2068DEC-0006\u2069): محصول آن چیزی است که",
+    "is": "هست",
+    "— brand, origin, ingredients, certifications; an Offer is where it can be": "— برند، خاستگاه، ترکیبات، گواهی‌ها؛ پیشنهاد فروش جایی است که می‌توان آن را",
+    "bought": "خرید",
+    "— price, stock, availability. A Product can exist, fully described, with zero offers.": "— قیمت، موجودی، موجودبودن. یک محصول می‌تواند کاملاً توصیف‌شده و بدون هیچ پیشنهاد فروشی وجود داشته باشد.",
+    "Field set matches the canonical schema (MASTER_SPEC.md §26 products / §27 offers) — sku, brand, category, origin, ingredients, certifications for the product; price, currency, availability, stock, condition for each offer. Nothing here is a WooCommerce mirror; WooCommerce is one possible source that normalizes into this same shape.": "مجموعهٔ فیلدها با طرح‌وارهٔ مرجع منطبق است (\u2068MASTER_SPEC.md §26\u2069 محصولات / \u2068§27\u2069 پیشنهادهای فروش) — کد کالا، برند، دسته، خاستگاه، ترکیبات و گواهی‌ها برای محصول؛ قیمت، واحد پول، موجودبودن، موجودی و وضعیت کالا برای هر پیشنهاد فروش. هیچ چیز اینجا آینهٔ WooCommerce نیست؛ WooCommerce یکی از منبع‌های ممکن است که به همین شکل یکسان می‌شود."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [
