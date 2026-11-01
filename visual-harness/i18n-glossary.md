@@ -1974,3 +1974,67 @@ Change and Delete on the live AI access rules (V5-access-policy-edit). Rule (ق�
 | The terms link must be a web address starting with https://. | پیوند شرایط باید یک نشانی وب باشد که با https:// شروع می‌شود. |
 | Delete this rule? Clients it matched fall back to the next rule that matches, or to Not configured. | این قاعده حذف شود؟ کلاینت‌هایی که با آن منطبق بودند به قاعدهٔ منطبق بعدی برمی‌گردند، یا به «پیکربندی‌نشده». |
 | Connect to AI Core to change access rules. | برای تغییر قاعده‌های دسترسی به AI Core وصل شوید. |
+
+## Visibility report stats (debt, priority 2)
+
+The live stats and per-day chart of #screen-visibility-detail (V5-visibility-detail-aggregates) and the sample stats and chart now shown. Observation (مشاهده) and automated request (درخواست خودکار) follow the dashboard; ADR-064 stays as written.
+
+| English | Persian |
+|---|---|
+| Platform observations | مشاهدات پلتفرم |
+| Automated requests | درخواست‌های خودکار |
+| Countries reached | کشورهای دسترسی‌یافته |
+| Mean time on page | میانگین زمان در صفحه |
+| Over time | در طول زمان |
+| Time range | بازهٔ زمانی |
+| 24 hours | ۲۴ ساعت |
+| 7 days | ۷ روز |
+| 28 days | ۲۸ روز |
+| 3 months | ۳ ماه |
+| 6 months | ۶ ماه |
+| 12 months | ۱۲ ماه |
+| 16 months | ۱۶ ماه |
+| Not measured | اندازه‌گیری نشده |
+| {m}m {s}s | {m} دقیقه {s} ثانیه |
+| {s}s | {s} ثانیه |
+| from {n\|measured view\|measured views} | از {n} بازدید اندازه‌گیری‌شده |
+| From {from} to {to}. Counts of what was stored; nothing here is estimated. | از {from} تا {to}. شمارش آنچه ذخیره شده است؛ هیچ چیز اینجا تخمینی نیست. |
+| Not counted: {n\|unclassified request\|unclassified requests} | شمرده نشده: {n} درخواست دسته‌بندی‌نشده |
+| Most requests: {country} | بیشترین درخواست: {country} |
+| No country was reported | هیچ کشوری گزارش نشد |
+| Two different sources on one timeline, each scaled to its own highest day; they are never added together. | دو منبع متفاوت روی یک خط زمانی، هر کدام نسبت به پرترین روز خودش مقیاس شده؛ هرگز با هم جمع نمی‌شوند. |
+| Platform observations and automated requests per day | مشاهدات پلتفرم و درخواست‌های خودکار در هر روز |
+| {d}: {o\|observation\|observations}, {r\|request\|requests} | {d}: {o} مشاهده، {r} درخواست |
+| 4 platforms, 28 days | ۴ پلتفرم، ۲۸ روز |
+| 11 distinct agents, 28 days | ۱۱ عامل متمایز، ۲۸ روز |
+| from 704 measured views | از ۷۰۴ بازدید اندازه‌گیری‌شده |
+| Platform observations and automated requests, last 28 days | مشاهدات پلتفرم و درخواست‌های خودکار، ۲۸ روز گذشته |
+| Two different sources, drawn on one timeline for comparison only — they are never added into a single number (ADR-064). Platform observations come from sampled prompts on specific days; automated requests are every AI/bot fetch this site recorded. | دو منبع متفاوت که فقط برای مقایسه روی یک خط زمانی رسم شده‌اند — هرگز در یک عدد واحد جمع نمی‌شوند (ADR-064). مشاهدات پلتفرم از پرسش‌های نمونه در روزهای مشخص می‌آیند؛ درخواست‌های خودکار همهٔ واکشی‌های هوش مصنوعی/ربات‌ها هستند که این سایت ثبت کرده است. |
+| Day 1: 3 observations, 58 requests | روز ۱: ۳ مشاهده، ۵۸ درخواست |
+| Day 2: 4 observations, 64 requests | روز ۲: ۴ مشاهده، ۶۴ درخواست |
+| Day 3: 2 observations, 52 requests | روز ۳: ۲ مشاهده، ۵۲ درخواست |
+| Day 4: 5 observations, 70 requests | روز ۴: ۵ مشاهده، ۷۰ درخواست |
+| Day 5: 6 observations, 74 requests | روز ۵: ۶ مشاهده، ۷۴ درخواست |
+| Day 6: 4 observations, 66 requests | روز ۶: ۴ مشاهده، ۶۶ درخواست |
+| Day 7: 7 observations, 81 requests | روز ۷: ۷ مشاهده، ۸۱ درخواست |
+| Day 8: 8 observations, 88 requests | روز ۸: ۸ مشاهده، ۸۸ درخواست |
+| Day 9: 6 observations, 79 requests | روز ۹: ۶ مشاهده، ۷۹ درخواست |
+| Day 10: 9 observations, 95 requests | روز ۱۰: ۹ مشاهده، ۹۵ درخواست |
+| Day 11: 11 observations, 103 requests | روز ۱۱: ۱۱ مشاهده، ۱۰۳ درخواست |
+| Day 12: 9 observations, 92 requests | روز ۱۲: ۹ مشاهده، ۹۲ درخواست |
+| Day 13: 12 observations, 110 requests | روز ۱۳: ۱۲ مشاهده، ۱۱۰ درخواست |
+| Day 14: 14 observations, 121 requests | روز ۱۴: ۱۴ مشاهده، ۱۲۱ درخواست |
+| Day 15: 11 observations, 107 requests | روز ۱۵: ۱۱ مشاهده، ۱۰۷ درخواست |
+| Day 16: 13 observations, 118 requests | روز ۱۶: ۱۳ مشاهده، ۱۱۸ درخواست |
+| Day 17: 15 observations, 129 requests | روز ۱۷: ۱۵ مشاهده، ۱۲۹ درخواست |
+| Day 18: 12 observations, 114 requests | روز ۱۸: ۱۲ مشاهده، ۱۱۴ درخواست |
+| Day 19: 16 observations, 132 requests | روز ۱۹: ۱۶ مشاهده، ۱۳۲ درخواست |
+| Day 20: 18 observations, 140 requests | روز ۲۰: ۱۸ مشاهده، ۱۴۰ درخواست |
+| Day 21: 15 observations, 125 requests | روز ۲۱: ۱۵ مشاهده، ۱۲۵ درخواست |
+| Day 22: 17 observations, 138 requests | روز ۲۲: ۱۷ مشاهده، ۱۳۸ درخواست |
+| Day 23: 19 observations, 148 requests | روز ۲۳: ۱۹ مشاهده، ۱۴۸ درخواست |
+| Day 24: 16 observations, 131 requests | روز ۲۴: ۱۶ مشاهده، ۱۳۱ درخواست |
+| Day 25: 20 observations, 152 requests | روز ۲۵: ۲۰ مشاهده، ۱۵۲ درخواست |
+| Day 26: 22 observations, 161 requests | روز ۲۶: ۲۲ مشاهده، ۱۶۱ درخواست |
+| Day 27: 19 observations, 144 requests | روز ۲۷: ۱۹ مشاهده، ۱۴۴ درخواست |
+| Day 28: 21 observations, 156 requests | روز ۲۸: ۲۱ مشاهده، ۱۵۶ درخواست |

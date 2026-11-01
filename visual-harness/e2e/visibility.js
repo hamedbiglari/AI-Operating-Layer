@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 /*
  * Browser checks for the Visibility screens (Step 10).
- *   Sample: the report's charts, map, live strip, stats, time tabs and
- *           exports are hidden as debt (V5-visibility-detail-aggregates);
+ *   Sample: the report's map, breakdown, live strip, time tabs and
+ *           exports stay hidden as debt (V5-visibility-detail-aggregates);
+ *           its stats and over-time chart show.
+ *   Report stats: one GET /visibility/aggregates per range (28 days on
+ *           visit; a range tab asks again); the four stats with their notes;
+ *           one chart column per day; Not measured when no time was recorded;
  *           the per-platform table (V5-visibility-platform-breakdown); on
  *           AI access the per-agent Access column and its warning
  *           (V5-access-agent-decision). The sample Edit/Change links say to
@@ -75,6 +79,11 @@ const DATA = {
       terms_url: 'https://shop.test/terms' },
     { id: 'p3', agent_id: null, actor_type: null, purpose: null, tier: 'free', specificity: 0, reason: null, terms_url: null },
   ],
+  aggregates: { days: 28, since: '2026-09-25T10:00:00Z', until: '2026-10-23T10:00:00Z', platform_observations: 9,
+    automated_requests: 120, unclassified_requests: 3, countries_reached: 2, top_country: { country: 'IR', requests: 80 },
+    requests_without_country: 5, mean_dwell_ms: 161000, dwell_samples: 704,
+    by_day: [{ day: '2026-10-21', observations: 2, requests: 40 }, { day: '2026-10-22', observations: 0, requests: 80 },
+      { day: '2026-10-23', observations: 7, requests: 0 }], by_country: [], by_actor_type: [], top_pages: [] },
   observations: [
     { id: 'o1', platform: 'chatgpt', test_type: 'brand_query', prompt: 'What is taranjabin?', response: 'A manna from Iran.',
       mentioned: 'present', cited: 'absent', recommended: 'not_checked', product_present: 'present', url_present: 'not_checked',
@@ -101,6 +110,8 @@ function installMock(data) {
     if (window.__fail && p.indexOf(window.__fail) === 0) return reply({}, 500);
     const d = window.__data;
     if (p === '/visibility/summary') return reply(d.summary);
+    const agg = p.match(/^\/visibility\/aggregates\?days=(\d+)$/);
+    if (agg) return reply(Object.assign({}, d.aggregates, { days: Number(agg[1]) }));
     if (p === '/telemetry/agents?limit=200') return page(d.agents);
     if (p === '/telemetry/access-policies?limit=200') return page(d.policies);
     if (p === '/visibility/observations?limit=50&sort_by=tested_at&sort_dir=desc') return reply({ items: d.observations, total: 9, limit: 50, offset: 0 });
@@ -146,8 +157,11 @@ function installMock(data) {
   });
 
   // Sample mode (before any connection).
-  check('sample: the report\'s seven no-backend blocks are hidden as debt',
-    await shown('#screen-visibility-detail [data-debt-hidden="V5-visibility-detail-aggregates"]'), [false, false, false, false, false, false, false]);
+  check('sample: the report\'s five no-backend blocks stay hidden as debt (exports, range tabs, live strip, map, breakdown)',
+    await shown('#screen-visibility-detail [data-debt-hidden="V5-visibility-detail-aggregates"]'), [false, false, false, false, false]);
+  check('sample: the stats and the over-time chart show', await page.evaluate(() => Array.from(document.querySelectorAll('#screen-visibility-detail > .stat-grid, #screen-visibility-detail > .card:not(.live-panel)'))
+    .filter((e) => getComputedStyle(e).display !== 'none').map((e) => (e.querySelector('.card__title') || e.querySelector('.stat__label')).textContent.trim())),
+    ['Platform observations', 'Over time']);
   check('sample: the per-platform table is hidden as debt', await shown('#screen-visibility [data-debt-hidden="V5-visibility-platform-breakdown"]'), [false]);
   check('sample: Access column (8 rows + header) and its warning hidden; no Edit/Change debt left',
     [(await shown('#screen-access [data-debt-hidden="V5-access-agent-decision"]')).filter((x) => !x).length,
@@ -162,7 +176,7 @@ function installMock(data) {
   await page.evaluate(installMock, DATA);
   await connect();
   check('connect: summary + agents, observations, policies + agents', await requests(), ['GET /visibility/summary', 'GET /telemetry/agents?limit=200',
-    'GET /visibility/observations?limit=50&sort_by=tested_at&sort_dir=desc', 'GET /telemetry/access-policies?limit=200', 'GET /telemetry/agents?limit=200']);
+    'GET /visibility/observations?limit=50&sort_by=tested_at&sort_dir=desc', 'GET /visibility/aggregates?days=28', 'GET /telemetry/access-policies?limit=200', 'GET /telemetry/agents?limit=200']);
   let v = await view('screen-visibility');
   check('visibility: the answers card (count, signals; no score)', v.cards[0], { title: 'How AI platforms answer about you',
     note: '7 observations recorded. Each signal is counted on its own; there is no combined score.',
@@ -176,9 +190,30 @@ function installMock(data) {
   // The full report: one list call; a row opens from the loaded list.
   let before = (await requests()).length;
   await go('#screen-visibility-detail');
-  check('report: one request on visit', (await requests()).slice(before), ['GET /visibility/observations?limit=50&sort_by=tested_at&sort_dir=desc']);
+  check('report: observations and aggregates on visit (28 days)', (await requests()).slice(before),
+    ['GET /visibility/observations?limit=50&sort_by=tested_at&sort_dir=desc', 'GET /visibility/aggregates?days=28']);
+  const stats = () => page.evaluate(() => {
+    const r = document.getElementById('vis-report');
+    return { tab: (r.querySelector('[role=tab][aria-selected=true]') || {}).textContent, window: r.querySelector('.vis-note').textContent,
+      stats: Array.from(r.querySelectorAll('.stat')).map((s) => [s.querySelector('.stat__label').textContent, s.querySelector('.stat__value').textContent,
+        s.querySelector('.stat__note').textContent]),
+      bars: Array.from(document.querySelectorAll('#vis-chart .vis-chart__day')).map((c) => [c.children[0].style.blockSize, c.children[1].style.blockSize]) };
+  });
+  let sv = await stats();
+  check('report: the 28-day tab, the window, the four stats with their notes', [sv.tab, sv.window, sv.stats], ['28 days',
+    'From 25 Sept 2026 to 23 Oct 2026. Counts of what was stored; nothing here is estimated.',
+    [['Platform observations', '9', ''], ['Automated requests', '120', 'Not counted: 3 unclassified requests'],
+      ['Countries reached', '2', 'Most requests: ' + iso('IR')], ['Mean time on page', '2m 41s', 'from 704 measured views']]]);
+  check('report: one chart column per day, each series scaled to its own highest day', sv.bars,
+    [['29%', '50%'], ['0%', '100%'], ['100%', '0%']]);
+  before = (await requests()).length;
+  await page.evaluate(() => { window.__data.aggregates.mean_dwell_ms = null; window.__data.aggregates.dwell_samples = 0; window.__data.aggregates.top_country = null;
+    Array.from(document.querySelectorAll('#vis-report [role=tab]')).find((t) => t.textContent === '7 days').click(); }); await settle(); await settle();
+  sv = await stats();
+  check('report: a range tab asks for that range; no time recorded = Not measured; no country = says so', [(await requests()).slice(before).filter((x) => /aggregates/.test(x)),
+    sv.tab, sv.stats[3], sv.stats[2][2]], [['GET /visibility/aggregates?days=7'], '7 days', ['Mean time on page', 'Not measured', ''], 'No country was reported']);
   v = await view('screen-visibility-detail');
-  check('report: rows (platform, question, signals, date)', [v.cards[0].note, v.cards[0].rows],
+  check('report: rows (platform, question, signals, date)', [v.cards[2].note, v.cards[2].rows],
     ['The latest 2 of 9 observations. Open one to read the question and the answer as recorded.',
       [['ChatGPT', 'What is taranjabin?', 'Present', 'Absent', 'Not checked', '20 Oct 2026', 'Open'],
         ['Other platform', 'Best saffron?', 'Absent', 'Absent', 'Absent', '21 Oct 2026', 'Open']]]);
