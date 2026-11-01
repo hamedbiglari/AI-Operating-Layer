@@ -20,7 +20,7 @@ See `website/README.md` for the full page inventory and deploy notes.
 
 Every page shares one footer: newsletter row, four link columns (one with a "New" chip), and a bottom bar
 with copyright, a status indicator and a language selector. The status reads "Website online" while the
-site runs on its own; once `site-config.js` points at Cloud Core it asks the public health endpoint and
+site runs on its own; once `site-config.js` points at AI Core it asks the public health endpoint and
 shows "All systems operational", "Some services degraded" or "Status unavailable" — never a claim it has
 not checked. The home page has a dark spotlight promotion section and the hero's knowledge sphere with
 its glowing core. Both themes (light and dark) apply to all of it.
@@ -30,7 +30,7 @@ its glowing core. Both themes (light and dark) apply to all of it.
 The dashboard prototype: one self-contained `index.html` with every screen,
 style and script inlined. No assets to resolve — open it directly in a browser.
 
-- **Uploads** into Cloud Core (documents, keyword lists, Search Console exports) all use one dropzone
+- **Uploads** into AI Core (documents, keyword lists, Search Console exports) all use one dropzone
   component: drag or browse, size check with a red error row and Retry, a progress bar, then a green
   completed row. The transfer is one function (`AIOLDropzone.transfer`) that can be swapped.
 - **Usage** (Payment screen): per-quota meters for prepaid credit, each AI account's monthly spend

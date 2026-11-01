@@ -125,7 +125,7 @@ were added.
 
 ## What this does and does not mean for the verdict
 
-**Does mean:** the package handed to a real WordPress + Cloud Core
+**Does mean:** the package handed to a real WordPress + AI Core
 deployment today would have failed in at least three visible ways
 (Findings 1–3) before a single dashboard number was ever seen. That is
 now fixed at the source level.
@@ -185,7 +185,7 @@ adds:
 * a breakdown table with Queries/Pages/Countries/Actor types/Days tabs
   (query text only, matching the GSC reference image);
 * Export CSV / Export PDF buttons, present as UI affordances only — no
-  export capability exists in this harness or in the Cloud Core API
+  export capability exists in this harness or in the AI Core API
   built so far, and nothing here claims otherwise.
 
 **A real static-checker failure was caught and fixed while building
@@ -237,7 +237,7 @@ these exactly as it already governs every other number on every other
 screen.
 
 **Still not done, stated plainly:** none of this is backed by four real
-knowledge objects in Cloud Core — no `Knowledge`/`KnowledgeObject` model
+knowledge objects in AI Core — no `Knowledge`/`KnowledgeObject` model
 work was part of Phase 13's scope (that domain was built in earlier
 phases; Phase 13 only added the AI-access and analytics layer). The
 harness now correctly *represents* what a multi-object Knowledge section
@@ -420,7 +420,7 @@ full test/mutation/E2E coverage against a live environment.
 
 **This was not implemented**, and saying so plainly is the point of this
 addendum, not a hedge: this sandbox has no network, no Postgres, no
-payment provider, no real Cloud Core to connect to, and no way to run a
+payment provider, no real AI Core to connect to, and no way to run a
 persistent backend. Writing code that *claimed* to be connected to any of
 that would violate the prompt's own repeated instruction ("Do not create
 fake backend connectivity... fake billing balances... fake subscription
@@ -574,7 +574,7 @@ gap matrix, separate admin console, real billing/entitlement backend,
 AI execution log, full test pyramid against a live environment) was
 acknowledged but not attempted here, for the same reasons recorded
 earlier in this file and in `docs/billing/BILLING_ARCHITECTURE.md`: no
-network, database, browser or real Cloud Core connection exists in this
+network, database, browser or real AI Core connection exists in this
 sandbox, and fabricating any of it would be exactly the "fake
 completion" that prompt itself prohibits at length. `FINAL PHASE 13
 STATUS: BLOCKED` — unchanged.

@@ -1,6 +1,6 @@
 <?php
 /**
- * HTTP client for Cloud Core — the ONLY place this plugin talks to Core.
+ * HTTP client for AI Core — the ONLY place this plugin talks to Core.
  *
  * Everything about error handling here exists because an adapter that
  * surfaces raw failures is useless to a merchant. `AIOL_Client` maps every
@@ -203,7 +203,7 @@ class AIOL_Client
     private function request(string $method, string $path, ?array $body = null)
     {
         if (!$this->credentials->is_configured()) {
-            return new WP_Error('not_configured', __('The plugin is not connected to Cloud Core yet.', 'ai-operating-layer'));
+            return new WP_Error('not_configured', __('The plugin is not connected to AI Core yet.', 'ai-operating-layer'));
         }
 
         $url  = $this->credentials->get_endpoint() . $path;
@@ -225,10 +225,10 @@ class AIOL_Client
 
         if (is_wp_error($response)) {
             // Note the redaction: $url is safe, but the message may not be.
-            $this->logger->error('Cloud Core unreachable', ['path' => $path, 'error' => $response->get_error_message()]);
+            $this->logger->error('AI Core unreachable', ['path' => $path, 'error' => $response->get_error_message()]);
             return new WP_Error(
                 'unavailable',
-                __('Could not reach Cloud Core. Check the URL and that the server is running.', 'ai-operating-layer')
+                __('Could not reach AI Core. Check the URL and that the server is running.', 'ai-operating-layer')
             );
         }
 
@@ -242,7 +242,7 @@ class AIOL_Client
         }
 
         $category = self::category_for($code);
-        $this->logger->error('Cloud Core returned an error', [
+        $this->logger->error('AI Core returned an error', [
             'path'   => $path,
             'status' => (string) $code,
             'detail' => $detail,
@@ -272,27 +272,27 @@ class AIOL_Client
     {
         switch ($category) {
             case 'unauthorized':
-                return __('Cloud Core rejected this installation token. It may have been revoked or rotated — issue a new one in Cloud Core and paste it here.', 'ai-operating-layer');
+                return __('AI Core rejected this installation token. It may have been revoked or rotated — issue a new one in AI Core and paste it here.', 'ai-operating-layer');
             case 'forbidden':
-                return __('This token is valid but lacks the permission for that action. Issue a token with the required scopes in Cloud Core.', 'ai-operating-layer');
+                return __('This token is valid but lacks the permission for that action. Issue a token with the required scopes in AI Core.', 'ai-operating-layer');
             case 'not_found':
-                return __('Cloud Core has no such object for this installation. It may have been deleted, or it belongs to a different organization.', 'ai-operating-layer');
+                return __('AI Core has no such object for this installation. It may have been deleted, or it belongs to a different organization.', 'ai-operating-layer');
             case 'conflict':
                 return $detail !== ''
                     ? $detail
-                    : __('That change conflicts with something already recorded in Cloud Core. Nothing was changed.', 'ai-operating-layer');
+                    : __('That change conflicts with something already recorded in AI Core. Nothing was changed.', 'ai-operating-layer');
             case 'invalid':
                 return $detail !== ''
                     ? $detail
-                    : __('Cloud Core rejected the request as invalid. Nothing was changed.', 'ai-operating-layer');
+                    : __('AI Core rejected the request as invalid. Nothing was changed.', 'ai-operating-layer');
             case 'rate_limited':
-                return __('Too many requests to Cloud Core. Wait a minute and try again — nothing was lost.', 'ai-operating-layer');
+                return __('Too many requests to AI Core. Wait a minute and try again — nothing was lost.', 'ai-operating-layer');
             case 'unavailable':
-                return __('Cloud Core is unreachable or returned a server error. Your data is unchanged; retry is safe.', 'ai-operating-layer');
+                return __('AI Core is unreachable or returned a server error. Your data is unchanged; retry is safe.', 'ai-operating-layer');
             case 'not_configured':
-                return __('The plugin is not connected to Cloud Core yet.', 'ai-operating-layer');
+                return __('The plugin is not connected to AI Core yet.', 'ai-operating-layer');
             default:
-                return __('Cloud Core returned an unexpected response. Nothing was changed.', 'ai-operating-layer');
+                return __('AI Core returned an unexpected response. Nothing was changed.', 'ai-operating-layer');
         }
     }
 

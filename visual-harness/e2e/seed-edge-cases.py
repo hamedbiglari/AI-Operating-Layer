@@ -17,7 +17,7 @@ are added, so every count is 0 and only the status decides what is shown:
 Prints JSON with the organization name, its access token, the object ids and
 each check (query, expected, got). Exit 1 if any check fails.
 
-Needs a running Cloud Core:
+Needs a running AI Core:
   cd cloud-core
   .venv/Scripts/python.exe ../visual-harness/e2e/seed-edge-cases.py [http://127.0.0.1:8000] > seed-edge.json
 

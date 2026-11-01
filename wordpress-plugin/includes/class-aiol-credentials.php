@@ -1,6 +1,6 @@
 <?php
 /**
- * Credential storage for the machine identity issued by Cloud Core.
+ * Credential storage for the machine identity issued by AI Core.
  *
  * SECURITY POSTURE, stated plainly because it matters more than the code:
  * WordPress has no secret store. `wp_options` is the only durable place a
@@ -60,12 +60,12 @@ class AIOL_Credentials
         $token    = trim($token);
 
         if ($endpoint === '') {
-            return new WP_Error('aiol_endpoint_empty', __('Cloud Core URL is required.', 'ai-operating-layer'));
+            return new WP_Error('aiol_endpoint_empty', __('AI Core URL is required.', 'ai-operating-layer'));
         }
         if (!preg_match('#^https?://#i', $endpoint)) {
             return new WP_Error(
                 'aiol_endpoint_scheme',
-                __('Cloud Core URL must start with http:// or https://', 'ai-operating-layer')
+                __('AI Core URL must start with http:// or https://', 'ai-operating-layer')
             );
         }
         // HTTPS POLICY (ADR-045). An installation token is a bearer
@@ -80,11 +80,11 @@ class AIOL_Credentials
         if (stripos($endpoint, 'http://') === 0 && !self::is_local_host($endpoint)) {
             return new WP_Error(
                 'aiol_endpoint_insecure',
-                __('Cloud Core must be reached over HTTPS. Plain http:// is only allowed for local development (localhost or 127.0.0.1), because the installation token would otherwise be sent in clear text.', 'ai-operating-layer')
+                __('AI Core must be reached over HTTPS. Plain http:// is only allowed for local development (localhost or 127.0.0.1), because the installation token would otherwise be sent in clear text.', 'ai-operating-layer')
             );
         }
         if (!filter_var($endpoint, FILTER_VALIDATE_URL)) {
-            return new WP_Error('aiol_endpoint_invalid', __('Cloud Core URL is not a valid URL.', 'ai-operating-layer'));
+            return new WP_Error('aiol_endpoint_invalid', __('AI Core URL is not a valid URL.', 'ai-operating-layer'));
         }
         if ($token === '') {
             return new WP_Error('aiol_token_empty', __('Installation token is required.', 'ai-operating-layer'));

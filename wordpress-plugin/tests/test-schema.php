@@ -5,7 +5,7 @@
  * These are the adversarial ones: each asks "can the adapter be made to
  * publish a false public claim?" A failure here is not a cosmetic bug — it
  * is the plugin asserting something to search engines and AI agents that
- * Cloud Core never asserted.
+ * AI Core never asserted.
  */
 
 declare(strict_types=1);

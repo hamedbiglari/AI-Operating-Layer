@@ -8,7 +8,7 @@
  *   Pager:  the Sources list's pattern: 50 a page, Previous / Next, the
  *           "Showing {from} to {to} of {total}" counter.
  *   Persian labels for all of the above.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

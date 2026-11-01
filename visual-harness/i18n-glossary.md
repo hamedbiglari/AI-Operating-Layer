@@ -75,7 +75,7 @@ match them exactly.
 | No knowledge objects match this search and these filters. | هیچ پرونده دانشی با این جست‌وجو و فیلترها مطابقت ندارد. |
 | Finished objects are hidden; turn on Show finished to include them. | پرونده‌های تمام‌شده پنهان‌اند؛ برای نمایش آن‌ها «نمایش تمام‌شده‌ها» را روشن کنید. |
 | Could not load knowledge objects ({error}). | بارگذاری پرونده‌های دانش ناموفق بود ({error}). |
-| Cloud Core did not accept the access token (HTTP 401). It may have expired. | Cloud Core توکن دسترسی را نپذیرفت (HTTP 401). ممکن است منقضی شده باشد. |
+| AI Core did not accept the access token (HTTP 401). It may have expired. | AI Core توکن دسترسی را نپذیرفت (HTTP 401). ممکن است منقضی شده باشد. |
 | This access token is not allowed to read knowledge objects (HTTP 403). | این توکن دسترسی اجازهٔ خواندن پرونده‌های دانش را ندارد (HTTP 403). |
 
 ## Knowledge screen text
@@ -412,7 +412,7 @@ Retrying and Cancelled reuse the Statuses row above.
    (401, 403) are protocol identifiers: Latin digits, inside `<bdi>`.
 2. A counted noun stays singular: «۳ ادعا», not «۳ ادعاها».
 3. Formal register («شما») throughout.
-4. Product and brand names stay as written: Cloud Core, AI Operating Layer,
+4. Product and brand names stay as written: AI Core, AI Operating Layer,
    Crossref, PubMed.
 5. Dates: the backend sends ISO 8601 in UTC. The page formats every date with
    `Intl.DateTimeFormat('fa-IR')`, which uses the Solar Hijri (Jalali)
@@ -557,7 +557,7 @@ not translated yet (V5-matrix-coverage-runtime-fa).
 |---|---|
 | Categories & Master Topic Matrix | دسته‌ها و ماتریس اصلی موضوعات |
 | A category carries the section schema its topics should cover. Each cell of the matrix is read from the knowledge base — claims, evidence, conflicts, gaps — never typed in. An empty cell means the section has never been researched for that topic, not that it does not apply. | هر دسته طرح‌وارهٔ بخش‌هایی را دارد که موضوعاتش باید پوشش دهند. هر خانهٔ ماتریس از پایگاه دانش خوانده می‌شود — ادعاها، شواهد، تعارض‌ها، شکاف‌ها — و هرگز دستی وارد نمی‌شود. خانهٔ خالی یعنی آن بخش هرگز برای آن موضوع پژوهش نشده است، نه اینکه کاربرد ندارد. |
-| Not connected to Cloud Core. Connect on the Dashboard or AI Center screen. | به Cloud Core وصل نیست. در صفحهٔ داشبورد یا مرکز هوش مصنوعی وصل شوید. |
+| Not connected to AI Core. Connect on the Dashboard or AI Center screen. | به AI Core وصل نیست. در صفحهٔ داشبورد یا مرکز هوش مصنوعی وصل شوید. |
 | Category | دسته |
 | Choose a category | یک دسته انتخاب کنید |
 | Refresh | تازه‌سازی |
@@ -602,9 +602,9 @@ Terms for the AI executions screen. Status labels stand for the API values (succ
 
 | English | Persian |
 |---|---|
-| Live operational view of every real AI-model invocation, read from Cloud Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API. | نمای عملیاتی زندهٔ هر فراخوانی واقعی مدل هوش مصنوعی، خوانده‌شده از Cloud Core. این صفحه هیچ دادهٔ نمونه‌ای ندارد: تا وصل نشود چیزی نشان نمی‌دهد، و هر مقداری که نشان داده می‌شود از API می‌آید. |
+| Live operational view of every real AI-model invocation, read from AI Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API. | نمای عملیاتی زندهٔ هر فراخوانی واقعی مدل هوش مصنوعی، خوانده‌شده از AI Core. این صفحه هیچ دادهٔ نمونه‌ای ندارد: تا وصل نشود چیزی نشان نمی‌دهد، و هر مقداری که نشان داده می‌شود از API می‌آید. |
 | Connection | اتصال |
-| Not connected. Enter the Cloud Core URL and an access token. | وصل نیست. نشانی Cloud Core و یک توکن دسترسی وارد کنید. |
+| Not connected. Enter the AI Core URL and an access token. | وصل نیست. نشانی AI Core و یک توکن دسترسی وارد کنید. |
 | Executions | اجراها |
 | all statuses | همهٔ وضعیت‌ها |
 | Failed / timeout / rate-limited | ناموفق / پایان مهلت / محدودیت نرخ |
@@ -633,7 +633,7 @@ Terms for the AI executions screen. Status labels stand for the API values (succ
 | first attempt | تلاش نخست |
 | Loading AI executions… | در حال بارگذاری اجراهای هوش مصنوعی… |
 | Permission denied (HTTP {status}). The token is missing, expired, or not valid for this organization. | دسترسی رد شد (HTTP {status}). توکن وجود ندارد، منقضی شده یا برای این سازمان معتبر نیست. |
-| Could not load AI executions: {error}. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS). | بارگذاری اجراهای هوش مصنوعی ناموفق بود: {error}. نشانی را بررسی کنید و مطمئن شوید Cloud Core این مبدأ را مجاز می‌داند (CORS_ALLOWED_ORIGINS). |
+| Could not load AI executions: {error}. Check the URL, and that AI Core allows this origin (CORS_ALLOWED_ORIGINS). | بارگذاری اجراهای هوش مصنوعی ناموفق بود: {error}. نشانی را بررسی کنید و مطمئن شوید AI Core این مبدأ را مجاز می‌داند (CORS_ALLOWED_ORIGINS). |
 | {from}–{to} of {total} | {from}–{to} از {total} |
 | Execution | اجرا |
 | Operation | عملیات |
@@ -649,7 +649,7 @@ Terms for the Memory Center screen. Kind and change labels stand for API values;
 
 | English | Persian |
 |---|---|
-| Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from Cloud Core; exports are produced by the backend. | هر آنچه هوش مصنوعی هنگام کار نوشته است: یافته‌ها، پرسش‌های باز، نقطه‌های بازبینی و تحویل‌ها — همهٔ نسخه‌ها نگه داشته می‌شوند، با نویسنده و زمان نوشتن. PostgreSQL مخزن مرجع است. خواندن‌ها زنده از Cloud Core است؛ خروجی‌ها را بک‌اند تولید می‌کند. |
+| Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from AI Core; exports are produced by the backend. | هر آنچه هوش مصنوعی هنگام کار نوشته است: یافته‌ها، پرسش‌های باز، نقطه‌های بازبینی و تحویل‌ها — همهٔ نسخه‌ها نگه داشته می‌شوند، با نویسنده و زمان نوشتن. PostgreSQL مخزن مرجع است. خواندن‌ها زنده از AI Core است؛ خروجی‌ها را بک‌اند تولید می‌کند. |
 | Working memory | حافظهٔ کاری |
 | Search | جست‌وجو |
 | Kind | نوع |
@@ -746,8 +746,8 @@ Terms for the AI Catalog screen. Type and status labels are the filter options' 
 
 | English | Persian |
 |---|---|
-| Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay "Discovered" until verified from an official source; API and pricing information stays empty until then. This screen reads live from Cloud Core — no sample data. | هر منبع هوش مصنوعی که سامانه می‌شناسد — ارائه‌دهنده‌ها، APIها، مدل‌ها، برنامه‌ها و ابزارهای پژوهشی. مدخل‌ها تا زمانی که از یک منبع رسمی راستی‌آزمایی نشوند «کشف‌شده» می‌مانند؛ اطلاعات API و قیمت تا آن زمان خالی می‌ماند. این صفحه زنده از Cloud Core می‌خواند — بدون دادهٔ نمونه. |
-| Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your Cloud Core URL and token here. | وصل نیست. از صفحهٔ داشبورد، اجراهای هوش مصنوعی یا مرکز هوش مصنوعی وصل شوید — یا نشانی Cloud Core و توکن خود را اینجا وارد کنید. |
+| Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay "Discovered" until verified from an official source; API and pricing information stays empty until then. This screen reads live from AI Core — no sample data. | هر منبع هوش مصنوعی که سامانه می‌شناسد — ارائه‌دهنده‌ها، APIها، مدل‌ها، برنامه‌ها و ابزارهای پژوهشی. مدخل‌ها تا زمانی که از یک منبع رسمی راستی‌آزمایی نشوند «کشف‌شده» می‌مانند؛ اطلاعات API و قیمت تا آن زمان خالی می‌ماند. این صفحه زنده از AI Core می‌خواند — بدون دادهٔ نمونه. |
+| Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your AI Core URL and token here. | وصل نیست. از صفحهٔ داشبورد، اجراهای هوش مصنوعی یا مرکز هوش مصنوعی وصل شوید — یا نشانی AI Core و توکن خود را اینجا وارد کنید. |
 | All types | همهٔ انواع |
 | Application | برنامه |
 | Research tool | ابزار پژوهشی |
@@ -790,7 +790,7 @@ Terms for the AI Center screen. Mode labels are the Create form's own options; p
 
 | English | Persian |
 |---|---|
-| Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to Cloud Core. No sample data: until connected this screen shows nothing. | ارائه‌دهنده‌ها، حساب‌ها، مدل‌ها، مسیریابی، کارهای طولانی با نقطه‌های بازبینی و تحویل، حافظهٔ مشترک و فهرست کشف — خواندن و نوشتن در Cloud Core. بدون دادهٔ نمونه: تا وصل نشود، این صفحه چیزی نشان نمی‌دهد. |
+| Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to AI Core. No sample data: until connected this screen shows nothing. | ارائه‌دهنده‌ها، حساب‌ها، مدل‌ها، مسیریابی، کارهای طولانی با نقطه‌های بازبینی و تحویل، حافظهٔ مشترک و فهرست کشف — خواندن و نوشتن در AI Core. بدون دادهٔ نمونه: تا وصل نشود، این صفحه چیزی نشان نمی‌دهد. |
 | Not connected. | وصل نیست. |
 | Providers & accounts | ارائه‌دهنده‌ها و حساب‌ها |
 | Routing | مسیریابی |
@@ -877,7 +877,7 @@ Terms for the AI Center screen. Mode labels are the Create form's own options; p
 | Outcomes | نتیجه‌ها |
 | Semantic memory backend | بک‌اند حافظهٔ معنایی |
 | Agent orchestration console | کنسول هماهنگی عامل‌ها |
-| Every action below calls Cloud Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it. | هر کنش زیر Cloud Core را فرا می‌خواند. اجرای یک کار از مسیر مرجع هوش مصنوعی می‌گذرد (یک کار هوش مصنوعی که فراخوانی‌هایش به‌صورت AIExecution ثبت می‌شوند) و فقط از حساب‌هایی استفاده می‌کند که عامل اعلام کرده است؛ تحویل با یک نقطهٔ بازبینی حافظهٔ مشترک ذخیره می‌شود و فقط عامل مخاطب می‌تواند آن را بپذیرد. |
+| Every action below calls AI Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it. | هر کنش زیر AI Core را فرا می‌خواند. اجرای یک کار از مسیر مرجع هوش مصنوعی می‌گذرد (یک کار هوش مصنوعی که فراخوانی‌هایش به‌صورت AIExecution ثبت می‌شوند) و فقط از حساب‌هایی استفاده می‌کند که عامل اعلام کرده است؛ تحویل با یک نقطهٔ بازبینی حافظهٔ مشترک ذخیره می‌شود و فقط عامل مخاطب می‌تواند آن را بپذیرد. |
 | 1. Register an agent | ۱. ثبت یک عامل |
 | research | پژوهش |
 | evidence | شاهد |
@@ -928,7 +928,7 @@ Terms for the AI Center screen. Mode labels are the Create form's own options; p
 | research, summarize | مثلاً research, summarize |
 | Internal and external Agents that perform coordinated tasks. Agents use AI resources but are a separate concept from AI providers. | عامل‌های درونی و بیرونی که کارهای هماهنگ انجام می‌دهند. عامل‌ها از منابع هوش مصنوعی استفاده می‌کنند، اما مفهومی جدا از ارائه‌دهنده‌های هوش مصنوعی‌اند. |
 | Session inspector | بازرس نشست |
-| Tasks, handoffs and agent-to-agent messages of one orchestration session — read from Cloud Core. | کارها، تحویل‌ها و پیام‌های عامل به عامل یک نشست هماهنگی — خوانده‌شده از Cloud Core. |
+| Tasks, handoffs and agent-to-agent messages of one orchestration session — read from AI Core. | کارها، تحویل‌ها و پیام‌های عامل به عامل یک نشست هماهنگی — خوانده‌شده از AI Core. |
 | Inspect | بررسی |
 | Shared memory — runtime view | حافظهٔ مشترک — نمای زمان اجرا |
 | Configure in Settings › Shared memory. | در تنظیمات › حافظهٔ مشترک پیکربندی کنید. |
@@ -1007,7 +1007,7 @@ Terms for the Command workspace screen. State labels stand for API values; comma
 
 | English | Persian |
 |---|---|
-| Type a research or knowledge command. It is saved to Cloud Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back. | یک فرمان پژوهشی یا دانشی بنویسید. همان‌طور که تایپ می‌کنید در Cloud Core ذخیره می‌شود، پس بستن این صفحه چیزی را از دست نمی‌دهد. پیش از اجرای هر چیز، می‌بینید چه خواهد کرد و دقیقاً روی چه چیزی کار خواهد کرد. نسخه‌ای که اجرا شده همان‌طور که بود نگه داشته می‌شود؛ ویرایش، نسخهٔ بعدی را آغاز می‌کند. کارهای طولانی پس از رفتن شما روی سرور ادامه می‌یابند و وقتی برگردید می‌توانید آن‌ها را ادامه دهید. |
+| Type a research or knowledge command. It is saved to AI Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back. | یک فرمان پژوهشی یا دانشی بنویسید. همان‌طور که تایپ می‌کنید در AI Core ذخیره می‌شود، پس بستن این صفحه چیزی را از دست نمی‌دهد. پیش از اجرای هر چیز، می‌بینید چه خواهد کرد و دقیقاً روی چه چیزی کار خواهد کرد. نسخه‌ای که اجرا شده همان‌طور که بود نگه داشته می‌شود؛ ویرایش، نسخهٔ بعدی را آغاز می‌کند. کارهای طولانی پس از رفتن شما روی سرور ادامه می‌یابند و وقتی برگردید می‌توانید آن‌ها را ادامه دهید. |
 | New command | فرمان جدید |
 | Drafts | پیش‌نویس‌ها |
 | Waiting to continue | در انتظار ادامه |
@@ -1059,8 +1059,8 @@ Terms for the Command workspace screen. State labels stand for API values; comma
 | Version {n} · has run, read-only — editing starts version {next} | نسخهٔ {n} · اجرا شده و فقط‌خواندنی است — ویرایش، نسخهٔ {next} را آغاز می‌کند |
 | This browser has unsaved text from an earlier visit. | این مرورگر متن ذخیره‌نشده‌ای از بازدید قبلی دارد. |
 | Use it | استفاده از آن |
-| Saved to Cloud Core · revision {rev}. | در Cloud Core ذخیره شد · بازبینی {rev}. |
-| Saved to Cloud Core · version {v}, revision {rev}. | در Cloud Core ذخیره شد · نسخهٔ {v}، بازبینی {rev}. |
+| Saved to AI Core · revision {rev}. | در AI Core ذخیره شد · بازبینی {rev}. |
+| Saved to AI Core · version {v}, revision {rev}. | در AI Core ذخیره شد · نسخهٔ {v}، بازبینی {rev}. |
 | This draft was changed in another tab or device. | این پیش‌نویس در زبانه یا دستگاه دیگری تغییر کرده است. |
 | Use the saved version | استفاده از نسخهٔ ذخیره‌شده |
 | Keep mine | نسخهٔ خودم را نگه دار |
@@ -1107,9 +1107,9 @@ Terms for AI Visibility, its full report and AI access. Platform, agent and vend
 
 | English | Persian |
 |---|---|
-| AI visibility (Cloud Core) | دیده‌شدن در هوش مصنوعی (Cloud Core) |
-| AI visibility report (Cloud Core) | گزارش دیده‌شدن در هوش مصنوعی (Cloud Core) |
-| AI access (Cloud Core) | دسترسی هوش مصنوعی (Cloud Core) |
+| AI visibility (AI Core) | دیده‌شدن در هوش مصنوعی (AI Core) |
+| AI visibility report (AI Core) | گزارش دیده‌شدن در هوش مصنوعی (AI Core) |
+| AI access (AI Core) | دسترسی هوش مصنوعی (AI Core) |
 | Other platform | سکوی دیگر |
 | Operator unknown | گرداننده نامشخص |
 | {n\|observation\|observations} recorded. Each signal is counted on its own; there is no combined score. | {n} مشاهده ثبت شده است. هر نشانه جداگانه شمرده می‌شود؛ هیچ امتیاز ترکیبی وجود ندارد. |

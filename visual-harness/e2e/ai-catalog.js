@@ -9,7 +9,7 @@
  *           visible in live mode (data-live-keep); a filter (one request);
  *           no results; the pager; Import initial list; a failed load;
  *           Persian over live content.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

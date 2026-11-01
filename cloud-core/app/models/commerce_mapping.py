@@ -1,5 +1,5 @@
 """
-CommerceMapping (master spec section 40) — links a Cloud Core Product to a
+CommerceMapping (master spec section 40) — links a AI Core Product to a
 WooCommerce product/variation on one site.
 
 DIRECTION OF TRUTH, which is the whole reason this table is separate from

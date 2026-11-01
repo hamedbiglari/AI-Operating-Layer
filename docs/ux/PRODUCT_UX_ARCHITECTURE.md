@@ -22,7 +22,7 @@ Source → Document management → Processing → Artifacts → Knowledge
 ## 2. One product, two clients
 
 ```
-                 CLOUD CORE  (source of truth)
+                 AI CORE     (source of truth)
                         │
         ┌───────────────┴───────────────┐
    Web application                WordPress plugin

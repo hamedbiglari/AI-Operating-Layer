@@ -10,7 +10,7 @@
  *           Persian over live content: static labels translate, live data stays,
  *           and the page does not hang. Live text built by the scripts stays
  *           English (debt V5-matrix-coverage-runtime-fa).
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

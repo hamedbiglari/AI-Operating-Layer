@@ -1,5 +1,5 @@
 #!/bin/bash
-# Starts every service for the WordPress/WooCommerce ↔ Cloud Core E2E (processes do not persist between tool calls).
+# Starts every service for the WordPress/WooCommerce ↔ AI Core E2E (processes do not persist between tool calls).
 service postgresql start >/dev/null 2>&1
 redis-server --daemonize yes --port 6379 >/dev/null 2>&1
 service mariadb start >/dev/null 2>&1 || (mysqld_safe >/dev/null 2>&1 &)

@@ -11,7 +11,7 @@ prototype, keep the same separation.
 
 | | "How does AI answer about you?" | "Who is visiting your site?" |
 |---|---|---|
-| Backend | `VisibilityTest` (Cloud Core, Phase 10) | `AIOL_Actors` (WordPress plugin, ADR-046) |
+| Backend | `VisibilityTest` (AI Core, Phase 10) | `AIOL_Actors` (WordPress plugin, ADR-046) |
 | Direction | Outbound — the system asks a platform a prompt and records what came back | Inbound — a request hits the site and gets classified |
 | Unit | One observation of one prompt on one platform at one moment | One HTTP request, classified by its User-Agent |
 | Honesty mechanism | Tri-state `SignalPresence` (`PRESENT` / `ABSENT` / `NOT_CHECKED`) on five signals — never boolean, because a `false` cannot distinguish "checked, absent" from "never checked" (ADR-061) | Confidence level (`Detected` / `Probable` / `Verified` — the last not implemented) — because a User-Agent header is a claim, not a proof |

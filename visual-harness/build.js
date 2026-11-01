@@ -1560,20 +1560,20 @@ const screenOperations = `
   <div class="page-header">
     <div>
       <h1 id="h-ops">${ic('connection', { lg: true })} Connection &amp; logs</h1>
-      <p>Whether this site is talking to Cloud Core, what version of each half is running, and what the adapter has been doing.</p>
+      <p>Whether this site is talking to AI Core, what version of each half is running, and what the adapter has been doing.</p>
     </div>
   </div>
 
   <div class="card">
     <h2 class="card__title">Status</h2>
     <dl class="kv">
-      <dt>Cloud Core</dt><dd>${badge('success', 'status-completed', 'Connected')} <span class="identifier" style="font-family:var(--font-mono)">api.aiol.example</span> · 142 ms</dd>
+      <dt>AI Core</dt><dd>${badge('success', 'status-completed', 'Connected')} <span class="identifier" style="font-family:var(--font-mono)">api.aiol.example</span> · 142 ms</dd>
       <dt>Database</dt><dd>${badge('success', 'status-completed', 'Healthy')}</dd>
       <dt>Queue (Redis)</dt><dd>${badge('warning', 'status-warning', 'Degraded')} Reachable but not responding to PING</dd>
       <dt>Rate limiting</dt><dd>${badge('warning', 'status-warning', 'Not enforced')} The limiter fails open without Redis</dd>
       <dt>Overall</dt><dd>${badge('warning', 'status-warning', 'Degraded')}</dd>
       <dt>Plugin version</dt><dd>${id('v0.13.0')}</dd>
-      <dt>Cloud Core version</dt><dd>${id('v0.13.0')}</dd>
+      <dt>AI Core version</dt><dd>${id('v0.13.0')}</dd>
       <dt>Telemetry API</dt><dd>${id('v13.0')}</dd>
       <dt>Last event received</dt><dd>2 minutes ago</dd>
       <dt>Last rollup</dt><dd>Today 03:00 UTC</dd>
@@ -1593,14 +1593,14 @@ const screenOperations = `
           <tr><td data-label="Time">2026-09-17 09:41</td><td data-label="Level">${badge('info', 'info', 'info')}</td><td data-label="Message">Telemetry batch accepted: 48 events, 2 duplicates</td></tr>
           <tr><td data-label="Time">2026-09-17 09:38</td><td data-label="Level">${badge('danger', 'status-failed', 'error')}</td><td data-label="Message">Telemetry batch failed: timeout after 5s — 48 events queued for retry</td></tr>
           <tr><td data-label="Time">2026-09-17 09:12</td><td data-label="Level">${badge('info', 'info', 'info')}</td><td data-label="Message">New agent discovered: ZorpAnalyticsCrawler</td></tr>
-          <tr><td data-label="Time">2026-09-17 08:55</td><td data-label="Level">${badge('info', 'info', 'info')}</td><td data-label="Message">Authenticated to Cloud Core with key ${id('aiol_***REDACTED***')}</td></tr>
+          <tr><td data-label="Time">2026-09-17 08:55</td><td data-label="Level">${badge('info', 'info', 'info')}</td><td data-label="Message">Authenticated to AI Core with key ${id('aiol_***REDACTED***')}</td></tr>
         </tbody>
       </table>
     </div>
     <div class="dialog__actions" style="margin-top:var(--space-4)">
       <button class="btn btn--danger">${ic('action-delete')}Clear log history</button>
     </div>
-    <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-block-end:0">Clearing removes the adapter's own log on this site. It does not delete page views, agents or access decisions held in Cloud Core — those are the analytics record, and a log-clearing button that quietly erased them would be a destructive action wearing a harmless label. Credential-shaped strings are stripped before anything is written, so clearing is housekeeping, not damage control.</p>
+    <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-block-end:0">Clearing removes the adapter's own log on this site. It does not delete page views, agents or access decisions held in AI Core — those are the analytics record, and a log-clearing button that quietly erased them would be a destructive action wearing a harmless label. Credential-shaped strings are stripped before anything is written, so clearing is housekeeping, not damage control.</p>
   </div>
 </section>`;
 
@@ -2067,7 +2067,7 @@ body { font-family: var(--font-ui); color: var(--text); }
 
 <p class="harness-note">
   Representative fixture data, not production content. Counts and identifiers are illustrative.
-  This harness demonstrates the UX architecture; it is not wired to Cloud Core.
+  This harness demonstrates the UX architecture; it is not wired to AI Core.
 </p>
 
 <div class="frame" id="frame" data-width="desktop">

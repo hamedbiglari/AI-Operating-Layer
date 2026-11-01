@@ -93,7 +93,7 @@ class FederatedResearchProvider:
                 )
             return ResearchOutcome(
                 status=ResearchOutcomeStatus.NOT_CONFIGURED,
-                summary=("No scholarly provider is configured on this Cloud Core "
+                summary=("No scholarly provider is configured on this AI Core "
                          f"({', '.join(unconfigured) or 'none registered'})."),
                 raw=out,
             )

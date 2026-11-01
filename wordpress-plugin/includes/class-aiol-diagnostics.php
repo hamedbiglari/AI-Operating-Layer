@@ -17,7 +17,7 @@
  *
  * These checks are deliberately cheap and deterministic: local option reads
  * and at most one short HTTP HEAD/GET to the site's own URL. No LLM call, no
- * Cloud Core call, no external service. They must remain safe to run on an
+ * AI Core call, no external service. They must remain safe to run on an
  * admin page load.
  */
 
@@ -181,10 +181,10 @@ class AIOL_Diagnostics
     {
         if (!(new AIOL_Credentials())->is_configured()) {
             return self::result(self::UNKNOWN, __('Structured data', 'ai-operating-layer'),
-                __('Product structured data is generated from Cloud Core, which is not connected yet.', 'ai-operating-layer'));
+                __('Product structured data is generated from AI Core, which is not connected yet.', 'ai-operating-layer'));
         }
         return self::result(self::PASS, __('Structured data', 'ai-operating-layer'),
-            __('Product structured data is generated from Cloud Core for mapped products.', 'ai-operating-layer'));
+            __('Product structured data is generated from AI Core for mapped products.', 'ai-operating-layer'));
     }
 
     // ------------------------------------------------------------ dimensions
@@ -209,10 +209,10 @@ class AIOL_Diagnostics
             'machine_readability'       => $machine,
             // DEFERRED to Phase 12 (AI Visibility) and Phases 7/8 — the
             // adapter cannot measure these and must not pretend to.
-            'knowledge_coverage'  => ['state' => self::UNKNOWN, 'detail' => __('Measured in Cloud Core, not by this adapter.', 'ai-operating-layer')],
-            'evidence_coverage'   => ['state' => self::UNKNOWN, 'detail' => __('Measured in Cloud Core, not by this adapter.', 'ai-operating-layer')],
-            'trust_coverage'      => ['state' => self::UNKNOWN, 'detail' => __('Measured in Cloud Core, not by this adapter.', 'ai-operating-layer')],
-            'commerce_readiness'  => ['state' => self::UNKNOWN, 'detail' => __('Measured in Cloud Core, not by this adapter.', 'ai-operating-layer')],
+            'knowledge_coverage'  => ['state' => self::UNKNOWN, 'detail' => __('Measured in AI Core, not by this adapter.', 'ai-operating-layer')],
+            'evidence_coverage'   => ['state' => self::UNKNOWN, 'detail' => __('Measured in AI Core, not by this adapter.', 'ai-operating-layer')],
+            'trust_coverage'      => ['state' => self::UNKNOWN, 'detail' => __('Measured in AI Core, not by this adapter.', 'ai-operating-layer')],
+            'commerce_readiness'  => ['state' => self::UNKNOWN, 'detail' => __('Measured in AI Core, not by this adapter.', 'ai-operating-layer')],
             'ai_visibility'       => ['state' => self::UNKNOWN, 'detail' => __('Planned for a later phase; not measured today.', 'ai-operating-layer')],
         ];
     }

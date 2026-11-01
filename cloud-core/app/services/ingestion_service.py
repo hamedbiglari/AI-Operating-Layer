@@ -31,7 +31,7 @@ before any parser touches the bytes:
     recorded as data and never used as a path, which is what makes
     `../../etc/passwd` and absolute paths inert
 
-Conversion runs in Cloud Core, never in WordPress (§41).
+Conversion runs in AI Core, never in WordPress (§41).
 
 DEDUPLICATION uses `source_hash + converter_name + converter_version`. All
 three matter: the same bytes converted by a different converter version may

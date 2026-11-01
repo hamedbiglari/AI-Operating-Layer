@@ -12,10 +12,10 @@
  * comment rather than leaving it to be inferred. Specifically:
  *
  *   - no price, stock, evidence or trust data appears here, ever; those
- *     live in Cloud Core and reach the public only through
+ *     live in AI Core and reach the public only through
  *     `AIOL_Schema`, which renders what Core asserts
  *   - a post's presence here means "this text is published on this
- *     WordPress site", not "Cloud Core has verified this"
+ *     WordPress site", not "AI Core has verified this"
  *
  * INVALIDATION (widened from legacy)
  *

@@ -19,7 +19,7 @@ Implemented as:
 
 | Layer | Where | Evidence |
 |---|---|---|
-| Cloud Core | `cloud-core/app` — 66 models, 67 services, 40 API route modules | import of `app.main` succeeds; 1219 tests collected |
+| AI Core | `cloud-core/app` — 66 models, 67 services, 40 API route modules | import of `app.main` succeeds; 1219 tests collected |
 | Storage | PostgreSQL 16 + pgvector, 36 migrations | `scripts/verify_migration_cycle.sh` → base → head → base → head, exit 0, head `0036` |
 | Dashboard | `visual-harness/index.html`, 44 screens, single file | `visual-harness/check.js` → 33/33 rules pass |
 | Public website | `website/` — 13 pages × 2 languages | axe-core WCAG 2 A/AA: 0 violations across 26 pages; CLS 0 |
@@ -53,7 +53,7 @@ Status key: **PASS** (UI + API + logic + DB + tests + integration), **PARTIAL**,
 | 9, 10 | Research centre and keyword workbench UI | PASS | dashboard `screen-research`, `screen-sources`, `screen-gap` |
 | 11 | Public knowledge website | PASS | 26 pages, 0 axe violations, CLS 0, works without JavaScript |
 | 12 | Dashboard IA | PASS | 44 screens under a single shell and one connection |
-| 13 | Data truth labelling | PASS | 13 "Not connected to Cloud Core" notices; demo panels carry DEMO/EXAMPLE labels |
+| 13 | Data truth labelling | PASS | 13 "Not connected to AI Core" notices; demo panels carry DEMO/EXAMPLE labels |
 | 14 | Auth, tenancy, contract agreement | PASS | passwordless sign-up by 6-digit code in `auth.py`, matching the dashboard's `screen-signup`/`screen-login-code`; 9 tenant-isolation test files |
 | 15 | Traffic classification, observed ≠ inferred | PASS | `actor_signatures.py`; six real classes only; the website states the distinction |
 | 16 | AI/agent access policies that affect requests | PASS | `access_policy_service.py` |

@@ -79,7 +79,7 @@ distinction is carried explicitly through section C.
 ## B. CURRENT ARCHITECTURE
 
 ```
-                         CLOUD CORE  (FastAPI, 22 routers)
+                         AI CORE     (FastAPI, 22 routers)
                          source of truth — verified
                                     │
                     ┌───────────────┴───────────────┐
@@ -89,7 +89,7 @@ distinction is carried explicitly through section C.
           5 admin views                      (design assets only)
 ```
 
-**Cloud Core.** 22 versioned routers under `cloud-core/app/api/v1/`:
+**AI Core.** 22 versioned routers under `cloud-core/app/api/v1/`:
 `ai, auth, claim_evidence, claims, commerce, documents, entities, evidence,
 health, integrations, knowledge, knowledge_gaps, organizations, queries,
 recommendations, relationships, research, sites, sources, users, visibility`.
@@ -275,7 +275,7 @@ distinction (§60).
 |---|---|---|
 | Source ≠ File | **PASS** | separate `sources` and `documents` tables; a Source carries DOI/PMID/ISBN/rights and can hold many Documents. Explicitly justified in the model docstring. |
 | No second file manager | **PASS** | Research uses `ResearchTaskReference`, not its own uploads. Commerce uses `commerce_mappings`. WordPress keeps `wordpress_mappings` — ids, not content. Exactly one document store. |
-| Cloud Core is source of truth | **PASS** | plugin is client + cache + mappings; no knowledge logic in PHP |
+| AI Core is source of truth | **PASS** | plugin is client + cache + mappings; no knowledge logic in PHP |
 | Single object identity across clients | **PASS by construction** | plugin holds Cloud UUIDs; there is no second client to diverge from |
 | Stale cache surfaced to the user (§86) | **NOT FOUND** | `class-aiol-cache.php` has no user-visible staleness signal. §68 requires a `Stale` state. Phase 13. |
 | Derived artifact ≠ source (§14) | **PASS** | `DocumentArtifact` is a distinct model; originals are content-addressed and retained |

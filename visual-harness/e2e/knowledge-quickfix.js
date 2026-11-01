@@ -6,7 +6,7 @@
  *   2. "Research again" adds one version row and one version card per click,
  *      without cloning its own button.
  *   3. The live detail renders the keyword workspace exactly once.
- * Runs against visual-harness/index.html from file://; Cloud Core is mocked
+ * Runs against visual-harness/index.html from file://; AI Core is mocked
  * in the page, so no server is needed.
  *
  * Usage: node visual-harness/e2e/knowledge-quickfix.js
@@ -69,7 +69,7 @@ function check(name, got, want) {
   check('newest version is stamped Just now', versions.newest, 'Just now');
   check('other objects untouched', versions.others, [1, 1, 1]);
 
-  // 3. The live detail renders one keyword workspace (Cloud Core mocked).
+  // 3. The live detail renders one keyword workspace (AI Core mocked).
   await page.evaluate(() => {
     const ko = { id: 'k1', canonical_name: 'Toranjebin', object_type: 'plant', status: 'draft', version: 1, slug: 'toranjebin',
       language: 'fa', updated_at: '2026-10-23T10:00:00Z', created_at: '2026-10-23T10:00:00Z' };

@@ -1,4 +1,4 @@
-"""Per-user interface preferences persisted in Cloud Core (REQ-SET-001).
+"""Per-user interface preferences persisted in AI Core (REQ-SET-001).
 One row per user; tenant-scoped with a composite FK so a row can never point
 at another tenant's user."""
 import uuid

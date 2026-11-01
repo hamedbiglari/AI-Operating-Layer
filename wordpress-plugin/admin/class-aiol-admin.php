@@ -157,7 +157,7 @@ class AIOL_Admin
 
         $this->credentials->set_identity(is_array($identity) ? $identity : []);
         AIOL_Cache::flush_all();
-        $this->logger->info('Connected to Cloud Core');
+        $this->logger->info('Connected to AI Core');
         $this->redirect_back('connected');
     }
 
@@ -170,7 +170,7 @@ class AIOL_Admin
 
         $this->credentials->forget();
         AIOL_Cache::flush_all();
-        $this->logger->info('Disconnected from Cloud Core');
+        $this->logger->info('Disconnected from AI Core');
         $this->redirect_back('disconnected');
     }
 
@@ -285,7 +285,7 @@ class AIOL_Admin
 
     /**
      * Clears this site's own adapter log and its unsent telemetry buffer.
-     * Deliberately does NOT touch anything in Cloud Core — see the
+     * Deliberately does NOT touch anything in AI Core — see the
      * docblock on AIOL_Telemetry::clear_buffer() for why that boundary is
      * load-bearing, not incidental.
      */
@@ -419,7 +419,7 @@ class AIOL_Admin
             AIOL_Mappings::set_state(
                 $post_id,
                 'failed',
-                __('That is not a valid Cloud Core object ID. It should look like 123e4567-e89b-12d3-a456-426614174000.', 'ai-operating-layer')
+                __('That is not a valid AI Core object ID. It should look like 123e4567-e89b-12d3-a456-426614174000.', 'ai-operating-layer')
             );
             return;
         }

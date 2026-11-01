@@ -4,7 +4,7 @@
  *
  * WHAT THIS CLASS IS ALLOWED TO DO
  *
- * Observe a request, buffer it, and ship it to Cloud Core. Nothing else.
+ * Observe a request, buffer it, and ship it to AI Core. Nothing else.
  * It makes no decision, computes no aggregate and holds no opinion about
  * what the traffic means — Core owns all of that (§52). If this file
  * starts counting things, a second source of truth has been born.
@@ -12,8 +12,8 @@
  * WHY IT DOES NOT CALL CORE ON EVERY REQUEST
  *
  * Because it runs on `shutdown`, on an ordinary shared host, on every
- * page load. A synchronous HTTP call there would put Cloud Core's latency
- * on the merchant's critical path and their uptime on Cloud Core's. So
+ * page load. A synchronous HTTP call there would put AI Core's latency
+ * on the merchant's critical path and their uptime on AI Core's. So
  * observations go into a bounded buffer and a cron slice flushes them —
  * the same "no storm, no silent loss" contract Phase 10 arrived at the
  * hard way (ADR-054).
@@ -278,7 +278,7 @@ class AIOL_Telemetry
 
     /**
      * Clears the adapter's own buffer. Deliberately does NOT touch
-     * anything in Cloud Core: page views, agents and access decisions are
+     * anything in AI Core: page views, agents and access decisions are
      * the analytics record, and a "clear log" button that quietly erased
      * them would be a destructive action wearing a harmless label.
      */

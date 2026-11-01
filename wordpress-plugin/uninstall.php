@@ -5,7 +5,7 @@
  * are removed, so that toggling the plugin off does not force a merchant to
  * re-provision.
  *
- * Mappings are NOT deleted from Cloud Core here: they are Core's rows, in
+ * Mappings are NOT deleted from AI Core here: they are Core's rows, in
  * Core's tenant, and an uninstall of one WordPress site has no authority to
  * mutate them. A merchant who wants them gone revokes the installation in
  * Core.

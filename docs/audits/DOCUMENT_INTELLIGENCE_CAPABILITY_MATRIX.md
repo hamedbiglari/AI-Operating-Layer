@@ -73,7 +73,7 @@ Each dependency was selected after measuring it here, not by popularity.
 - **Owner:** Phase 3 Document/Ingestion.
 - **License:** MIT.
 - **Security:** runs in-process and parses untrusted input — must run in the
-  Cloud Core worker, never in WordPress, behind size/MIME validation.
+  AI Core worker, never in WordPress, behind size/MIME validation.
 - **Performance:** fast on the fixtures; no measured pathology.
 - **Fallback:** conversion failure is an explicit status, never a silent pass.
 - **Fixture:** all seven fixtures.
@@ -121,7 +121,7 @@ Each dependency was selected after measuring it here, not by popularity.
 
 - **Reason for rejection: AGPL-3.0** (verified from metadata:
   `Dual Licensed - GNU AFFERO GPL 3.0 or Artifex commercial`).
-- For a network-served commercial Cloud Core, AGPL's network-use clause is a
+- For a network-served commercial AI Core, AGPL's network-use clause is a
   serious obligation. The commercial alternative is a paid Artifex licence.
 - It is the fastest and most popular option, which is precisely why it is
   worth recording the rejection: **popularity is not a selection criterion,

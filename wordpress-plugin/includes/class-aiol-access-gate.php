@@ -9,7 +9,7 @@
  * WHY THE DECISION IS CACHED LOCALLY RATHER THAN ASKED EACH TIME
  *
  * This runs on `template_redirect`, on every request, on shared hosting.
- * An HTTP round trip to Cloud Core there would put Core's latency on
+ * An HTTP round trip to AI Core there would put Core's latency on
  * every page load and Core's uptime on the merchant's. So the policy
  * table is cached and evaluated in PHP.
  *
@@ -271,7 +271,7 @@ class AIOL_Access_Gate
     }
 
     /**
-     * Refresh the cache from Cloud Core.
+     * Refresh the cache from AI Core.
      *
      * On failure the PREVIOUS cache is kept rather than cleared. Clearing
      * would mean a Core outage silently opens a site the merchant chose

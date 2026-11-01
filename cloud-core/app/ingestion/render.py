@@ -26,8 +26,8 @@ from app.ingestion.cdr import CanonicalDocument, Element
 
 FORMATS = ("markdown", "mmd", "html", "latex", "json")
 UNAVAILABLE_FORMATS = {
-    "docx": "no DOCX writer is installed in Cloud Core (python-docx is not a dependency)",
-    "pdf": "no PDF writer is installed in Cloud Core",
+    "docx": "no DOCX writer is installed in AI Core (python-docx is not a dependency)",
+    "pdf": "no PDF writer is installed in AI Core",
 }
 FURNITURE = ("header", "footer", "page_number", "page_break")
 

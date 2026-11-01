@@ -1223,7 +1223,7 @@ plainly that the plugin did not exist. It does now.
 | §38 responsibility | File | Status |
 |---|---|---|
 | authentication | `includes/class-aiol-credentials.php` | IMPLEMENTED |
-| connection to Cloud Core | `includes/class-aiol-client.php` | IMPLEMENTED |
+| connection to AI Core | `includes/class-aiol-client.php` | IMPLEMENTED |
 | content sync | `includes/class-aiol-hooks.php` | IMPLEMENTED |
 | product sync | `includes/class-aiol-hooks.php` | IMPLEMENTED |
 | schema rendering | `includes/class-aiol-schema.php` | IMPLEMENTED |

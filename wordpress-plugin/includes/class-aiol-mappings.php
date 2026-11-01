@@ -1,6 +1,6 @@
 <?php
 /**
- * Maps a WordPress post to a Cloud Core object.
+ * Maps a WordPress post to a AI Core object.
  *
  * The Core object id is stored in post meta because WordPress needs to know
  * *which* Core object a post represents. That is the ONLY Core-derived value

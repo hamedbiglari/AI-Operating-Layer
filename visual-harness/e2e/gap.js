@@ -9,7 +9,7 @@
  *           no other open gaps; no id: one GET /knowledge-gaps?status=open with
  *           each row's object name; no open gaps; 404, 422, 500 with Retry;
  *           Persian over live content.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

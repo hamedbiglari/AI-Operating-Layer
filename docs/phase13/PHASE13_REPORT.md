@@ -77,7 +77,7 @@ ran. It is not that these are half-built.
 
 # 3. Changes made
 
-## 3.1 Cloud Core
+## 3.1 AI Core
 
 * **8 new enums** (`ActorType`, `ActorConfidence`, `AccessPurpose`,
   `AccessTier`, `AccessDecision`, `AgentRegistrationOrigin`,

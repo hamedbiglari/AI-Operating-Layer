@@ -18,7 +18,7 @@ GSC connect → "Blocked: no OAuth client" (nothing imported, last sync empty) �
 kept, site-search metrics "Not provided") · same query from two sources shown as two rows ·
 promote → research task created · 390 px no overflow.
 
-## E2E-K2C-001 (real WordPress 6.6.2 + WooCommerce 9.3.3, Cloud Core at 0022)
+## E2E-K2C-001 (real WordPress 6.6.2 + WooCommerce 9.3.3, AI Core at 0022)
 price 12.90 + stock 7 synced · recommendation "recommended" 0.762 · `/ai/ask` merchant_url ·
 product page 200 · cart 25.80 USD · **order #18 on-hold** (unpaid) · tenant B: all 404, lists empty,
 no AI-answer leak. The test script had a broken placeholder (script defect) — repaired.

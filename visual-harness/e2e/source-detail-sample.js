@@ -9,7 +9,7 @@
  *           Persian in fa, the metadata line with Hamed and v3 isolated.
  *   Live:   with no source the heading reads "Source detail" and names the
  *           section; with a source it is the source's title.
- * Runs on file:// with Cloud Core mocked in the page. Persian expectations
+ * Runs on file:// with AI Core mocked in the page. Persian expectations
  * are built from code points, so this file stays ASCII and no rendering can
  * reverse them.
  *

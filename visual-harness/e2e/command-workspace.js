@@ -10,7 +10,7 @@
  *           an empty result list, the versions list with Compare; Run sends one
  *           POST and says so; a missing-scope refusal names the fields; a
  *           failed list shows the server message; Persian over live content.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *
@@ -35,7 +35,7 @@ const FA = {
     0x20, 0x648, 0x20, 0x641, 0x642, 0x637, 0x200C, 0x62E, 0x648, 0x627, 0x646, 0x62F, 0x646, 0x6CC, 0x20, 0x627, 0x633, 0x62A, 0x20, 0x2014, 0x20, 0x648, 0x6CC,
     0x631, 0x627, 0x6CC, 0x634, 0x60C, 0x20, 0x646, 0x633, 0x62E, 0x647, 0x654, 0x20) + digits(next) + fa(0x20, 0x631, 0x627, 0x20, 0x622, 0x63A, 0x627, 0x632,
     0x20, 0x645, 0x6CC, 0x200C, 0x6A9, 0x646, 0x62F),
-  saved: (rev) => fa(0x62F, 0x631) + ' Cloud Core ' + fa(0x630, 0x62E, 0x6CC, 0x631, 0x647, 0x20, 0x634, 0x62F, 0x20, 0xB7, 0x20, 0x628, 0x627, 0x632, 0x628,
+  saved: (rev) => fa(0x62F, 0x631) + ' AI Core ' + fa(0x630, 0x62E, 0x6CC, 0x631, 0x647, 0x20, 0x634, 0x62F, 0x20, 0xB7, 0x20, 0x628, 0x627, 0x632, 0x628,
     0x6CC, 0x646, 0x6CC, 0x20) + digits(rev) + '.',
   runningMsg: fa(0x631, 0x648, 0x6CC, 0x20, 0x633, 0x631, 0x648, 0x631, 0x20, 0x62F, 0x631, 0x20, 0x62D, 0x627, 0x644, 0x20, 0x627, 0x62C, 0x631, 0x627, 0x633,
     0x62A, 0x2E, 0x20, 0x645, 0x6CC, 0x200C, 0x62A, 0x648, 0x627, 0x646, 0x6CC, 0x62F, 0x20, 0x627, 0x6CC, 0x646, 0x20, 0x635, 0x641, 0x62D, 0x647, 0x20, 0x631,
@@ -124,7 +124,7 @@ function installMock(d) {
   check('open: the command, then its versions (and the list again)', (await requests()).slice(before),
     ['GET /workspace/commands/c1', 'GET /workspace/commands/c1/versions', 'GET /workspace/commands?limit=50']);
   check('editor header and save line', [v.editor, v.head, v.save, v.archive], [true,
-    ['Safety review', 'Completed', 'Version 2 ' + MD + ' has run, read-only ' + EM + ' editing starts version 3'], 'Saved to Cloud Core ' + MD + ' revision 5.', 'Archive']);
+    ['Safety review', 'Completed', 'Version 2 ' + MD + ' has run, read-only ' + EM + ' editing starts version 3'], 'Saved to AI Core ' + MD + ' revision 5.', 'Archive']);
   check('plan basics', v.plan, ['It will: ' + iso('Research the evidence') + ' (you chose this; the text suggested ' + LQ + iso('synthesis') + RQ + ')',
     'Acts on: ' + iso('knowledge object id = k1')]);
   check('result header and the empty claim list', [v.result[0].indexOf('Version 2 ' + MD + ' Completed ' + MD + ' started ') === 0, v.result[1]],

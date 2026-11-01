@@ -24,7 +24,7 @@ $aiol_state_error = AIOL_Mappings::error((int) $post->ID);
 $aiol_state_labels = [
     'not_configured' => __('Not linked', 'ai-operating-layer'),
     'pending'        => __('Will sync on save', 'ai-operating-layer'),
-    'synced'         => __('Synced with Cloud Core', 'ai-operating-layer'),
+    'synced'         => __('Synced with AI Core', 'ai-operating-layer'),
     'failed'         => __('Sync failed', 'ai-operating-layer'),
 ];
 ?>
@@ -39,7 +39,7 @@ $aiol_state_labels = [
     <?php endif; ?>
 
     <p class="aiol-field">
-        <label for="aiol_object_type"><?php esc_html_e('Cloud Core object type', 'ai-operating-layer'); ?></label>
+        <label for="aiol_object_type"><?php esc_html_e('AI Core object type', 'ai-operating-layer'); ?></label>
         <select id="aiol_object_type" name="aiol_object_type" style="width:100%">
             <?php foreach (AIOL_Mappings::allowed_object_types() as $aiol_type) : ?>
                 <option value="<?php echo esc_attr($aiol_type); ?>" <?php selected($aiol_object_type, $aiol_type); ?>>
@@ -52,12 +52,12 @@ $aiol_state_labels = [
     </p>
 
     <p class="aiol-field">
-        <label for="aiol_object_id"><?php esc_html_e('Cloud Core object ID', 'ai-operating-layer'); ?></label>
+        <label for="aiol_object_id"><?php esc_html_e('AI Core object ID', 'ai-operating-layer'); ?></label>
         <input type="text" id="aiol_object_id" name="aiol_object_id" style="width:100%"
                aria-describedby="aiol_object_id_hint"
                value="<?php echo esc_attr($aiol_object_id); ?>">
         <span class="aiol-hint" id="aiol_object_id_hint">
-            <?php esc_html_e('Copy the ID from Cloud Core. Leave empty to unlink this post. Cloud Core remains the source of truth for its content.', 'ai-operating-layer'); ?>
+            <?php esc_html_e('Copy the ID from AI Core. Leave empty to unlink this post. AI Core remains the source of truth for its content.', 'ai-operating-layer'); ?>
         </span>
     </p>
 </div>

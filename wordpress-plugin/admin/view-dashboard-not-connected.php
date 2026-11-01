@@ -1,6 +1,6 @@
 <?php
 /**
- * Dashboard empty state: not connected to Cloud Core.
+ * Dashboard empty state: not connected to AI Core.
  *
  * A merchant who opens the Dashboard submenu before ever configuring a
  * connection must not see an empty table (which reads as "no traffic
@@ -30,7 +30,7 @@ if (!defined('ABSPATH')) {
         <p>
             <?php
             esc_html_e(
-                'Traffic, AI agents, access decisions and search demand appear here once this site is connected to Cloud Core. Nothing has been recorded because nothing has been sent yet.',
+                'Traffic, AI agents, access decisions and search demand appear here once this site is connected to AI Core. Nothing has been recorded because nothing has been sent yet.',
                 'ai-operating-layer'
             );
             ?>

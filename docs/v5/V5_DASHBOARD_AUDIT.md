@@ -9,7 +9,7 @@ Nothing under `visual-harness/` or `cloud-core/` was changed, and `visual-harnes
   `141.0.7390.37`, headless. It launched and behaved normally. No download was needed. Revision 1247 (the one
   playwright-core 1.64 expects) was not installed, so small automation differences are possible.
 * Dashboard served by `python -m http.server` on 127.0.0.1:8080 (a `file://` page cannot call the API: CORS is only
-  enabled for the configured origin). API: Cloud Core on 127.0.0.1:8000, dev DB `aiol_v5c` at Alembic head 0046,
+  enabled for the configured origin). API: AI Core on 127.0.0.1:8000, dev DB `aiol_v5c` at Alembic head 0046,
   `CORS_ALLOWED_ORIGINS=http://127.0.0.1:8080`.
 * A throwaway organization (`audit-2026-10-22`, owner role) was registered and used. Data created in the dev DB: one
   provider, two models, one knowledge object, two KTP packages. No provider key, no "Test connection", no job.
@@ -156,7 +156,7 @@ was not touched (it has the same `.app` font reset as D4, see "Left open").
 * **D7.** New `ktpFrom()` in the AI Center script: `user:<id>` shows "User " plus `<bdi class="identifier">`,
   `execution:<id>` shows "AI execution " plus the identifier, any other value is shown as is. No backend change, no name lookup.
 * **D6.** `<caption class="visually-hidden">` added in two builders: the wired-screen table builder (caption = the
-  panel title, for example "Users of this organization (Cloud Core)") and the page-sections table in the website
+  panel title, for example "Users of this organization (AI Core)") and the page-sections table in the website
   script ("Page sections and their order", through a new optional `caption` argument of that script's `table()`).
   Only the tables found were handled; the other JS table builders still create tables without a caption.
 

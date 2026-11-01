@@ -17,7 +17,7 @@ because **neither exists in the ingestion path**. The one Markdown feature
 in the repository (`AIOL_Representations::markdown()`, Phase 9) converts
 *WordPress post content outward* for machine consumption. It is an output
 representation, unrelated to document normalization, and it lives in the
-WordPress plugin rather than Cloud Core.
+WordPress plugin rather than AI Core.
 
 ---
 
@@ -73,7 +73,7 @@ and not a stored file. No PDF is ever fetched, opened or parsed.
 `FACT.` `Document.storage_path` exists as a nullable column and is **never
 written by any service**. There is no artifact storage layer.
 
-`FACT.` The only `UploadFile` in the entire Cloud Core API is
+`FACT.` The only `UploadFile` in the entire AI Core API is
 `POST /api/v1/queries/import` (Phase 6, CSV/XLSX query lists).
 
 `FACT.` The only Celery task is `research.execute_task`. **No conversion
@@ -119,7 +119,7 @@ Nearest neighbours, and why they are not substitutes:
 
 ### Execution properties — NOT APPLICABLE
 
-Asynchronous / Cloud-Core-isolated / resource-metered / retryable /
+Asynchronous / AI-Core-isolated / resource-metered / retryable /
 observable: **none apply, because no conversion runs.** The `sync_jobs`
 infrastructure from Phase 10 exists and would be the right home, but has
 no `job_type` for conversion.
@@ -156,7 +156,7 @@ Persian/English, RTL, tables, citations, URLs, Unicode, provenance —
 ## Architectural owner
 
 `INFERENCE, and I believe it is correct:` the owner is the **Phase 3
-Document/Ingestion layer in Cloud Core** — `app/models/document.py`,
+Document/Ingestion layer in AI Core** — `app/models/document.py`,
 `app/services/document_service.py`, `app/services/chunking.py`.
 
 Reasoning: `Document` already owns `content`, `mime_type`, `storage_path`

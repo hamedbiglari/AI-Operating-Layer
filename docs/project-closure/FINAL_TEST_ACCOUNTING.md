@@ -8,7 +8,7 @@
 | Dashboard rules | 33 | **33** | 0 | — | — | — | visual-harness/check.js |
 | Responsive | 45 screens × 6 widths × 2 directions | clean | 0 | — | — | — | 0 overflow, 0 escapes, 0 targets < 24 px |
 | English locale | 44 screens | clean | 0 | — | — | — | 0 Persian UI strings / attributes |
-| Live API — E2E-K2C-001 | 1 flow | pass | — | — | — | — | real WordPress 6.6.2 + WooCommerce 9.3.3 at Cloud Core 0032: order #30 |
+| Live API — E2E-K2C-001 | 1 flow | pass | — | — | — | — | real WordPress 6.6.2 + WooCommerce 9.3.3 at AI Core 0032: order #30 |
 | Live API — tenant isolation | 9 direct + 4 lists + AI answer | pass | — | — | — | — | all 404 / empty / no leak |
 | Live API — AI job via Celery worker | 1 job, 4 items | pass | — | — | — | — | 4 AIExecutions (test_provider), SSE shows completion |
 | Browser — wallet, SSE, export, chips | 1 run | pass | — | — | — | — | no provider → BLOCKED + disabled; sandbox top-up credited only after webhook |

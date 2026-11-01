@@ -5,7 +5,7 @@
  * The failure this prevents: offer sync is an HTTP call, so a 5,000-product
  * CSV import or a 200-row bulk edit would issue one synchronous request per
  * product inside a single PHP request — timeout, half-synced catalogue,
- * retry storm against Cloud Core.
+ * retry storm against AI Core.
  *
  * The guard must satisfy two properties that pull against each other:
  *   1. it must STOP calling Core past a threshold, and

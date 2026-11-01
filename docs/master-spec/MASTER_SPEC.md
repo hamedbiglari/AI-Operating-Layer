@@ -83,7 +83,7 @@ The architecture is:
                       REST / MCP
                            |
              +-------------v-------------+
-             |       CLOUD CORE          |
+             |       AI CORE             |
              |                           |
              | Knowledge Engine          |
              | Evidence Engine           |
@@ -111,7 +111,7 @@ The architecture is:
 
 IMPORTANT:
 
-The Cloud Core is the source of truth.
+The AI Core is the source of truth.
 
 WordPress is an adapter/projection/integration layer.
 
@@ -1366,7 +1366,7 @@ ai-operating-layer
 The plugin should handle:
 
 - authentication
-- connection to Cloud Core
+- connection to AI Core
 - content sync
 - product sync
 - schema rendering
@@ -1377,7 +1377,7 @@ The plugin should handle:
 
 The plugin must remain thin.
 
-Cloud Core remains the source of truth.
+AI Core remains the source of truth.
 
 ==================================================
 39. WORDPRESS MAPPINGS
@@ -2112,7 +2112,7 @@ Scale
 
 Do not silently change the following:
 
-Cloud Core = source of truth
+AI Core = source of truth
 WordPress = adapter
 PostgreSQL = primary database
 pgvector = initial vector layer

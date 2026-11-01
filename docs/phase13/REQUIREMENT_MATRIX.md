@@ -68,7 +68,7 @@ column and is deliberately *not* a status.
 
 | ID | Requirement | Origin | Implementation | Test | Status |
 |---|---|---|---|---|---|
-| P13-REQ-030 | Green connection indicator for Cloud Core and plugin | OWNER | `GET /telemetry/health`, `view-dashboard.php` connection strip | **NOT WRITTEN** | **PARTIAL** |
+| P13-REQ-030 | Green connection indicator for AI Core and plugin | OWNER | `GET /telemetry/health`, `view-dashboard.php` connection strip | **NOT WRITTEN** | **PARTIAL** |
 | P13-REQ-031 | Overall status is the worst of its parts, never rounded up | ADR-039 / `AIOL_Status` | `telemetry_health` aggregation | existing `test-status.php` covers the plugin half; Core half **NOT WRITTEN** | **PARTIAL** |
 | P13-REQ-032 | Logs captured | MASTER §103 | `AIOL_Logger` (reused, not duplicated) | existing | **PARTIAL** |
 | P13-REQ-033 | Button to clear log history, without destroying the analytics record | OWNER | `view-dashboard.php` form + `AIOL_Telemetry::clear_buffer` | **NOT WRITTEN** | **PARTIAL** |

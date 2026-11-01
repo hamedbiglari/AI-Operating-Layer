@@ -9,7 +9,7 @@
  *           job=None; no id, 404, 500 with Retry; Persian, including the job
  *           status after a language switch.
  *   Entry:  the "Processing details" link in a Source detail document row.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

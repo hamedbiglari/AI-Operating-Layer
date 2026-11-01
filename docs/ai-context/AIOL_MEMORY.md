@@ -409,7 +409,7 @@ file from scratch (do not diff). Output only the file content.
 - Debt rows added in 7E, all OPEN: V5-add-source-dataset,
   V5-add-source-site-article, V5-add-source-research,
   V5-add-source-supplier, V5-add-source-ui-merge (old "Add a source to
-  Cloud Core" panel overlaps the Web page card and has no Persian).
+  AI Core" panel overlaps the Web page card and has no Persian).
 - Debt: V5-knowledge-provenance-link OPEN — nothing links to
   #screen-provenance?id= yet (no entry point from Knowledge), although
   the no-id message says "Open one from Knowledge". Not yet written to
@@ -684,7 +684,7 @@ Session / memory:
 
 - User on Windows PowerShell at C:\Users\Hamed\Downloads\1- AI-Operating-Layer;
   real nested repo is graphify-src/02-core-tool-full-repo.
-- AIOL includes separate website, dashboard prototype, FastAPI Cloud Core,
+- AIOL includes separate website, dashboard prototype, FastAPI AI Core,
   WordPress plugin.
 - Larger goal: all dashboard screens backend-connected, fully bilingual
   Persian/English with RTL + Persian digits, tested, visually elevated
@@ -693,7 +693,7 @@ Session / memory:
   harness + Playwright/Chrome ran together; background servers reaped.
 - Docker Desktop must be manually started for local Postgres tests.
   Postgres in aiol_postgres container.
-- Cloud Core dev server typically uvicorn at 127.0.0.1:8010 (some 8000).
+- AI Core dev server typically uvicorn at 127.0.0.1:8010 (some 8000).
 - GitHub API unauth limit 60 req/hr. User often checks UI manually.
 - The AIOL repo is at C:/Users/Hamed/Downloads/1- AI-Operating-Layer/
   graphify-src/02-core-tool-full-repo. Do not run git from

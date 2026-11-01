@@ -93,7 +93,7 @@ def upsert_commerce_mapping(
                 status_code=http_status.HTTP_409_CONFLICT,
                 detail=(
                     f"WooCommerce product {woo_product_id} is already mapped to a different "
-                    "Cloud Core product on this site. Remove the existing mapping before "
+                    "AI Core product on this site. Remove the existing mapping before "
                     "re-pointing it."
                 ),
             )

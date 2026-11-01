@@ -3,7 +3,7 @@
 **Test ID:** E2E-K2C-001 · **Date:** 2026-09-24 · **Tenant:** "Toranjebin Merchant" (`85f86782-a013-48c6-82c3-947e36e76727`)
 
 ## Environment (all real processes, no fixtures)
-Cloud Core (uvicorn + Celery worker) on PostgreSQL 16 DB `aiol_e2e` migrated 0001→0018; Redis 7;
+AI Core (uvicorn + Celery worker) on PostgreSQL 16 DB `aiol_e2e` migrated 0001→0018; Redis 7;
 **WordPress 6.6.2 + WooCommerce 9.3.3 + the AIOL plugin 0.13.0** on MariaDB, served by `wp server`
 (WordPress and WooCommerce obtained from their GitHub releases; PHP 8.3 from the Ubuntu archive).
 No AI model is called anywhere in this loop (recommendation is policy-based by design), so
@@ -46,7 +46,7 @@ Single product, single tenant pair, localhost; no real payment; one sample query
 at master §55 volumes and not production.
 
 ## Regression run — final existing-owner closure pass (2026-09-24)
-Fresh Cloud Core DB, same real WordPress 6.6.2 + WooCommerce 9.3.3. New WooCommerce product #14.
+Fresh AI Core DB, same real WordPress 6.6.2 + WooCommerce 9.3.3. New WooCommerce product #14.
 All stages re-passed; additionally **stock change 40 → 7 synced** (Core offer `stock_quantity 7`,
 `external_id woo:14`). Recommendation `recommended` (0.762); `/ai/ask` `merchant_url`
 `…/?product=toranjebin-grade-a-100-g-2`; product page 200 with JSON-LD Offer 12.90 USD; cart 2 × =

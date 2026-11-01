@@ -3,7 +3,7 @@
 ## 1. Executive Verdict
 **PROJECT_NOT_COMPLETE · NEW PHASE REQUIRED: NO.**
 The core Knowledge → Evidence → Trust → Product → Recommendation → Merchant URL → Cart →
-Order loop now runs end to end on real Cloud Core + real WordPress + real WooCommerce
+Order loop now runs end to end on real AI Core + real WordPress + real WooCommerce
 (E2E-K2C-001). Still open, all owned by existing phases: real AI provider (external
 credential), email-code login (UI only), billing backend (designed only), dashboard wiring
 (one live screen), and the §55-scale pilot.
@@ -26,7 +26,7 @@ BLOCKED — `BLOCKED_EXTERNAL_DEPENDENCY` only (`ANTHROPIC_API_KEY` absent). Imp
 25 items: COMPLETE 11 · COMPLETE except external credential 1 (E-22) · PARTIAL 6 · UI_ONLY 2 · DESIGNED_ONLY 1 · NOT_VERIFIED 1 · NOT_ESTABLISHED_AS_REQUIREMENT 2 · SUPERSEDED 1.
 
 ## 7. Architecture Audit
-Cloud Core canonical (plugin holds no business truth; offer price flowed Woo → plugin → Core →
+AI Core canonical (plugin holds no business truth; offer price flowed Woo → plugin → Core →
 JSON-LD on the page). Product ≠ Offer, Evidence ≠ Claim, Knowledge ≠ Research preserved.
 
 ## 8. Security Audit

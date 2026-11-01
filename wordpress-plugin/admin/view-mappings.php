@@ -32,7 +32,7 @@ $aiol_retry_safe = $aiol_list_error_code !== ''
 
 <p class="description" style="max-width:70ch">
     <?php esc_html_e(
-        'Each row links one WordPress post to one object in Cloud Core. Cloud Core owns the object; WordPress owns only the post.',
+        'Each row links one WordPress post to one object in AI Core. AI Core owns the object; WordPress owns only the post.',
         'ai-operating-layer'
     ); ?>
 </p>
@@ -44,7 +44,7 @@ $aiol_retry_safe = $aiol_list_error_code !== ''
                 <strong><?php esc_html_e('Could not load mappings.', 'ai-operating-layer'); ?></strong><br>
                 <?php echo esc_html($aiol_list_error); ?><br>
                 <?php if ($aiol_retry_safe) : ?>
-                    <?php esc_html_e('Nothing was changed in Cloud Core. Retrying is safe.', 'ai-operating-layer'); ?>
+                    <?php esc_html_e('Nothing was changed in AI Core. Retrying is safe.', 'ai-operating-layer'); ?>
                 <?php else : ?>
                     <?php esc_html_e('Retrying will not help until the cause above is fixed.', 'ai-operating-layer'); ?>
                 <?php endif; ?>
@@ -64,7 +64,7 @@ $aiol_retry_safe = $aiol_list_error_code !== ''
         <h3><?php esc_html_e('No content is linked yet', 'ai-operating-layer'); ?></h3>
         <p>
             <?php esc_html_e(
-                'Open any post, page or product, find the "AI Operating Layer" panel in the sidebar, and paste the Cloud Core object ID it represents. It will appear here after you save.',
+                'Open any post, page or product, find the "AI Operating Layer" panel in the sidebar, and paste the AI Core object ID it represents. It will appear here after you save.',
                 'ai-operating-layer'
             ); ?>
         </p>
@@ -74,7 +74,7 @@ $aiol_retry_safe = $aiol_list_error_code !== ''
         <thead>
             <tr>
                 <th scope="col"><?php esc_html_e('WordPress post', 'ai-operating-layer'); ?></th>
-                <th scope="col"><?php esc_html_e('Cloud Core object', 'ai-operating-layer'); ?></th>
+                <th scope="col"><?php esc_html_e('AI Core object', 'ai-operating-layer'); ?></th>
                 <th scope="col"><?php esc_html_e('Type', 'ai-operating-layer'); ?></th>
                 <th scope="col"><?php esc_html_e('Sync status', 'ai-operating-layer'); ?></th>
                 <th scope="col"><?php esc_html_e('Last synced', 'ai-operating-layer'); ?></th>
@@ -101,7 +101,7 @@ $aiol_retry_safe = $aiol_list_error_code !== ''
                         </span>
                     <?php endif; ?>
                 </td>
-                <td data-label="<?php esc_attr_e('Cloud Core object', 'ai-operating-layer'); ?>">
+                <td data-label="<?php esc_attr_e('AI Core object', 'ai-operating-layer'); ?>">
                     <code><?php echo esc_html((string) ($aiol_row['object_id'] ?? '')); ?></code>
                 </td>
                 <td data-label="<?php esc_attr_e('Type', 'ai-operating-layer'); ?>">

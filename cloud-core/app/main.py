@@ -20,7 +20,7 @@ configure_logging()
 app = FastAPI(
     title=settings.APP_NAME,
     version="0.1.0",
-    description="Knowledge-to-Discovery-to-Commerce Operating Layer — Cloud Core API",
+    description="Knowledge-to-Discovery-to-Commerce Operating Layer — AI Core API",
     # The interactive docs and schema map every route; they are not published in production (SEC-07).
     docs_url=None if settings.is_production else "/docs",
     redoc_url=None if settings.is_production else "/redoc",

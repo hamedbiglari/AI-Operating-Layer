@@ -42,7 +42,7 @@ contradiction by deleting either one; the history is the point.
 
 ## 4. Things that must not be changed without a new ADR
 
-* Cloud Core is the source of truth; the plugin is a thin adapter (§52).
+* AI Core is the source of truth; the plugin is a thin adapter (§52).
 * There is exactly one source manager, one job system (`SyncJob`), one
   query normalizer (`query_service.normalize_query`), one design system
   (`frontend/design-system/`), one icon registry

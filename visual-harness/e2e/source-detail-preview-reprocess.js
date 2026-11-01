@@ -10,7 +10,7 @@
  *              documents list read again; cancel sends nothing; 500; a 403
  *              leaves the button in place.
  *   Persian labels for all of the above.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

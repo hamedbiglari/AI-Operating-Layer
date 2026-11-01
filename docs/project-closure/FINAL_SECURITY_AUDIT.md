@@ -30,7 +30,7 @@ test asserts the behaviour; nothing here is claimed from documentation.
 | 23 | Secrets in output | Scanned the repository for key patterns (`sk-ant-`, `sk-`, `AKIA`, `whsec_`) before every package build: none. No secret appears in HTML, logs, API responses or the database in plaintext. | — | build-time scan |
 
 ## Residual risks (accepted, documented)
-- **Browser storage:** the dashboard keeps the Cloud Core token in memory for the session only; a shared machine still exposes an open tab. Sign-out clears it.
+- **Browser storage:** the dashboard keeps the AI Core token in memory for the session only; a shared machine still exposes an open tab. Sign-out clears it.
 - **`sandbox` payment provider:** credits a wallet without real money. It must never be configured in production — stated in the deployment guide and reported in the UI as SANDBOX.
 - **Live provider TLS pinning:** not implemented; standard CA validation is used.
 - **No pen-test:** this is a code-and-test audit, not an external penetration test.

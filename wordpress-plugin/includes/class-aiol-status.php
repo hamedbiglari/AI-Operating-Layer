@@ -9,7 +9,7 @@
  *
  * So each dependency reports separately, and the overall state is the WORST
  * of its parts, with the reason named. `degraded` is a first-class state —
- * distinct from both healthy and failed — because Cloud Core's rate limiter
+ * distinct from both healthy and failed — because AI Core's rate limiter
  * fails open by design (ADR-039): the system genuinely is working AND
  * genuinely is missing a protection, and both halves of that need saying.
  */
@@ -66,7 +66,7 @@ class AIOL_Status
     }
 
     /**
-     * Maps a Cloud Core /health/ready payload onto adapter-visible checks.
+     * Maps a AI Core /health/ready payload onto adapter-visible checks.
      * Note Redis maps to DEGRADED, not FAILED: Core keeps serving without
      * it, and saying "failed" would overstate the problem just as saying
      * "healthy" would understate it.

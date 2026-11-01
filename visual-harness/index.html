@@ -2839,7 +2839,7 @@ tr.is-paged-out { display: none; }
 
 </style>
 <style>
-/* Existing-owner closure (Phase 14): live Cloud Core panels. When connected,
+/* Existing-owner closure (Phase 14): live AI Core panels. When connected,
    a wired screen's sample content is hidden so no sample data remains on a
    connected screen; unwired screens keep their sample content and the banner
    says so. */
@@ -3437,7 +3437,7 @@ button.card { color: inherit; font: inherit; }
 
 <p class="harness-note">
   Representative fixture data, not production content. Counts and identifiers are illustrative.
-  This harness demonstrates the UX architecture; it is not wired to Cloud Core.
+  This harness demonstrates the UX architecture; it is not wired to AI Core.
 </p>
 
 <div class="frame" id="frame" data-width="desktop">
@@ -4408,20 +4408,20 @@ button.card { color: inherit; font: inherit; }
   <div class="page-header">
     <div>
       <h1 id="h-aiexec">AI executions</h1>
-      <div class="callout page-intro" role="note"><p>Live operational view of every real AI-model invocation, read from Cloud Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API.</p><p><code>/api/v1/ai-executions</code></p></div>
+      <div class="callout page-intro" role="note"><p>Live operational view of every real AI-model invocation, read from AI Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API.</p><p><code>/api/v1/ai-executions</code></p></div>
     </div>
   </div>
 
   <div class="card">
     <h2 class="card__title">Connection</h2>
     <form id="aix-connect" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:var(--space-3);align-items:end" novalidate>
-      <label class="field"><span class="field__label">Cloud Core URL</span><input id="aix-base" type="url" inputmode="url" dir="ltr" value="http://localhost:8000" autocomplete="off"></label>
+      <label class="field"><span class="field__label">AI Core URL</span><input id="aix-base" type="url" inputmode="url" dir="ltr" value="http://localhost:8000" autocomplete="off"></label>
       <label class="field"><span class="field__label">Access token</span><input id="aix-token" type="password" dir="ltr" autocomplete="off" placeholder="Bearer token (kept in memory only)"></label>
       <button type="submit" class="btn btn--primary" id="aix-connect-btn">Connect</button>
     </form>
   </div>
 
-  <div id="aix-state" role="status" aria-live="polite" class="callout" data-state="idle" style="margin-block:var(--space-4)"><p id="aix-state-text">Not connected. Enter the Cloud Core URL and an access token.</p></div>
+  <div id="aix-state" role="status" aria-live="polite" class="callout" data-state="idle" style="margin-block:var(--space-4)"><p id="aix-state-text">Not connected. Enter the AI Core URL and an access token.</p></div>
 
   <div id="aix-body" hidden>
     <div class="stat-grid" style="margin-block-end:var(--space-4)">
@@ -4468,7 +4468,7 @@ button.card { color: inherit; font: inherit; }
     <div class="callout page-intro" role="note"><p>A category carries the section schema its topics should cover. Each cell of the matrix is read from the knowledge base — claims, evidence, conflicts, gaps — never typed in. An empty cell means the section has never been researched for that topic, not that it does not apply.</p></div>
   </div></div>
   <div class="card live-panel">
-    <p class="profile-missing kx-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing kx-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="kx-body" hidden>
       <div class="live-toolbar">
         <label class="field"><span class="field__label">Category</span><select id="mx-cat"><option value="">Choose a category</option></select></label>
@@ -4500,7 +4500,7 @@ button.card { color: inherit; font: inherit; }
     <div class="callout page-intro" role="note"><p>Six dimensions, reported separately and never collapsed into one number: sources, processing, knowledge, evidence, sections and publication. A figure that cannot be known is shown as unknown with the reason — never as zero. If the newest run failed, the last successful audit stays on screen, marked stale.</p></div>
   </div></div>
   <div class="card live-panel">
-    <p class="profile-missing kx-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing kx-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="kx-body" hidden>
       <div class="live-toolbar">
         <label class="field"><span class="field__label">Scope</span><select id="cv-scope">
@@ -4523,7 +4523,7 @@ button.card { color: inherit; font: inherit; }
     <div class="callout page-intro" role="note"><p>A publication is built sentence by sentence from claims that already carry their sources, then numbered in Vancouver order by first appearance across the whole document. A sentence with no validated source is marked evidence-unavailable and gets no number — a citation is never invented.</p></div>
   </div></div>
   <div class="card live-panel">
-    <p class="profile-missing kx-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing kx-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="kx-body" hidden>
       <div class="live-toolbar">
         <label class="field"><span class="field__label">Topic</span><select id="pb-topic"></select></label>
@@ -4556,7 +4556,7 @@ button.card { color: inherit; font: inherit; }
   <div class="page-header"><div><h1 id="h-screen-site-blog">Website: blog</h1>
     <div class="callout page-intro" role="note"><p>Write and publish the articles on your public website, in English and Persian. A post needs an author and a body before it can be published; every edit is kept as a revision with a note, and that history is shown on the published article.</p></div></div></div>
   <div class="card live-panel">
-    <p class="profile-missing ws-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing ws-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="ws-body" hidden>
       <div class="live-toolbar">
         <label class="field"><span class="field__label">Language</span><select id="wb-lang"><option value="">All</option><option value="en">English</option><option value="fa">Persian</option></select></label>
@@ -4590,9 +4590,9 @@ button.card { color: inherit; font: inherit; }
 
 <section class="screen" id="screen-site-sections" aria-labelledby="h-screen-site-sections">
   <div class="page-header"><div><h1 id="h-screen-site-sections">Website: page sections</h1>
-    <div class="callout page-intro" role="note"><p>Show, hide, reorder and retitle the sections of the public home page, separately for each language. The hero carries the page's only main heading and cannot be hidden. The site reads these settings when it is connected to Cloud Core.</p></div></div></div>
+    <div class="callout page-intro" role="note"><p>Show, hide, reorder and retitle the sections of the public home page, separately for each language. The hero carries the page's only main heading and cannot be hidden. The site reads these settings when it is connected to AI Core.</p></div></div></div>
   <div class="card live-panel">
-    <p class="profile-missing ws-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing ws-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="ws-body" hidden>
       <div class="live-toolbar">
         <label class="field"><span class="field__label">Page</span><select id="ws-page"><option value="home">Home</option></select></label>
@@ -4608,7 +4608,7 @@ button.card { color: inherit; font: inherit; }
   <div class="page-header"><div><h1 id="h-screen-site-subscribers">Website: subscribers</h1>
     <div class="callout page-intro" role="note"><p>Everyone who joined the newsletter from the public website. An address is stored only with explicit consent, which is recorded with its date and wording. Export as CSV, mark someone unsubscribed, or erase an address completely on request.</p></div></div></div>
   <div class="card live-panel">
-    <p class="profile-missing ws-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing ws-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="ws-body" hidden>
       <div class="live-toolbar">
         <label class="field"><span class="field__label">Status</span><select id="wn-status"><option value="">All</option><option value="subscribed">Subscribed</option><option value="unsubscribed">Unsubscribed</option></select></label>
@@ -4626,7 +4626,7 @@ button.card { color: inherit; font: inherit; }
   <div class="page-header"><div><h1 id="h-chat-settings">Chat settings</h1>
     <div class="callout page-intro" role="note"><p>Controls for the knowledge chat on the public website. Choose which knowledge topics it may read, whether it may ask to research online, which AI resource pays for it, and the limits per person. The chat stays off until you enable it here, and every rule on this screen is enforced on the server — not in the browser.</p></div></div></div>
   <div class="card live-panel">
-    <p class="profile-missing cs-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing cs-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="cs-body" hidden>
       <div class="live-toolbar">
         <button type="button" class="btn" id="cs-refresh">Refresh</button>
@@ -4672,11 +4672,11 @@ button.card { color: inherit; font: inherit; }
 <section class="screen" id="screen-memory" aria-labelledby="h-memory" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-memory">Memory Center</h1>
-    <div class="callout page-intro" role="note"><p>Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from Cloud Core; exports are produced by the backend.</p></div>
+    <div class="callout page-intro" role="note"><p>Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from AI Core; exports are produced by the backend.</p></div>
   </div></div>
   <div class="card live-panel" id="mc-panel">
     <h2 class="card__title">Working memory</h2>
-    <p id="mc-note" class="profile-missing">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p id="mc-note" class="profile-missing">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div id="mc-body" hidden>
       <div class="live-toolbar">
         <label class="field"><span class="field__label">Search</span><input id="mc-q" type="search" placeholder="text inside the memory"></label>
@@ -4708,13 +4708,13 @@ button.card { color: inherit; font: inherit; }
 <section class="screen" id="screen-ai-catalog" aria-labelledby="h-ai-catalog" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-ai-catalog">AI Catalog</h1>
-    <div class="callout page-intro" role="note"><p>Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay "Discovered" until verified from an official source; API and pricing information stays empty until then. This screen reads live from Cloud Core — no sample data.</p></div>
+    <div class="callout page-intro" role="note"><p>Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay "Discovered" until verified from an official source; API and pricing information stays empty until then. This screen reads live from AI Core — no sample data.</p></div>
   </div></div>
   <div class="card live-panel" id="cat-connect-card" data-live-wired>
     <h2 class="card__title">Connection</h2>
-    <p id="cat-conn-note">Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your Cloud Core URL and token here.</p>
+    <p id="cat-conn-note">Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your AI Core URL and token here.</p>
     <form class="live-connect" id="cat-connect" novalidate>
-      <label class="field"><span class="field__label">Cloud Core URL</span><input id="cat-base" type="url" dir="ltr" value="http://localhost:8000" autocomplete="off"></label>
+      <label class="field"><span class="field__label">AI Core URL</span><input id="cat-base" type="url" dir="ltr" value="http://localhost:8000" autocomplete="off"></label>
       <label class="field"><span class="field__label">Access token</span><input id="cat-token" type="password" dir="ltr" autocomplete="off"></label>
       <button type="submit" class="btn btn--primary">Connect</button>
     </form>
@@ -4738,13 +4738,13 @@ button.card { color: inherit; font: inherit; }
 <section class="screen" id="screen-ai-center" aria-labelledby="h-aicenter" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-aicenter">AI Center</h1>
-    <div class="callout page-intro" role="note"><p>Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to Cloud Core. No sample data: until connected this screen shows nothing.</p><p><code>/api/v1/ai-center</code></p></div>
+    <div class="callout page-intro" role="note"><p>Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to AI Core. No sample data: until connected this screen shows nothing.</p><p><code>/api/v1/ai-center</code></p></div>
   </div></div>
   <div class="card live-panel" id="aic-connect-card">
     <h2 class="card__title">Connection</h2>
     <p id="aic-conn-note">Not connected.</p>
     <form class="live-connect" id="aic-connect" novalidate>
-      <label class="field"><span class="field__label">Cloud Core URL</span><input id="aic-base" type="url" dir="ltr" value="http://localhost:8000" autocomplete="off"></label>
+      <label class="field"><span class="field__label">AI Core URL</span><input id="aic-base" type="url" dir="ltr" value="http://localhost:8000" autocomplete="off"></label>
       <label class="field"><span class="field__label">Access token</span><input id="aic-token" type="password" dir="ltr" autocomplete="off"></label>
       <button type="submit" class="btn btn--primary">Connect</button>
     </form>
@@ -4866,7 +4866,7 @@ button.card { color: inherit; font: inherit; }
     <div class="aic-pane" data-aic-pane="agents" hidden>
       <div class="card agent-console" id="agent-console" style="margin-block-end:var(--space-4)">
         <h2 class="card__title">Agent orchestration console</h2>
-        <p class="aic-hint">Every action below calls Cloud Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it.</p>
+        <p class="aic-hint">Every action below calls AI Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it.</p>
         <div class="agent-console__grid">
           <form class="agent-form" data-agent-action="create-agent" novalidate>
             <h3>1. Register an agent</h3>
@@ -4928,7 +4928,7 @@ button.card { color: inherit; font: inherit; }
         <p class="aic-hint">Internal and external Agents that perform coordinated tasks. Agents use AI resources but are a separate concept from AI providers.</p>
         <div id="aic-agents-list" class="aic-slot"></div>
         <h3 style="margin-block:var(--space-4) var(--space-2)">Session inspector</h3>
-        <p class="aic-hint">Tasks, handoffs and agent-to-agent messages of one orchestration session — read from Cloud Core.</p>
+        <p class="aic-hint">Tasks, handoffs and agent-to-agent messages of one orchestration session — read from AI Core.</p>
         <form id="aic-session-form" class="live-connect" novalidate><label class="field"><span class="field__label">Session ID</span><input id="aic-session-id" type="text" dir="ltr" autocomplete="off"></label><button type="submit" class="btn">Inspect</button></form>
         <div id="aic-session-view" aria-live="polite"></div>
       </div>
@@ -5291,9 +5291,9 @@ button.card { color: inherit; font: inherit; }
     </div>
   </div>
   <div class="card demand-panel" id="demand-panel">
-    <h2 class="card__title">Demand intelligence (Cloud Core)</h2>
+    <h2 class="card__title">Demand intelligence (AI Core)</h2>
     <p class="aic-hint">Real demand only: your own site searches, a Search Console export you upload, and live Search Console / GA4 once OAuth is configured. Sources stay separate; nothing is estimated. Promote a signal to create a research task.</p>
-    <p id="demand-note" class="profile-missing">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p id="demand-note" class="profile-missing">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div id="demand-body" hidden>
       <div class="demand-grid">
         <div class="demand-box"><h3>Connectors</h3><div id="demand-connections"></div></div>
@@ -5750,20 +5750,20 @@ button.card { color: inherit; font: inherit; }
   <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="#screen-dashboard">Dashboard</a><span class="breadcrumbs__sep" aria-hidden="true"><svg aria-hidden="true" class="icon icon--mirror" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span>Connection &amp; logs</span></nav>
   <div class="page-header">
     <div>
-      <h1 id="h-ops"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 7 17a3.5 3.5 0 0 1-5-5l2.5-2.5M14.5 9.5 17 7a3.5 3.5 0 0 1 5 5l-2.5 2.5M9 15l6-6"/></svg> Connection &amp; logs</h1><div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Whether this site is talking to Cloud Core, what version of each half is running, and what the adapter has been doing.</p></div></div>
+      <h1 id="h-ops"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 7 17a3.5 3.5 0 0 1-5-5l2.5-2.5M14.5 9.5 17 7a3.5 3.5 0 0 1 5 5l-2.5 2.5M9 15l6-6"/></svg> Connection &amp; logs</h1><div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Whether this site is talking to AI Core, what version of each half is running, and what the adapter has been doing.</p></div></div>
     </div>
   </div>
 
   <div class="card">
     <h2 class="card__title">Status</h2>
     <dl class="kv">
-      <dt>Cloud Core</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Connected</span></span> <span class="identifier" style="font-family:var(--font-mono)">api.aiol.example</span> · 142 ms</dd>
+      <dt>AI Core</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Connected</span></span> <span class="identifier" style="font-family:var(--font-mono)">api.aiol.example</span> · 142 ms</dd>
       <dt>Database</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Healthy</span></span></dd>
       <dt>Queue (Redis)</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Degraded</span></span> Reachable but not responding to PING</dd>
       <dt>Rate limiting</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Not enforced</span></span> The limiter fails open without Redis</dd>
       <dt>Overall</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Degraded</span></span></dd>
       <dt>Plugin version</dt><dd><bdi class="identifier">v0.13.0</bdi></dd>
-      <dt>Cloud Core version</dt><dd><bdi class="identifier">v0.13.0</bdi></dd>
+      <dt>AI Core version</dt><dd><bdi class="identifier">v0.13.0</bdi></dd>
       <dt>Telemetry API</dt><dd><bdi class="identifier">v13.0</bdi></dd>
       <dt>Last event received</dt><dd>2 minutes ago</dd>
       <dt>Last rollup</dt><dd>Today 03:00 UTC</dd>
@@ -5783,14 +5783,14 @@ button.card { color: inherit; font: inherit; }
           <tr><td data-label="Time">2026-09-17 09:41</td><td data-label="Level"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg><span>info</span></span></td><td data-label="Message">Telemetry batch accepted: 48 events, 2 duplicates</td></tr>
           <tr><td data-label="Time">2026-09-17 09:38</td><td data-label="Level"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.8 9.2 9.2 14.8M9.2 9.2l5.6 5.6"/></svg><span>error</span></span></td><td data-label="Message">Telemetry batch failed: timeout after 5s — 48 events queued for retry</td></tr>
           <tr><td data-label="Time">2026-09-17 09:12</td><td data-label="Level"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg><span>info</span></span></td><td data-label="Message">New agent discovered: ZorpAnalyticsCrawler</td></tr>
-          <tr><td data-label="Time">2026-09-17 08:55</td><td data-label="Level"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg><span>info</span></span></td><td data-label="Message">Authenticated to Cloud Core with key <bdi class="identifier">aiol_***REDACTED***</bdi></td></tr>
+          <tr><td data-label="Time">2026-09-17 08:55</td><td data-label="Level"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5v-5M12 8.2h.01"/></svg><span>info</span></span></td><td data-label="Message">Authenticated to AI Core with key <bdi class="identifier">aiol_***REDACTED***</bdi></td></tr>
         </tbody>
       </table>
     </div>
     <div class="dialog__actions" style="margin-top:var(--space-4)">
       <button class="btn btn--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5 7.4 20a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-13.5M10.3 10.5v6.5M13.7 10.5v6.5"/></svg>Clear log history</button>
     </div>
-    <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-block-end:0">Clearing removes the adapter's own log on this site. It does not delete page views, agents or access decisions held in Cloud Core — those are the analytics record, and a log-clearing button that quietly erased them would be a destructive action wearing a harmless label. Credential-shaped strings are stripped before anything is written, so clearing is housekeeping, not damage control.</p>
+    <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-block-end:0">Clearing removes the adapter's own log on this site. It does not delete page views, agents or access decisions held in AI Core — those are the analytics record, and a log-clearing button that quietly erased them would be a destructive action wearing a harmless label. Credential-shaped strings are stripped before anything is written, so clearing is housekeeping, not damage control.</p>
   </div>
 </section>
 
@@ -6091,10 +6091,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 <section class="screen" id="screen-chat" aria-labelledby="h-chat" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-chat">Command workspace</h1>
-    <div class="callout page-intro" role="note"><p>Type a research or knowledge command. It is saved to Cloud Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back.</p></div>
+    <div class="callout page-intro" role="note"><p>Type a research or knowledge command. It is saved to AI Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back.</p></div>
   </div></div>
   <div class="card live-panel">
-    <p class="profile-missing kx-note">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p class="profile-missing kx-note">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div class="kx-body ws-grid" hidden>
       <aside class="ws-side" aria-label="Your commands">
         <div class="btn-group">
@@ -6180,9 +6180,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     <div><h1 id="h-settings"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.14.6.6 1.07 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</h1><div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Preferences for this account. Nothing here touches Knowledge Objects, sources, wallet or billing history — resetting a preference is never a data-deletion action (see "Reset all settings" below).</p></div></div></div>
   </div>
   <div class="card rq-console" id="rq-console">
-    <h2 class="card__title">Research engine (Cloud Core)</h2>
+    <h2 class="card__title">Research engine (AI Core)</h2>
     <p class="aic-hint">Searches Crossref, PubMed and Europe PMC together. Discovery only creates <em>sources</em>; nothing becomes evidence until a person reviews it. A source that was found is not a source that was read.</p>
-    <p id="rq-note" class="profile-missing">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <p id="rq-note" class="profile-missing">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div id="rq-body" hidden>
       <div class="demand-grid">
         <form class="demand-box" id="rq-kw-form" novalidate><h3>Search with keywords</h3>
@@ -6235,8 +6235,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 
   <div class="card" style="margin-top:var(--space-4)" id="settings-preferences">
     <h2 class="card__title">Preferences saved to your account</h2>
-    <p class="aic-hint">Language, theme and notifications are stored in Cloud Core for your user and restored on any device after you connect.</p>
-    <p id="pref-status" class="profile-missing">Not connected to Cloud Core — changes apply to this page only.</p>
+    <p class="aic-hint">Language, theme and notifications are stored in AI Core for your user and restored on any device after you connect.</p>
+    <p id="pref-status" class="profile-missing">Not connected to AI Core — changes apply to this page only.</p>
     <fieldset class="edit-group" id="pref-notifications" disabled>
       <legend>Email notifications</legend>
       <label class="pref-toggle"><input type="checkbox" data-pref-notif="processing_failures"> Processing failures</label>
@@ -6250,7 +6250,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     <p class="aic-hint">PostgreSQL (ai_working_memory) is the canonical, always-on memory store. No action can replace it.</p>
     <dl class="kv"><dt>Canonical store</dt><dd>PostgreSQL — locked</dd><dt>Semantic backend</dt><dd id="mem-semantic-val"><em>Not connected</em></dd></dl>
     <h3 style="margin-block:var(--space-3) var(--space-2)">Memory profiles</h3>
-    <div id="mem-profiles-list"><p class="profile-missing">Not connected to Cloud Core</p></div>
+    <div id="mem-profiles-list"><p class="profile-missing">Not connected to AI Core</p></div>
     <div class="page-actions" style="margin-block-start:var(--space-3)">
       <button type="button" class="btn" id="mem-add-profile-btn">Add memory profile</button>
     </div>
@@ -6270,7 +6270,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   <div class="card" style="margin-top:var(--space-4)" id="settings-bg-processing">
     <h2 class="card__title">Background AI processing</h2>
     <p class="aic-hint">A connected account is <strong>not</strong> automatically eligible for background processing — you must enable each task type explicitly.</p>
-    <div id="bg-policies-list"><p class="profile-missing">Not connected to Cloud Core</p></div>
+    <div id="bg-policies-list"><p class="profile-missing">Not connected to AI Core</p></div>
     <div class="page-actions" style="margin-block-start:var(--space-3)">
       <button type="button" class="btn" id="bg-add-btn">Configure a task type</button>
     </div>
@@ -6528,8 +6528,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     </div>
   </div>
   <div class="card wallet-panel" id="wallet-panel">
-    <h2 class="card__title">Wallet (Cloud Core)</h2>
-    <p id="wallet-note" class="profile-missing">Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.</p>
+    <h2 class="card__title">Wallet (AI Core)</h2>
+    <p id="wallet-note" class="profile-missing">Not connected to AI Core. Connect on the Dashboard or AI Center screen.</p>
     <div id="wallet-body" hidden>
       <div class="stat-grid" id="wallet-stats"></div>
       <p id="wallet-provider"></p>
@@ -9248,7 +9248,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 }());
 </script><script>
 /* Phase 17: live AI-execution operational surface. Talks ONLY to the real
-   Cloud Core API; renders API values with textContent (never innerHTML);
+   AI Core API; renders API values with textContent (never innerHTML);
    the token lives in memory only. Unknown cost is shown as "Unknown", a
    permission-hidden cost as "Hidden (admin only)" — never as 0. */
 (function () {
@@ -9341,7 +9341,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function fail(e) {
     $('aix-body').hidden = true;
     if (e && e.denied) setState('denied', 'Permission denied (HTTP {status}). The token is missing, expired, or not valid for this organization.', { status: e.denied });
-    else setState('error', 'Could not load AI executions: {error}. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS).',
+    else setState('error', 'Could not load AI executions: {error}. Check the URL, and that AI Core allows this origin (CORS_ALLOWED_ORIGINS).',
       { error: e && e.message ? e.message : 'network error' });
   }
   function detail(id) {
@@ -9373,7 +9373,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   $('aix-connect').addEventListener('submit', function (e) {
     e.preventDefault();
     var base = $('aix-base').value.trim().replace(/\/+$/, ''), token = $('aix-token').value.trim();
-    if (!base || !token) { setState('error', 'Both the Cloud Core URL and an access token are required.'); return; }
+    if (!base || !token) { setState('error', 'Both the AI Core URL and an access token are required.'); return; }
     conn = { base: base, token: token }; offset = 0; $('aix-detail').hidden = true; load();
   });
   $('aix-apply').addEventListener('click', function () { if (conn) { offset = 0; load(); } });
@@ -9383,38 +9383,38 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 </script>
 <script>
 /* Existing-owner closure (Phase 14): wires the priority screens to the real
-   Cloud Core API. Values are rendered with textContent only; the token lives
+   AI Core API. Values are rendered with textContent only; the token lives
    in memory only; unknown values show "—", never invented numbers. */
 (function () {
   var LIVE = null;
   var SCREENS = {
-    'screen-dashboard': { kind: 'cards', title: 'Live overview (Cloud Core)', compact: true },
-    'screen-knowledge': { kind: 'knowledge', title: 'Knowledge objects (Cloud Core)', compact: true },
-    'screen-knowledge-detail': { kind: 'knowledgeDetail', title: 'Knowledge detail (Cloud Core)', compact: true },
-    'screen-sources': { kind: 'sources', title: 'Sources (Cloud Core)', compact: true },
-    'screen-detail': { kind: 'detail', title: 'Source detail (Cloud Core)', compact: true },
-    'screen-processing': { kind: 'processing', title: 'Document processing (Cloud Core)', compact: true },
-    'screen-provenance': { kind: 'provenance', title: 'Provenance (Cloud Core)', compact: true },
-    'screen-add': { kind: 'add', title: 'Add source (Cloud Core)', compact: true },
-    'screen-visibility': { kind: 'visibility', title: 'AI visibility (Cloud Core)', compact: true },
-    'screen-products': { kind: 'table', title: 'Products (Cloud Core)', endpoint: '/products',
+    'screen-dashboard': { kind: 'cards', title: 'Live overview (AI Core)', compact: true },
+    'screen-knowledge': { kind: 'knowledge', title: 'Knowledge objects (AI Core)', compact: true },
+    'screen-knowledge-detail': { kind: 'knowledgeDetail', title: 'Knowledge detail (AI Core)', compact: true },
+    'screen-sources': { kind: 'sources', title: 'Sources (AI Core)', compact: true },
+    'screen-detail': { kind: 'detail', title: 'Source detail (AI Core)', compact: true },
+    'screen-processing': { kind: 'processing', title: 'Document processing (AI Core)', compact: true },
+    'screen-provenance': { kind: 'provenance', title: 'Provenance (AI Core)', compact: true },
+    'screen-add': { kind: 'add', title: 'Add source (AI Core)', compact: true },
+    'screen-visibility': { kind: 'visibility', title: 'AI visibility (AI Core)', compact: true },
+    'screen-products': { kind: 'table', title: 'Products (AI Core)', endpoint: '/products',
       cols: [['Product', 'name'], ['SKU', 'sku'], ['Status', 'status', 'badge'], ['Category', 'category'], ['Updated', 'updated_at', 'date']],
       detail: 'product' },
-    'screen-gap': { kind: 'gap', title: 'Knowledge gap (Cloud Core)', compact: true },
-    'screen-visibility-detail': { kind: 'visibilityDetail', title: 'AI visibility report (Cloud Core)', compact: true },
-    'screen-access': { kind: 'access', title: 'AI access (Cloud Core)', compact: true },
-    'screen-traffic': { kind: 'table', title: 'Page views (Cloud Core)', endpoint: '/telemetry/page-views',
+    'screen-gap': { kind: 'gap', title: 'Knowledge gap (AI Core)', compact: true },
+    'screen-visibility-detail': { kind: 'visibilityDetail', title: 'AI visibility report (AI Core)', compact: true },
+    'screen-access': { kind: 'access', title: 'AI access (AI Core)', compact: true },
+    'screen-traffic': { kind: 'table', title: 'Page views (AI Core)', endpoint: '/telemetry/page-views',
       cols: [['Path', 'path'], ['Title', 'content_title'], ['Actor', 'actor_type'], ['Agent', 'agent_signature'], ['Purpose', 'purpose'], ['Status', 'status_code']] },
-    'screen-statistics': { kind: 'table', title: 'Content statistics (Cloud Core)', endpoint: '/telemetry/content-stats',
+    'screen-statistics': { kind: 'table', title: 'Content statistics (AI Core)', endpoint: '/telemetry/content-stats',
       cols: [['Path', 'path'], ['Date', 'view_date'], ['Human', 'human_views'], ['AI crawlers', 'ai_crawler_views'], ['AI answers', 'ai_answer_views'], ['Search', 'search_views'], ['Blocked', 'blocked_views'], ['Total', 'total_views']] },
-    'screen-research': { kind: 'table', title: 'Research tasks (Cloud Core)', endpoint: '/research/tasks',
+    'screen-research': { kind: 'table', title: 'Research tasks (AI Core)', endpoint: '/research/tasks',
       cols: [['Query', 'query'], ['Type', 'task_type'], ['Status', 'status', 'badge'], ['Started', 'started_at', 'date'], ['Completed', 'completed_at', 'date']],
       filter: ['status', ['', 'pending', 'queued', 'running', 'completed', 'failed', 'cancelled']] },
-    'screen-operations': { kind: 'table', title: 'Adapter installations (Cloud Core)', endpoint: '/installations',
+    'screen-operations': { kind: 'table', title: 'Adapter installations (AI Core)', endpoint: '/installations',
       cols: [['Installation', 'name'], ['Adapter', 'adapter_type'], ['Status', 'status', 'badge'], ['URL', 'external_url'], ['Created', 'created_at', 'date']] },
-    'screen-admin-users': { kind: 'table', title: 'Users of this organization (Cloud Core)', endpoint: '/users',
+    'screen-admin-users': { kind: 'table', title: 'Users of this organization (AI Core)', endpoint: '/users',
       cols: [['Name', 'name'], ['Email', 'email'], ['Role', 'role'], ['Status', 'status', 'badge'], ['Created', 'created_at', 'date']] },
-    'screen-settings': { kind: 'org', title: 'Organization (Cloud Core)' }
+    'screen-settings': { kind: 'org', title: 'Organization (AI Core)' }
   };
   var BADGE = { published: 'badge--success', succeeded: 'badge--success', verified: 'badge--success', approved: 'badge--success', active: 'badge--success',
     draft: 'badge--unknown', in_review: 'badge--info', queued: 'badge--info', running: 'badge--processing', retrying: 'badge--warning',
@@ -9447,7 +9447,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   }
   function connectForm(panel) {
     var f = el('form', 'live-connect'); f.noValidate = true;
-    var l1 = el('label', 'field'); l1.appendChild(el('span', 'field__label', 'Cloud Core URL'));
+    var l1 = el('label', 'field'); l1.appendChild(el('span', 'field__label', 'AI Core URL'));
     var u = el('input'); u.type = 'url'; u.dir = 'ltr'; u.value = 'http://localhost:8000'; u.className = 'live-base'; l1.appendChild(u);
     var l2 = el('label', 'field'); l2.appendChild(el('span', 'field__label', 'Access token'));
     var t = el('input'); t.type = 'password'; t.dir = 'ltr'; t.autocomplete = 'off'; t.className = 'live-token'; l2.appendChild(t);
@@ -9455,7 +9455,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     f.appendChild(l1); f.appendChild(l2); f.appendChild(b);
     f.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (!u.value.trim() || !t.value.trim()) { state(panel, 'error', 'Both the Cloud Core URL and an access token are required.'); return; }
+      if (!u.value.trim() || !t.value.trim()) { state(panel, 'error', 'Both the AI Core URL and an access token are required.'); return; }
       connect(u.value.trim().replace(/\/+$/, ''), t.value.trim());
     });
     return f;
@@ -9465,7 +9465,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     document.body.dataset.live = 'on';
     var banner = Array.prototype.find.call(document.querySelectorAll('div, p, aside'), function (n) {
       return n.children.length === 0 && /Representative fixture data/.test(n.textContent); });
-    if (banner) banner.textContent = 'Live mode: screens with a "Cloud Core" panel (Dashboard, Knowledge, Sources, Processing, AI visibility, AI executions, Products, Settings) show real data. Every other screen still shows representative sample data.';
+    if (banner) banner.textContent = 'Live mode: screens with a "AI Core" panel (Dashboard, Knowledge, Sources, Processing, AI visibility, AI executions, Products, Settings) show real data. Every other screen still shows representative sample data.';
     document.dispatchEvent(new CustomEvent('aiol:live', { detail: { base: base, token: token } }));
   }
   window.AIOL_LIVE_CONNECT = connect;
@@ -9477,7 +9477,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     if (st.filter) q.push(cfg.filter[0] + '=' + encodeURIComponent(st.filter));
     state(panel, 'loading', 'Loading…');
     return api(cfg.endpoint + '?' + q.join('&')).then(function (page) {
-      if (!page.items.length) { state(panel, 'empty', 'Nothing here yet in Cloud Core.'); return; }
+      if (!page.items.length) { state(panel, 'empty', 'Nothing here yet in AI Core.'); return; }
       var wrap = el('div', 'table-wrap'), tb = el('table', 'table'), th = el('thead'), tr = el('tr');
       cfg.cols.forEach(function (c) { var h = el('th', null, c[0]); h.scope = 'col'; tr.appendChild(h); });
       tb.appendChild(el('caption', 'visually-hidden', cfg.title)); th.appendChild(tr); tb.appendChild(th); var bd = el('tbody');
@@ -9944,7 +9944,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       state(panel, 'ready');
       if (!e.denied) { status('error', 'Could not load knowledge objects ({error}).', { error: e.message }, 'Retry', load); return; }
       status('denied', e.denied === 401
-        ? 'Cloud Core did not accept the access token (HTTP 401). It may have expired.'
+        ? 'AI Core did not accept the access token (HTTP 401). It may have expired.'
         : 'This access token is not allowed to read knowledge objects (HTTP 403).', null, 'Reconnect', reconnect);
       statusAct.setAttribute('aria-controls', panel.querySelector('.live-connect').id); statusAct.setAttribute('aria-expanded', 'false');
     }
@@ -10268,7 +10268,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       state(panel, 'ready');
       if (!e.denied) { status('error', 'Could not load sources ({error}).', { error: e.message }, 'Retry', load); return; }
       status('denied', e.denied === 401
-        ? 'Cloud Core did not accept the access token (HTTP 401). It may have expired.'
+        ? 'AI Core did not accept the access token (HTTP 401). It may have expired.'
         : 'This access token is not allowed to read sources (HTTP 403).', null, 'Reconnect', reconnect);
       statusAct.setAttribute('aria-controls', panel.querySelector('.live-connect').id); statusAct.setAttribute('aria-expanded', 'false');
     }
@@ -10512,7 +10512,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         // one sentence, and nothing from the server's reply.
         if (e.status === 404 || e.status === 422) status('empty', 'This source was not found.');
         else if (e.denied) status('denied', e.denied === 401
-          ? 'Cloud Core did not accept the access token (HTTP 401). It may have expired.'
+          ? 'AI Core did not accept the access token (HTTP 401). It may have expired.'
           : 'This access token is not allowed to read sources (HTTP 403).', null, 'Reconnect', reconnect);
         else status('error', 'Could not load this source ({error}).', { error: e.message }, 'Retry', load);
         return null;
@@ -10643,7 +10643,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         state(panel, 'ready');
         // An unknown id, another organization's (404) or a malformed one (422): one sentence.
         if (e.status === 404 || e.status === 422) status('empty', 'This document was not found.');
-        else if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else if (e.denied === 401) status('denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.');
         else status('error', 'Could not load processing ({error}).', { error: e.message }, 'Retry', load);
         return null;
       });
@@ -10766,7 +10766,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         state(panel, 'ready');
         // An unknown id, another organization's (404) or a malformed one (422): one sentence.
         if (e.status === 404 || e.status === 422) status('empty', 'This knowledge object was not found.');
-        else if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else if (e.denied === 401) status('denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.');
         else status('error', 'Could not load provenance ({error}).', { error: e.message }, 'Retry', load);
         return null;
       });
@@ -10809,7 +10809,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     function busy(on) { up.button.disabled = web.button.disabled = on || !select.value; }
     function failed(f, e, tpl) {
       if (e.denied === 403) f.say('denied', 'Your role is not allowed to add documents (HTTP 403).');
-      else if (e.denied === 401) f.say('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+      else if (e.denied === 401) f.say('denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.');
       else f.say('error', tpl, { error: e.message });
     }
     // The job runs in the worker; the source's detail shows its documents as they arrive.
@@ -10849,7 +10849,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         busy(false);
       }).catch(function (e) {
         state(panel, 'ready');
-        if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        if (e.denied === 401) status('denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.');
         else status('error', 'Could not load sources ({error}).', { error: e.message }, 'Retry', load);
       });
     }
@@ -10925,7 +10925,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }
     function failed(e, tpl) {
       state(panel, 'ready');
-      if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+      if (e.denied === 401) status('denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.');
       else status('error', tpl, { error: e.message }, 'Retry', load);
     }
     function load() {
@@ -11037,7 +11037,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       }).catch(function (e) {
         if (seq !== st.seq) return null;
         state(panel, 'ready');
-        if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        if (e.denied === 401) status('denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.');
         else status('error', failText, { error: e.message }, 'Retry', load);
         return null;
       });
@@ -11243,7 +11243,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         state(panel, 'ready');
         // An unknown id, another organization's (404) or a malformed one (422): one sentence.
         if (e.status === 404 || e.status === 422) status('empty', 'This knowledge object was not found.');
-        else if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else if (e.denied === 401) status('denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.');
         else status('error', 'Could not load the knowledge object ({error}).', { error: e.message }, 'Retry', load);
         return null;
       });
@@ -11301,7 +11301,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         b.disabled = true; msg.textContent = 'Saving…';
         api('/organizations/me', { method: 'PATCH', body: { name: i.value.trim() } })
           .then(function () { return api('/organizations/me'); })
-          .then(function (fresh) { i.value = fresh.name; msg.textContent = 'Saved. Re-read from Cloud Core: ' + fresh.name; })
+          .then(function (fresh) { i.value = fresh.name; msg.textContent = 'Saved. Re-read from AI Core: ' + fresh.name; })
           .catch(function (err) { msg.textContent = 'Not saved: ' + err.message; })
           .then(function () { b.disabled = false; });
       });
@@ -11314,8 +11314,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var panel = el('section', 'card live-panel'); panel.setAttribute('aria-label', cfg.title); panel.id = 'live-' + id;
     panel.appendChild(el('h2', 'card__title', cfg.title));
     var note = el('p', 'live-note', cfg.compact
-      ? 'Sample data: the counts on this screen are illustrative, not read from Cloud Core.'
-      : 'Not connected — the content below this panel is sample data. Connect to show real Cloud Core data here.');
+      ? 'Sample data: the counts on this screen are illustrative, not read from AI Core.'
+      : 'Not connected — the content below this panel is sample data. Connect to show real AI Core data here.');
     panel.appendChild(note);
     var form = connectForm(panel), toggle = null;
     // Compact panels stay one line until the user asks to connect, so the
@@ -11324,7 +11324,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       panel.classList.add('live-panel--compact');
       form.id = 'live-connect-' + id; form.hidden = true;
       form.appendChild(el('p', 'live-hint', 'The token is kept in this page’s memory only and is never saved.'));
-      toggle = el('button', 'btn live-toggle', 'Connect Cloud Core'); toggle.type = 'button';
+      toggle = el('button', 'btn live-toggle', 'Connect AI Core'); toggle.type = 'button';
       toggle.setAttribute('aria-expanded', 'false'); toggle.setAttribute('aria-controls', form.id);
       toggle.addEventListener('click', function () {
         var open = form.hidden; form.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
@@ -11351,7 +11351,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var header = screen.querySelector(':scope > .page-header');
     if (header) header.insertAdjacentElement('afterend', panel); else screen.insertBefore(panel, screen.firstChild);
     document.addEventListener('aiol:live', function () {
-      note.textContent = 'Connected to ' + LIVE.base + '. Showing real Cloud Core data; the sample content of this screen is hidden.';
+      note.textContent = 'Connected to ' + LIVE.base + '. Showing real AI Core data; the sample content of this screen is hidden.';
       panel.querySelector('.live-connect').hidden = true;
       if (toggle) toggle.hidden = true;
       var tb = panel.querySelector('.live-toolbar'); if (tb) tb.hidden = false;
@@ -11369,9 +11369,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
   });
-  // Creating needs Cloud Core: the sample screen says so instead of doing nothing.
+  // Creating needs AI Core: the sample screen says so instead of doing nothing.
   var knowNew = document.querySelector('#screen-knowledge .page-actions .btn--primary');
-  if (knowNew) { knowNew.disabled = true; knowNew.title = 'Connect Cloud Core to create'; }
+  if (knowNew) { knowNew.disabled = true; knowNew.title = 'Connect AI Core to create'; }
   // Re-read the Dashboard cards each time the screen is shown again.
   var dash = document.getElementById('screen-dashboard'), dashWasActive = dash.classList.contains('is-active');
   new MutationObserver(function () {
@@ -11717,7 +11717,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 </script>
 
 <script>
-/* AI Catalog, Shared Memory, Background Processing, Agent Network — live Cloud Core panels */
+/* AI Catalog, Shared Memory, Background Processing, Agent Network — live AI Core panels */
 (function () {
   /* ───── utilities ───── */
   var $ = function (id) { return document.getElementById(id); };
@@ -11876,7 +11876,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   }
   loadBgPolicies = loadBgPolicies2;
   if($('bg-add-btn')){
-    $('bg-add-btn').addEventListener('click',function(){ if(!live()){ $('bg-form-msg').textContent='Connect to Cloud Core first.'; }
+    $('bg-add-btn').addEventListener('click',function(){ if(!live()){ $('bg-form-msg').textContent='Connect to AI Core first.'; }
       $('bg-add-form').hidden=false; $('bg-task-type').focus(); if(live()) loadBgChoices(); });
     $('bg-add-cancel').addEventListener('click',function(){$('bg-add-form').hidden=true;});
     $('bg-add-form').addEventListener('submit',function(e){
@@ -11916,7 +11916,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   if($('aic-session-form')){
     $('aic-session-form').addEventListener('submit',function(e){
       e.preventDefault(); var sid=$('aic-session-id').value.trim(); var out=$('aic-session-view'); out.textContent='';
-      if(!sid||!live()){ out.textContent=live()?'Enter a session ID.':'Connect to Cloud Core first.'; return; }
+      if(!sid||!live()){ out.textContent=live()?'Enter a session ID.':'Connect to AI Core first.'; return; }
       Promise.all([api('/agent-network/sessions/'+sid), api('/agent-network/sessions/'+sid+'/tasks'),
                    api('/agent-network/sessions/'+sid+'/handoffs'), api('/agent-network/sessions/'+sid+'/messages')]).then(function(r){
         out.appendChild(el('p',null,'Goal: '+v(r[0].goal)+' · status '+r[0].status));
@@ -11950,13 +11950,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 })();
 </script>
 <script>
-/* Agent orchestration console — real Cloud Core calls only. */
+/* Agent orchestration console — real AI Core calls only. */
 (function () {
   var box = document.getElementById('agent-console'); if (!box) return;
   var log = document.getElementById('agent-console-log');
   function live() { return window.AIOL_LIVE_STATE && window.AIOL_LIVE_STATE(); }
   function api(path, method, body) {
-    var L = live(); if (!L) return Promise.reject(new Error('Connect to Cloud Core first (Connection card above).'));
+    var L = live(); if (!L) return Promise.reject(new Error('Connect to AI Core first (Connection card above).'));
     return fetch(L.base + '/api/v1' + path, { method: method || 'GET', headers: Object.assign({ Authorization: 'Bearer ' + L.token }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) throw new Error((b.error && b.error.message) || ('HTTP ' + r.status)); return b; }); });
   }
@@ -12011,7 +12011,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 })();
 </script>
 <script>
-/* Demand intelligence panel — real Cloud Core data only. */
+/* Demand intelligence panel — real AI Core data only. */
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   if (!$('demand-panel')) return;
@@ -12127,7 +12127,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var addScreen = $('screen-add');
   if (addScreen) {
     var card = el('section', 'card live-panel'); card.id = 'live-add-source';
-    card.appendChild(el('h2', 'card__title', 'Add a source to Cloud Core'));
+    card.appendChild(el('h2', 'card__title', 'Add a source to AI Core'));
     var note = el('p', 'profile-missing', 'Not connected — the form below this panel is a design sample. Connect on the Dashboard to add real sources.'); card.appendChild(note);
     var f = el('form', 'add-live-form'); f.noValidate = true; f.hidden = true;
     f.innerHTML = '<label class="field"><span class="field__label">Title</span><input name="title" required maxlength="300"></label>' +
@@ -12149,7 +12149,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           msg.textContent = 'Source added and queued for processing (job ' + (j.job_id || j.id || 'created') + '). Follow it on the Processing screen.'; f.reset(); });
       }).catch(function (err) { msg.textContent = 'Not added: ' + err.message; });
     });
-    document.addEventListener('aiol:live', function () { note.textContent = 'Connected — this form writes to Cloud Core. The sample form below is a design reference.'; note.className = ''; f.hidden = false; });
+    document.addEventListener('aiol:live', function () { note.textContent = 'Connected — this form writes to AI Core. The sample form below is a design reference.'; note.className = ''; f.hidden = false; });
   }
 
   /* ---------- explicit DEMO / FIXTURE labels on screens without their own live data ---------- */
@@ -12175,7 +12175,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 })();
 </script>
 <script>
-/* Research engine console — real Cloud Core calls only. */
+/* Research engine console — real AI Core calls only. */
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   if (!$('rq-console')) return;
@@ -12841,7 +12841,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 </script>
 <script>
 /* Knowledge screens — Categories & matrix, Coverage audit, Publications & citations (ADR-114/115/116).
-   All reads are live from Cloud Core. Nothing on these screens is sample data. */
+   All reads are live from AI Core. Nothing on these screens is sample data. */
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   if (!$('mx-cat')) return;
@@ -13109,7 +13109,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 })();
 </script>
 <script>
-/* Website management — blog, page sections, newsletter subscribers (ADR-118). Live from Cloud Core only. */
+/* Website management — blog, page sections, newsletter subscribers (ADR-118). Live from AI Core only. */
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   if (!$('wb-list')) return;
@@ -13262,7 +13262,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 })();
 </script>
 <script>
-/* Command workspace (prompt v4.0 §46–§54, ADR-125). Live from Cloud Core only.
+/* Command workspace (prompt v4.0 §46–§54, ADR-125). Live from AI Core only.
    The server is the authority for every draft and every run. localStorage holds only a copy of the text
    typed since the last confirmed save, so a lost connection cannot lose a sentence; it is never read as
    the record of what was asked or what ran. */
@@ -13350,7 +13350,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var use = el('button', 'btn', 'Use it'); use.type = 'button';
       use.addEventListener('click', function () { $('ws-text').value = local; dirty = true; saveNow(); });
       $('ws-save').appendChild(use);
-    } else { saveLine('Saved to Cloud Core · revision {rev}.', { rev: v.draft_revision }); }
+    } else { saveLine('Saved to AI Core · revision {rev}.', { rev: v.draft_revision }); }
     fillScope(v);
     var running = c.state === 'queued' || c.state === 'running';
     $('ws-run').disabled = v.frozen || running; $('ws-cancel').disabled = !running;
@@ -13377,7 +13377,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       dirty = false; store('aiol-ws-' + current.id, null); revision = r.version.draft_revision;
       var newVersion = r.version.version !== current.current.version;
       current.current = r.version;
-      saveLine('Saved to Cloud Core · version {v}, revision {rev}.', { v: r.version.version, rev: r.version.draft_revision });
+      saveLine('Saved to AI Core · version {v}, revision {rev}.', { v: r.version.version, rev: r.version.draft_revision });
       if (newVersion) open(current.id); else renderPlan(null); })
       .catch(function (e) {
         if (e.status === 409 && e.body && (e.body.detail || {}).server_text !== undefined) {
@@ -13528,7 +13528,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 })();
 </script>
 <script>
-/* Chat settings (master prompt S14, ADR-128) - live from Cloud Core only. Every value is rendered with
+/* Chat settings (master prompt S14, ADR-128) - live from AI Core only. Every value is rendered with
    textContent, and nothing is saved that the server would not accept. */
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -13537,7 +13537,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x !== undefined && x !== null) e.textContent = x; return e; }
   function api(path, method, body) {
     var L = live();
-    if (!L) return Promise.reject(new Error('Not connected to Cloud Core.'));
+    if (!L) return Promise.reject(new Error('Not connected to AI Core.'));
     return fetch(L.base + '/api/v1' + path, { method: method || 'GET',
       headers: Object.assign({ Authorization: 'Bearer ' + L.token }, body ? { 'Content-Type': 'application/json' } : {}),
       body: body ? JSON.stringify(body) : undefined }).then(function (r) {
@@ -13654,11 +13654,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var FA = {
     "Dashboard": "داشبورد",
     "What entered the system, what it became, and what needs a person.": "چه چیزی وارد سیستم شد، به چه تبدیل شد و چه چیزی به رسیدگی انسانی نیاز دارد.",
-    "Live overview (Cloud Core)": "نمای زنده (Cloud Core)",
+    "Live overview (AI Core)": "نمای زنده (AI Core)",
     "NOT CONNECTED": "متصل نیست",
-    "Sample data: the counts on this screen are illustrative, not read from Cloud Core.": "داده‌های نمونه: اعداد این صفحه نمایشی‌اند و از Cloud Core خوانده نشده‌اند.",
-    "Connect Cloud Core": "اتصال به Cloud Core",
-    "Cloud Core URL": "آدرس Cloud Core",
+    "Sample data: the counts on this screen are illustrative, not read from AI Core.": "داده‌های نمونه: اعداد این صفحه نمایشی‌اند و از AI Core خوانده نشده‌اند.",
+    "Connect AI Core": "اتصال به AI Core",
+    "AI Core URL": "آدرس AI Core",
     "Access token": "توکن دسترسی",
     "Connect": "اتصال",
     "The token is kept in this page’s memory only and is never saved.": "توکن فقط در حافظهٔ همین صفحه نگه داشته می‌شود و هرگز ذخیره نمی‌شود.",
@@ -13743,7 +13743,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Skip to main content": "رفتن به محتوای اصلی",
     "Show navigation": "نمایش منو",
     "Hide navigation": "پنهان کردن منو",
-    "Both the Cloud Core URL and an access token are required.": "هم آدرس Cloud Core و هم توکن دسترسی لازم است.",
+    "Both the AI Core URL and an access token are required.": "هم آدرس AI Core و هم توکن دسترسی لازم است.",
     "Loading…": "در حال بارگذاری…",
     "LIVE DATA": "دادهٔ زنده",
     "Knowledge objects": "پرونده‌های دانش",
@@ -13803,7 +13803,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "{name} was created; it is not on this page.": "{name} ایجاد شد؛ در این صفحه نیست.",
     "Open": "باز کردن",
     "Could not create: {error}": "ایجاد نشد: {error}",
-    "Connect Cloud Core to create": "برای ایجاد، به Cloud Core متصل شوید",
+    "Connect AI Core to create": "برای ایجاد، به AI Core متصل شوید",
     "New knowledge object": "پرونده دانش جدید",
     // Knowledge screen (C4): static text, sample rows and the list messages.
     "Sources & Documents": "منابع و اسناد",
@@ -13824,7 +13824,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "No knowledge objects match this search and these filters.": "هیچ پرونده دانشی با این جست‌وجو و فیلترها مطابقت ندارد.",
     "Finished objects are hidden; turn on Show finished to include them.": "پرونده‌های تمام‌شده پنهان‌اند؛ برای نمایش آن‌ها «نمایش تمام‌شده‌ها» را روشن کنید.",
     "Could not load knowledge objects ({error}).": "بارگذاری پرونده‌های دانش ناموفق بود ({error}).",
-    "Cloud Core did not accept the access token (HTTP 401). It may have expired.": "Cloud Core توکن دسترسی را نپذیرفت (\u2068HTTP 401\u2069). ممکن است منقضی شده باشد.",
+    "AI Core did not accept the access token (HTTP 401). It may have expired.": "AI Core توکن دسترسی را نپذیرفت (\u2068HTTP 401\u2069). ممکن است منقضی شده باشد.",
     "This access token is not allowed to read knowledge objects (HTTP 403).": "این توکن دسترسی اجازهٔ خواندن پرونده‌های دانش را ندارد (\u2068HTTP 403\u2069).",
     // Sources list (Step 7A2a; glossary 7A3a)
     "Failed": "ناموفق",
@@ -14093,7 +14093,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     // Categories & matrix, Coverage audit (Steps 8C, 8D)
     "Categories & Master Topic Matrix": "دسته‌ها و ماتریس اصلی موضوعات",
     "A category carries the section schema its topics should cover. Each cell of the matrix is read from the knowledge base — claims, evidence, conflicts, gaps — never typed in. An empty cell means the section has never been researched for that topic, not that it does not apply.": "هر دسته طرح‌وارهٔ بخش‌هایی را دارد که موضوعاتش باید پوشش دهند. هر خانهٔ ماتریس از پایگاه دانش خوانده می‌شود — ادعاها، شواهد، تعارض‌ها، شکاف‌ها — و هرگز دستی وارد نمی‌شود. خانهٔ خالی یعنی آن بخش هرگز برای آن موضوع پژوهش نشده است، نه اینکه کاربرد ندارد.",
-    "Not connected to Cloud Core. Connect on the Dashboard or AI Center screen.": "به Cloud Core وصل نیست. در صفحهٔ داشبورد یا مرکز هوش مصنوعی وصل شوید.",
+    "Not connected to AI Core. Connect on the Dashboard or AI Center screen.": "به AI Core وصل نیست. در صفحهٔ داشبورد یا مرکز هوش مصنوعی وصل شوید.",
     "Category": "دسته",
     "Choose a category": "یک دسته انتخاب کنید",
     "Refresh": "تازه‌سازی",
@@ -14126,9 +14126,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Aggregate strength: conflicting": "قوت کلی شواهد: متعارض",
     "Could not load the knowledge object ({error}).": "بارگذاری پرونده دانش ناموفق بود ({error}).",
     // AI executions (Step 9A)
-    "Live operational view of every real AI-model invocation, read from Cloud Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API.": "نمای عملیاتی زندهٔ هر فراخوانی واقعی مدل هوش مصنوعی، خوانده‌شده از Cloud Core. این صفحه هیچ دادهٔ نمونه‌ای ندارد: تا وصل نشود چیزی نشان نمی‌دهد، و هر مقداری که نشان داده می‌شود از API می‌آید.",
+    "Live operational view of every real AI-model invocation, read from AI Core. This screen has no fixture data: until it is connected it shows nothing, and every value shown comes from the API.": "نمای عملیاتی زندهٔ هر فراخوانی واقعی مدل هوش مصنوعی، خوانده‌شده از AI Core. این صفحه هیچ دادهٔ نمونه‌ای ندارد: تا وصل نشود چیزی نشان نمی‌دهد، و هر مقداری که نشان داده می‌شود از API می‌آید.",
     "Connection": "اتصال",
-    "Not connected. Enter the Cloud Core URL and an access token.": "وصل نیست. نشانی Cloud Core و یک توکن دسترسی وارد کنید.",
+    "Not connected. Enter the AI Core URL and an access token.": "وصل نیست. نشانی AI Core و یک توکن دسترسی وارد کنید.",
     "Executions": "اجراها",
     "all statuses": "همهٔ وضعیت‌ها",
     "Failed / timeout / rate-limited": "ناموفق / پایان مهلت / محدودیت نرخ",
@@ -14157,7 +14157,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "first attempt": "تلاش نخست",
     "Loading AI executions…": "در حال بارگذاری اجراهای هوش مصنوعی…",
     "Permission denied (HTTP {status}). The token is missing, expired, or not valid for this organization.": "دسترسی رد شد (HTTP {status}). توکن وجود ندارد، منقضی شده یا برای این سازمان معتبر نیست.",
-    "Could not load AI executions: {error}. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS).": "بارگذاری اجراهای هوش مصنوعی ناموفق بود: {error}. نشانی را بررسی کنید و مطمئن شوید Cloud Core این مبدأ را مجاز می‌داند (CORS_ALLOWED_ORIGINS).",
+    "Could not load AI executions: {error}. Check the URL, and that AI Core allows this origin (CORS_ALLOWED_ORIGINS).": "بارگذاری اجراهای هوش مصنوعی ناموفق بود: {error}. نشانی را بررسی کنید و مطمئن شوید AI Core این مبدأ را مجاز می‌داند (CORS_ALLOWED_ORIGINS).",
     "{from}–{to} of {total}": "{from}–{to} از {total}",
     "Execution": "اجرا",
     "Operation": "عملیات",
@@ -14167,7 +14167,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Attempt reason": "دلیل تلاش",
     "Error": "خطا",
     // Memory Center (Step 9B)
-    "Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from Cloud Core; exports are produced by the backend.": "هر آنچه هوش مصنوعی هنگام کار نوشته است: یافته‌ها، پرسش‌های باز، نقطه‌های بازبینی و تحویل‌ها — همهٔ نسخه‌ها نگه داشته می‌شوند، با نویسنده و زمان نوشتن. PostgreSQL مخزن مرجع است. خواندن‌ها زنده از Cloud Core است؛ خروجی‌ها را بک‌اند تولید می‌کند.",
+    "Everything the AI wrote while working: findings, open questions, checkpoints and handoffs — every version kept, with who wrote it and when. PostgreSQL is the canonical store. Reads are live from AI Core; exports are produced by the backend.": "هر آنچه هوش مصنوعی هنگام کار نوشته است: یافته‌ها، پرسش‌های باز، نقطه‌های بازبینی و تحویل‌ها — همهٔ نسخه‌ها نگه داشته می‌شوند، با نویسنده و زمان نوشتن. PostgreSQL مخزن مرجع است. خواندن‌ها زنده از AI Core است؛ خروجی‌ها را بک‌اند تولید می‌کند.",
     "Working memory": "حافظهٔ کاری",
     "Search": "جست‌وجو",
     "Kind": "نوع",
@@ -14252,8 +14252,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Saving…": "در حال ذخیره…",
     "Saved. The website chat uses these settings from the next question.": "ذخیره شد. گفت‌وگوی وب‌سایت از پرسش بعدی این تنظیمات را به کار می‌برد.",
     // AI Catalog (Step 9D)
-    "Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay \"Discovered\" until verified from an official source; API and pricing information stays empty until then. This screen reads live from Cloud Core — no sample data.": "هر منبع هوش مصنوعی که سامانه می‌شناسد — ارائه‌دهنده‌ها، APIها، مدل‌ها، برنامه‌ها و ابزارهای پژوهشی. مدخل‌ها تا زمانی که از یک منبع رسمی راستی‌آزمایی نشوند «کشف‌شده» می‌مانند؛ اطلاعات API و قیمت تا آن زمان خالی می‌ماند. این صفحه زنده از Cloud Core می‌خواند — بدون دادهٔ نمونه.",
-    "Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your Cloud Core URL and token here.": "وصل نیست. از صفحهٔ داشبورد، اجراهای هوش مصنوعی یا مرکز هوش مصنوعی وصل شوید — یا نشانی Cloud Core و توکن خود را اینجا وارد کنید.",
+    "Every AI resource the system knows about — providers, APIs, models, applications, and research tools. Discovery entries stay \"Discovered\" until verified from an official source; API and pricing information stays empty until then. This screen reads live from AI Core — no sample data.": "هر منبع هوش مصنوعی که سامانه می‌شناسد — ارائه‌دهنده‌ها، APIها، مدل‌ها، برنامه‌ها و ابزارهای پژوهشی. مدخل‌ها تا زمانی که از یک منبع رسمی راستی‌آزمایی نشوند «کشف‌شده» می‌مانند؛ اطلاعات API و قیمت تا آن زمان خالی می‌ماند. این صفحه زنده از AI Core می‌خواند — بدون دادهٔ نمونه.",
+    "Not connected. Connect via the Dashboard, AI executions, or AI Center screen — or enter your AI Core URL and token here.": "وصل نیست. از صفحهٔ داشبورد، اجراهای هوش مصنوعی یا مرکز هوش مصنوعی وصل شوید — یا نشانی AI Core و توکن خود را اینجا وارد کنید.",
     "All types": "همهٔ انواع",
     "Application": "برنامه",
     "Research tool": "ابزار پژوهشی",
@@ -14290,7 +14290,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Imported {inserted} new, {present} already present.": "{inserted} مورد تازه وارد شد، {present} مورد از پیش بود.",
     "Could not import the list ({error}).": "وارد کردن فهرست ناموفق بود ({error}).",
     // AI Center (Step 9E)
-    "Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to Cloud Core. No sample data: until connected this screen shows nothing.": "ارائه‌دهنده‌ها، حساب‌ها، مدل‌ها، مسیریابی، کارهای طولانی با نقطه‌های بازبینی و تحویل، حافظهٔ مشترک و فهرست کشف — خواندن و نوشتن در Cloud Core. بدون دادهٔ نمونه: تا وصل نشود، این صفحه چیزی نشان نمی‌دهد.",
+    "Providers, accounts, models, routing, long-running jobs with checkpoints and handoffs, shared memory and the discovery registry — read from and written to AI Core. No sample data: until connected this screen shows nothing.": "ارائه‌دهنده‌ها، حساب‌ها، مدل‌ها، مسیریابی، کارهای طولانی با نقطه‌های بازبینی و تحویل، حافظهٔ مشترک و فهرست کشف — خواندن و نوشتن در AI Core. بدون دادهٔ نمونه: تا وصل نشود، این صفحه چیزی نشان نمی‌دهد.",
     "Not connected.": "وصل نیست.",
     "Providers & accounts": "ارائه‌دهنده‌ها و حساب‌ها",
     "Routing": "مسیریابی",
@@ -14377,7 +14377,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Outcomes": "نتیجه‌ها",
     "Semantic memory backend": "بک‌اند حافظهٔ معنایی",
     "Agent orchestration console": "کنسول هماهنگی عامل‌ها",
-    "Every action below calls Cloud Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it.": "هر کنش زیر Cloud Core را فرا می‌خواند. اجرای یک کار از مسیر مرجع هوش مصنوعی می‌گذرد (یک کار هوش مصنوعی که فراخوانی‌هایش به‌صورت AIExecution ثبت می‌شوند) و فقط از حساب‌هایی استفاده می‌کند که عامل اعلام کرده است؛ تحویل با یک نقطهٔ بازبینی حافظهٔ مشترک ذخیره می‌شود و فقط عامل مخاطب می‌تواند آن را بپذیرد.",
+    "Every action below calls AI Core. Running a task goes through the canonical AI path (an AI job whose calls are recorded as AIExecutions) using only the AI accounts the agent declares; a handoff is stored with a shared-memory checkpoint and only the addressed agent can accept it.": "هر کنش زیر AI Core را فرا می‌خواند. اجرای یک کار از مسیر مرجع هوش مصنوعی می‌گذرد (یک کار هوش مصنوعی که فراخوانی‌هایش به‌صورت AIExecution ثبت می‌شوند) و فقط از حساب‌هایی استفاده می‌کند که عامل اعلام کرده است؛ تحویل با یک نقطهٔ بازبینی حافظهٔ مشترک ذخیره می‌شود و فقط عامل مخاطب می‌تواند آن را بپذیرد.",
     "1. Register an agent": "۱. ثبت یک عامل",
     "research": "پژوهش",
     "evidence": "شاهد",
@@ -14428,7 +14428,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "research, summarize": "مثلاً research, summarize",
     "Internal and external Agents that perform coordinated tasks. Agents use AI resources but are a separate concept from AI providers.": "عامل‌های درونی و بیرونی که کارهای هماهنگ انجام می‌دهند. عامل‌ها از منابع هوش مصنوعی استفاده می‌کنند، اما مفهومی جدا از ارائه‌دهنده‌های هوش مصنوعی‌اند.",
     "Session inspector": "بازرس نشست",
-    "Tasks, handoffs and agent-to-agent messages of one orchestration session — read from Cloud Core.": "کارها، تحویل‌ها و پیام‌های عامل به عامل یک نشست هماهنگی — خوانده‌شده از Cloud Core.",
+    "Tasks, handoffs and agent-to-agent messages of one orchestration session — read from AI Core.": "کارها، تحویل‌ها و پیام‌های عامل به عامل یک نشست هماهنگی — خوانده‌شده از AI Core.",
     "Inspect": "بررسی",
     "Shared memory — runtime view": "حافظهٔ مشترک — نمای زمان اجرا",
     "Configure in Settings › Shared memory.": "در تنظیمات › حافظهٔ مشترک پیکربندی کنید.",
@@ -14501,7 +14501,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Both fields are required.": "هر دو فیلد الزامی‌اند.",
     "Operator": "کاربر",
     // Command workspace (Step 9F)
-    "Type a research or knowledge command. It is saved to Cloud Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back.": "یک فرمان پژوهشی یا دانشی بنویسید. همان‌طور که تایپ می‌کنید در Cloud Core ذخیره می‌شود، پس بستن این صفحه چیزی را از دست نمی‌دهد. پیش از اجرای هر چیز، می‌بینید چه خواهد کرد و دقیقاً روی چه چیزی کار خواهد کرد. نسخه‌ای که اجرا شده همان‌طور که بود نگه داشته می‌شود؛ ویرایش، نسخهٔ بعدی را آغاز می‌کند. کارهای طولانی پس از رفتن شما روی سرور ادامه می‌یابند و وقتی برگردید می‌توانید آن‌ها را ادامه دهید.",
+    "Type a research or knowledge command. It is saved to AI Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back.": "یک فرمان پژوهشی یا دانشی بنویسید. همان‌طور که تایپ می‌کنید در AI Core ذخیره می‌شود، پس بستن این صفحه چیزی را از دست نمی‌دهد. پیش از اجرای هر چیز، می‌بینید چه خواهد کرد و دقیقاً روی چه چیزی کار خواهد کرد. نسخه‌ای که اجرا شده همان‌طور که بود نگه داشته می‌شود؛ ویرایش، نسخهٔ بعدی را آغاز می‌کند. کارهای طولانی پس از رفتن شما روی سرور ادامه می‌یابند و وقتی برگردید می‌توانید آن‌ها را ادامه دهید.",
     "New command": "فرمان جدید",
     "Drafts": "پیش‌نویس‌ها",
     "Waiting to continue": "در انتظار ادامه",
@@ -14553,8 +14553,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Version {n} · has run, read-only — editing starts version {next}": "نسخهٔ {n} · اجرا شده و فقط‌خواندنی است — ویرایش، نسخهٔ {next} را آغاز می‌کند",
     "This browser has unsaved text from an earlier visit.": "این مرورگر متن ذخیره‌نشده‌ای از بازدید قبلی دارد.",
     "Use it": "استفاده از آن",
-    "Saved to Cloud Core · revision {rev}.": "در Cloud Core ذخیره شد · بازبینی {rev}.",
-    "Saved to Cloud Core · version {v}, revision {rev}.": "در Cloud Core ذخیره شد · نسخهٔ {v}، بازبینی {rev}.",
+    "Saved to AI Core · revision {rev}.": "در AI Core ذخیره شد · بازبینی {rev}.",
+    "Saved to AI Core · version {v}, revision {rev}.": "در AI Core ذخیره شد · نسخهٔ {v}، بازبینی {rev}.",
     "This draft was changed in another tab or device.": "این پیش‌نویس در زبانه یا دستگاه دیگری تغییر کرده است.",
     "Use the saved version": "استفاده از نسخهٔ ذخیره‌شده",
     "Keep mine": "نسخهٔ خودم را نگه دار",
@@ -14594,9 +14594,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Every statement has a source.": "هر گزاره منبعی دارد.",
     "Turn into a cited publication": "تبدیل به یک انتشار مستند",
     "Published — open Publications": "منتشر شد — انتشارات را باز کنید",
-    "AI visibility (Cloud Core)": "دیده‌شدن در هوش مصنوعی (Cloud Core)",
-    "AI visibility report (Cloud Core)": "گزارش دیده‌شدن در هوش مصنوعی (Cloud Core)",
-    "AI access (Cloud Core)": "دسترسی هوش مصنوعی (Cloud Core)",
+    "AI visibility (AI Core)": "دیده‌شدن در هوش مصنوعی (AI Core)",
+    "AI visibility report (AI Core)": "گزارش دیده‌شدن در هوش مصنوعی (AI Core)",
+    "AI access (AI Core)": "دسترسی هوش مصنوعی (AI Core)",
     "Other platform": "سکوی دیگر",
     "Operator unknown": "گرداننده نامشخص",
     "{n|observation|observations} recorded. Each signal is counted on its own; there is no combined score.": "{n} مشاهده ثبت شده است. هر نشانه جداگانه شمرده می‌شود؛ هیچ امتیاز ترکیبی وجود ندارد.",
@@ -14728,7 +14728,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var PATTERNS = [
     [/^Inbox, (\d+) unread messages?$/, "صندوق پیام، $1 پیام خوانده‌نشده"],
     [/^Account menu \u2014 signed in as (.+)$/, "منوی حساب — واردشده با $1"],
-    [/^Connected to (.+)\. Showing real Cloud Core data; the sample content of this screen is hidden\.$/, "به $1 متصل است. داده‌های واقعی Cloud Core نمایش داده می‌شود و محتوای نمونهٔ این صفحه پنهان است."]
+    [/^Connected to (.+)\. Showing real AI Core data; the sample content of this screen is hidden\.$/, "به $1 متصل است. داده‌های واقعی AI Core نمایش داده می‌شود و محتوای نمونهٔ این صفحه پنهان است."]
   ];
   var ROOTS = ['.app > .skip-link', 'header.app-topbar', '#sidebar-collapse', '#app-sidebar', '#main', '.auth-shell'];
   var ATTRS = ['aria-label', 'title', 'placeholder'];

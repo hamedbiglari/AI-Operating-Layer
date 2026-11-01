@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       AI Operating Layer
  * Plugin URI:        https://github.com/hamedbiglari/AI-Operating-Layer
- * Description:       Thin WordPress adapter for the AI Operating Layer Cloud Core. Cloud Core is the source of truth; this plugin authenticates, maps posts to Core objects, renders JSON-LD from Core data, and reports status.
+ * Description:       Thin WordPress adapter for the AI Operating Layer AI Core. AI Core is the source of truth; this plugin authenticates, maps posts to Core objects, renders JSON-LD from Core data, and reports status.
  * Version:           0.13.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
@@ -11,7 +11,7 @@
  *
  * ARCHITECTURE (master spec §38):
  *
- *   WordPress  ->  this adapter  ->  Cloud Core contracts  ->  domain services
+ *   WordPress  ->  this adapter  ->  AI Core contracts  ->  domain services
  *
  * The dependency arrow never points the other way. This plugin contains NO
  * business logic: no recommendation scoring, no evidence verification, no

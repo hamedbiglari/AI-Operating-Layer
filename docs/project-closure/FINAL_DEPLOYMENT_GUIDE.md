@@ -1,7 +1,7 @@
 # FINAL DEPLOYMENT GUIDE
 
 ## Components
-Cloud Core (FastAPI, Python 3.12) · PostgreSQL 16 + pgvector · Redis 7 · Celery worker (same codebase) · WordPress plugin
+AI Core (FastAPI, Python 3.12) · PostgreSQL 16 + pgvector · Redis 7 · Celery worker (same codebase) · WordPress plugin
 (PHP 8.x, WooCommerce optional) · Dashboard (static HTML; serve over HTTPS on an origin listed in CORS_ALLOWED_ORIGINS).
 
 ## 1. Database

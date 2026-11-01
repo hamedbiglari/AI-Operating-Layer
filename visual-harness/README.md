@@ -15,13 +15,13 @@ to measure.
 | `index.html` | The generated prototype. Opens from `file://`; no server, no network beyond the web font. |
 | `check.js` | Static conformance checks. No browser needed. **Not** the visual gate. |
 | `measure.js` | Rendered verification across screen × locale × theme × width. **This** is the visual gate. |
-| `e2e/` | Currently holds component-level browser checks (`knowledge-quickfix.js` runs against `file://` with Cloud Core mocked) plus `seed.py` for future live tests and `seed-edge-cases.py` (one organization with knowledge objects in edge-case states, checked against the live overview). Only the component checks run in CI today. Usage is in each file's header. |
+| `e2e/` | Currently holds component-level browser checks (`knowledge-quickfix.js` runs against `file://` with AI Core mocked) plus `seed.py` for future live tests and `seed-edge-cases.py` (one organization with knowledge objects in edge-case states, checked against the live overview). Only the component checks run in CI today. Usage is in each file's header. |
 | `i18n-glossary.md` | The approved Persian terms and conventions. Every Persian string in `index.html` follows it. |
 
 ## Single file, for now
 
 `index.html` is also the only product UI that exists: its live screens talk to
-Cloud Core. Keeping everything in one file is a pragmatic choice, not a
+AI Core. Keeping everything in one file is a pragmatic choice, not a
 permanent one. Revisit splitting it into a separate frontend when **either**
 the file passes about 15,000 lines **or** a second frontend consumer needs the
 same screens.

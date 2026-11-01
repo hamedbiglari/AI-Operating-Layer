@@ -163,7 +163,7 @@ class EuropePMCProvider(_Base):
 
 
 class NotConfiguredWebProvider:
-    """Placeholder for 'Web / other providers': no web search API is configured on this Cloud Core."""
+    """Placeholder for 'Web / other providers': no web search API is configured on this AI Core."""
     name = "web"
 
     def search(self, query: str, limit: int = 20) -> list[ScholarlyRecord]:

@@ -9,7 +9,7 @@
  *           remove a link (confirm, DELETE /claim-evidence/{link_id}, reload),
  *           a cancelled confirm, a 403; no remove button for a viewer;
  *           no id, 404, 500 with Retry, no claims; Persian.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

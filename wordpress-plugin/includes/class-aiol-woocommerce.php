@@ -6,7 +6,7 @@
  *
  *   WooCommerce owns : its own post IDs, and the merchant's operational
  *                      price and stock
- *   Cloud Core owns  : what the product IS, whether it may be recommended,
+ *   AI Core owns  : what the product IS, whether it may be recommended,
  *                      its evidence and its trust
  *
  * So this class pushes price/stock/availability to Core, and pushes nothing
@@ -47,7 +47,7 @@ class AIOL_WooCommerce
      * WP-CLI run, or a "bulk edit -> set sale price" on 200 rows would
      * issue one synchronous request per product inside a single PHP
      * request. The result is a timeout, a half-synced catalogue, and a
-     * retry storm against Cloud Core.
+     * retry storm against AI Core.
      *
      * So the adapter counts what it has already sent in this request. Past
      * the threshold it stops calling Core and DEFERS the remainder to a

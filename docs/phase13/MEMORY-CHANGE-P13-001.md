@@ -37,7 +37,7 @@ purchase-readiness inference (checkpoint §76/§77, unchanged by ADR-079).
 
 ## What was IMPLEMENTED
 
-Cloud Core: 8 enums, 2 scopes, 5 models, 5 services, 1 router with 15
+AI Core: 8 enums, 2 scopes, 5 models, 5 services, 1 router with 15
 endpoints, migration `0016`, `SORTABLE_FIELDS` extension,
 `redis_available()`, `CORE_VERSION`.
 Plugin 0.9.0 → 0.13.0: `AIOL_Telemetry`, `AIOL_Access_Gate`, `AIOL_Geo`,

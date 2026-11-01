@@ -2,7 +2,7 @@
 
 The project is a modular monolith.
 
-Cloud Core is the source of truth.
+AI Core is the source of truth.
 
 WordPress is an adapter.
 

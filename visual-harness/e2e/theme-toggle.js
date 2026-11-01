@@ -45,7 +45,7 @@ async function prefs(method, body) {
   return reply;
 }
 // Runs in the page on every load: preferences go to the server above,
-// anything else Cloud Core is asked for is a 404.
+// anything else AI Core is asked for is a 404.
 function mockFetch() {
   window.fetch = (u, opts) => {
     opts = opts || {};

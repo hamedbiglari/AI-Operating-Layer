@@ -8,7 +8,7 @@
  *           the Web page card queues a URL (POST /documents/ingest-url, JSON);
  *           success says so and opens #screen-detail?id=<source>; empty input,
  *           500, 422, 403, no sources, a failed source list with Retry; Persian.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

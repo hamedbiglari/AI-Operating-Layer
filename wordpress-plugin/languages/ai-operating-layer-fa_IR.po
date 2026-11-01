@@ -75,64 +75,64 @@ msgid "Canonical URLs"
 msgstr "آدرس‌های کاننیکال"
 
 #: admin/view-settings.php:111
-msgid "Cloud Core"
+msgid "AI Core"
 msgstr ""
 
 #: admin/view-settings.php:169
-msgid "Cloud Core URL"
-msgstr "آدرس Cloud Core"
+msgid "AI Core URL"
+msgstr "آدرس AI Core"
 
 #: includes/class-aiol-credentials.php:87
-msgid "Cloud Core URL is not a valid URL."
+msgid "AI Core URL is not a valid URL."
 msgstr ""
 
 #: includes/class-aiol-credentials.php:63
-msgid "Cloud Core URL is required."
+msgid "AI Core URL is required."
 msgstr ""
 
 #: includes/class-aiol-credentials.php:68
-msgid "Cloud Core URL must start with http:// or https://"
+msgid "AI Core URL must start with http:// or https://"
 msgstr ""
 
 #: includes/class-aiol-client.php:165
-msgid "Cloud Core has no such object for this installation. It may have been deleted, or it belongs to a different organization."
+msgid "AI Core has no such object for this installation. It may have been deleted, or it belongs to a different organization."
 msgstr ""
 
 #: admin/view-settings.php:68
-msgid "Cloud Core is the source of truth for your products, knowledge, evidence and trust. This plugin connects WordPress to it — it publishes references, never business data of its own."
+msgid "AI Core is the source of truth for your products, knowledge, evidence and trust. This plugin connects WordPress to it — it publishes references, never business data of its own."
 msgstr ""
 
 #: includes/class-aiol-client.php:177
-msgid "Cloud Core is unreachable or returned a server error. Your data is unchanged; retry is safe."
+msgid "AI Core is unreachable or returned a server error. Your data is unchanged; retry is safe."
 msgstr ""
 
 #: includes/class-aiol-credentials.php:83
-msgid "Cloud Core must be reached over HTTPS. Plain http:// is only allowed for local development (localhost or 127.0.0.1), because the installation token would otherwise be sent in clear text."
+msgid "AI Core must be reached over HTTPS. Plain http:// is only allowed for local development (localhost or 127.0.0.1), because the installation token would otherwise be sent in clear text."
 msgstr ""
 
 #: admin/view-mappings.php:77
 #: admin/view-mappings.php:104
-msgid "Cloud Core object"
-msgstr "شیء Cloud Core"
+msgid "AI Core object"
+msgstr "شیء AI Core"
 
 #: admin/view-meta-box.php:55
-msgid "Cloud Core object ID"
-msgstr "شناسه شیء Cloud Core"
+msgid "AI Core object ID"
+msgstr "شناسه شیء AI Core"
 
 #: admin/view-meta-box.php:42
-msgid "Cloud Core object type"
-msgstr "نوع شیء Cloud Core"
+msgid "AI Core object type"
+msgstr "نوع شیء AI Core"
 
 #: includes/class-aiol-client.php:173
-msgid "Cloud Core rejected the request as invalid. Nothing was changed."
+msgid "AI Core rejected the request as invalid. Nothing was changed."
 msgstr ""
 
 #: includes/class-aiol-client.php:161
-msgid "Cloud Core rejected this installation token. It may have been revoked or rotated — issue a new one in Cloud Core and paste it here."
+msgid "AI Core rejected this installation token. It may have been revoked or rotated — issue a new one in AI Core and paste it here."
 msgstr ""
 
 #: includes/class-aiol-client.php:181
-msgid "Cloud Core returned an unexpected response. Nothing was changed."
+msgid "AI Core returned an unexpected response. Nothing was changed."
 msgstr ""
 
 #: admin/view-diagnostics.php:76
@@ -140,11 +140,11 @@ msgid "Commerce readiness"
 msgstr "آمادگی تجاری"
 
 #: admin/view-settings.php:192
-msgid "Connect to Cloud Core"
-msgstr "اتصال به Cloud Core"
+msgid "Connect to AI Core"
+msgstr "اتصال به AI Core"
 
 #: admin/view-settings.php:76
-msgid "Connected to Cloud Core and the credential was verified."
+msgid "Connected to AI Core and the credential was verified."
 msgstr ""
 
 #: admin/view-settings.php:108
@@ -156,7 +156,7 @@ msgid "Connection settings"
 msgstr "تنظیمات اتصال"
 
 #: admin/view-meta-box.php:60
-msgid "Copy the ID from Cloud Core. Leave empty to unlink this post. Cloud Core remains the source of truth for its content."
+msgid "Copy the ID from AI Core. Leave empty to unlink this post. AI Core remains the source of truth for its content."
 msgstr ""
 
 #: admin/view-mappings.php:44
@@ -164,7 +164,7 @@ msgid "Could not load mappings."
 msgstr ""
 
 #: includes/class-aiol-client.php:117
-msgid "Could not reach Cloud Core. Check the URL and that the server is running."
+msgid "Could not reach AI Core. Check the URL and that the server is running."
 msgstr ""
 
 #: admin/view-diagnostics.php:67
@@ -184,7 +184,7 @@ msgid "Detected (self-reported)"
 msgstr "شناسایی‌شده (خوداظهاری)"
 
 #: admin/view-diagnostics.php:101
-msgid "Dimensions shown as \"Not determined\" are measured in Cloud Core or in a later phase — this adapter cannot see them, so it does not guess."
+msgid "Dimensions shown as \"Not determined\" are measured in AI Core or in a later phase — this adapter cannot see them, so it does not guess."
 msgstr ""
 
 #: admin/view-settings.php:198
@@ -193,11 +193,11 @@ msgid "Disconnect"
 msgstr "قطع اتصال"
 
 #: admin/view-settings.php:80
-msgid "Disconnected. The stored token has been removed from this site. Mappings in Cloud Core are unchanged."
+msgid "Disconnected. The stored token has been removed from this site. Mappings in AI Core are unchanged."
 msgstr ""
 
 #: admin/view-mappings.php:34
-msgid "Each row links one WordPress post to one object in Cloud Core. Cloud Core owns the object; WordPress owns only the post."
+msgid "Each row links one WordPress post to one object in AI Core. AI Core owns the object; WordPress owns only the post."
 msgstr ""
 
 #: admin/view-settings.php:115
@@ -214,7 +214,7 @@ msgid "Failed"
 msgstr "ناموفق"
 
 #: admin/view-settings.php:174
-msgid "For example https://core.example.com — the address of your Cloud Core server."
+msgid "For example https://core.example.com — the address of your AI Core server."
 msgstr ""
 
 #: includes/class-aiol-diagnostics.php:84
@@ -236,7 +236,7 @@ msgid "Identified from the User-Agent header, which any client can set. These ar
 msgstr ""
 
 #: admin/view-settings.php:157
-msgid "Identity unavailable while Cloud Core is unreachable."
+msgid "Identity unavailable while AI Core is unreachable."
 msgstr ""
 
 #: admin/view-settings.php:179
@@ -252,7 +252,7 @@ msgid "Internal diagnostic."
 msgstr "عیب‌یابی داخلی."
 
 #: admin/view-settings.php:184
-msgid "Issued in Cloud Core under Installations. It begins with \"aiol_\". It is stored on this site and never shown again — if you lose it, rotate the credential in Cloud Core."
+msgid "Issued in AI Core under Installations. It begins with \"aiol_\". It is stored on this site and never shown again — if you lose it, rotate the credential in AI Core."
 msgstr ""
 
 #: admin/view-diagnostics.php:73
@@ -279,7 +279,7 @@ msgstr "محتوای نگاشت‌شده"
 #: includes/class-aiol-diagnostics.php:212
 #: includes/class-aiol-diagnostics.php:213
 #: includes/class-aiol-diagnostics.php:214
-msgid "Measured in Cloud Core, not by this adapter."
+msgid "Measured in AI Core, not by this adapter."
 msgstr ""
 
 #: includes/class-aiol-diagnostics.php:159
@@ -332,7 +332,7 @@ msgid "Not linked"
 msgstr "پیوند داده نشده"
 
 #: admin/view-mappings.php:47
-msgid "Nothing was changed in Cloud Core. Retrying is safe."
+msgid "Nothing was changed in AI Core. Retrying is safe."
 msgstr ""
 
 #: admin/view-diagnostics.php:109
@@ -340,7 +340,7 @@ msgid "Observed access"
 msgstr "دسترسی‌های مشاهده‌شده"
 
 #: admin/view-mappings.php:66
-msgid "Open any post, page or product, find the \"AI Operating Layer\" panel in the sidebar, and paste the Cloud Core object ID it represents. It will appear here after you save."
+msgid "Open any post, page or product, find the \"AI Operating Layer\" panel in the sidebar, and paste the AI Core object ID it represents. It will appear here after you save."
 msgstr ""
 
 #: admin/view-settings.php:141
@@ -384,19 +384,19 @@ msgid "Product"
 msgstr "محصول"
 
 #: includes/class-aiol-diagnostics.php:187
-msgid "Product structured data is generated from Cloud Core for mapped products."
+msgid "Product structured data is generated from AI Core for mapped products."
 msgstr ""
 
 #: includes/class-aiol-diagnostics.php:184
-msgid "Product structured data is generated from Cloud Core, which is not connected yet."
+msgid "Product structured data is generated from AI Core, which is not connected yet."
 msgstr ""
 
 #: admin/view-settings.php:200
-msgid "Remove the stored token from this site? Mappings already in Cloud Core are not deleted."
+msgid "Remove the stored token from this site? Mappings already in AI Core are not deleted."
 msgstr ""
 
 #: admin/view-settings.php:204
-msgid "Removes the token from this site only. Your data in Cloud Core is untouched."
+msgid "Removes the token from this site only. Your data in AI Core is untouched."
 msgstr ""
 
 #: admin/view-mappings.php:56
@@ -454,8 +454,8 @@ msgid "Synced"
 msgstr "همگام‌شده"
 
 #: admin/view-meta-box.php:27
-msgid "Synced with Cloud Core"
-msgstr "همگام با Cloud Core"
+msgid "Synced with AI Core"
+msgstr "همگام با AI Core"
 
 #: admin/view-diagnostics.php:43
 msgid "Technical checks"
@@ -466,7 +466,7 @@ msgid "Technical discoverability"
 msgstr "قابلیت کشف فنی"
 
 #: includes/class-aiol-client.php:169
-msgid "That change conflicts with something already recorded in Cloud Core. Nothing was changed."
+msgid "That change conflicts with something already recorded in AI Core. Nothing was changed."
 msgstr ""
 
 #: includes/class-aiol-credentials.php:95
@@ -474,12 +474,12 @@ msgid "That does not look like an installation token. Tokens begin with \"aiol_\
 msgstr ""
 
 #: admin/class-aiol-admin.php:276
-msgid "That is not a valid Cloud Core object ID. It should look like 123e4567-e89b-12d3-a456-426614174000."
+msgid "That is not a valid AI Core object ID. It should look like 123e4567-e89b-12d3-a456-426614174000."
 msgstr ""
 
 #: includes/class-aiol-client.php:92
 #: includes/class-aiol-client.php:179
-msgid "The plugin is not connected to Cloud Core yet."
+msgid "The plugin is not connected to AI Core yet."
 msgstr ""
 
 #: includes/class-aiol-diagnostics.php:81
@@ -507,11 +507,11 @@ msgid "This is a local development site, so plain HTTP is expected here. A produ
 msgstr ""
 
 #: includes/class-aiol-client.php:163
-msgid "This token is valid but lacks the permission for that action. Issue a token with the required scopes in Cloud Core."
+msgid "This token is valid but lacks the permission for that action. Issue a token with the required scopes in AI Core."
 msgstr ""
 
 #: admin/view-settings.php:98
-msgid "To connect, open your Cloud Core installation settings, issue an installation token, and paste it below along with your Cloud Core URL."
+msgid "To connect, open your AI Core installation settings, issue an installation token, and paste it below along with your AI Core URL."
 msgstr ""
 
 #: admin/view-settings.php:119
@@ -519,7 +519,7 @@ msgid "Token"
 msgstr ""
 
 #: includes/class-aiol-client.php:175
-msgid "Too many requests to Cloud Core. Wait a minute and try again — nothing was lost."
+msgid "Too many requests to AI Core. Wait a minute and try again — nothing was lost."
 msgstr ""
 
 #: admin/view-diagnostics.php:75
@@ -581,7 +581,7 @@ msgid "You do not have permission to view this page."
 msgstr ""
 
 #: admin/view-settings.php:154
-msgid "Your organization is determined by Cloud Core from this token. WordPress cannot choose or change it."
+msgid "Your organization is determined by AI Core from this token. WordPress cannot choose or change it."
 msgstr ""
 
 #: admin/view-mappings.php:133

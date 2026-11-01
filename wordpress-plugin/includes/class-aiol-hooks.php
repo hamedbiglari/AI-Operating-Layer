@@ -7,7 +7,7 @@
  *
  * 1. RECURSION GUARD (`self::$syncing`). `save_post` can fire again while a
  *    handler is running (any call that touches the post re-enters). Without
- *    a guard this becomes an infinite loop that hammers Cloud Core.
+ *    a guard this becomes an infinite loop that hammers AI Core.
  *
  * 2. PER-REQUEST DEDUPLICATION (`self::$synced_this_request`). WordPress
  *    fires `save_post` more than once for a single editor action (autosave,

@@ -19,7 +19,7 @@ The legacy plugin and this architecture disagree on a point that matters:
 from WordPress data, ran its own API with its own keys and its own rate
 limiter, and asserted that named AI systems had consumed the content.
 
-**This architecture:** Cloud Core is the source of truth. WordPress is a
+**This architecture:** AI Core is the source of truth. WordPress is a
 projection. Trust is evidence-backed. Unverified data never becomes a
 public claim.
 

@@ -8,7 +8,7 @@
  *           metadata. GET /auth/me is read once per connection.
  *   States: no id, 404 (no server text shown), 500 with Retry, 403 with
  *           Reconnect; English and Persian.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

@@ -10,7 +10,7 @@
  *           four stat cards from the counts, the claims with status and
  *           strength, the count line; no claims; no id; 404, 422, 500 with
  *           Retry; Persian over live content.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *

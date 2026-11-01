@@ -88,7 +88,7 @@ $valid = ['in_stock', 'out_of_stock', 'preorder', 'backorder', 'discontinued'];
 foreach ([['stock_status'=>'instock'],['stock_status'=>'outofstock'],['stock_status'=>'onbackorder'],
           ['stock_status'=>'weird_future_value'],[]] as $case) {
     T::true(in_array(AIOL_WooCommerce::map_offer_state($case)['availability'], $valid, true),
-        'produced availability is always a value Cloud Core accepts');
+        'produced availability is always a value AI Core accepts');
 }
 
 // --- the boundary: nothing about product identity is ever produced -----------------

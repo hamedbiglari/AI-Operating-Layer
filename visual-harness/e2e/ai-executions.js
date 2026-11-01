@@ -8,7 +8,7 @@
  *         unknown), duration; the page line; a status filter keeps the
  *         counts; the detail (2 requests: the execution and its chain);
  *         500 and 401; Persian over live content.
- * Runs on file:// with Cloud Core mocked in the page and every request
+ * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
  *
@@ -107,7 +107,7 @@ function installMock({ items, counts }) {
 
   // Not connected.
   let v = await view();
-  check('not connected: the note, no body', [v.state, v.body], [['idle', 'Not connected. Enter the Cloud Core URL and an access token.'], false]);
+  check('not connected: the note, no body', [v.state, v.body], [['idle', 'Not connected. Enter the AI Core URL and an access token.'], false]);
 
   // Live.
   await page.evaluate(installMock, { items: ITEMS, counts: COUNTS });
@@ -161,7 +161,7 @@ function installMock({ items, counts }) {
   await page.click('#aix-apply'); await settle();
   v = await view();
   check('500: the error, the body hidden', [v.state, v.body], [['error',
-    'Could not load AI executions: ' + iso('HTTP 500') + '. Check the URL, and that Cloud Core allows this origin (CORS_ALLOWED_ORIGINS).'], false]);
+    'Could not load AI executions: ' + iso('HTTP 500') + '. Check the URL, and that AI Core allows this origin (CORS_ALLOWED_ORIGINS).'], false]);
   // An error hides the body (and its Apply button); the way back is Connect.
   await page.evaluate(() => { window.__status = 401; });
   await page.click('#aix-connect-btn'); await settle();

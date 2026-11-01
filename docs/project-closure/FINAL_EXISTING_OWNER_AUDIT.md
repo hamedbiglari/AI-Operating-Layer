@@ -37,7 +37,7 @@ VISUAL_HARNESS_SAMPLE = harness screen exists with sample/fixture data
 
 | Feature | Status | Evidence |
 |---|---|---|
-| Org name (Cloud Core live) | PRODUCTION_UI_LIVE | Settings screen data-live-wired; PATCH /organizations/me verified |
+| Org name (AI Core live) | PRODUCTION_UI_LIVE | Settings screen data-live-wired; PATCH /organizations/me verified |
 | Profile & verification | VISUAL_HARNESS_SAMPLE | profile-slot-me; sample data only |
 | Appearance / Language / Theme | VISUAL_HARNESS_SAMPLE | No backend persistence for locale/theme |
 | **AI Preferences** | **MISSING** | No screen; no backend |
@@ -46,7 +46,7 @@ VISUAL_HARNESS_SAMPLE = harness screen exists with sample/fixture data
 | **Routing Preferences** | **MISSING** | No settings screen; AI Center has routing but no settings integration |
 
 ## Live-wired screens (production UI)
-1. Dashboard overview (Cloud Core stats)
+1. Dashboard overview (AI Core stats)
 2. Knowledge list + detail
 3. Sources
 4. Processing jobs

@@ -131,7 +131,7 @@ def connect(db: Session, *, organization_id: UUID, source: str, property_ref: st
     row.property_ref = property_ref
     if not _credentials_present(source):
         row.status = "BLOCKED_EXTERNAL_DEPENDENCY"
-        row.last_error = (f"No {source.upper()} OAuth client is configured on this Cloud Core; "
+        row.last_error = (f"No {source.upper()} OAuth client is configured on this AI Core; "
                           "the connector cannot authorise. Upload a Search Console export instead, or configure OAuth.")
     else:
         # OAuth credentials exist but the authorisation-code flow has not been completed by the owner.

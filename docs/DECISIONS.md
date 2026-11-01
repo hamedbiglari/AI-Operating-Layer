@@ -1,7 +1,7 @@
 # Architecture Decisions
 
 ## ADR-001
-Cloud Core is the source of truth.
+AI Core is the source of truth.
 
 ## ADR-002
 WordPress is a thin adapter.
@@ -521,7 +521,7 @@ cannot be closed this way — SQL has no FK to "one of several tables".
 They remain service-enforced and are tracked as `P1-poly`.
 
 ## ADR-038
-**FACT:** §38 requires WordPress to remain thin with Cloud Core as
+**FACT:** §38 requires WordPress to remain thin with AI Core as
 source of truth. **DECISION:** `wordpress_mappings` is the ONLY place a
 WordPress concept (`wordpress_post_id`, `wordpress_post_type`,
 `wordpress_url`) exists in this codebase. No Core model gains a
@@ -687,7 +687,7 @@ merchant could not act on it — 72/100 does not say what to fix.
 **DECISION:** no composite score. `AIOL_Diagnostics::dimensions()` returns
 seven named dimensions, each with a state and the counts behind it. Two are
 genuinely measurable by the adapter (technical discoverability, machine
-readability); five are explicitly **UNKNOWN — "measured in Cloud Core, not
+readability); five are explicitly **UNKNOWN — "measured in AI Core, not
 by this adapter"** rather than a fabricated zero. `UNKNOWN` is a first-class
 check result, so an unreachable robots.txt reports "could not determine"
 instead of the legacy behaviour of scoring it as failure.
@@ -698,7 +698,7 @@ intent: a number that cannot be acted on is worse than an honest list.
 **FACT:** the legacy AI Gateway (274 lines) exposed `ai-access-toolkit/v1`
 with its own API keys, its own per-IP rate limiter and its own content
 contract.
-**DECISION: REPLACE, not migrate.** Cloud Core is the canonical API. A
+**DECISION: REPLACE, not migrate.** AI Core is the canonical API. A
 second canonical API inside WordPress is a second source of truth by another
 name — it would need its own auth, its own tenancy, its own rate limiting
 and its own versioning, all of which Core already owns and does better
@@ -733,7 +733,7 @@ Phase 10 owns commerce. The directional rule:
 
     WooCommerce owns : its own post/variation IDs, and the merchant's
                        operational price and stock
-    Cloud Core owns  : what the product IS, whether it may be recommended,
+    AI Core owns  : what the product IS, whether it may be recommended,
                        its evidence, its trust
 
 **DECISION:** WooCommerce may write exactly one thing into Core — an Offer's
@@ -1070,7 +1070,7 @@ fastest, it was **rejected on licence**.
 
 **REJECTED: `PyMuPDF`.** Metadata reports
 `Dual Licensed - GNU AFFERO GPL 3.0 or Artifex commercial`. For a
-network-served commercial Cloud Core, AGPL's network-use clause is a serious
+network-served commercial AI Core, AGPL's network-use clause is a serious
 obligation, and the alternative is a paid Artifex licence. It is the fastest
 and most popular option, which is exactly why the rejection is recorded:
 **licence is a hard blocker, not a footnote.**
@@ -1088,7 +1088,7 @@ adopting a heavier dependency for no reason. The implementation therefore
 tries `lines` first and falls back to `text`.
 
 **Security considerations, per dependency:** all parse untrusted input and
-must run in the Cloud Core worker, never in WordPress. `pdfplumber` and
+must run in the AI Core worker, never in WordPress. `pdfplumber` and
 `pypdf` are pure Python (no subprocess, no network) but need page and time
 bounds. `tesseract` is a **subprocess over untrusted image bytes** — the
 sharpest edge — and needs a timeout, bounded input and no shell.
@@ -1638,7 +1638,7 @@ See `docs/billing/BILLING_ARCHITECTURE.md` §4.
 ## ADR-099 — Demand Intelligence: distinct real sources normalised into DemandSignal
 **Status:** ACCEPTED (owner prompts 2026-09-25, REQ-DI-001..003). **Problem:** demand data (site search, Search Console, GA4, AI visibility, customer questions, product behaviour) must drive knowledge work without being merged or faked. **Decision:** `demand_signals` (source_type kept per row; one normalised shape; unknown metrics NULL; raw row kept; dedupe per source) and `demand_connections` (GSC / GA4 OAuth state). Implemented sources: `internal_search` (first-party telemetry, Phase 13) and `gsc_export` (owner-uploaded Search Console export). Live `gsc` / `ga4` connectors report `BLOCKED_EXTERNAL_DEPENDENCY` until OAuth client credentials exist — never simulated. Promotion: signal → information need → research task (`research_task_id`, traceable). **Rejected:** a single merged demand score; estimated/synthetic behaviour data. **Tenant:** organization_id on both tables. **Migration:** 0023, additive.
 
-## ADR-100 — Per-user preferences in Cloud Core; fixture screens labelled explicitly
+## ADR-100 — Per-user preferences in AI Core; fixture screens labelled explicitly
 **Status:** ACCEPTED (REQ-SET-001, Phase 14 completion, 2026-09-27). **Decision:** `user_preferences` (one row per user, composite tenant FK, language/theme/font/notifications) served only as `/users/me/preferences` (no user id in the path — nothing to tamper with). Dashboard screens that have no backend by design (support, chat, billing — not established requirements) or that are per-object design samples show an explicit "DEMO / FIXTURE DATA" label when connected, instead of silently showing sample content. **Rejected:** browser-only preference storage (not persistent across devices; not the owner's requirement).
 
 ## ADR-101 — Pilot-ready research: found ≠ read, compound evidence is indirect
@@ -1720,7 +1720,7 @@ See `docs/billing/BILLING_ARCHITECTURE.md` §4.
 **Migration:** 0035 (reversible, verified). **Tests:** 22, covering every case the prompt enumerates in §81–§88.
 
 ## ADR-117 — Dashboard screens for categories, coverage and publications
-**Status:** ACCEPTED (owner prompt v3.0 §5, §13–§15, §71–§73, 2026-10-05). **Decision:** three screens added to the **existing** dashboard shell — same nav, screen picker, page header, live-panel, field, table and chip patterns; no second dashboard. All three read live from the endpoints of ADR-114/115/116 and show nothing until Cloud Core is connected.
+**Status:** ACCEPTED (owner prompt v3.0 §5, §13–§15, §71–§73, 2026-10-05). **Decision:** three screens added to the **existing** dashboard shell — same nav, screen picker, page header, live-panel, field, table and chip patterns; no second dashboard. All three read live from the endpoints of ADR-114/115/116 and show nothing until AI Core is connected.
 **Categories & matrix:** category picker and creation with a starter schema; the Master Topic Matrix as a sticky-header, horizontally scrollable table with one button per cell. Status is never colour alone — every cell carries its word and a glyph (✓ documented, ? needs research, ⇄ conflicting, ∅ no evidence found, — not applicable…). A cell opens a panel to set its status; closing a section demands a reason, as the API does. Per-topic Apply schema and Recalculate, and the queue of cross-topic proposals with "needs research" / "does not apply (why?)".
 **Coverage audit:** topic or category scope; a CURRENT / STALE / never-run banner that keeps the last good audit on screen when the newest run failed; the six dimensions as equal boxes, each with its headline figure or the word **Unknown**, its counts and its note; the category view shows the weakest sections across topics; run history.
 **Publications & citations:** pick a topic and a version, add sentences from claims, create a new version (the old one keeps its numbering), resolve. The document renders each sentence with its own Vancouver citation; an evidence-unavailable sentence is marked with a wavy underline and carries no number. The numbered reference list and the nine integrity checks with presence / validity / support shown separately.
@@ -1803,7 +1803,7 @@ See `docs/billing/BILLING_ARCHITECTURE.md` §4.
 **The gate is structural, not cosmetic.** On `chat.html` the chat interface lives in a `<template>` and is cloned into the document only after a session is proved. While signed out there is no thread, no composer and no chat request of any kind — not a hidden UI, but an absent one. Answers are written with `textContent`, never parsed as HTML.
 **A revoked session always says why.** `revoked_reason` is constrained in the schema to `logout`, `reuse_detected` or `expired`, and a revoked row with no reason is refused — written NULL-safely, because `NULL IN (...)` is NULL and a CHECK that evaluates to NULL passes. Two tests hold that, and they are the reason the first version of the constraint did not ship.
 **Migration:** 0041 (additive and reversible; no existing table or column changed). **Tests:** `test_auth_session.py` (25) — cookie attributes, hash-only storage, rotation, reuse detection killing the session for both holders, two tabs refreshing together NOT being treated as a replay, a secret older than the window or older than one rotation still revoking, absolute lifetime not extended, malformed and forged cookies, idempotent sign-out, sign-out with a wrong secret revoking nothing, the cookie failing to authenticate `/auth/me` or any chat route, and the pre-existing bearer routes still setting no cookie.
-**Verified in a browser, not only in tests.** The page was driven in Chromium against a live Cloud Core: signed out it reaches the sign-in prompt with no `.chat-app` in the document and no call to any chat endpoint; a real code is emailed, read and accepted; the cookie is present and HttpOnly while `document.cookie` cannot see it; nothing resembling a token reaches local or session storage; and only then are `/chat/config` and `/chat/conversations` called. That run is also what caught the sign-in panel staying on screen after sign-in — the site's `.card { display: flex }` outranks the UA rule for `[hidden]`, which no amount of markup checking would have revealed.
+**Verified in a browser, not only in tests.** The page was driven in Chromium against a live AI Core: signed out it reaches the sign-in prompt with no `.chat-app` in the document and no call to any chat endpoint; a real code is emailed, read and accepted; the cookie is present and HttpOnly while `document.cookie` cannot see it; nothing resembling a token reaches local or session storage; and only then are `/chat/config` and `/chat/conversations` called. That run is also what caught the sign-in panel staying on screen after sign-in — the site's `.card { display: flex }` outranks the UA rule for `[hidden]`, which no amount of markup checking would have revealed.
 
 ## ADR-130 — Carrying out an approved chat research request
 **Status:** ACCEPTED (master prompt §13.6 steps 5–9, 2026-10-20). **Problem:** ADR-128 implemented steps 1–4 and 10 — the chat detects a gap, proposes a scope, records a decision with a named authorisation basis, writes a `RETRIEVAL_GAP` into the knowledge layer, and lets the user approve, reject or cancel. Nothing then acted on the approval. A request stayed `approved` for ever, `research_project_id`, `reanswer_message_id` and `sources_added` were columns nothing ever filled, and the user was told the request was "waiting to be carried out" by a system in which nothing would ever carry it out.

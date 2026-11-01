@@ -1,11 +1,11 @@
 """Seed one fresh organization for live end-to-end checks of the harness.
 
-Everything goes through the real Cloud Core API except document conversions,
+Everything goes through the real AI Core API except document conversions,
 which have no create endpoint and are written through the ORM (as
 tests/test_dashboard_summary.py does). Prints JSON with the organization
 name, its access token and the /dashboard/summary it produced.
 
-Needs a running Cloud Core and the same DATABASE_URL it uses:
+Needs a running AI Core and the same DATABASE_URL it uses:
   cd cloud-core
   DATABASE_URL=postgresql+psycopg://aiol:aiol_dev_password@localhost:5432/aiol \
     .venv/Scripts/python.exe ../visual-harness/e2e/seed.py [http://127.0.0.1:8000] > seed.json

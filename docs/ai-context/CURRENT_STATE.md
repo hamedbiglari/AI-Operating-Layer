@@ -199,7 +199,7 @@ has been executed. See `docs/phase13/PHASE13_REPORT.md`.
 - Database: PostgreSQL + pgvector
 - Queue: Redis + Celery
 - WordPress: Thin Adapter
-- Source of Truth: Cloud Core
+- Source of Truth: AI Core
 
 ## Repository
 

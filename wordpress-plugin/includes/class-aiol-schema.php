@@ -6,7 +6,7 @@
  * engines and AI agents will treat whatever appears here as the merchant's
  * claim about their product. So this class is written around one rule:
  *
- *   RENDER ONLY WHAT CLOUD CORE ASSERTS. INVENT NOTHING.
+ *   RENDER ONLY WHAT AI CORE ASSERTS. INVENT NOTHING.
  *
  * Concretely, and each of these is a real failure mode in commerce plugins:
  *
@@ -84,7 +84,7 @@ class AIOL_Schema
      * Static and dependency-free so it is unit-testable without WordPress
      * or a network - see tests/test-schema.php.
      *
-     * @param array $core  Product projection as returned by Cloud Core.
+     * @param array $core  Product projection as returned by AI Core.
      * @return array|null  null when Core has not asserted enough to publish.
      */
     public static function build_from_core(array $core): ?array

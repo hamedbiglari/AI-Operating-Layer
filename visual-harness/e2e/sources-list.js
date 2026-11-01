@@ -282,7 +282,7 @@ function installMock(items) {
   // ---------- 401 and 403 ----------
   await page.evaluate(() => { window.__fail = 401; }); await connect(); await settle();
   check('401: the token was not accepted, Reconnect offered', await statusOf(),
-    ['denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.', 'Reconnect']);
+    ['denied', 'AI Core did not accept the access token (HTTP 401). It may have expired.', 'Reconnect']);
   await page.click('#screen-sources .know-status button'); await settle();
   check('Reconnect opens this panel\'s connect form at the token', await page.evaluate(() => {
     const f = document.querySelector('#live-screen-sources .live-connect');

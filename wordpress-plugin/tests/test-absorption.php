@@ -67,7 +67,7 @@ T::is(strpos($all_source, 'AAT_Structured_Data'), false, 'legacy structured-data
 T::is(strpos($all_source, 'AAT_Gateway'), false, 'legacy AI Gateway class is gone');
 T::is(strpos($all_source, 'ai-access-toolkit/v1'), false, 'legacy REST namespace is gone');
 T::is(strpos($all_source, 'register_rest_route'), false,
-    'plugin registers NO REST routes — Cloud Core is the only canonical API');
+    'plugin registers NO REST routes — AI Core is the only canonical API');
 T::is(strpos($all_source, 'generate_key'), false, 'legacy API-key generation is gone');
 T::is(strpos($all_source, 'X-AAT-API-Key'), false, 'legacy API-key header is gone');
 T::is(strpos($all_source, 'AAT_RATE_LIMIT'), false, 'legacy per-IP rate limiting is gone');
@@ -81,7 +81,7 @@ T::is(preg_match('/\bclass\s+AAT_/', $all_source), 0, 'no legacy AAT_ class was 
 
 // Privacy. Originally "no IP address is read anywhere" (ADR-046). ADR-079
 // (ACCEPTED, Phase 13, owner decision P13-REQ-002) supersedes that: the
-// visitor IP IS read — by the geo module only — and sent to Cloud Core,
+// visitor IP IS read — by the geo module only — and sent to AI Core,
 // which truncates it and nulls the full value at its retention date. What
 // still holds: the plugin itself never persists an IP. Updated in the final
 // existing-owner closure pass (the old assertion contradicted an accepted ADR).

@@ -1,7 +1,7 @@
 # AI Operating Layer — WordPress adapter
 
-Thin WordPress adapter for the AI Operating Layer Cloud Core
-(master spec §38). **Cloud Core is the source of truth.** This plugin
+Thin WordPress adapter for the AI Operating Layer AI Core
+(master spec §38). **AI Core is the source of truth.** This plugin
 publishes references to Core objects and renders what Core asserts; it
 holds no business truth of its own.
 
@@ -10,7 +10,7 @@ holds no business truth of its own.
 | §38 responsibility | Implementation |
 |---|---|
 | Authentication | Installation token (`aiol_…`) → Core derives the tenant. `includes/class-aiol-credentials.php` |
-| Connection to Cloud Core | `includes/class-aiol-client.php` — one place, eight stable error categories |
+| Connection to AI Core | `includes/class-aiol-client.php` — one place, eight stable error categories |
 | Content sync | `save_post` / `transition_post_status` → `POST /adapter/mappings` |
 | Product sync | `woocommerce_update_product` → identity projection only (ADR-041) |
 | Schema rendering | JSON-LD from `GET /adapter/catalog/{id}`. `includes/class-aiol-schema.php` |
@@ -32,7 +32,7 @@ No credential scope grants it, and Core refuses regardless:
 
 ## Setup
 
-1. In Cloud Core: **Installations → create** (bind it to a site) **→ issue
+1. In AI Core: **Installations → create** (bind it to a site) **→ issue
    credential** with `catalog:read`, `mappings:read`, `mappings:write`.
 2. In WordPress: **AI Operating Layer**, paste the Core URL and token.
    The credential is verified immediately — a token that cannot

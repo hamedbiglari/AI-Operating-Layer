@@ -66,18 +66,18 @@ function aiol_pill(string $state): string
 
     <p class="description" style="max-width:70ch">
         <?php esc_html_e(
-            'Cloud Core is the source of truth for your products, knowledge, evidence and trust. This plugin connects WordPress to it — it publishes references, never business data of its own.',
+            'AI Core is the source of truth for your products, knowledge, evidence and trust. This plugin connects WordPress to it — it publishes references, never business data of its own.',
             'ai-operating-layer'
         ); ?>
     </p>
 
     <?php if ($aiol_notice === 'connected') : ?>
         <div class="notice notice-success is-dismissible" role="status">
-            <p><?php esc_html_e('Connected to Cloud Core and the credential was verified.', 'ai-operating-layer'); ?></p>
+            <p><?php esc_html_e('Connected to AI Core and the credential was verified.', 'ai-operating-layer'); ?></p>
         </div>
     <?php elseif ($aiol_notice === 'disconnected') : ?>
         <div class="notice notice-info is-dismissible" role="status">
-            <p><?php esc_html_e('Disconnected. The stored token has been removed from this site. Mappings in Cloud Core are unchanged.', 'ai-operating-layer'); ?></p>
+            <p><?php esc_html_e('Disconnected. The stored token has been removed from this site. Mappings in AI Core are unchanged.', 'ai-operating-layer'); ?></p>
         </div>
     <?php elseif ($aiol_notice === 'unverified' && $aiol_form_error) : ?>
         <div class="notice notice-error" role="alert">
@@ -96,7 +96,7 @@ function aiol_pill(string $state): string
             <h2><?php esc_html_e('Not connected yet', 'ai-operating-layer'); ?></h2>
             <p>
                 <?php esc_html_e(
-                    'To connect, open your Cloud Core installation settings, issue an installation token, and paste it below along with your Cloud Core URL.',
+                    'To connect, open your AI Core installation settings, issue an installation token, and paste it below along with your AI Core URL.',
                     'ai-operating-layer'
                 ); ?>
             </p>
@@ -108,7 +108,7 @@ function aiol_pill(string $state): string
                 <h3 class="aiol-card__title" id="aiol-h-connection"><?php esc_html_e('Connection', 'ai-operating-layer'); ?></h3>
                 <dl class="aiol-status-list">
                     <div>
-                        <dt><?php esc_html_e('Cloud Core', 'ai-operating-layer'); ?></dt>
+                        <dt><?php esc_html_e('AI Core', 'ai-operating-layer'); ?></dt>
                         <dd><?php echo aiol_pill($aiol_state); // phpcs:ignore WordPress.Security.EscapeOutput -- built from escaped parts ?></dd>
                     </div>
                     <div>
@@ -151,10 +151,10 @@ function aiol_pill(string $state): string
                         </div>
                     </dl>
                     <p class="aiol-hint">
-                        <?php esc_html_e('Your organization is determined by Cloud Core from this token. WordPress cannot choose or change it.', 'ai-operating-layer'); ?>
+                        <?php esc_html_e('Your organization is determined by AI Core from this token. WordPress cannot choose or change it.', 'ai-operating-layer'); ?>
                     </p>
                 <?php else : ?>
-                    <p class="aiol-hint"><?php esc_html_e('Identity unavailable while Cloud Core is unreachable.', 'ai-operating-layer'); ?></p>
+                    <p class="aiol-hint"><?php esc_html_e('Identity unavailable while AI Core is unreachable.', 'ai-operating-layer'); ?></p>
                 <?php endif; ?>
             </section>
         </div>
@@ -166,12 +166,12 @@ function aiol_pill(string $state): string
         <?php wp_nonce_field('aiol_settings'); ?>
 
         <div class="aiol-field<?php echo ($aiol_form_error && in_array($aiol_form_error['code'], ['aiol_endpoint_empty','aiol_endpoint_scheme','aiol_endpoint_invalid'], true)) ? ' aiol-field--error' : ''; ?>">
-            <label for="aiol_endpoint"><?php esc_html_e('Cloud Core URL', 'ai-operating-layer'); ?> <span aria-hidden="true">*</span></label>
+            <label for="aiol_endpoint"><?php esc_html_e('AI Core URL', 'ai-operating-layer'); ?> <span aria-hidden="true">*</span></label>
             <input type="url" id="aiol_endpoint" name="aiol_endpoint" required
                    aria-describedby="aiol_endpoint_hint"
                    value="<?php echo esc_attr($aiol_form_error['endpoint'] ?? get_option(AIOL_Credentials::OPTION_ENDPOINT, '')); ?>">
             <span class="aiol-hint" id="aiol_endpoint_hint">
-                <?php esc_html_e('For example https://core.example.com — the address of your Cloud Core server.', 'ai-operating-layer'); ?>
+                <?php esc_html_e('For example https://core.example.com — the address of your AI Core server.', 'ai-operating-layer'); ?>
             </span>
         </div>
 
@@ -181,7 +181,7 @@ function aiol_pill(string $state): string
                    aria-describedby="aiol_token_hint"
                    value="">
             <span class="aiol-hint" id="aiol_token_hint">
-                <?php esc_html_e('Issued in Cloud Core under Installations. It begins with "aiol_". It is stored on this site and never shown again — if you lose it, rotate the credential in Cloud Core.', 'ai-operating-layer'); ?>
+                <?php esc_html_e('Issued in AI Core under Installations. It begins with "aiol_". It is stored on this site and never shown again — if you lose it, rotate the credential in AI Core.', 'ai-operating-layer'); ?>
             </span>
         </div>
 
@@ -189,7 +189,7 @@ function aiol_pill(string $state): string
             <button type="submit" class="button button-primary">
                 <?php echo $aiol_configured
                     ? esc_html__('Update connection', 'ai-operating-layer')
-                    : esc_html__('Connect to Cloud Core', 'ai-operating-layer'); ?>
+                    : esc_html__('Connect to AI Core', 'ai-operating-layer'); ?>
             </button>
         </p>
     </form>
@@ -197,11 +197,11 @@ function aiol_pill(string $state): string
     <?php if ($aiol_configured) : ?>
         <h2><?php esc_html_e('Disconnect', 'ai-operating-layer'); ?></h2>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="aiol-card"
-              onsubmit="return confirm('<?php echo esc_js(__('Remove the stored token from this site? Mappings already in Cloud Core are not deleted.', 'ai-operating-layer')); ?>');">
+              onsubmit="return confirm('<?php echo esc_js(__('Remove the stored token from this site? Mappings already in AI Core are not deleted.', 'ai-operating-layer')); ?>');">
             <input type="hidden" name="action" value="aiol_disconnect">
             <?php wp_nonce_field('aiol_settings'); ?>
             <p class="aiol-hint" style="margin-top:0">
-                <?php esc_html_e('Removes the token from this site only. Your data in Cloud Core is untouched.', 'ai-operating-layer'); ?>
+                <?php esc_html_e('Removes the token from this site only. Your data in AI Core is untouched.', 'ai-operating-layer'); ?>
             </p>
             <button type="submit" class="button"><?php esc_html_e('Disconnect', 'ai-operating-layer'); ?></button>
         </form>

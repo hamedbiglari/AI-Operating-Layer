@@ -99,7 +99,7 @@ $aiol_status_meta = [
         </dl>
         <p class="aiol-hint">
             <?php esc_html_e(
-                'Dimensions shown as "Not determined" are measured in Cloud Core or in a later phase — this adapter cannot see them, so it does not guess.',
+                'Dimensions shown as "Not determined" are measured in AI Core or in a later phase — this adapter cannot see them, so it does not guess.',
                 'ai-operating-layer'
             ); ?>
         </p>

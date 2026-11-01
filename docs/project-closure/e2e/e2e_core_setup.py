@@ -1,4 +1,4 @@
-"""E2E part 1 — Cloud Core tenant, knowledge, evidence, product, trust, query (real API, real DB)."""
+"""E2E part 1 — AI Core tenant, knowledge, evidence, product, trust, query (real API, real DB)."""
 import json, sys, httpx
 B = "http://127.0.0.1:8000/api/v1"; S = {}
 c = httpx.Client(timeout=20)

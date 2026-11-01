@@ -70,7 +70,7 @@ Sub-routes:
 ## 4. One identity across clients
 
 A source opened in WordPress and the same source opened in the Web App are
-the same row in Cloud Core, with the same id, the same status and the same
+the same row in AI Core, with the same id, the same status and the same
 processing history. There is no local status, no plugin-side copy, and no
 second document store.
 
@@ -79,7 +79,7 @@ present it as the source of a status.
 
 ## 5. Caches may be stale, and must say so
 
-Cloud Core is authoritative. The plugin caches. When a view renders from a
+AI Core is authoritative. The plugin caches. When a view renders from a
 cache that could not be revalidated, it says so and offers a refresh — it
 does not present stale data as current, and it does not show an encouraging
 empty state during an outage (a rule the existing mappings screen already

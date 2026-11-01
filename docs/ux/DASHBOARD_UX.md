@@ -151,7 +151,7 @@ page — and they will believe it unless the page says otherwise.
 
 Clears the adapter's own log and its unsent telemetry buffer on this site.
 It does **not** delete page views, agents or access decisions held in
-Cloud Core.
+AI Core.
 
 That boundary is stated next to the button. A "clear log" control that
 quietly erased the analytics record would be a destructive action wearing

@@ -29,5 +29,5 @@ Evidence keys: **T** = executed test suite this environment (947 tests: 941 pass
 | R-23 | First real AI provider call | P17 §22–24 | 17 | adapter ready | mock | 401 without key | — | BLOCKED | [FACT] |
 | R-24 | Resource/cost control (budget before spend; unknown ≠ 0) | P14 §23–24, P17 | 12/17 | visibility budget + execution cost | T | R | R | COMPLETE (scope: AI visibility) | [FACT] |
 | R-25 | Scale | MASTER P16 | — | not started | — | — | — | SUPERSEDED (numbering) / not yet due per §55 | [INFERENCE from §55] |
-| R-26 | Stack-neutral Cloud Core = source of truth; WordPress = adapter | MASTER §63 | all | plugin registers no REST routes; all state in Cloud Core | P | — | — | COMPLETE | [FACT] |
+| R-26 | Stack-neutral AI Core = source of truth; WordPress = adapter | MASTER §63 | all | plugin registers no REST routes; all state in AI Core | P | — | — | COMPLETE | [FACT] |
 | R-27 | Project memory synchronized | MASTER §61 | all | was stale (Phase 13); updated in this audit | — | — | — | COMPLETE (after update) | CURRENT_STATE.md [FACT] |

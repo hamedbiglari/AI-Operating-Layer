@@ -9,7 +9,7 @@
  *   What did people and machines search for that I could not answer?
  *   Am I connected, what version is running, and what has been happening?
  *
- * EVERY NUMBER ON THIS PAGE COMES FROM CLOUD CORE.
+ * EVERY NUMBER ON THIS PAGE COMES FROM AI CORE.
  *
  * Nothing is computed here. This file renders what `/telemetry/*` returns
  * and nothing else — if it started summing columns, WordPress would have
@@ -121,7 +121,7 @@ $overall = (string) ($health['overall'] ?? 'unknown');
     <?php if (!empty($errors)) : ?>
         <div class="notice notice-warning">
             <p>
-                <strong><?php esc_html_e('Some sections could not be loaded from Cloud Core:', 'ai-operating-layer'); ?></strong>
+                <strong><?php esc_html_e('Some sections could not be loaded from AI Core:', 'ai-operating-layer'); ?></strong>
             </p>
             <ul style="list-style:disc;margin-inline-start:1.5em">
                 <?php foreach ($errors as $error) : ?>
@@ -141,7 +141,7 @@ $overall = (string) ($health['overall'] ?? 'unknown');
 
     <?php if (isset($_GET['aiol_status']) && $_GET['aiol_status'] === 'log_cleared') : ?>
         <div class="notice notice-success is-dismissible">
-            <p><?php esc_html_e('Log history cleared. Cloud Core\'s recorded traffic, agents and access decisions were not affected.', 'ai-operating-layer'); ?></p>
+            <p><?php esc_html_e('Log history cleared. AI Core\'s recorded traffic, agents and access decisions were not affected.', 'ai-operating-layer'); ?></p>
         </div>
     <?php endif; ?>
 
@@ -158,7 +158,7 @@ $overall = (string) ($health['overall'] ?? 'unknown');
         </h2>
 
         <dl class="aiol-kv">
-            <dt><?php esc_html_e('Cloud Core', 'ai-operating-layer'); ?></dt>
+            <dt><?php esc_html_e('AI Core', 'ai-operating-layer'); ?></dt>
             <dd>
                 <?php
                 echo empty($health['core_reachable'])
@@ -182,7 +182,7 @@ $overall = (string) ($health['overall'] ?? 'unknown');
             <dt><?php esc_html_e('Plugin version', 'ai-operating-layer'); ?></dt>
             <dd><bdi class="aiol-identifier">v<?php echo esc_html(AIOL_VERSION); ?></bdi></dd>
 
-            <dt><?php esc_html_e('Cloud Core version', 'ai-operating-layer'); ?></dt>
+            <dt><?php esc_html_e('AI Core version', 'ai-operating-layer'); ?></dt>
             <dd><bdi class="aiol-identifier">v<?php echo esc_html((string) ($health['core_version'] ?? '—')); ?></bdi></dd>
 
             <dt><?php esc_html_e('Telemetry API', 'ai-operating-layer'); ?></dt>
@@ -275,7 +275,7 @@ $overall = (string) ($health['overall'] ?? 'unknown');
                                 <strong><?php esc_html_e('No traffic recorded yet', 'ai-operating-layer'); ?></strong>
                                 <?php
                                 esc_html_e(
-                                    'Views appear here once the adapter has sent its first batch and Cloud Core has rolled up a day. This is normally within an hour of enabling telemetry.',
+                                    'Views appear here once the adapter has sent its first batch and AI Core has rolled up a day. This is normally within an hour of enabling telemetry.',
                                     'ai-operating-layer'
                                 );
                                 ?>
@@ -448,7 +448,7 @@ $overall = (string) ($health['overall'] ?? 'unknown');
             <?php
             printf(
                 /* translators: %s: number of events waiting to be sent. */
-                esc_html__('%s observation(s) on this site are buffered locally and have not yet been sent to Cloud Core.', 'ai-operating-layer'),
+                esc_html__('%s observation(s) on this site are buffered locally and have not yet been sent to AI Core.', 'ai-operating-layer'),
                 esc_html(number_format_i18n($buffered))
             );
             ?>
@@ -636,7 +636,7 @@ $overall = (string) ($health['overall'] ?? 'unknown');
         <p class="aiol-hint">
             <?php
             esc_html_e(
-                'Clearing removes this site\'s own adapter log and its unsent telemetry buffer. It does not delete page views, agents or access decisions held in Cloud Core — those are the analytics record, and a log-clearing button that quietly erased them would be a destructive action wearing a harmless label. Credential-shaped strings are stripped before anything is written.',
+                'Clearing removes this site\'s own adapter log and its unsent telemetry buffer. It does not delete page views, agents or access decisions held in AI Core — those are the analytics record, and a log-clearing button that quietly erased them would be a destructive action wearing a harmless label. Credential-shaped strings are stripped before anything is written.',
                 'ai-operating-layer'
             );
             ?>
