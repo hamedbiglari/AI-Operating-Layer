@@ -2913,6 +2913,14 @@ body[data-live="on"] #screen-knowledge-detail > .breadcrumbs, body[data-live="on
    stay direct so the data-state chip still finds `.live-panel > .card__title`. */
 .live-panel--compact { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); padding: var(--space-3) var(--space-4); }
 .live-panel--compact > .card__title { margin: 0; font-size: var(--text-base); }
+/* Step 10: Visibility, its report and AI access (live). */
+.vis-live > .card + .card { margin-top: var(--space-4); }
+.vis-note { color: var(--text-muted); margin-top: 0; }
+.vis-caveats { color: var(--text-subtle); font-size: var(--text-sm); }
+.vis-agent { display: grid; gap: 2px; }
+.vis-agent__meta { color: var(--text-muted); font-size: var(--text-sm); }
+.vis-detail { margin-top: var(--space-4); }
+.vis-question, .vis-answer { white-space: pre-wrap; }
 .live-panel--compact > .live-note { margin: 0; flex: 1 1 18rem; color: var(--text-muted); font-size: var(--text-sm); }
 .live-panel--compact > :not(.card__title):not(.live-note):not(.live-toggle) { flex: 1 0 100%; }
 .live-hint { grid-column: 1 / -1; margin: 0; color: var(--text-muted); font-size: var(--text-sm); }
@@ -4960,7 +4968,7 @@ button.card { color: inherit; font: inherit; }
     <dl class="kv">
       <dt>Mentioned</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>The brand appeared in the answer.</span></span></dd><dt>Cited</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Whether a source link was attached was not examined in this batch.</span></span></dd><dt>Recommended</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Named as a suggested option, not just mentioned.</span></span></dd><dt>Product shown</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Checked for, and not present — a real negative finding, not a gap in the data.</span></span></dd><dt>URL present</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not examined in this batch.</span></span></dd>
     </dl>
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it" style="margin-top:var(--space-4)">
+    <div data-debt-hidden="V5-visibility-platform-breakdown" class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it" style="margin-top:var(--space-4)">
       <table class="table sortable">
         <caption class="visually-hidden">Observations by platform</caption>
         <thead><tr><th scope="col">Platform</th><th scope="col">Volume</th><th scope="col">Most recent</th></tr></thead>
@@ -5028,7 +5036,7 @@ button.card { color: inherit; font: inherit; }
     <div>
       <h1 id="h-vis-detail"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Visible to AI — full report</h1>
     </div>
-    <div class="page-actions">
+    <div data-debt-hidden="V5-visibility-detail-aggregates" class="page-actions">
       <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M12 4v11M8 11l4 4 4-4"/></svg>Export CSV</button>
       <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M12 4v11M8 11l4 4 4-4"/></svg>Export PDF</button>
     </div>
@@ -5036,10 +5044,10 @@ button.card { color: inherit; font: inherit; }
   <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Everything behind the two numbers on the dashboard, broken down by time, location, page and query — and exportable.</p></div></div>
 
 
-  <div class="tabs" role="tablist" aria-label="Time range"><button role="tab" aria-selected="false">Live</button><button role="tab" aria-selected="false">24 hours</button><button role="tab" aria-selected="false">7 days</button><button role="tab" aria-selected="true">28 days</button><button role="tab" aria-selected="false">3 months</button><button role="tab" aria-selected="false">6 months</button><button role="tab" aria-selected="false">12 months</button><button role="tab" aria-selected="false">16 months</button></div>
+  <div data-debt-hidden="V5-visibility-detail-aggregates" class="tabs" role="tablist" aria-label="Time range"><button role="tab" aria-selected="false">Live</button><button role="tab" aria-selected="false">24 hours</button><button role="tab" aria-selected="false">7 days</button><button role="tab" aria-selected="true">28 days</button><button role="tab" aria-selected="false">3 months</button><button role="tab" aria-selected="false">6 months</button><button role="tab" aria-selected="false">12 months</button><button role="tab" aria-selected="false">16 months</button></div>
 
   
-  <div class="card" style="border-color:var(--success);border-inline-start-width:3px">
+  <div data-debt-hidden="V5-visibility-detail-aggregates" class="card" style="border-color:var(--success);border-inline-start-width:3px">
     <h2 class="card__title" style="display:flex;align-items:center;gap:var(--space-2)">
       <span aria-hidden="true" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px color-mix(in srgb, var(--success) 25%, transparent)"></span>
       Right now
@@ -5094,14 +5102,14 @@ button.card { color: inherit; font: inherit; }
     </div>
   </div>
 
-  <div class="stat-grid" style="margin-top:var(--space-4)">
+  <div data-debt-hidden="V5-visibility-detail-aggregates" class="stat-grid" style="margin-top:var(--space-4)">
     <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12v.01M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zM7.2 12a4.8 4.8 0 1 1 9.6 0 4.8 4.8 0 0 1-9.6 0zM12 3v2M12 19v2M3 12h2M19 12h2"/></svg>Platform observations</span><span class="stat__value">47</span><span class="stat__note">4 platforms, 28 days</span></div>
     <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg>Automated requests</span><span class="stat__value">2,085</span><span class="stat__note">11 distinct agents, 28 days</span></div>
     <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.6-3.8-9S9.5 5.5 12 3Z"/></svg>Countries reached</span><span class="stat__value">6</span></div>
     <div class="stat"><span class="stat__label"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7v5l3.5 2"/></svg>Mean time on page</span><span class="stat__value">2m 41s</span><span class="stat__note">from 704 measured views</span></div>
   </div>
 
-  <div class="card" style="margin-top:var(--space-4)">
+  <div data-debt-hidden="V5-visibility-detail-aggregates" class="card" style="margin-top:var(--space-4)">
     <h2 class="card__title">Over time</h2>
     <p style="color:var(--text-muted);margin-top:0;display:flex;align-items:center;gap:var(--space-2)">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--primary)"></span> Platform observations
@@ -5223,7 +5231,7 @@ button.card { color: inherit; font: inherit; }
     <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-block-end:0">Two different sources, drawn on one timeline for comparison only — they are never added into a single number (ADR-064). Platform observations come from sampled prompts on specific days; automated requests are every AI/bot fetch this site recorded.</p>
   </div>
 
-  <div class="card" style="margin-top:var(--space-4)">
+  <div data-debt-hidden="V5-visibility-detail-aggregates" class="card" style="margin-top:var(--space-4)">
     <h2 class="card__title"><svg class="icon icon--heading" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.6-3.8-9S9.5 5.5 12 3Z"/></svg> Where requests came from</h2>
     
     <div class="world-map-wrap">
@@ -5255,7 +5263,7 @@ button.card { color: inherit; font: inherit; }
     </div>
   </div>
 
-  <div class="card" style="margin-top:var(--space-4)">
+  <div data-debt-hidden="V5-visibility-detail-aggregates" class="card" style="margin-top:var(--space-4)">
     <h2 class="card__title">Breakdown</h2>
     <div class="tabs" role="tablist" aria-label="Breakdown dimension">
       <button role="tab" aria-selected="true">Queries</button><button role="tab" aria-selected="false">Pages</button><button role="tab" aria-selected="false">Countries</button><button role="tab" aria-selected="false">Actor types</button><button role="tab" aria-selected="false">Days</button>
@@ -5561,7 +5569,7 @@ button.card { color: inherit; font: inherit; }
     </div>
   </div>
 
-  <div class="callout callout--warning"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+  <div data-debt-hidden="V5-access-agent-decision" class="callout callout--warning"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
     <div><p><strong>6 agents have no decision yet.</strong> They are being allowed through, and the report records that as <em>Not configured</em> rather than as <em>Allowed</em> — because nobody chose it. An unmade decision that quietly behaves like a permission is how a site ends up in a training corpus it never agreed to.</p></div>
   </div>
 
@@ -5573,10 +5581,10 @@ button.card { color: inherit; font: inherit; }
         <caption class="visually-hidden">Access rules in precedence order</caption>
         <thead><tr><th scope="col">Applies to</th><th scope="col">Purpose</th><th scope="col">Decision</th><th scope="col">Reason given to the agent</th><th scope="col"></th></tr></thead>
         <tbody>
-          <tr><td data-label="Applies to"><bdi class="identifier">GPTBot</bdi></td><td data-label="Purpose">Any</td><td data-label="Decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td><td data-label="Reason">We do not permit corpus collection.</td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Edit</a></td></tr>
-          <tr><td data-label="Applies to">Any AI crawler</td><td data-label="Purpose">Training</td><td data-label="Decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td><td data-label="Reason">Training use requires a licence.</td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Edit</a></td></tr>
-          <tr><td data-label="Applies to">Any AI crawler</td><td data-label="Purpose">Search indexing</td><td data-label="Decision"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.5 9.2A2.8 2.8 0 0 0 12 8c-1.5 0-2.6.9-2.6 2s1.1 2 2.6 2 2.6.9 2.6 2-1.1 2-2.6 2a2.8 2.8 0 0 1-2.5-1.2M12 6.2v1.8M12 16v1.8"/></svg><span>Paid</span></span></td><td data-label="Reason">Commercial licence required — see terms.</td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Edit</a></td></tr>
-          <tr><td data-label="Applies to">Any AI answering a user</td><td data-label="Purpose">Any</td><td data-label="Decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td><td data-label="Reason"><span class="not-available">No reason needed</span></td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Edit</a></td></tr>
+          <tr><td data-label="Applies to"><bdi class="identifier">GPTBot</bdi></td><td data-label="Purpose">Any</td><td data-label="Decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td><td data-label="Reason">We do not permit corpus collection.</td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Edit</a></td></tr>
+          <tr><td data-label="Applies to">Any AI crawler</td><td data-label="Purpose">Training</td><td data-label="Decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td><td data-label="Reason">Training use requires a licence.</td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Edit</a></td></tr>
+          <tr><td data-label="Applies to">Any AI crawler</td><td data-label="Purpose">Search indexing</td><td data-label="Decision"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.5 9.2A2.8 2.8 0 0 0 12 8c-1.5 0-2.6.9-2.6 2s1.1 2 2.6 2 2.6.9 2.6 2-1.1 2-2.6 2a2.8 2.8 0 0 1-2.5-1.2M12 6.2v1.8M12 16v1.8"/></svg><span>Paid</span></span></td><td data-label="Reason">Commercial licence required — see terms.</td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Edit</a></td></tr>
+          <tr><td data-label="Applies to">Any AI answering a user</td><td data-label="Purpose">Any</td><td data-label="Decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td><td data-label="Reason"><span class="not-available">No reason needed</span></td><td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Edit</a></td></tr>
         </tbody>
       </table>
     </div>
@@ -5592,7 +5600,7 @@ button.card { color: inherit; font: inherit; }
     <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it">
       <table class="table sortable">
         <caption class="visually-hidden">Automated clients observed, with their current access decision</caption>
-        <thead><tr><th scope="col">Agent</th><th scope="col">Type</th><th scope="col">Stated purpose</th><th scope="col">Identification</th><th scope="col">Requests (30d)</th><th scope="col">Access</th><th scope="col"></th></tr></thead>
+        <thead><tr><th scope="col">Agent</th><th scope="col">Type</th><th scope="col">Stated purpose</th><th scope="col">Identification</th><th scope="col">Requests (30d)</th><th scope="col" data-debt-hidden="V5-access-agent-decision">Access</th><th scope="col"></th></tr></thead>
         <tbody>
     <tr>
       <td data-label="Agent">
@@ -5600,7 +5608,7 @@ button.card { color: inherit; font: inherit; }
           <span class="source-cell__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg></span>
           <span class="source-cell__body">
             <span class="source-cell__title"><bdi class="identifier">GPTBot</bdi></span>
-            <span class="source-cell__meta">OpenAI</span>
+            <span class="source-cell__meta"><bdi class="identifier">OpenAI</bdi></span>
           </span>
         </div>
       </td>
@@ -5608,8 +5616,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Training</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">412</td>
-      <td data-label="Access"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr>
     <tr>
       <td data-label="Agent">
@@ -5617,7 +5625,7 @@ button.card { color: inherit; font: inherit; }
           <span class="source-cell__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg></span>
           <span class="source-cell__body">
             <span class="source-cell__title"><bdi class="identifier">ClaudeBot</bdi></span>
-            <span class="source-cell__meta">Anthropic</span>
+            <span class="source-cell__meta"><bdi class="identifier">Anthropic</bdi></span>
           </span>
         </div>
       </td>
@@ -5625,8 +5633,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Training</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">288</td>
-      <td data-label="Access"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr>
     <tr>
       <td data-label="Agent">
@@ -5634,7 +5642,7 @@ button.card { color: inherit; font: inherit; }
           <span class="source-cell__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg></span>
           <span class="source-cell__body">
             <span class="source-cell__title"><bdi class="identifier">CCBot</bdi></span>
-            <span class="source-cell__meta">Common Crawl</span>
+            <span class="source-cell__meta"><bdi class="identifier">Common Crawl</bdi></span>
           </span>
         </div>
       </td>
@@ -5642,8 +5650,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Training</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">156</td>
-      <td data-label="Access"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.5 9.2A2.8 2.8 0 0 0 12 8c-1.5 0-2.6.9-2.6 2s1.1 2 2.6 2 2.6.9 2.6 2-1.1 2-2.6 2a2.8 2.8 0 0 1-2.5-1.2M12 6.2v1.8M12 16v1.8"/></svg><span>Paid</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.5 9.2A2.8 2.8 0 0 0 12 8c-1.5 0-2.6.9-2.6 2s1.1 2 2.6 2 2.6.9 2.6 2-1.1 2-2.6 2a2.8 2.8 0 0 1-2.5-1.2M12 6.2v1.8M12 16v1.8"/></svg><span>Paid</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr>
     <tr>
       <td data-label="Agent">
@@ -5651,7 +5659,7 @@ button.card { color: inherit; font: inherit; }
           <span class="source-cell__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg></span>
           <span class="source-cell__body">
             <span class="source-cell__title"><bdi class="identifier">ChatGPT-User</bdi></span>
-            <span class="source-cell__meta">OpenAI</span>
+            <span class="source-cell__meta"><bdi class="identifier">OpenAI</bdi></span>
           </span>
         </div>
       </td>
@@ -5659,8 +5667,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Answering</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">97</td>
-      <td data-label="Access"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr>
     <tr>
       <td data-label="Agent">
@@ -5668,7 +5676,7 @@ button.card { color: inherit; font: inherit; }
           <span class="source-cell__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg></span>
           <span class="source-cell__body">
             <span class="source-cell__title"><bdi class="identifier">Claude-User</bdi></span>
-            <span class="source-cell__meta">Anthropic</span>
+            <span class="source-cell__meta"><bdi class="identifier">Anthropic</bdi></span>
           </span>
         </div>
       </td>
@@ -5676,8 +5684,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Answering</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">54</td>
-      <td data-label="Access"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr>
     <tr>
       <td data-label="Agent">
@@ -5685,7 +5693,7 @@ button.card { color: inherit; font: inherit; }
           <span class="source-cell__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2ZM12 5V3M9 13h.01M15 13h.01M9.5 16h5M2 12v3M22 12v3"/></svg></span>
           <span class="source-cell__body">
             <span class="source-cell__title"><bdi class="identifier">Googlebot</bdi></span>
-            <span class="source-cell__meta">Google</span>
+            <span class="source-cell__meta"><bdi class="identifier">Google</bdi></span>
           </span>
         </div>
       </td>
@@ -5693,8 +5701,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Search indexing</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">1,204</td>
-      <td data-label="Access"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr>
     <tr>
       <td data-label="Agent">
@@ -5710,8 +5718,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose"><span class="not-available">Not declared</span></td>
       <td data-label="Identification"><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Probable</span></span></td>
       <td data-label="Requests (30d)" class="num">23</td>
-      <td data-label="Access"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not decided</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not decided</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr>
     <tr>
       <td data-label="Agent">
@@ -5727,8 +5735,8 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose"><span class="not-available">Not declared</span></td>
       <td data-label="Identification"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Unknown</span></span></td>
       <td data-label="Requests (30d)" class="num">4</td>
-      <td data-label="Access"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not decided</span></span></td>
-      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access">Change</a></td>
+      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not decided</span></span></td>
+      <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-debt-hidden="V5-access-policy-edit">Change</a></td>
     </tr></tbody>
       </table>
     </div>
@@ -9388,16 +9396,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     'screen-processing': { kind: 'processing', title: 'Document processing (Cloud Core)', compact: true },
     'screen-provenance': { kind: 'provenance', title: 'Provenance (Cloud Core)', compact: true },
     'screen-add': { kind: 'add', title: 'Add source (Cloud Core)', compact: true },
-    'screen-visibility': { kind: 'table', title: 'AI visibility projects (Cloud Core)', endpoint: '/visibility/projects',
-      cols: [['Project', 'name'], ['Platforms', 'platforms', 'list'], ['Target brand', 'target_brand'], ['Created', 'created_at', 'date']] },
+    'screen-visibility': { kind: 'visibility', title: 'AI visibility (Cloud Core)', compact: true },
     'screen-products': { kind: 'table', title: 'Products (Cloud Core)', endpoint: '/products',
       cols: [['Product', 'name'], ['SKU', 'sku'], ['Status', 'status', 'badge'], ['Category', 'category'], ['Updated', 'updated_at', 'date']],
       detail: 'product' },
     'screen-gap': { kind: 'gap', title: 'Knowledge gap (Cloud Core)', compact: true },
-    'screen-visibility-detail': { kind: 'table', title: 'AI visibility observations (Cloud Core)', endpoint: '/visibility/observations',
-      cols: [['Platform', 'platform'], ['Test', 'test_type'], ['Mentioned', 'mentioned', 'bool'], ['Cited', 'cited', 'bool'], ['Recommended', 'recommended', 'bool'], ['Product shown', 'product_present', 'bool'], ['Method', 'collection_method']] },
-    'screen-access': { kind: 'table', title: 'AI access policies (Cloud Core)', endpoint: '/telemetry/access-policies',
-      cols: [['Actor type', 'actor_type'], ['Purpose', 'purpose'], ['Tier', 'tier', 'badge'], ['Reason', 'reason'], ['Terms', 'terms_url'], ['Updated', 'updated_at', 'date']] },
+    'screen-visibility-detail': { kind: 'visibilityDetail', title: 'AI visibility report (Cloud Core)', compact: true },
+    'screen-access': { kind: 'access', title: 'AI access (Cloud Core)', compact: true },
     'screen-traffic': { kind: 'table', title: 'Page views (Cloud Core)', endpoint: '/telemetry/page-views',
       cols: [['Path', 'path'], ['Title', 'content_title'], ['Actor', 'actor_type'], ['Agent', 'agent_signature'], ['Purpose', 'purpose'], ['Status', 'status_code']] },
     'screen-statistics': { kind: 'table', title: 'Content statistics (Cloud Core)', endpoint: '/telemetry/content-stats',
@@ -10957,6 +10962,199 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__gapLoad = load;
     return load();
   }
+  // Step 10 (Visibility): AI Visibility, its full report and AI access. Each screen reads whole lists in
+  // parallel (Rule 17): Visibility = /visibility/summary + /telemetry/agents, the report =
+  // /visibility/observations, Access = /telemetry/access-policies + /telemetry/agents. A known enum value
+  // shows its label; anything else, and every server text, is shown as sent.
+  var VIS_ACTOR = { human: 'Human visitor', search_crawler: 'Search crawler', ai_crawler: 'AI crawler (indexing)',
+    ai_user_agent: 'AI answering a user', agent_tool: 'Agent acting for a user', unknown: 'Unrecognised automated client' };
+  var VIS_SUBJECT = { human: 'Any human visitor', search_crawler: 'Any search crawler', ai_crawler: 'Any AI crawler',
+    ai_user_agent: 'Any AI answering a user', agent_tool: 'Any agent acting for a user', unknown: 'Any unrecognised client' };
+  var VIS_PURPOSE = { training: 'Training', search_indexing: 'Search indexing', answering: 'Answering',
+    agent_action: 'Acting for a user', preview: 'Link preview', unknown: 'Not declared' };
+  var VIS_CONFIDENCE = { detected: ['Detected', 'badge--info'], probable: ['Probable', 'badge--warning'],
+    verified: ['Verified', 'badge--success'], unknown: ['Unknown', 'badge--unknown'] };
+  var VIS_TIER = { free: ['Free', 'badge--success'], paid: ['Paid', 'badge--info'], forbidden: ['Forbidden', 'badge--danger'],
+    unset: ['Not configured', 'badge--unknown'] };
+  var VIS_SIGNAL = { mentioned: 'Mentioned', cited: 'Cited', recommended: 'Recommended', product_present: 'Product shown', url_present: 'URL present' };
+  var VIS_PRESENCE = { present: ['Present', 'badge--success'], absent: ['Absent', 'badge--unknown'], not_checked: ['Not checked', 'badge--unknown'] };
+  var VIS_PLATFORM = { google: 'Google', bing: 'Bing', chatgpt: 'ChatGPT', gemini: 'Gemini', perplexity: 'Perplexity', copilot: 'Copilot' };
+  var VIS_TEST = { direct_query: 'Direct question', brand_query: 'Brand question', product_query: 'Product question',
+    comparison_query: 'Comparison', citation_check: 'Citation check' };
+  var VIS_METHOD = { manual_paste: 'Pasted by hand', platform_api: 'Platform API', automated_browser: 'Automated browser', imported: 'Imported' };
+  function visWord(parent, map, v) {
+    if (map[v]) AIOL_I18N.set(parent.appendChild(el('span')), map[v]); else parent.appendChild(el('bdi', null, v));
+    return parent;
+  }
+  function visBadge(map, v) {
+    var a = map[v], b = el('span', 'badge ' + (a ? a[1] : 'badge--unknown'));
+    if (a) AIOL_I18N.set(b.appendChild(el('span')), a[0]); else b.appendChild(el('bdi', null, v));
+    return b;
+  }
+  function visPlatform(v) { return v === 'other' ? AIOL_I18N.set(el('span'), 'Other platform') : identifier(VIS_PLATFORM[v] || v); }
+  function visNum(n) { var s = el('span', 'num'); return AIOL_I18N.set(s, '{n}', { n: n }); }
+  function visNA() { return el('span', 'not-available'); }
+  // A table in its own card section; returns the tbody. Cells are nodes.
+  function visTable(parent, caption, heads) {
+    var wrap = parent.appendChild(el('div', 'table-wrap')), t = wrap.appendChild(el('table', 'table'));
+    var cap = t.appendChild(el('caption', 'visually-hidden')); AIOL_I18N.set(cap, caption);
+    var tr = t.appendChild(el('thead')).appendChild(el('tr'));
+    heads.forEach(function (h) { var th = tr.appendChild(el('th')); th.scope = 'col'; if (h) AIOL_I18N.set(th, h); });
+    return t.appendChild(el('tbody'));
+  }
+  function visRow(tbody, cells) {
+    var tr = tbody.appendChild(el('tr'));
+    cells.forEach(function (c) { tr.appendChild(el('td')).appendChild(c); });
+    return tr;
+  }
+  function visCard(body, title) {
+    var card = body.appendChild(el('div', 'card vis-card'));
+    var h = card.appendChild(el('h2', 'card__title')); AIOL_I18N.set(h, title);
+    return card;
+  }
+  // One agent: its name (an identifier) and operator.
+  function visAgent(a) {
+    var c = el('span', 'vis-agent'); c.appendChild(identifier(a.display_name || a.signature));
+    var m = c.appendChild(el('span', 'vis-agent__meta'));
+    if (a.vendor) m.appendChild(identifier(a.vendor)); else AIOL_I18N.set(m, 'Operator unknown');
+    return c;
+  }
+  // Shared wiring: a kept body after the panel, a message box, reload on each visit.
+  function visScreen(panel, id, build, fetchAll, render, failText) {
+    if (panel.__visLoad) return panel.__visLoad();
+    var st = { seq: 0 }, body = el('div', 'vis-live'); body.setAttribute('data-live-keep', '');
+    var status = messageBox(body), parts = build(body);
+    panel.insertAdjacentElement('afterend', body);
+    function cards(on) { body.querySelectorAll(':scope > .card').forEach(function (c) { c.hidden = !on; }); }
+    function load() {
+      var seq = ++st.seq;
+      cards(false); status('loading', 'Loading…');
+      return fetchAll().then(function (r) {
+        if (seq !== st.seq) return null;      // a newer request owns the screen
+        state(panel, 'ready'); status('');
+        cards(true); render(parts, r, status);
+        return r;
+      }).catch(function (e) {
+        if (seq !== st.seq) return null;
+        state(panel, 'ready');
+        if (e.denied === 401) status('denied', 'Cloud Core did not accept the access token (HTTP 401). It may have expired.');
+        else status('error', failText, { error: e.message }, 'Retry', load);
+        return null;
+      });
+    }
+    document.addEventListener('aiol:screenchange', function (e) { if (e.detail.id === id && LIVE) load(); });
+    panel.__visLoad = load;
+    return load();
+  }
+  function visibilityScreen(panel) {
+    return visScreen(panel, 'screen-visibility', function (body) {
+      var p = {}, ans = visCard(body, 'How AI platforms answer about you');
+      p.ansNote = ans.appendChild(el('p', 'vis-note'));
+      p.signals = visTable(ans, 'Observations by signal', ['Signal', 'Present', 'Absent', 'Not checked']);
+      p.caveats = ans.appendChild(el('ul', 'vis-caveats'));
+      var more = ans.appendChild(el('p')).appendChild(el('a')); more.href = '#screen-visibility-detail';
+      AIOL_I18N.set(more, 'Open the full report');
+      var who = visCard(body, 'Who is actually visiting your site');
+      p.agNote = who.appendChild(el('p', 'vis-note'));
+      p.agents = visTable(who, 'Automated clients seen', ['Agent', 'Actor type', 'Confidence', 'Requests seen']);
+      return p;
+    }, function () {
+      return Promise.all([api('/visibility/summary'), api('/telemetry/agents?limit=200')]);
+    }, function (p, r) {
+      var s = r[0], ag = r[1];
+      p.signals.textContent = ''; p.caveats.textContent = ''; p.agents.textContent = '';
+      AIOL_I18N.set(p.ansNote, '{n|observation|observations} recorded. Each signal is counted on its own; there is no combined score.', { n: s.observation_count });
+      Object.keys(VIS_SIGNAL).forEach(function (k) {
+        var c = s.signals[k]; if (!c) return;
+        visRow(p.signals, [AIOL_I18N.set(el('span'), VIS_SIGNAL[k]), visNum(c.present), visNum(c.absent), visNum(c.not_checked)]);
+      });
+      (s.caveats || []).forEach(function (c) { p.caveats.appendChild(el('li')).appendChild(el('bdi', null, c)).dir = 'auto'; });
+      AIOL_I18N.set(p.agNote, '{n|automated client|automated clients} seen. Human visitors are never listed here.', { n: ag.total });
+      ag.items.forEach(function (a) {
+        visRow(p.agents, [visAgent(a), visWord(el('span'), VIS_ACTOR, a.actor_type), visBadge(VIS_CONFIDENCE, a.confidence), visNum(a.observation_count)]);
+      });
+      if (!ag.items.length) visRow(p.agents, [AIOL_I18N.set(visNA(), 'No automated clients seen yet.')]);
+    }, 'Could not load AI visibility ({error}).');
+  }
+  function visibilityDetailScreen(panel) {
+    return visScreen(panel, 'screen-visibility-detail', function (body) {
+      var p = {}, card = visCard(body, 'Observations');
+      p.note = card.appendChild(el('p', 'vis-note'));
+      p.rows = visTable(card, 'Platform observations, newest first', ['Platform', 'Question', 'Mentioned', 'Cited', 'Recommended', 'Tested', '']);
+      p.detail = body.appendChild(el('div', 'card vis-detail')); p.detail.id = 'vis-observation'; p.detail.tabIndex = -1;
+      return p;
+    }, function () {
+      return api('/visibility/observations?limit=50&sort_by=tested_at&sort_dir=desc');
+    }, function (p, page) {
+      p.rows.textContent = ''; p.detail.hidden = true;
+      AIOL_I18N.set(p.note, 'The latest {n} of {total|observation|observations}. Open one to read the question and the answer as recorded.', { n: page.items.length, total: page.total });
+      page.items.forEach(function (o) {
+        var open = el('button', 'btn btn--quiet'); AIOL_I18N.set(open, 'Open'); open.type = 'button';
+        open.setAttribute('aria-controls', 'vis-observation');
+        open.addEventListener('click', function () { show(p.detail, o); });
+        var q = el('bdi', null, o.prompt); q.dir = 'auto';
+        visRow(p.rows, [visPlatform(o.platform), q, visBadge(VIS_PRESENCE, o.mentioned), visBadge(VIS_PRESENCE, o.cited),
+          visBadge(VIS_PRESENCE, o.recommended), AIOL_I18N.set(el('span'), '{d}', { d: { date: o.tested_at, style: 'date' } }), open]);
+      });
+      if (!page.items.length) visRow(p.rows, [AIOL_I18N.set(visNA(), 'No observations recorded yet.')]);
+    }, 'Could not load the observations ({error}).');
+    // One observation, from the row already loaded (no further request).
+    function show(box, o) {
+      box.textContent = ''; box.hidden = false;
+      var h = box.appendChild(el('h2', 'card__title')); AIOL_I18N.set(h, 'Observation');
+      var q = box.appendChild(el('p', 'vis-question')).appendChild(el('bdi', null, o.prompt)); q.dir = 'auto';
+      var dl = box.appendChild(el('dl', 'kv'));
+      function fact(label, node) { AIOL_I18N.set(dl.appendChild(el('dt')), label); dl.appendChild(el('dd')).appendChild(node); }
+      fact('Platform', visPlatform(o.platform));
+      fact('Test', visWord(el('span'), VIS_TEST, o.test_type));
+      fact('Collected', visWord(el('span'), VIS_METHOD, o.collection_method));
+      fact('Model', o.platform_model ? identifier(o.platform_model) : AIOL_I18N.set(visNA(), 'Not recorded'));
+      fact('Tested', AIOL_I18N.set(el('span'), '{d}', { d: { date: o.tested_at } }));
+      Object.keys(VIS_SIGNAL).forEach(function (k) { fact(VIS_SIGNAL[k], visBadge(VIS_PRESENCE, o[k])); });
+      var ah = box.appendChild(el('h3', 'vis-answer__title')); AIOL_I18N.set(ah, 'Answer as recorded');
+      if (o.response) { var a = box.appendChild(el('p', 'vis-answer')).appendChild(el('bdi', null, o.response)); a.dir = 'auto'; }
+      else { var none = box.appendChild(el('p', 'not-available')); AIOL_I18N.set(none, 'No answer was recorded.'); }
+      box.focus();
+    }
+  }
+  function accessScreen(panel) {
+    return visScreen(panel, 'screen-access', function (body) {
+      var p = {}, rules = visCard(body, 'Rules, most specific first');
+      p.ruleNote = rules.appendChild(el('p', 'vis-note'));
+      p.rules = visTable(rules, 'Access rules in precedence order', ['Applies to', 'Purpose', 'Decision', 'Reason given to the agent']);
+      var seen = visCard(body, 'Every agent seen');
+      p.agNote = seen.appendChild(el('p', 'vis-note'));
+      p.agents = visTable(seen, 'Automated clients observed', ['Agent', 'Type', 'Stated purpose', 'Identification', 'Requests seen']);
+      return p;
+    }, function () {
+      return Promise.all([api('/telemetry/access-policies?limit=200'), api('/telemetry/agents?limit=200')]);
+    }, function (p, r) {
+      var pol = r[0], ag = r[1], names = {};
+      ag.items.forEach(function (a) { names[a.id] = a; });
+      p.rules.textContent = ''; p.agents.textContent = '';
+      AIOL_I18N.set(p.ruleNote, '{n|rule|rules}. The first rule that matches wins and evaluation stops; a client no rule matches is allowed and recorded as Not configured.', { n: pol.total });
+      pol.items.forEach(function (x) {
+        var who;
+        if (x.agent_id) who = names[x.agent_id] ? identifier(names[x.agent_id].display_name) : AIOL_I18N.set(el('span'), 'An agent not seen recently');
+        else who = AIOL_I18N.set(el('span'), VIS_SUBJECT[x.actor_type] || 'Any automated client');
+        var why = el('span');
+        if (x.reason) why.appendChild(el('bdi', null, x.reason)).dir = 'auto';
+        else AIOL_I18N.set(why.appendChild(visNA()), 'No reason given');
+        if (x.terms_url && /^https?:\/\//i.test(x.terms_url)) {
+          why.appendChild(document.createTextNode(' '));
+          var t = AIOL_I18N.set(why.appendChild(el('a')), 'Terms'); t.href = x.terms_url; t.target = '_blank'; t.rel = 'noopener';
+        }
+        visRow(p.rules, [who, x.purpose ? visWord(el('span'), VIS_PURPOSE, x.purpose) : AIOL_I18N.set(el('span'), 'Any'), visBadge(VIS_TIER, x.tier), why]);
+      });
+      if (!pol.items.length) visRow(p.rules, [AIOL_I18N.set(visNA(), 'No rules yet.')]);
+      AIOL_I18N.set(p.agNote, '{n|distinct client|distinct clients}. There is no filter that hides unrecognised ones.', { n: ag.total });
+      ag.items.forEach(function (a) {
+        visRow(p.agents, [visAgent(a), visWord(el('span'), VIS_ACTOR, a.actor_type), visWord(el('span'), VIS_PURPOSE, a.declared_purpose),
+          visBadge(VIS_CONFIDENCE, a.confidence), visNum(a.observation_count)]);
+      });
+      if (!ag.items.length) visRow(p.agents, [AIOL_I18N.set(visNA(), 'No automated clients seen yet.')]);
+    }, 'Could not load AI access ({error}).');
+  }
   // Knowledge detail (8B): GET /knowledge/overview?id= (the object and its counts, one row) and
   // GET /knowledge/{id}/claims, in parallel — two calls, whatever the number of claims (Rule 17).
   var KO_STATUS = { draft: ['Draft', 'badge--unknown'], in_review: ['In review', 'badge--info'],
@@ -11164,6 +11362,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       else if (cfg.kind === 'provenance') provenanceScreen(panel);
       else if (cfg.kind === 'add') addSourceScreen(panel);
       else if (cfg.kind === 'gap') gapScreen(panel);
+      else if (cfg.kind === 'visibility') visibilityScreen(panel);
+      else if (cfg.kind === 'visibilityDetail') visibilityDetailScreen(panel);
+      else if (cfg.kind === 'access') accessScreen(panel);
       else if (cfg.kind === 'knowledgeDetail') knowledgeDetailScreen(panel);
       else if (cfg.kind === 'org') org(panel); else table(panel, cfg, st);
     });
@@ -14392,7 +14593,136 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "No contradictions recorded.": "هیچ تعارضی ثبت نشده است.",
     "Every statement has a source.": "هر گزاره منبعی دارد.",
     "Turn into a cited publication": "تبدیل به یک انتشار مستند",
-    "Published — open Publications": "منتشر شد — انتشارات را باز کنید"
+    "Published — open Publications": "منتشر شد — انتشارات را باز کنید",
+    "AI visibility (Cloud Core)": "دیده‌شدن در هوش مصنوعی (Cloud Core)",
+    "AI visibility report (Cloud Core)": "گزارش دیده‌شدن در هوش مصنوعی (Cloud Core)",
+    "AI access (Cloud Core)": "دسترسی هوش مصنوعی (Cloud Core)",
+    "Other platform": "سکوی دیگر",
+    "Operator unknown": "گرداننده نامشخص",
+    "{n|observation|observations} recorded. Each signal is counted on its own; there is no combined score.": "{n} مشاهده ثبت شده است. هر نشانه جداگانه شمرده می‌شود؛ هیچ امتیاز ترکیبی وجود ندارد.",
+    "{n|automated client|automated clients} seen. Human visitors are never listed here.": "{n} کلاینت خودکار دیده شده است. بازدیدکنندگان انسانی هرگز اینجا فهرست نمی‌شوند.",
+    "The latest {n} of {total|observation|observations}. Open one to read the question and the answer as recorded.": "{n} مورد تازه از {total} مشاهده. یکی را باز کنید تا پرسش و پاسخ را همان‌طور که ثبت شده بخوانید.",
+    "{n|rule|rules}. The first rule that matches wins and evaluation stops; a client no rule matches is allowed and recorded as Not configured.": "{n} قاعده. نخستین قاعده‌ای که منطبق شود اعمال می‌شود و ارزیابی متوقف می‌شود؛ کلاینتی که با هیچ قاعده‌ای منطبق نشود اجازه می‌یابد و به‌عنوان «پیکربندی‌نشده» ثبت می‌شود.",
+    "An agent not seen recently": "عاملی که اخیراً دیده نشده است",
+    "Terms": "شرایط",
+    "Any": "هر",
+    "{n|distinct client|distinct clients}. There is no filter that hides unrecognised ones.": "{n} کلاینت متمایز. هیچ فیلتری کلاینت‌های ناشناخته را پنهان نمی‌کند.",
+    "Human visitor": "بازدیدکنندهٔ انسانی",
+    "Search crawler": "خزندهٔ جست‌وجو",
+    "AI crawler (indexing)": "خزندهٔ هوش مصنوعی (نمایه‌سازی)",
+    "AI answering a user": "هوش مصنوعی در حال پاسخ به کاربر",
+    "Agent acting for a user": "عامل از طرف کاربر",
+    "Unrecognised automated client": "کلاینت خودکار ناشناخته",
+    "Any human visitor": "هر بازدیدکنندهٔ انسانی",
+    "Any search crawler": "هر خزندهٔ جست‌وجو",
+    "Any AI crawler": "هر خزندهٔ هوش مصنوعی",
+    "Any AI answering a user": "هر هوش مصنوعی در حال پاسخ به کاربر",
+    "Any agent acting for a user": "هر عامل از طرف کاربر",
+    "Any unrecognised client": "هر کلاینت ناشناخته",
+    "Any automated client": "هر کلاینت خودکار",
+    "Training": "آموزش مدل",
+    "Search indexing": "نمایه‌سازی جست‌وجو",
+    "Answering": "پاسخ‌دادن",
+    "Acting for a user": "اقدام از طرف کاربر",
+    "Link preview": "پیش‌نمایش پیوند",
+    "Not declared": "اعلام‌نشده",
+    "Detected": "شناسایی‌شده",
+    "Probable": "محتمل",
+    "Free": "رایگان",
+    "Paid": "پولی",
+    "Forbidden": "ممنوع",
+    "Not configured": "پیکربندی‌نشده",
+    "Mentioned": "نام برده شد",
+    "Cited": "استناد شد",
+    "Recommended": "پیشنهاد شد",
+    "Product shown": "محصول نشان داده شد",
+    "URL present": "نشانی وب آمد",
+    "Present": "هست",
+    "Absent": "نیست",
+    "Not checked": "بررسی نشد",
+    "Direct question": "پرسش مستقیم",
+    "Brand question": "پرسش دربارهٔ برند",
+    "Product question": "پرسش دربارهٔ محصول",
+    "Comparison": "مقایسه",
+    "Citation check": "بررسی استناد",
+    "Pasted by hand": "چسباندن دستی",
+    "Platform API": "API سکو",
+    "Automated browser": "مرورگر خودکار",
+    "Imported": "واردشده",
+    "How AI platforms answer about you": "سکوهای هوش مصنوعی دربارهٔ شما چه پاسخی می‌دهند",
+    "Observations by signal": "مشاهده‌ها بر پایهٔ نشانه",
+    "Signal": "نشانه",
+    "Who is actually visiting your site": "واقعاً چه کسی از سایت شما بازدید می‌کند",
+    "Automated clients seen": "کلاینت‌های خودکار دیده‌شده",
+    "Actor type": "نوع کنشگر",
+    "Confidence": "اطمینان",
+    "Requests seen": "درخواست‌های دیده‌شده",
+    "No automated clients seen yet.": "هنوز هیچ کلاینت خودکاری دیده نشده است.",
+    "Could not load AI visibility ({error}).": "بارگذاری دیده‌شدن در هوش مصنوعی ممکن نشد ({error}).",
+    "Observations": "مشاهده‌ها",
+    "Observation": "مشاهده",
+    "Platform observations, newest first": "مشاهده‌های سکو، تازه‌ترین نخست",
+    "Platform": "سکو",
+    "Question": "پرسش",
+    "Tested": "زمان آزمون",
+    "Test": "آزمون",
+    "Collected": "روش گردآوری",
+    "Not recorded": "ثبت نشده",
+    "Answer as recorded": "پاسخ همان‌طور که ثبت شد",
+    "No answer was recorded.": "هیچ پاسخی ثبت نشد.",
+    "No observations recorded yet.": "هنوز هیچ مشاهده‌ای ثبت نشده است.",
+    "Could not load the observations ({error}).": "بارگذاری مشاهده‌ها ممکن نشد ({error}).",
+    "Rules, most specific first": "قاعده‌ها، دقیق‌ترین نخست",
+    "Access rules in precedence order": "قاعده‌های دسترسی به ترتیب اولویت",
+    "Applies to": "اعمال بر",
+    "Purpose": "هدف",
+    "Decision": "تصمیم",
+    "Reason given to the agent": "دلیلی که به عامل گفته می‌شود",
+    "No reason given": "دلیلی داده نشده",
+    "No rules yet.": "هنوز هیچ قاعده‌ای نیست.",
+    "Every agent seen": "همهٔ عامل‌های دیده‌شده",
+    "Automated clients observed": "کلاینت‌های خودکار مشاهده‌شده",
+    "Stated purpose": "هدف اعلام‌شده",
+    "Identification": "شناسایی",
+    "Could not load AI access ({error}).": "بارگذاری دسترسی هوش مصنوعی ممکن نشد ({error}).",
+    "Two different questions, kept separate on purpose: how AI platforms answer about you, and which AI systems actually visit your site.": "دو پرسش متفاوت، که عمداً جدا نگه داشته شده‌اند: سکوهای هوش مصنوعی دربارهٔ شما چه پاسخی می‌دهند، و کدام سامانه‌های هوش مصنوعی واقعاً از سایت شما بازدید می‌کنند.",
+    "47 observations across 4 platforms, last 30 days. This is a sample of specific prompts on specific days — not a claim about every possible question, and not a score (ADR-064 forbids collapsing these into one number).": "۴۷ مشاهده در ۴ سکو، ۳۰ روز گذشته. این نمونه‌ای از پرسش‌های مشخص در روزهای مشخص است — نه ادعایی دربارهٔ هر پرسش ممکن، و نه یک امتیاز (\u2068ADR-064\u2069 فروکاستن این‌ها به یک عدد را ممنوع می‌کند).",
+    "The brand appeared in the answer.": "نام برند در پاسخ آمد.",
+    "Whether a source link was attached was not examined in this batch.": "در این دسته بررسی نشد که پیوند منبعی پیوست شده بود یا نه.",
+    "Named as a suggested option, not just mentioned.": "به‌عنوان گزینهٔ پیشنهادی نام برده شد، نه فقط اشاره.",
+    "Checked for, and not present — a real negative finding, not a gap in the data.": "بررسی شد و نبود — یک یافتهٔ منفی واقعی، نه شکافی در داده.",
+    "Not examined in this batch.": "در این دسته بررسی نشد.",
+    "Click, and purchase that followed a click, have no columns here on purpose — a click happens in the platform's own interface, out of reach; a purchase belongs to commerce data, not to this observation (see the model's own documentation, ADR-062). Guessing either would be a fabricated number wearing a real one's clothes.": "کلیک، و خریدی که پس از کلیک آمد، عمداً اینجا ستونی ندارند — کلیک در رابط خود سکو رخ می‌دهد و دور از دسترس است؛ خرید به دادهٔ تجارت تعلق دارد، نه به این مشاهده (مستندات خود مدل را ببینید، \u2068ADR-062\u2069). حدس زدن هر کدام عددی ساختگی در جامهٔ عددی واقعی خواهد بود.",
+    "2,085 automated requests, last 30 days. Ordinary human visitors are never logged here — this exists to understand machine access, not to track people.": "۲٬۰۸۵ درخواست خودکار، ۳۰ روز گذشته. بازدیدکنندگان انسانی عادی هرگز اینجا ثبت نمی‌شوند — این بخش برای فهم دسترسی ماشین‌هاست، نه ردیابی مردم.",
+    "Traffic by detected actor type": "ترافیک بر پایهٔ نوع کنشگر شناسایی‌شده",
+    "Signature": "امضا",
+    "Requests (30d)": "درخواست‌ها (۳۰ روز)",
+    "No known signature matched": "هیچ امضای شناخته‌شده‌ای منطبق نشد",
+    "A User-Agent header is a claim a request makes about itself, not a verified identity — anyone can send . Every row above is": "سرآیند \u2068User-Agent\u2069 ادعایی است که درخواست دربارهٔ خودش می‌کند، نه هویتی تأییدشده — هر کسی می‌تواند این را بفرستد: . هر ردیف بالا",
+    "(header matched) or": "است (سرآیند منطبق شد) یا",
+    "(weaker pattern);": "(الگوی ضعیف‌تر)؛",
+    "would need reverse-DNS confirmation, which is not built yet. Location and time-on-site ARE now collected, by an explicit owner decision recorded as ADR-079, which supersedes the earlier narrowing in ADR-046 (kept on file, unedited). See": "به تأیید \u2068reverse-DNS\u2069 نیاز دارد که هنوز ساخته نشده است. مکان و مدت ماندن در سایت اکنون گردآوری می‌شوند، با تصمیم صریح مالک که به‌عنوان \u2068ADR-079\u2069 ثبت شده و محدودسازی پیشین در \u2068ADR-046\u2069 را کنار می‌گذارد (که بدون ویرایش نگه داشته شده است). ببینید:",
+    "for what is stored and for how long.": "برای اینکه چه چیزی و تا چه مدت نگه داشته می‌شود.",
+    "Full report": "گزارش کامل",
+    "Visible to AI — full report": "دیده‌شدن در هوش مصنوعی — گزارش کامل",
+    "Everything behind the two numbers on the dashboard, broken down by time, location, page and query — and exportable.": "هر آنچه پشت دو عدد داشبورد است، به تفکیک زمان، مکان، صفحه و پرسش — و قابل خروجی‌گرفتن.",
+    "Who may read this site, for what purpose, and on what terms. Every automated client that has ever arrived is listed — including the ones nobody recognises.": "چه کسی می‌تواند این سایت را بخواند، برای چه هدفی و با چه شرایطی. هر کلاینت خودکاری که تاکنون آمده فهرست شده است — از جمله آن‌هایی که هیچ کس نمی‌شناسد.",
+    "The first rule that matches wins and evaluation stops. There is no scoring and no \"strictest wins\" — you must be able to read this table and predict what happens to a given crawler.": "نخستین قاعده‌ای که منطبق شود اعمال می‌شود و ارزیابی متوقف می‌شود. هیچ امتیازدهی و هیچ «سخت‌گیرانه‌ترین برنده است» در کار نیست — باید بتوانید این جدول را بخوانید و پیش‌بینی کنید با یک خزندهٔ مشخص چه می‌شود.",
+    "We do not permit corpus collection.": "اجازهٔ گردآوری پیکره نمی‌دهیم.",
+    "Training use requires a licence.": "استفاده برای آموزش مدل به مجوز نیاز دارد.",
+    "Commercial licence required — see terms.": "مجوز تجاری لازم است — شرایط را ببینید.",
+    "No reason needed": "دلیلی لازم نیست",
+    "Read the first two rows together:": "دو ردیف نخست را با هم بخوانید:",
+    "block training everywhere, but answer a customer's live question freely.": "آموزش مدل را همه‌جا مسدود کنید، اما به پرسش زندهٔ مشتری آزادانه پاسخ دهید.",
+    "That is the whole point of separating purpose from actor. A human visitor is never subject to any of these rules — there is no configuration here that can return 403 to a customer's browser.": "هدف از جدا کردن هدف از کنشگر همین است. بازدیدکنندهٔ انسانی هرگز مشمول هیچ‌یک از این قاعده‌ها نیست — هیچ پیکربندی‌ای در اینجا نمی‌تواند به مرورگر مشتری \u2068403\u2069 برگرداند.",
+    "returns HTTP 402 with a link to your terms. It records an intention; nothing in this product meters, invoices or collects anything, and there is deliberately no price field, because a number here would look like a working price.": "\u2068HTTP 402\u2069 را همراه پیوندی به شرایط شما برمی‌گرداند. این یک قصد را ثبت می‌کند؛ هیچ چیز در این محصول اندازه‌گیری، صورتحساب یا دریافت نمی‌کند، و عمداً هیچ فیلد قیمتی نیست، چون عددی در اینجا شبیه قیمتی کارا به نظر می‌رسید.",
+    "11 distinct clients in the last 30 days. There is no filter that hides unrecognised ones — the interesting agent is always the one nobody had heard of yet.": "۱۱ کلاینت متمایز در ۳۰ روز گذشته. هیچ فیلتری کلاینت‌های ناشناخته را پنهان نمی‌کند — عامل جالب همیشه همانی است که هنوز کسی نامش را نشنیده بود.",
+    "Automated clients observed, with their current access decision": "کلاینت‌های خودکار مشاهده‌شده، با تصمیم دسترسی کنونی‌شان",
+    "Unrecognised client": "کلاینت ناشناخته",
+    "A User-Agent header is a claim a request makes about itself.": "سرآیند \u2068User-Agent\u2069 ادعایی است که درخواست دربارهٔ خودش می‌کند.",
+    "means the header matched a published signature;": "یعنی سرآیند با امضایی منتشرشده منطبق شد؛",
+    "means a weaker pattern matched;": "یعنی الگویی ضعیف‌تر منطبق شد؛",
+    "would require reverse-DNS or published-IP confirmation and is not built, so nothing in this product can display it. Blocking by header therefore stops honest agents and does not stop dishonest ones — that is a real limit of this control and is stated here rather than in a footnote.": "به تأیید \u2068reverse-DNS\u2069 یا \u2068IP\u2069 منتشرشده نیاز دارد و ساخته نشده است، پس هیچ چیز در این محصول نمی‌تواند آن را نشان دهد. بنابراین مسدود کردن بر پایهٔ سرآیند عامل‌های درستکار را متوقف می‌کند و نادرستکاران را نه — این محدودیتی واقعی در این کنترل است و به‌جای پانویس، همین‌جا گفته شده است."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

@@ -1100,3 +1100,139 @@ Terms for the Command workspace screen. State labels stand for API values; comma
 | Every statement has a source. | هر گزاره منبعی دارد. |
 | Turn into a cited publication | تبدیل به یک انتشار مستند |
 | Published — open Publications | منتشر شد — انتشارات را باز کنید |
+
+## AI Visibility and access (Step 10)
+
+Terms for AI Visibility, its full report and AI access. Platform, agent and vendor names are identifiers and stay as sent; enum values without a label are shown as sent.
+
+| English | Persian |
+|---|---|
+| AI visibility (Cloud Core) | دیده‌شدن در هوش مصنوعی (Cloud Core) |
+| AI visibility report (Cloud Core) | گزارش دیده‌شدن در هوش مصنوعی (Cloud Core) |
+| AI access (Cloud Core) | دسترسی هوش مصنوعی (Cloud Core) |
+| Other platform | سکوی دیگر |
+| Operator unknown | گرداننده نامشخص |
+| {n\|observation\|observations} recorded. Each signal is counted on its own; there is no combined score. | {n} مشاهده ثبت شده است. هر نشانه جداگانه شمرده می‌شود؛ هیچ امتیاز ترکیبی وجود ندارد. |
+| {n\|automated client\|automated clients} seen. Human visitors are never listed here. | {n} کلاینت خودکار دیده شده است. بازدیدکنندگان انسانی هرگز اینجا فهرست نمی‌شوند. |
+| The latest {n} of {total\|observation\|observations}. Open one to read the question and the answer as recorded. | {n} مورد تازه از {total} مشاهده. یکی را باز کنید تا پرسش و پاسخ را همان‌طور که ثبت شده بخوانید. |
+| {n\|rule\|rules}. The first rule that matches wins and evaluation stops; a client no rule matches is allowed and recorded as Not configured. | {n} قاعده. نخستین قاعده‌ای که منطبق شود اعمال می‌شود و ارزیابی متوقف می‌شود؛ کلاینتی که با هیچ قاعده‌ای منطبق نشود اجازه می‌یابد و به‌عنوان «پیکربندی‌نشده» ثبت می‌شود. |
+| An agent not seen recently | عاملی که اخیراً دیده نشده است |
+| Terms | شرایط |
+| Any | هر |
+| {n\|distinct client\|distinct clients}. There is no filter that hides unrecognised ones. | {n} کلاینت متمایز. هیچ فیلتری کلاینت‌های ناشناخته را پنهان نمی‌کند. |
+| Human visitor | بازدیدکنندهٔ انسانی |
+| Search crawler | خزندهٔ جست‌وجو |
+| AI crawler (indexing) | خزندهٔ هوش مصنوعی (نمایه‌سازی) |
+| AI answering a user | هوش مصنوعی در حال پاسخ به کاربر |
+| Agent acting for a user | عامل از طرف کاربر |
+| Unrecognised automated client | کلاینت خودکار ناشناخته |
+| Any human visitor | هر بازدیدکنندهٔ انسانی |
+| Any search crawler | هر خزندهٔ جست‌وجو |
+| Any AI crawler | هر خزندهٔ هوش مصنوعی |
+| Any AI answering a user | هر هوش مصنوعی در حال پاسخ به کاربر |
+| Any agent acting for a user | هر عامل از طرف کاربر |
+| Any unrecognised client | هر کلاینت ناشناخته |
+| Any automated client | هر کلاینت خودکار |
+| Training | آموزش مدل |
+| Search indexing | نمایه‌سازی جست‌وجو |
+| Answering | پاسخ‌دادن |
+| Acting for a user | اقدام از طرف کاربر |
+| Link preview | پیش‌نمایش پیوند |
+| Not declared | اعلام‌نشده |
+| Detected | شناسایی‌شده |
+| Probable | محتمل |
+| Free | رایگان |
+| Paid | پولی |
+| Forbidden | ممنوع |
+| Not configured | پیکربندی‌نشده |
+| Mentioned | نام برده شد |
+| Cited | استناد شد |
+| Recommended | پیشنهاد شد |
+| Product shown | محصول نشان داده شد |
+| URL present | نشانی وب آمد |
+| Present | هست |
+| Absent | نیست |
+| Not checked | بررسی نشد |
+| Direct question | پرسش مستقیم |
+| Brand question | پرسش دربارهٔ برند |
+| Product question | پرسش دربارهٔ محصول |
+| Comparison | مقایسه |
+| Citation check | بررسی استناد |
+| Pasted by hand | چسباندن دستی |
+| Platform API | API سکو |
+| Automated browser | مرورگر خودکار |
+| Imported | واردشده |
+| How AI platforms answer about you | سکوهای هوش مصنوعی دربارهٔ شما چه پاسخی می‌دهند |
+| Observations by signal | مشاهده‌ها بر پایهٔ نشانه |
+| Signal | نشانه |
+| Who is actually visiting your site | واقعاً چه کسی از سایت شما بازدید می‌کند |
+| Automated clients seen | کلاینت‌های خودکار دیده‌شده |
+| Actor type | نوع کنشگر |
+| Confidence | اطمینان |
+| Requests seen | درخواست‌های دیده‌شده |
+| No automated clients seen yet. | هنوز هیچ کلاینت خودکاری دیده نشده است. |
+| Could not load AI visibility ({error}). | بارگذاری دیده‌شدن در هوش مصنوعی ممکن نشد ({error}). |
+| Observations | مشاهده‌ها |
+| Observation | مشاهده |
+| Platform observations, newest first | مشاهده‌های سکو، تازه‌ترین نخست |
+| Platform | سکو |
+| Question | پرسش |
+| Tested | زمان آزمون |
+| Test | آزمون |
+| Collected | روش گردآوری |
+| Not recorded | ثبت نشده |
+| Answer as recorded | پاسخ همان‌طور که ثبت شد |
+| No answer was recorded. | هیچ پاسخی ثبت نشد. |
+| No observations recorded yet. | هنوز هیچ مشاهده‌ای ثبت نشده است. |
+| Could not load the observations ({error}). | بارگذاری مشاهده‌ها ممکن نشد ({error}). |
+| Rules, most specific first | قاعده‌ها، دقیق‌ترین نخست |
+| Access rules in precedence order | قاعده‌های دسترسی به ترتیب اولویت |
+| Applies to | اعمال بر |
+| Purpose | هدف |
+| Decision | تصمیم |
+| Reason given to the agent | دلیلی که به عامل گفته می‌شود |
+| No reason given | دلیلی داده نشده |
+| No rules yet. | هنوز هیچ قاعده‌ای نیست. |
+| Every agent seen | همهٔ عامل‌های دیده‌شده |
+| Automated clients observed | کلاینت‌های خودکار مشاهده‌شده |
+| Stated purpose | هدف اعلام‌شده |
+| Identification | شناسایی |
+| Could not load AI access ({error}). | بارگذاری دسترسی هوش مصنوعی ممکن نشد ({error}). |
+| Two different questions, kept separate on purpose: how AI platforms answer about you, and which AI systems actually visit your site. | دو پرسش متفاوت، که عمداً جدا نگه داشته شده‌اند: سکوهای هوش مصنوعی دربارهٔ شما چه پاسخی می‌دهند، و کدام سامانه‌های هوش مصنوعی واقعاً از سایت شما بازدید می‌کنند. |
+| 47 observations across 4 platforms, last 30 days. This is a sample of specific prompts on specific days — not a claim about every possible question, and not a score (ADR-064 forbids collapsing these into one number). | ۴۷ مشاهده در ۴ سکو، ۳۰ روز گذشته. این نمونه‌ای از پرسش‌های مشخص در روزهای مشخص است — نه ادعایی دربارهٔ هر پرسش ممکن، و نه یک امتیاز (ADR-064 فروکاستن این‌ها به یک عدد را ممنوع می‌کند). |
+| The brand appeared in the answer. | نام برند در پاسخ آمد. |
+| Whether a source link was attached was not examined in this batch. | در این دسته بررسی نشد که پیوند منبعی پیوست شده بود یا نه. |
+| Named as a suggested option, not just mentioned. | به‌عنوان گزینهٔ پیشنهادی نام برده شد، نه فقط اشاره. |
+| Checked for, and not present — a real negative finding, not a gap in the data. | بررسی شد و نبود — یک یافتهٔ منفی واقعی، نه شکافی در داده. |
+| Not examined in this batch. | در این دسته بررسی نشد. |
+| Click, and purchase that followed a click, have no columns here on purpose — a click happens in the platform's own interface, out of reach; a purchase belongs to commerce data, not to this observation (see the model's own documentation, ADR-062). Guessing either would be a fabricated number wearing a real one's clothes. | کلیک، و خریدی که پس از کلیک آمد، عمداً اینجا ستونی ندارند — کلیک در رابط خود سکو رخ می‌دهد و دور از دسترس است؛ خرید به دادهٔ تجارت تعلق دارد، نه به این مشاهده (مستندات خود مدل را ببینید، ADR-062). حدس زدن هر کدام عددی ساختگی در جامهٔ عددی واقعی خواهد بود. |
+| 2,085 automated requests, last 30 days. Ordinary human visitors are never logged here — this exists to understand machine access, not to track people. | ۲٬۰۸۵ درخواست خودکار، ۳۰ روز گذشته. بازدیدکنندگان انسانی عادی هرگز اینجا ثبت نمی‌شوند — این بخش برای فهم دسترسی ماشین‌هاست، نه ردیابی مردم. |
+| Traffic by detected actor type | ترافیک بر پایهٔ نوع کنشگر شناسایی‌شده |
+| Signature | امضا |
+| Requests (30d) | درخواست‌ها (۳۰ روز) |
+| No known signature matched | هیچ امضای شناخته‌شده‌ای منطبق نشد |
+| A User-Agent header is a claim a request makes about itself, not a verified identity — anyone can send . Every row above is | سرآیند User-Agent ادعایی است که درخواست دربارهٔ خودش می‌کند، نه هویتی تأییدشده — هر کسی می‌تواند این را بفرستد: . هر ردیف بالا |
+| (header matched) or | است (سرآیند منطبق شد) یا |
+| (weaker pattern); | (الگوی ضعیف‌تر)؛ |
+| would need reverse-DNS confirmation, which is not built yet. Location and time-on-site ARE now collected, by an explicit owner decision recorded as ADR-079, which supersedes the earlier narrowing in ADR-046 (kept on file, unedited). See | به تأیید reverse-DNS نیاز دارد که هنوز ساخته نشده است. مکان و مدت ماندن در سایت اکنون گردآوری می‌شوند، با تصمیم صریح مالک که به‌عنوان ADR-079 ثبت شده و محدودسازی پیشین در ADR-046 را کنار می‌گذارد (که بدون ویرایش نگه داشته شده است). ببینید: |
+| for what is stored and for how long. | برای اینکه چه چیزی و تا چه مدت نگه داشته می‌شود. |
+| Full report | گزارش کامل |
+| Visible to AI — full report | دیده‌شدن در هوش مصنوعی — گزارش کامل |
+| Everything behind the two numbers on the dashboard, broken down by time, location, page and query — and exportable. | هر آنچه پشت دو عدد داشبورد است، به تفکیک زمان، مکان، صفحه و پرسش — و قابل خروجی‌گرفتن. |
+| Who may read this site, for what purpose, and on what terms. Every automated client that has ever arrived is listed — including the ones nobody recognises. | چه کسی می‌تواند این سایت را بخواند، برای چه هدفی و با چه شرایطی. هر کلاینت خودکاری که تاکنون آمده فهرست شده است — از جمله آن‌هایی که هیچ کس نمی‌شناسد. |
+| The first rule that matches wins and evaluation stops. There is no scoring and no "strictest wins" — you must be able to read this table and predict what happens to a given crawler. | نخستین قاعده‌ای که منطبق شود اعمال می‌شود و ارزیابی متوقف می‌شود. هیچ امتیازدهی و هیچ «سخت‌گیرانه‌ترین برنده است» در کار نیست — باید بتوانید این جدول را بخوانید و پیش‌بینی کنید با یک خزندهٔ مشخص چه می‌شود. |
+| We do not permit corpus collection. | اجازهٔ گردآوری پیکره نمی‌دهیم. |
+| Training use requires a licence. | استفاده برای آموزش مدل به مجوز نیاز دارد. |
+| Commercial licence required — see terms. | مجوز تجاری لازم است — شرایط را ببینید. |
+| No reason needed | دلیلی لازم نیست |
+| Read the first two rows together: | دو ردیف نخست را با هم بخوانید: |
+| block training everywhere, but answer a customer's live question freely. | آموزش مدل را همه‌جا مسدود کنید، اما به پرسش زندهٔ مشتری آزادانه پاسخ دهید. |
+| That is the whole point of separating purpose from actor. A human visitor is never subject to any of these rules — there is no configuration here that can return 403 to a customer's browser. | هدف از جدا کردن هدف از کنشگر همین است. بازدیدکنندهٔ انسانی هرگز مشمول هیچ‌یک از این قاعده‌ها نیست — هیچ پیکربندی‌ای در اینجا نمی‌تواند به مرورگر مشتری 403 برگرداند. |
+| returns HTTP 402 with a link to your terms. It records an intention; nothing in this product meters, invoices or collects anything, and there is deliberately no price field, because a number here would look like a working price. | HTTP 402 را همراه پیوندی به شرایط شما برمی‌گرداند. این یک قصد را ثبت می‌کند؛ هیچ چیز در این محصول اندازه‌گیری، صورتحساب یا دریافت نمی‌کند، و عمداً هیچ فیلد قیمتی نیست، چون عددی در اینجا شبیه قیمتی کارا به نظر می‌رسید. |
+| 11 distinct clients in the last 30 days. There is no filter that hides unrecognised ones — the interesting agent is always the one nobody had heard of yet. | ۱۱ کلاینت متمایز در ۳۰ روز گذشته. هیچ فیلتری کلاینت‌های ناشناخته را پنهان نمی‌کند — عامل جالب همیشه همانی است که هنوز کسی نامش را نشنیده بود. |
+| Automated clients observed, with their current access decision | کلاینت‌های خودکار مشاهده‌شده، با تصمیم دسترسی کنونی‌شان |
+| Unrecognised client | کلاینت ناشناخته |
+| A User-Agent header is a claim a request makes about itself. | سرآیند User-Agent ادعایی است که درخواست دربارهٔ خودش می‌کند. |
+| means the header matched a published signature; | یعنی سرآیند با امضایی منتشرشده منطبق شد؛ |
+| means a weaker pattern matched; | یعنی الگویی ضعیف‌تر منطبق شد؛ |
+| would require reverse-DNS or published-IP confirmation and is not built, so nothing in this product can display it. Blocking by header therefore stops honest agents and does not stop dishonest ones — that is a real limit of this control and is stated here rather than in a footnote. | به تأیید reverse-DNS یا IP منتشرشده نیاز دارد و ساخته نشده است، پس هیچ چیز در این محصول نمی‌تواند آن را نشان دهد. بنابراین مسدود کردن بر پایهٔ سرآیند عامل‌های درستکار را متوقف می‌کند و نادرستکاران را نه — این محدودیتی واقعی در این کنترل است و به‌جای پانویس، همین‌جا گفته شده است. |
