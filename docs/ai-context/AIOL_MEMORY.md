@@ -121,13 +121,15 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 196c733
+- sha (last non-docs commit): 6965956
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 196c733 (9E-2 frontend; pushed with 9E-2
-  backend ca0ec2d without waiting, as the user authorised). Step 11
-  (e0da56f) in progress at push time; rebrand (e3709ce) green; Step 10
-  (79a19fb, run 89) green; 9F (192c302, run 87) green.
+- last_ci: in_progress @ 6965956 (merge of the native apps; pushed
+  without waiting, as the user authorised). 196c733 (9E-2), ca0ec2d and
+  e0da56f (Step 11) were in progress at push time; rebrand (e3709ce)
+  green; Step 10 (79a19fb, run 89) green; 9F (192c302, run 87) green.
+- last merge commit: "merge: native apps and Device Intelligence into
+  v5-implementation" @ 6965956
 - last code commit: "feat(ai): delete buttons and full runtime translation (9E-2)" @ 196c733
 - last feature commit: "feat(ai): delete buttons and full runtime translation (9E-2)" @ 196c733
 - last fix commit: "fix(processing): cast to text in 0047 backfill
@@ -407,6 +409,20 @@ file from scratch (do not diff). Output only the file content.
   orchestration console all through AIOL_I18N.set; 86 FA entries.
   V5-ai-center-runtime-fa and V5-ai-center-deletes CLOSED.
   test_ai_center.py 40 passed; e2e/ai-center.js 34.
+- Native Apps & Device Intelligence @ 6965956 — branch
+  claude/nice-fermi-du1d71 (f6cd926) merged --no-ff: apps/ (Tauri 2
+  client suite for Windows, macOS, Android, iOS; apps/shared is the
+  source), Device Intelligence (ADR-138, #screen-device-intel,
+  e2e/device-intelligence.js), native-session auth routes (ADR-137),
+  sign-in consent (ADR-139), signed desktop updates (ADR-140),
+  migrations 0049-0051 (fresh-DB upgrade/downgrade/upgrade verified).
+  5 conflicts resolved keeping both sides: index.html, ci.yml,
+  i18n-glossary.md, check-persian.js, DEBT_REGISTER.md (CLIENT-* rows
+  added). Duplicate FA keys removed (Accounts identical; Platform keeps
+  the Step 10 translation). "Cloud Core" -> "AI Core" in the 71 merged
+  files that still had it. 23 browser suites (578 checks) green
+  locally; full backend suite left to CI (Rule 21). The client suite
+  has its own workflow (.github/workflows/clients.yml).
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -415,8 +431,8 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products
-  and 22 browser suites (558 checks at 196c733).
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel
+  and 23 browser suites (578 checks at 6965956).
 
 ## 5. In progress — next step
 
@@ -424,6 +440,7 @@ file from scratch (do not diff). Output only the file content.
 - Step 9 (AI) is 100% complete: 9A-9F done (see §4).
 - Step 9 is 100% complete including 9E-2 (see §4).
 - Step 10 (Visibility) and Step 11 (Commerce) are complete (see §4).
+- The native apps and Device Intelligence are merged (see §4).
 - Next up: Step 12 (Website + Auth). Still open: the four
   V5-visibility/V5-access rows, the four Step 11 rows,
   V5-command-workspace-runtime-fa and the duplicate discovery read on
@@ -528,6 +545,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   (Commerce) is next.
 - v23 @ 196c733 — rebrand (e3709ce), Step 11 Products (e0da56f) and 9E-2
   (ca0ec2d + 196c733) shipped. Step 12 (Website + Auth) is next.
+- v24 @ 6965956 — native apps and Device Intelligence merged from
+  claude/nice-fermi-du1d71 (5 conflicts resolved, 71 files rebranded).
+  Step 12 (Website + Auth) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -749,9 +769,6 @@ Session / memory:
   V5-command-workspace-runtime-fa open).
 - Step 10 (Visibility) complete @ 79a19fb; Step 11 (Commerce: Products)
   complete @ e0da56f; 9E-2 complete @ 196c733. Step 12 is next.
-- Branch claude/nice-fermi-du1d71 is the native-app client suite
-  (Windows/macOS/Android/iOS, Device Intelligence, auth native-session
-  routes, migrations 0049-0051). Merge only in a dedicated phase.
 - Steps 12–14 (Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
