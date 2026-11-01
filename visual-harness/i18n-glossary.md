@@ -1494,3 +1494,64 @@ Login, sign-up and the login-code step, with the app-shell labels the code page 
 | Enter your code · AI Operating Layer | وارد کردن کد · AI Operating Layer |
 | A User-Agent header is a claim a request makes about itself, not a verified identity — anyone can send | سرآیند User-Agent ادعایی است که درخواست دربارهٔ خودش می‌کند، نه هویتی تأییدشده — هر کسی می‌تواند این را بفرستد: |
 | . Every row above is | . هر ردیف بالا |
+
+## Website (Step 12B)
+
+Blog, page sections and newsletter subscribers. Post titles, section labels, addresses and sources are shown as sent; a server message is shown as sent.
+
+| English | Persian |
+|---|---|
+| Saved as version {n}. | به‌عنوان نسخهٔ {n} ذخیره شد. |
+| Published on {d}. | در {d} منتشر شد. |
+| Moved back to draft. | به پیش‌نویس برگردانده شد. |
+| Showing {label}. | {label} نمایش داده می‌شود. |
+| Hiding {label}. | {label} پنهان می‌شود. |
+| Heading saved. | عنوان ذخیره شد. |
+| Order saved. | ترتیب ذخیره شد. |
+| Erased. | پاک شد. |
+| Exported. | خروجی گرفته شد. |
+| Persian | فارسی |
+| English | انگلیسی |
+| No posts yet. Write the first one with “New post”. | هنوز هیچ نوشته‌ای نیست. نخستین را با «نوشتهٔ تازه» بنویسید. |
+| No one has subscribed yet. | هنوز کسی مشترک نشده است. |
+| Title | عنوان |
+| Note | یادداشت |
+| Section | بخش |
+| Shown | نمایش |
+| Heading override | عنوان جایگزین |
+| Order | ترتیب |
+| Email | ایمیل |
+| Joined from | پیوستن از |
+| Consent | رضایت |
+| Page sections and their order | بخش‌های صفحه و ترتیب آن‌ها |
+| Subscribed | مشترک |
+| Unsubscribed | لغو اشتراک‌شده |
+| Edit | ویرایش |
+| Up | بالا |
+| Down | پایین |
+| Unsubscribe | لغو اشتراک |
+| Erase | پاک کردن |
+| Edit: {title} | ویرایش: {title} |
+| New post | نوشتهٔ تازه |
+| Update history | تاریخچهٔ به‌روزرسانی |
+| Show {label} | نمایش {label} |
+| Heading for {label} | عنوان برای {label} |
+| The hero cannot be hidden | بخش اصلی بالای صفحه را نمی‌توان پنهان کرد |
+| Default heading | عنوان پیش‌فرض |
+| {n\|subscriber\|subscribers} | {n} مشترک |
+| Erase {email} completely? This cannot be undone. | {email} به‌طور کامل پاک شود؟ این کار برگشت‌پذیر نیست. |
+| Write and publish the articles on your public website, in English and Persian. A post needs an author and a body before it can be published; every edit is kept as a revision with a note, and that history is shown on the published article. | نوشته‌های وب‌سایت عمومی خود را به انگلیسی و فارسی بنویسید و منتشر کنید. هر نوشته پیش از انتشار به نویسنده و متن نیاز دارد؛ هر ویرایش با یک یادداشت به‌عنوان بازنگری نگه داشته می‌شود و این تاریخچه روی نوشتهٔ منتشرشده نشان داده می‌شود. |
+| Address (slug) | نشانی (نامک) |
+| Summary | خلاصه |
+| Body (one paragraph per blank line) | متن (هر بند با یک خط خالی جدا شود) |
+| Translation of (optional) | ترجمهٔ (اختیاری) |
+| References (one per line: title \| publisher \| address) | منابع (هر خط یکی: عنوان \| ناشر \| نشانی) |
+| What changed (kept in the update history) | چه چیزی تغییر کرد (در تاریخچهٔ به‌روزرسانی نگه داشته می‌شود) |
+| Publish | انتشار |
+| Unpublish | لغو انتشار |
+| Close | بستن |
+| why-indirect-stays-indirect | مثال: why-indirect-stays-indirect |
+| Show, hide, reorder and retitle the sections of the public home page, separately for each language. The hero carries the page's only main heading and cannot be hidden. The site reads these settings when it is connected to AI Core. | بخش‌های صفحهٔ اصلی عمومی را برای هر زبان جداگانه نمایش دهید، پنهان کنید، جابه‌جا کنید یا عنوانشان را تغییر دهید. بخش اصلی بالای صفحه تنها عنوان اصلی صفحه را دارد و نمی‌توان آن را پنهان کرد. سایت این تنظیمات را هنگام اتصال به AI Core می‌خواند. |
+| Home | صفحهٔ اصلی |
+| Everyone who joined the newsletter from the public website. An address is stored only with explicit consent, which is recorded with its date and wording. Export as CSV, mark someone unsubscribed, or erase an address completely on request. | همهٔ کسانی که از وب‌سایت عمومی به خبرنامه پیوسته‌اند. هر نشانی فقط با رضایت صریح نگه داشته می‌شود که با تاریخ و متن آن ثبت می‌شود. خروجی CSV بگیرید، اشتراک کسی را لغو کنید، یا در صورت درخواست، نشانی را به‌طور کامل پاک کنید. |
+| Export CSV | خروجی CSV |

@@ -13423,19 +13423,31 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           if (!r.ok) throw new Error((b.error && b.error.message) || (typeof b.detail === 'string' ? b.detail : '') || ('HTTP ' + r.status));
           return b; }); });
   }
-  function say(id, m) { var n = $(id); if (n) n.textContent = m || ''; }
+  // Every visible string goes through AIOL_I18N.set (12B); a server's own message is shown as sent in {error}.
+  function say(id, tpl, args) { var n = $(id); if (n) AIOL_I18N.set(n, tpl || '', args); }
+  function fail(id) { return function (e) { say(id, '{error}', { error: e.message }); }; }
+  function ui(text, cls) { var s = el('span', cls); AIOL_I18N.set(s, text); return s; }
+  function day(iso, style) { var s = el('span'); AIOL_I18N.set(s, '{d}', { d: { date: iso, style: style || 'date' } }); return s; }
+  function langName(l) { return ui(l === 'fa' ? 'Persian' : 'English'); }
+  // A control named by a hidden, translated label (aria-labelledby), so its name follows the language too.
+  var named = 0;
+  function nameBy(node, tpl, args) {
+    var s = el('span', 'visually-hidden'); s.id = 'ws-name-' + (++named); AIOL_I18N.set(s, tpl, args);
+    node.setAttribute('aria-labelledby', s.id); return s;
+  }
   function table(cols, rows, caption) {
     var w = el('div', 'table-wrap'), t = el('table', 'table'), h = el('thead'), hr = el('tr');
-    if (caption) t.appendChild(el('caption', 'visually-hidden', caption));
-    cols.forEach(function (c) { var th = el('th', null, c[0]); th.scope = 'col'; hr.appendChild(th); });
+    if (caption) { var cap = el('caption', 'visually-hidden'); AIOL_I18N.set(cap, caption); t.appendChild(cap); }
+    cols.forEach(function (c) { var th = el('th'); if (c[0]) AIOL_I18N.set(th, c[0]); th.scope = 'col'; hr.appendChild(th); });
     h.appendChild(hr); t.appendChild(h); var b = el('tbody');
     rows.forEach(function (r) { var tr = el('tr'); cols.forEach(function (c) { var td = el('td'); td.setAttribute('data-label', c[0]);
       var v = c[1](r); if (v instanceof Node) td.appendChild(v); else { var bd = el('bdi'); bd.textContent = (v === null || v === undefined || v === '') ? '—' : String(v); td.appendChild(bd); }
       tr.appendChild(td); }); b.appendChild(tr); });
     t.appendChild(b); w.appendChild(t); return w;
   }
-  function chip(text, kind) { return el('span', 'chip chip--' + kind, text); }
-  function btn(label, fn, primary) { var b = el('button', 'btn' + (primary ? ' btn--primary' : ''), label); b.type = 'button'; b.onclick = fn; return b; }
+  var STATUS = { draft: 'Draft', published: 'Published', subscribed: 'Subscribed', unsubscribed: 'Unsubscribed' };
+  function chip(status, kind) { var c = el('span', 'chip chip--' + kind); if (STATUS[status]) AIOL_I18N.set(c, STATUS[status]); else c.appendChild(el('bdi', null, status)); return c; }
+  function btn(label, fn, primary) { var b = el('button', 'btn' + (primary ? ' btn--primary' : '')); AIOL_I18N.set(b, label); b.type = 'button'; b.onclick = fn; return b; }
 
   /* ---------------- blog */
   var editing = null, allPosts = [];
@@ -13443,21 +13455,22 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var q = '?limit=100' + ($('wb-lang').value ? '&lang=' + $('wb-lang').value : '') + ($('wb-status').value ? '&status=' + $('wb-status').value : '');
     return api('/website/posts' + q).then(function (r) {
       allPosts = r.items; var box = $('wb-list'); box.textContent = '';
-      var sel = $('wb-f-translation'); sel.textContent = ''; var o0 = el('option', null, 'None'); o0.value = ''; sel.appendChild(o0);
+      var sel = $('wb-f-translation'); sel.textContent = ''; var o0 = el('option'); AIOL_I18N.set(o0, 'None'); o0.value = ''; sel.appendChild(o0);
       r.items.forEach(function (p) { var o = el('option', null, p.lang.toUpperCase() + ' · ' + p.title); o.value = p.id; sel.appendChild(o); });
-      if (!r.items.length) { box.appendChild(el('p', 'aic-empty', 'No posts yet. Write the first one with “New post”.')); return; }
+      if (!r.items.length) { box.appendChild(ui('No posts yet. Write the first one with “New post”.', 'aic-empty')); return; }
       box.appendChild(table([
         ['Title', function (p) { var b = el('bdi'); b.textContent = p.title; return b; }],
-        ['Language', function (p) { return p.lang === 'fa' ? 'Persian' : 'English'; }],
+        ['Language', function (p) { return langName(p.lang); }],
         ['Status', function (p) { return chip(p.status, p.status === 'published' ? 'success' : 'warning'); }],
         ['Version', function (p) { return 'v' + p.version; }],
-        ['Updated', function (p) { return new Date(p.updated_at).toLocaleDateString(); }],
+        ['Updated', function (p) { return day(p.updated_at); }],
         ['', function (p) { return btn('Edit', function () { openPost(p.id); }); }]], r.items));
-    }).catch(function (e) { say('wb-msg', e.message); });
+    }).catch(fail('wb-msg'));
   }
   function fillForm(p) {
     editing = p ? p.id : null;
-    $('wb-form').hidden = false; $('wb-form-title').textContent = p ? 'Edit: ' + p.title : 'New post';
+    $('wb-form').hidden = false;
+    if (p) AIOL_I18N.set($('wb-form-title'), 'Edit: {title}', { title: p.title }); else AIOL_I18N.set($('wb-form-title'), 'New post');
     $('wb-f-lang').value = p ? p.lang : 'en'; $('wb-f-lang').disabled = !!p;
     $('wb-f-slug').value = p ? p.slug : ''; $('wb-f-slug').disabled = !!p;
     $('wb-f-title').value = p ? p.title : ''; $('wb-f-excerpt').value = p ? (p.excerpt || '') : '';
@@ -13467,12 +13480,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     $('wb-publish').hidden = !p || p.status === 'published'; $('wb-unpublish').hidden = !p || p.status !== 'published';
     $('wb-history').textContent = '';
     if (p) api('/website/posts/' + p.id + '/revisions').then(function (h) {
-      var box = $('wb-history'); box.appendChild(el('h4', null, 'Update history'));
+      var box = $('wb-history'), h4 = el('h4'); AIOL_I18N.set(h4, 'Update history'); box.appendChild(h4);
       box.appendChild(table([['Version', function (x) { return 'v' + x.version; }], ['Note', function (x) { return x.note; }],
-        ['When', function (x) { return new Date(x.changed_at).toLocaleString(); }]], h)); });
+        ['When', function (x) { return day(x.changed_at, 'datetime'); }]], h)); });
     $('wb-f-title').focus();
   }
-  function openPost(id) { api('/website/posts/' + id).then(fillForm).catch(function (e) { say('wb-msg', e.message); }); }
+  function openPost(id) { api('/website/posts/' + id).then(fillForm).catch(fail('wb-msg')); }
   function refs() { return $('wb-f-refs').value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) {
     var p = l.split('|').map(function (x) { return x.trim(); }); return { title: p[0], publisher: p[1] || null, url: p[2] || null }; }); }
   $('wb-new').addEventListener('click', function () { fillForm(null); });
@@ -13485,41 +13498,43 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var req = editing ? api('/website/posts/' + editing, 'PATCH', Object.assign(body, { note: $('wb-f-note').value.trim() || null }))
       : api('/website/posts', 'POST', Object.assign(body, { lang: $('wb-f-lang').value, slug: $('wb-f-slug').value.trim(),
           translation_of: $('wb-f-translation').value || null }));
-    req.then(function (p) { say('wb-msg', 'Saved as version ' + p.version + '.'); fillForm(p); return loadPosts(); })
-       .catch(function (er) { say('wb-msg', er.message); }); });
+    req.then(function (p) { say('wb-msg', 'Saved as version {n}.', { n: p.version }); fillForm(p); return loadPosts(); })
+       .catch(fail('wb-msg')); });
   $('wb-publish').addEventListener('click', function () { if (!editing) return;
-    api('/website/posts/' + editing + '/publish', 'POST').then(function (p) { say('wb-msg', 'Published on ' + new Date(p.published_at).toLocaleDateString() + '.'); fillForm(p); return loadPosts(); })
-      .catch(function (er) { say('wb-msg', er.message); }); });
+    api('/website/posts/' + editing + '/publish', 'POST').then(function (p) { say('wb-msg', 'Published on {d}.', { d: { date: p.published_at, style: 'date' } }); fillForm(p); return loadPosts(); })
+      .catch(fail('wb-msg')); });
   $('wb-unpublish').addEventListener('click', function () { if (!editing) return;
     api('/website/posts/' + editing + '/unpublish', 'POST').then(function (p) { say('wb-msg', 'Moved back to draft.'); fillForm(p); return loadPosts(); })
-      .catch(function (er) { say('wb-msg', er.message); }); });
+      .catch(fail('wb-msg')); });
 
   /* ---------------- sections */
   function loadSections() {
     return api('/website/sections?page=' + $('ws-page').value + '&lang=' + $('ws-lang').value).then(function (rows) {
       var box = $('ws-list'); box.textContent = '';
       box.appendChild(table([
-        ['#', function (s) { return s.position + 1; }],
+        ['#', function (s) { return AIOL_I18N.set(el('span'), '{n}', { n: s.position + 1 }); }],
         ['Section', function (s) { var b = el('bdi'); b.textContent = s.label; return b; }],
-        ['Shown', function (s) { var c = el('input'); c.type = 'checkbox'; c.checked = s.enabled; c.setAttribute('aria-label', 'Show ' + s.label);
-          if (s.section_key === 'hero') { c.disabled = true; c.title = 'The hero cannot be hidden'; }
+        ['Shown', function (s) { var w = el('span'), c = el('input'); c.type = 'checkbox'; c.checked = s.enabled;
+          w.appendChild(c); w.appendChild(nameBy(c, 'Show {label}', { label: s.label }));
+          if (s.section_key === 'hero') { c.disabled = true; c.title = AIOL_I18N.format('The hero cannot be hidden', {}, AIOL_I18N.lang()); }
           c.onchange = function () { api('/website/sections/' + s.id, 'PATCH', { enabled: c.checked })
-            .then(function () { say('ws-msg', (c.checked ? 'Showing ' : 'Hiding ') + s.label + '.'); })
-            .catch(function (er) { c.checked = !c.checked; say('ws-msg', er.message); }); }; return c; }],
-        ['Heading override', function (s) { var i = el('input'); i.value = s.heading || ''; i.placeholder = 'Default heading'; i.maxLength = 300;
-          i.setAttribute('aria-label', 'Heading for ' + s.label);
+            .then(function () { say('ws-msg', c.checked ? 'Showing {label}.' : 'Hiding {label}.', { label: s.label }); })
+            .catch(function (er) { c.checked = !c.checked; say('ws-msg', '{error}', { error: er.message }); }); }; return w; }],
+        ['Heading override', function (s) { var w = el('span'), i = el('input'); i.value = s.heading || ''; i.maxLength = 300;
+          i.placeholder = AIOL_I18N.format('Default heading', {}, AIOL_I18N.lang());
+          w.appendChild(i); w.appendChild(nameBy(i, 'Heading for {label}', { label: s.label }));
           i.onchange = function () { api('/website/sections/' + s.id, 'PATCH', { heading: i.value }).then(function () { say('ws-msg', 'Heading saved.'); })
-            .catch(function (er) { say('ws-msg', er.message); }); }; return i; }],
+            .catch(fail('ws-msg')); }; return w; }],
         ['Order', function (s) { var w = el('span');
           w.appendChild(btn('Up', function () { move(rows, s, -1); })); w.appendChild(document.createTextNode(' '));
           w.appendChild(btn('Down', function () { move(rows, s, 1); })); return w; }]], rows, 'Page sections and their order'));
-    }).catch(function (e) { say('ws-msg', e.message); });
+    }).catch(fail('ws-msg'));
   }
   function move(rows, s, dir) {
     var i = rows.indexOf(s), j = i + dir; if (j < 0 || j >= rows.length) return;
     var o = rows[j];
     Promise.all([api('/website/sections/' + s.id, 'PATCH', { position: o.position }), api('/website/sections/' + o.id, 'PATCH', { position: s.position })])
-      .then(loadSections).then(function () { say('ws-msg', 'Order saved.'); }).catch(function (er) { say('ws-msg', er.message); });
+      .then(loadSections).then(function () { say('ws-msg', 'Order saved.'); }).catch(fail('ws-msg'));
   }
   $('ws-refresh').addEventListener('click', loadSections); $('ws-lang').addEventListener('change', loadSections);
 
@@ -13527,29 +13542,31 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function loadSubs() {
     var q = '?limit=100' + ($('wn-status').value ? '&status=' + $('wn-status').value : '') + ($('wn-q').value.trim() ? '&q=' + encodeURIComponent($('wn-q').value.trim()) : '');
     return api('/website/subscribers' + q).then(function (r) {
-      $('wn-total').textContent = r.total + ' subscriber(s)';
+      AIOL_I18N.set($('wn-total'), '{n|subscriber|subscribers}', { n: r.total });
       var box = $('wn-list'); box.textContent = '';
-      if (!r.items.length) { box.appendChild(el('p', 'aic-empty', 'No one has subscribed yet.')); return; }
+      if (!r.items.length) { box.appendChild(ui('No one has subscribed yet.', 'aic-empty')); return; }
       box.appendChild(table([
         ['Email', function (x) { var b = el('bdi'); b.textContent = x.email; return b; }],
         ['Status', function (x) { return chip(x.status, x.status === 'subscribed' ? 'success' : 'neutral'); }],
-        ['Language', function (x) { return x.lang === 'fa' ? 'Persian' : 'English'; }],
+        ['Language', function (x) { return langName(x.lang); }],
         ['Joined from', function (x) { return x.source; }],
-        ['Consent', function (x) { return new Date(x.consented_at).toLocaleDateString(); }],
+        ['Consent', function (x) { return day(x.consented_at); }],
         ['', function (x) { var w = el('span');
-          if (x.status === 'subscribed') w.appendChild(btn('Unsubscribe', function () { api('/website/subscribers/' + x.id + '/unsubscribe', 'POST').then(loadSubs); }));
+          if (x.status === 'subscribed') w.appendChild(btn('Unsubscribe', function () { api('/website/subscribers/' + x.id + '/unsubscribe', 'POST').then(loadSubs).catch(fail('wn-msg')); }));
           w.appendChild(document.createTextNode(' '));
-          w.appendChild(btn('Erase', function () { if (!window.confirm('Erase ' + x.email + ' completely? This cannot be undone.')) return;
-            api('/website/subscribers/' + x.id, 'DELETE').then(function () { say('wn-msg', 'Erased.'); return loadSubs(); }); }));
+          w.appendChild(btn('Erase', function () {
+            var ask = el('span'); AIOL_I18N.set(ask, 'Erase {email} completely? This cannot be undone.', { email: x.email });
+            if (!window.confirm(ask.textContent)) return;
+            api('/website/subscribers/' + x.id, 'DELETE').then(function () { say('wn-msg', 'Erased.'); return loadSubs(); }).catch(fail('wn-msg')); }));
           return w; }]], r.items));
-    }).catch(function (e) { say('wn-msg', e.message); });
+    }).catch(fail('wn-msg'));
   }
   $('wn-refresh').addEventListener('click', loadSubs); $('wn-status').addEventListener('change', loadSubs);
   $('wn-q').addEventListener('change', loadSubs);
   $('wn-export').addEventListener('click', function () {
     api('/website/subscribers/export.csv', 'GET', null, true).then(function (r) { return r.blob(); }).then(function (b) {
       var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'newsletter-subscribers.csv';
-      document.body.appendChild(a); a.click(); a.remove(); say('wn-msg', 'Exported.'); }).catch(function (e) { say('wn-msg', e.message); }); });
+      document.body.appendChild(a); a.click(); a.remove(); say('wn-msg', 'Exported.'); }).catch(fail('wn-msg')); });
 
   document.addEventListener('aiol:live', function () {
     document.querySelectorAll('.ws-note').forEach(function (n) { n.hidden = true; });
@@ -15366,7 +15383,61 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Create your account · AI Operating Layer": "ساختن حساب · AI Operating Layer",
     "Enter your code · AI Operating Layer": "وارد کردن کد · AI Operating Layer",
     "A User-Agent header is a claim a request makes about itself, not a verified identity — anyone can send": "سرآیند \u2068User-Agent\u2069 ادعایی است که درخواست دربارهٔ خودش می‌کند، نه هویتی تأییدشده — هر کسی می‌تواند این را بفرستد:",
-    ". Every row above is": ". هر ردیف بالا"
+    ". Every row above is": ". هر ردیف بالا",
+    "Saved as version {n}.": "به‌عنوان نسخهٔ {n} ذخیره شد.",
+    "Published on {d}.": "در {d} منتشر شد.",
+    "Moved back to draft.": "به پیش‌نویس برگردانده شد.",
+    "Showing {label}.": "{label} نمایش داده می‌شود.",
+    "Hiding {label}.": "{label} پنهان می‌شود.",
+    "Heading saved.": "عنوان ذخیره شد.",
+    "Order saved.": "ترتیب ذخیره شد.",
+    "Erased.": "پاک شد.",
+    "Exported.": "خروجی گرفته شد.",
+    "Persian": "فارسی",
+    "English": "انگلیسی",
+    "No posts yet. Write the first one with “New post”.": "هنوز هیچ نوشته‌ای نیست. نخستین را با «نوشتهٔ تازه» بنویسید.",
+    "No one has subscribed yet.": "هنوز کسی مشترک نشده است.",
+    "Title": "عنوان",
+    "Note": "یادداشت",
+    "Section": "بخش",
+    "Shown": "نمایش",
+    "Heading override": "عنوان جایگزین",
+    "Order": "ترتیب",
+    "Email": "ایمیل",
+    "Joined from": "پیوستن از",
+    "Consent": "رضایت",
+    "Page sections and their order": "بخش‌های صفحه و ترتیب آن‌ها",
+    "Subscribed": "مشترک",
+    "Unsubscribed": "لغو اشتراک‌شده",
+    "Edit": "ویرایش",
+    "Up": "بالا",
+    "Down": "پایین",
+    "Unsubscribe": "لغو اشتراک",
+    "Erase": "پاک کردن",
+    "Edit: {title}": "ویرایش: {title}",
+    "New post": "نوشتهٔ تازه",
+    "Update history": "تاریخچهٔ به‌روزرسانی",
+    "Show {label}": "نمایش {label}",
+    "Heading for {label}": "عنوان برای {label}",
+    "The hero cannot be hidden": "بخش اصلی بالای صفحه را نمی‌توان پنهان کرد",
+    "Default heading": "عنوان پیش‌فرض",
+    "{n|subscriber|subscribers}": "{n} مشترک",
+    "Erase {email} completely? This cannot be undone.": "{email} به‌طور کامل پاک شود؟ این کار برگشت‌پذیر نیست.",
+    "Write and publish the articles on your public website, in English and Persian. A post needs an author and a body before it can be published; every edit is kept as a revision with a note, and that history is shown on the published article.": "نوشته‌های وب‌سایت عمومی خود را به انگلیسی و فارسی بنویسید و منتشر کنید. هر نوشته پیش از انتشار به نویسنده و متن نیاز دارد؛ هر ویرایش با یک یادداشت به‌عنوان بازنگری نگه داشته می‌شود و این تاریخچه روی نوشتهٔ منتشرشده نشان داده می‌شود.",
+    "Address (slug)": "نشانی (نامک)",
+    "Summary": "خلاصه",
+    "Body (one paragraph per blank line)": "متن (هر بند با یک خط خالی جدا شود)",
+    "Translation of (optional)": "ترجمهٔ (اختیاری)",
+    "References (one per line: title | publisher | address)": "منابع (هر خط یکی: عنوان | ناشر | نشانی)",
+    "What changed (kept in the update history)": "چه چیزی تغییر کرد (در تاریخچهٔ به‌روزرسانی نگه داشته می‌شود)",
+    "Publish": "انتشار",
+    "Unpublish": "لغو انتشار",
+    "Close": "بستن",
+    "why-indirect-stays-indirect": "مثال: why-indirect-stays-indirect",
+    "Show, hide, reorder and retitle the sections of the public home page, separately for each language. The hero carries the page's only main heading and cannot be hidden. The site reads these settings when it is connected to AI Core.": "بخش‌های صفحهٔ اصلی عمومی را برای هر زبان جداگانه نمایش دهید، پنهان کنید، جابه‌جا کنید یا عنوانشان را تغییر دهید. بخش اصلی بالای صفحه تنها عنوان اصلی صفحه را دارد و نمی‌توان آن را پنهان کرد. سایت این تنظیمات را هنگام اتصال به AI Core می‌خواند.",
+    "Home": "صفحهٔ اصلی",
+    "Everyone who joined the newsletter from the public website. An address is stored only with explicit consent, which is recorded with its date and wording. Export as CSV, mark someone unsubscribed, or erase an address completely on request.": "همهٔ کسانی که از وب‌سایت عمومی به خبرنامه پیوسته‌اند. هر نشانی فقط با رضایت صریح نگه داشته می‌شود که با تاریخ و متن آن ثبت می‌شود. خروجی \u2068CSV\u2069 بگیرید، اشتراک کسی را لغو کنید، یا در صورت درخواست، نشانی را به‌طور کامل پاک کنید.",
+    "Export CSV": "خروجی CSV"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [
