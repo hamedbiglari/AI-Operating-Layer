@@ -122,20 +122,19 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): d3d8e37
+- sha (last non-docs commit): 19e5fc4
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ d3d8e37 (debt priorities 1-2 pushed without
-  waiting, as the user authorised: d4fab6e, b5fdcf7, 27b166b, 5eab4ab,
-  7ab8606, d3d8e37). Locally: 28 browser suites green at each frontend
-  commit; apps/shared e2e 50/50 against a live AI Core; backend tests for
-  each change green (users/products/preferences/auth/tenant 162; visibility
-  + telemetry 77, the 6 date.today() rollup tests excepted, see §5).
+- last_ci: in_progress @ 19e5fc4 (pre-release fixes pushed without waiting,
+  as the user authorised: ee50657, 19e5fc4). Locally: 28 browser suites
+  green at ee50657; users/auth/login-code/signup/tenant/platform-admin 54
+  pass; test_phase13_telemetry.py 28/28 run inside the former failing
+  window; migration 0053 upgrade/downgrade/upgrade clean on a fresh DB.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(visibility): aggregate stats for detail screen" @ d3d8e37
+- last code commit: "test(telemetry): fix timezone-dependent date assertions" @ 19e5fc4
 - last feature commit: "feat(visibility): aggregate stats for detail screen" @ d3d8e37
-- last fix commit: "fix(apps): resolve native client integration issues" @ b9c9e9b
+- last fix commit: "fix(auth): secure email verification flow for profile changes" @ ee50657
 
 ## 4. Completed steps (compact)
 
@@ -571,6 +570,18 @@ file from scratch (do not diff). Output only the file content.
     four stats and per-day chart with range tabs. V5-visibility-detail-
     aggregates stays OPEN (live strip, map + country table, breakdown,
     exports pending).
+- Pre-release fixes:
+  - ee50657 confirmed sign-in email change (V5-self-email-verification
+    CLOSED): PATCH /users/me refuses `email`; POST
+    /users/me/email-change-request mails a 6-digit code to the new address
+    (hashed, 5-minute life, cooldown, 5 an hour, 409/422/429/503) and POST
+    /users/me/email-change-verify applies it (3 wrong codes void it, 409 on
+    a race, audit-logged, the old address told). Table
+    email_change_requests, migration 0053. Settings: read-only email +
+    Change email two-step form.
+  - 19e5fc4 test_phase13_telemetry.py: six date.today() calls became the
+    UTC date, so the content-stats tests no longer fail between 00:00
+    local and 00:00 UTC.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -595,14 +606,13 @@ file from scratch (do not diff). Output only the file content.
 - ALL STEPS 5–14 ARE 100% COMPLETE — the visual-harness phase is finished.
 - All Steps (5-14) and final polish (Debt, Design, Apps, E2E) are complete.
 - All development, design, native apps, deployment, and testing phases are complete. The project is ready for production release.
-- Debt priority 1 and priority 2 are 100% complete (see §4). New or partial
-  debt from them: V5-self-email-verification (email changes without
-  confirmation; needed before release), V5-access-policy-create (no form
-  to add a rule), V5-visibility-detail-aggregates (partial: stats and chart
-  done; live strip, map, breakdown, exports pending).
-- Local test note: 6 tests in test_phase13_telemetry.py use date.today()
-  (local date) against UTC rows and fail between 00:00 local and 00:00 UTC
-  on a UTC+ machine; CI (UTC) is unaffected.
+- Debt priority 1 and priority 2 are 100% complete (see §4).
+- All critical pre-release issues are resolved (v31): the sign-in email
+  changes only after confirmation (V5-self-email-verification CLOSED) and
+  the telemetry tests no longer depend on the local time zone.
+- Remaining debt is non-blocking: V5-access-policy-create (no form to add
+  a rule), V5-visibility-detail-aggregates (partial: live strip, map,
+  breakdown, exports), V5-apps-cargo-update, and the older OPEN rows.
 - Before a release: run scripts/start-real-e2e.ps1 with real keys (never
   run yet), update cloud-core/.venv to the pins, and close or accept
   V5-apps-cargo-update (cargo update + Client suite CI). The .venv is
@@ -735,6 +745,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   (b5fdcf7), debt priority 2: product form (27b166b), access rule edit and
   delete (7ab8606), visibility aggregates backend (5eab4ab) and screen
   stats (d3d8e37). Priority 2 is 100% complete.
+- v31 @ 19e5fc4 — pre-release fixes: confirmed sign-in email change
+  (ee50657, migration 0053; V5-self-email-verification CLOSED) and
+  UTC-safe telemetry test dates (19e5fc4). No critical issue open.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -968,9 +981,9 @@ Session / memory:
   complete @ e0da56f; 9E-2 complete @ 196c733; Step 12 complete @ 622d417.
   Step 13 complete @ 889db79; Step 14 complete @ 26e1829.
 - The entire Step 5–14 phase is finished. Debt priorities 1 and 2 are
-  complete (v30). Next step: Priority 3 is not planned yet; all planned
-  priorities are complete. Candidates: V5-self-email-verification, the
-  rest of V5-visibility-detail-aggregates, V5-access-policy-create.
+  complete (v30); the pre-release fixes are done (v31). Next step: Project
+  is ready for release. Optional: test with real API keys, build Windows
+  installer, or address minor debts.
 - Design elevation across all screens — baseline Knowledge critique
   started; no fixes yet.
 - Full E2E of Memory Center, AI providers, Agent Network — not tested;
