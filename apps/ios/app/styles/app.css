@@ -253,3 +253,68 @@ dialog::backdrop { background: rgba(0, 0, 0, .35); }
   .history__more { opacity: 1; }
   .btn, .menu__item, .history__open { min-height: 44px; }
 }
+
+/* ======================================================================================================
+ * Assistant surface (ADR-137 amendment). Conversational-assistant layout on AIOL's own warm palette
+ * ([data-surface="assistant"] tokens in frontend/design-system/tokens.css): a quiet sidebar, a profile block at the
+ * bottom, a composer card with attach / dictate / send, and answers set in a reading face.
+ * ====================================================================================================== */
+[data-surface="assistant"] body { font-size: var(--text-base); }
+[data-surface="assistant"] .sidebar { background: var(--sidebar); border-inline-end-color: var(--border); }
+[data-surface="assistant"] .sidebar__brand { font-size: var(--text-md); letter-spacing: -0.01em; }
+
+/* Sidebar rows: one shape for New chat, Search and every recent chat. */
+.side-row {
+  display: flex; align-items: center; gap: var(--space-3); inline-size: calc(100% - 2 * var(--space-2));
+  margin: 0 var(--space-2); padding: var(--space-2) var(--space-2); min-height: 36px;
+  border: 0; border-radius: var(--radius-md); background: none; color: var(--text); cursor: pointer;
+  font-size: var(--text-base); text-align: start;
+}
+.side-row:hover { background: var(--surface-sunken); }
+.side-row__badge {
+  inline-size: 24px; block-size: 24px; border-radius: var(--radius-full); display: grid; place-items: center; flex: none;
+  background: var(--accent); color: var(--accent-contrast);
+}
+.side-row__badge .icon { width: 14px; height: 14px; stroke-width: 2.5; }
+.side-row--new { font-weight: var(--weight-medium); color: var(--accent); }
+[data-surface="assistant"] .sidebar__new, [data-surface="assistant"] .sidebar .sidebar__search { display: none; }
+.sidebar__searchbox { margin: var(--space-1) var(--space-2) var(--space-2); }
+.sidebar__searchbox[hidden] { display: none; }
+[data-surface="assistant"] .sidebar__heading { margin: var(--space-4) var(--space-4) var(--space-1); font-weight: var(--weight-medium); color: var(--text-subtle); }
+[data-surface="assistant"] .history__open { font-size: var(--text-base); padding: 6px var(--space-2); color: var(--text); }
+[data-surface="assistant"] .history__item[aria-current="page"] { background: var(--surface-sunken); }
+[data-surface="assistant"] .history__open:hover { background: var(--surface-sunken); }
+
+/* Profile block: avatar, name, role, and the chevron that says "this opens a menu". */
+[data-surface="assistant"] .sidebar__account { border-block-start: 0; padding: var(--space-2); }
+[data-surface="assistant"] .account-btn { padding: var(--space-2); border-radius: var(--radius-md); }
+[data-surface="assistant"] .account-btn:hover, [data-surface="assistant"] .account-btn[aria-expanded="true"] { background: var(--surface-sunken); }
+[data-surface="assistant"] .avatar { background: var(--text); color: var(--canvas); font-size: var(--text-sm); }
+.account-btn__chev { margin-inline-start: auto; color: var(--text-subtle); }
+[data-surface="assistant"] .menu { border-radius: calc(var(--radius-md) * 1.5); padding: var(--space-2); }
+[data-surface="assistant"] .menu__item { border-radius: var(--radius-md); }
+
+/* Main column. */
+[data-surface="assistant"] .topbar { border-block-end: 0; }
+[data-surface="assistant"] .topbar__title { font-weight: var(--weight-normal); font-size: var(--text-base); color: var(--text-muted); }
+
+/* Messages. */
+[data-surface="assistant"] .msg--assistant .msg__body { font-family: var(--font-reading); font-size: 1.0625rem; line-height: 1.65; }
+[data-surface="assistant"] .msg--user .msg__body { background: var(--surface-sunken); border-radius: calc(var(--radius-md) * 1.5); }
+.msg__actions .btn--ghost { color: var(--text-subtle); }
+.msg__actions .btn--ghost:hover { color: var(--text); }
+.msg__actions .btn--ghost[aria-pressed="true"] { color: var(--accent); }
+
+/* Composer: + (attach) on the start side; dictation and send on the end side. */
+[data-surface="assistant"] .composer__card { border-radius: calc(var(--radius-md) * 2.5); border-color: var(--border); background: var(--surface); }
+.composer__tool {
+  inline-size: 32px; block-size: 32px; border-radius: var(--radius-md); border: 1px solid var(--border);
+  background: transparent; color: var(--text-muted); display: inline-grid; place-items: center; cursor: pointer; flex: none;
+}
+.composer__tool:hover { background: var(--surface-sunken); color: var(--text); }
+.composer__tool[aria-pressed="true"] { background: var(--danger-tint); color: var(--danger); border-color: var(--danger); }
+.composer__tool--bare { border-color: transparent; }
+[data-surface="assistant"] .composer__send { border-radius: var(--radius-md); background: var(--accent); color: var(--accent-contrast); inline-size: 32px; block-size: 32px; }
+[data-surface="assistant"] .composer__send[disabled] { opacity: .4; }
+.attach-menu { position: absolute; inset-block-end: calc(100% + var(--space-1)); inset-inline-start: 0; }
+.composer__bar { position: relative; }

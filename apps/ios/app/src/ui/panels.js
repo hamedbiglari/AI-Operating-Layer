@@ -187,3 +187,43 @@ export function openUpgrade(ctx) {
                                                                                          : 'upgrade.not_configured') }));
   }
 }
+
+/**
+ * "+" in the composer: add a document to the knowledge base (POST /documents/upload). The person picks the source
+ * it belongs to; Cloud Core accepts it (202) and processes it in the background. The dialog says what is true:
+ * the document is not read by the next answer — it becomes answerable once processing has produced evidence.
+ */
+export async function openUpload(ctx) {
+  const { t, http } = ctx;
+  const { dlg, body } = dialogShell(t('upload.title'), t);
+  body.append(h('p', { class: 'muted', text: t('upload.explain') }), loading(t));
+  let sources = [];
+  try {
+    sources = (await http.get('/sources/overview?limit=100')).items ?? [];
+  } catch (err) { clear(body); body.append(h('p', { class: 'error-text', role: 'alert', text: err.message })); return; }
+  clear(body);
+  body.append(h('p', { class: 'muted', text: t('upload.explain') }));
+  if (!sources.length) { body.append(h('p', { class: 'muted', text: t('upload.no_sources') })); return; }
+  const select = h('select', { id: 'upload-source' }, sources.map((src) => h('option', { value: src.id, text: src.title })));
+  const file = h('input', { type: 'file', id: 'upload-file', accept: '.pdf,.docx,.doc,.txt,.md,.html,.htm,.csv,.xlsx,.png,.jpg,.jpeg' });
+  const status = h('p', { class: 'subtle', role: 'status' });
+  const go = h('button', { class: 'btn btn--primary', type: 'button', id: 'upload-go' }, icon('action-upload'), t('upload.go'));
+  go.addEventListener('click', async () => {
+    if (!file.files?.length) { status.textContent = t('upload.pick_file'); return; }
+    go.disabled = true;
+    status.textContent = t('common.loading');
+    try {
+      const form = new FormData();
+      form.append('source_id', select.value);
+      form.append('file', file.files[0]);
+      form.append('language', ctx.i18n.lang === 'fa' ? 'fa' : 'en');
+      form.append('ocr_languages', ctx.i18n.lang === 'fa' ? 'fas+eng' : 'eng');
+      await http.upload('/documents/upload', form);
+      status.textContent = t('upload.accepted');
+      file.value = '';
+    } catch (err) { status.textContent = err.message; } finally { go.disabled = false; }
+  });
+  body.append(h('label', { for: 'upload-source', text: t('upload.source') }), select,
+              h('label', { for: 'upload-file', text: t('upload.file') }), file, h('div', { class: 'row' }, go), status);
+  return dlg;
+}

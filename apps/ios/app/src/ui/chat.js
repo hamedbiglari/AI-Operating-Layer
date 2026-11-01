@@ -38,8 +38,42 @@ export function createChatView(ctx) {
                              'aria-label': t('chat.stop'), title: t('chat.stop'), onclick: () => inflight?.abort() },
                  icon('action-stop'));
   const hint = h('p', { class: 'composer__hint subtle', id: 'composer-hint' });
+  // "+": add a document to the knowledge base. Shown only to roles the upload API accepts; the composer never
+  // pretends a file is "attached to this question" — Cloud Core answers from knowledge, so a document becomes
+  // answerable once processing has turned it into evidence, and the dialog says exactly that.
+  const UPLOAD_ROLES = ['owner', 'admin', 'researcher', 'editor'];
+  const canUpload = UPLOAD_ROLES.includes(ctx.session?.user?.role);
+  const attach = canUpload ? h('button', { class: 'composer__tool', type: 'button', id: 'composer-attach',
+    'aria-label': t('composer.add_document'), title: t('composer.add_document'),
+    onclick: () => ctx.openUpload?.() }, icon('action-add')) : null;
+
+  // Dictation: the platform's own speech recognition, where the WebView provides it (capability-gated, never
+  // emulated). Words go into the composer; nothing is sent until the person presses send.
+  const Recognition = globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition;
+  let recognizer = null;
+  const mic = Recognition ? h('button', { class: 'composer__tool composer__tool--bare', type: 'button', id: 'composer-mic',
+    'aria-pressed': 'false', 'aria-label': t('composer.dictate'), title: t('composer.dictate'), onclick: () => {
+      if (recognizer) { recognizer.stop(); return; }
+      try {
+        recognizer = new Recognition();
+        recognizer.lang = ctx.i18n.lang === 'fa' ? 'fa-IR' : 'en-US';
+        recognizer.interimResults = true;
+        const base = input.value ? input.value.replace(/\s*$/, ' ') : '';
+        recognizer.onresult = (ev) => {
+          let text = '';
+          for (let i = 0; i < ev.results.length; i++) text += ev.results[i][0].transcript;
+          input.value = base + text; autosize(); syncSend(); store.setDraft(conversationId, input.value);
+        };
+        recognizer.onerror = () => toast(t('composer.dictate_failed'));
+        recognizer.onend = () => { recognizer = null; mic.setAttribute('aria-pressed', 'false'); input.focus(); };
+        recognizer.start();
+        mic.setAttribute('aria-pressed', 'true');
+      } catch { recognizer = null; toast(t('composer.dictate_failed')); }
+    } }, icon('action-mic')) : null;
+
   const form = h('form', { class: 'composer' },
-    h('div', { class: 'composer__card' }, input, h('div', { class: 'composer__bar' }, h('span', { class: 'composer__spacer' }), send, stop)),
+    h('div', { class: 'composer__card' }, input,
+      h('div', { class: 'composer__bar' }, attach, h('span', { class: 'composer__spacer' }), mic, send, stop)),
     hint);
   const syncSend = () => { send.disabled = !input.value.trim() || input.disabled; };
 
@@ -144,6 +178,21 @@ export function createChatView(ctx) {
     return box;
   }
 
+  // Helpful / not helpful, saved through POST /chat/messages/{id}/feedback. Only when the organisation collects it.
+  const rated = new Map();
+  function feedbackButtons(m) {
+    if (!m.id || ctx.chatConfig?.collect_feedback === false) return [];
+    const make = (rating, ic, label) => {
+      const b = h('button', { class: 'btn btn--ghost icon-btn', type: 'button', 'aria-label': t(label), title: t(label),
+        'aria-pressed': String(rated.get(m.id) === rating), onclick: async () => {
+          try { await store.feedback(m.id, rating); rated.set(m.id, rating); toast(t('feedback.thanks')); render(); }
+          catch (err) { toast(err.message); }
+        } }, icon(ic));
+      return b;
+    };
+    return [make('helpful', 'feedback-up', 'feedback.helpful'), make('not_helpful', 'feedback-down', 'feedback.not_helpful')];
+  }
+
   function messageView(m) {
     if (m.role === 'user') {
       const delivery = m.delivery && m.delivery !== 'confirmed'
@@ -166,7 +215,7 @@ export function createChatView(ctx) {
       body,
       m.limitation ? h('p', { class: 'limitation', dir: 'auto', text: m.limitation }) : null,
       citations(m), researchCard(m),
-      h('div', { class: 'msg__actions' }, m.text ? copyBtn : null,
+      h('div', { class: 'msg__actions' }, m.text ? copyBtn : null, ...feedbackButtons(m),
         m.answers_message_id ? h('button', { class: 'btn btn--ghost', type: 'button', onclick: async () => {
           try { await store.regenerate(conversationId, m.answers_message_id); render(); }
           catch (err) { toast(err.message); }

@@ -147,6 +147,29 @@ export class Http {
     }
   }
 
+  /** Multipart upload (FormData). One silent refresh on 401; never retried automatically. */
+  async upload(path, form, { signal, timeoutMs = 120000 } = {}) {
+    for (let refreshed = false; ; refreshed = true) {
+      const tok = this.token();
+      if (!tok) throw new ApiError(ErrorKind.UNAUTHORIZED, 'Sign in to continue.', { status: 401 });
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort('timeout'), timeoutMs);
+      signal?.addEventListener('abort', () => ctl.abort('user'), { once: true });
+      let res;
+      try {
+        res = await this.fetch(this.baseUrl + path, { method: 'POST', body: form, signal: ctl.signal, credentials: 'omit',
+          cache: 'no-store', redirect: 'error', headers: { Accept: 'application/json', Authorization: `Bearer ${tok}` } });
+      } catch {
+        throw networkError(ctl.signal.aborted ? (signal?.aborted ? ErrorKind.ABORTED : ErrorKind.TIMEOUT) : ErrorKind.NETWORK);
+      } finally { clearTimeout(timer); }
+      if (res.status === 401 && !refreshed && await this.refresh()) continue;
+      let data = null;
+      try { data = JSON.parse(await res.text()); } catch { data = null; }
+      if (!res.ok) throw fromResponse(res.status, data, { 'retry-after': res.headers.get('retry-after') });
+      return data;
+    }
+  }
+
   get(path, o) { return this.request('GET', path, o).then((r) => r.data); }
   post(path, body, o) { return this.request('POST', path, { ...o, body }).then((r) => r.data); }
   put(path, body, o) { return this.request('PUT', path, { ...o, body }).then((r) => r.data); }

@@ -12,7 +12,7 @@ import { icon } from './ui/icons.js';
 import { signInView } from './ui/signin.js';
 import { createShell } from './ui/shell.js';
 import { createChatView } from './ui/chat.js';
-import { openApps, openLanguage, openSettings, openUpgrade, openUsage } from './ui/panels.js';
+import { openApps, openLanguage, openSettings, openUpgrade, openUpload, openUsage } from './ui/panels.js';
 
 const app = document.getElementById('app');
 const LOCAL_PREFS = 'aiol.local.prefs';     // last-used language/theme, so the sign-in screen matches the account
@@ -143,6 +143,7 @@ async function boot() {
       if (!patch.language) shell.root.querySelector('.toggles')?.replaceWith(ctx.toggles());
     } });
     ctx.onEmpty = (empty) => { shell.root.dataset.empty = String(empty); };
+    ctx.openUpload = () => openUpload(ctx);
     ctx.openSettings = () => openSettings(ctx);
     ctx.openUsage = () => openUsage(ctx);
     ctx.openLanguage = () => openLanguage(ctx);
@@ -170,6 +171,7 @@ async function boot() {
     async function refreshLimit() {
       try {
         const cfg = await http.get('/chat/config');
+        ctx.chatConfig = cfg;
         if (!cfg.enabled) { shell.setBanner(t('chat.disabled')); chat.setEnabled(false); return; }
         shell.setBanner(online() ? '' : t('common.offline'));
         chat.setEnabled(true);

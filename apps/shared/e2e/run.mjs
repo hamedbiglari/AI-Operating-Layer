@@ -123,12 +123,25 @@ try {
         themeAfter && themeAfter !== themeBefore && (await api('/users/me/preferences', { token: owner.token })).data.theme === themeAfter,
         `${themeBefore} -> ${themeAfter}`);
 
+  // Composer tools: "+" for an owner (upload role); the dialog states the truth about processing.
+  check('the owner sees "+" (add a document to knowledge)', await page.locator('#composer-attach').count() === 1);
+  await page.locator('#composer-attach').click();
+  await page.locator('dialog #upload-source, dialog p.muted').first().waitFor({ timeout: 10000 });
+  check('the upload dialog says the document is not read by the next answer',
+        (await page.locator('dialog').textContent()).includes('not by the next answer'));
+  await page.keyboard.press('Escape');
+  check('sidebar: New chat, Search chats, Recents, profile with chevron', await page.evaluate(() =>
+    !!document.querySelector('#new-chat .side-row__badge') && !!document.getElementById('search-chats')
+    && /Recents/.test(document.getElementById('sidebar').textContent) && !!document.querySelector('.account-btn__chev')));
+  check('the assistant surface palette is active', await page.evaluate(() => document.documentElement.dataset.surface) === 'assistant');
+
   // 3–6. new chat, send, render answer with its state
   await page.locator('#composer-input').fill('What is Taranjabin used for?');
   await page.locator('#composer-send').click();
   const answer = page.locator('.msg--assistant').first();
   await answer.waitFor({ timeout: 30000 });
   const state = await answer.getAttribute('data-state');
+  check('answers can be rated helpful / not helpful', (await answer.locator('button[aria-label="Helpful"]').count()) === 1);
   check('the answer arrived over the streaming endpoint', requests.some((u) => u.endsWith('/messages/stream')));
   check('answer rendered with a server answer state', !!state, state);
   check('NEEDS_USER_SOURCE (no topic granted) is shown with its limitation, not an invented answer',
@@ -239,6 +252,7 @@ try {
   check('second account created in the same organization', mk.status === 201, String(mk.status));
   await signIn(page, member);
   await page.waitForTimeout(300);
+  check('a viewer does not get "+" (no upload right)', await page.locator('#composer-attach').count() === 0);
   check('the second account sees none of the first account’s conversations',
         (await page.locator('#history .history__open').count()) === 0);
   await page.waitForTimeout(800);

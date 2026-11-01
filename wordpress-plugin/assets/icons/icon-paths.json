@@ -82,6 +82,26 @@
       "category": "action",
       "d": "M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M12 15V4M8 8l4-4 4 4"
     },
+    "action-mic": {
+      "category": "action",
+      "d": "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"
+    },
+    "action-attach": {
+      "category": "action",
+      "d": "M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"
+    },
+    "feedback-up": {
+      "category": "action",
+      "d": "M7 10v10H4V10h3zM7 10l4-7a2 2 0 0 1 2 2v4h5.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.3 20H7"
+    },
+    "feedback-down": {
+      "category": "action",
+      "d": "M7 14V4H4v10h3zM7 14l4 7a2 2 0 0 0 2-2v-4h5.5a2 2 0 0 0 2-2.3l-1.2-7A2 2 0 0 0 17.3 4H7"
+    },
+    "chevron-up-down": {
+      "category": "action",
+      "d": "M8 9l4-4 4 4M8 15l4 4 4-4"
+    },
     "action-send": {
       "category": "action",
       "d": "M12 19V5M6 11l6-6 6 6"

@@ -12,6 +12,14 @@ export function createShell(ctx) {
   const search = h('input', { type: 'search', class: 'sidebar__search', id: 'history-search', placeholder: t('nav.search'),
                               'aria-label': t('nav.search'), autocomplete: 'off' });
   const history = h('ul', { class: 'history', id: 'history', 'aria-label': t('nav.history') });
+  const searchBox = h('div', { class: 'sidebar__searchbox', hidden: true }, search);
+  const searchRow = h('button', { class: 'side-row', type: 'button', id: 'search-chats', 'aria-expanded': 'false',
+    'aria-controls': 'history-search', onclick: () => {
+      const open = searchBox.hidden;
+      searchBox.hidden = !open;
+      searchRow.setAttribute('aria-expanded', String(open));
+      if (open) search.focus(); else if (search.value) { search.value = ''; store.loadList({ query: '' }).catch(() => {}); }
+    } }, icon('action-search'), h('span', { class: 'label', text: t('nav.search') }));
   const more = h('button', { class: 'btn btn--ghost', type: 'button', hidden: true,
                              onclick: () => store.loadList({ offset: store.items.length }).catch((e) => ctx.toast(e.message)) },
                  t('nav.load_more'));
@@ -31,9 +39,9 @@ export function createShell(ctx) {
       h('span', { class: 'sidebar__brand' }, h('img', { src: './brand/aiol-logo.svg', alt: '', width: 24, height: 24 }),
         h('span', { class: 'sidebar__brand-text', text: t('app.name') })),
       collapse, closeDrawerBtn),
-    h('button', { class: 'btn sidebar__new', type: 'button', id: 'new-chat', onclick: () => { newChat(); } },
-      icon('action-add'), h('span', { class: 'label', text: t('nav.new_chat') })),
-    search, h('h2', { class: 'sidebar__heading', text: t('nav.history') }), history, more, accountArea);
+    h('button', { class: 'side-row side-row--new', type: 'button', id: 'new-chat', onclick: () => { newChat(); } },
+      h('span', { class: 'side-row__badge', 'aria-hidden': 'true' }, icon('action-add')), h('span', { class: 'label', text: t('nav.new_chat') })),
+    searchRow, searchBox, h('h2', { class: 'sidebar__heading', text: t('nav.recents') }), history, more, accountArea);
 
   const title = h('h1', { class: 'topbar__title', id: 'chat-title' });
   const banner = h('div', { class: 'banner', id: 'banner', hidden: true });
@@ -122,7 +130,8 @@ export function createShell(ctx) {
     const u = session.user ?? {};
     clear(accountBtn).append(h('span', { class: 'avatar', 'aria-hidden': 'true', text: initials(u.name || u.email) }),
       h('span', { class: 'account-btn__text' }, h('span', { dir: 'auto', text: u.name || u.email || '' }),
-        h('span', { class: 'subtle', dir: 'auto', text: session.organization?.name ?? '' })));
+        h('span', { class: 'subtle', dir: 'auto', text: session.organization?.name ?? '' })),
+      h('span', { class: 'account-btn__chev', 'aria-hidden': 'true' }, icon('chevron-up-down')));
     accountBtn.setAttribute('aria-label', `${t('account.menu')}: ${u.email ?? ''}`);
   }
 

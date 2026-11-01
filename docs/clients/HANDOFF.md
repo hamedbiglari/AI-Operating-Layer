@@ -29,6 +29,9 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `apps/shared/RE
   signed desktop updater (ADR-140), theme/language buttons, conversational composer, and the standalone folders
   apps/windows, apps/macos, apps/android, apps/ios generated from apps/shared.
 
+- Visual pass: assistant surface palette, sidebar/profile/composer pattern, "+" upload (roles), dictation, feedback.
+  End-to-end 53/53 live; client unit 41/41; Rust 9/9; plugin PHP checks pass.
+
 ## In progress
 - Nothing running. Latest client CI: run 41226260763 (ea47b51) green, including the Windows build of the
   MachineGuid reader. Retention purge scheduled; release CSP narrowing in place.
