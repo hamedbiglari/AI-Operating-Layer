@@ -35,7 +35,7 @@ that was actually run in this session, or says it was not run.
 | User preferences (language en/fa, theme) | `api/v1/preferences.py` | VERIFIED | Settings, Language |
 | Billing usage, wallet, quotas | `api/v1/billing.py`, `billing_service.usage_summary` | VERIFIED | Usage |
 | Subscription plans | `models/_draft_billing_not_wired/` | PARTIALLY_IMPLEMENTED (draft, not wired) | not shown; Usage says plans are not offered |
-| Design tokens + icon registry | `frontend/design-system/`, `frontend/icons/icon-paths.json` | VERIFIED (canonical) | copied byte-identically by `clients/scripts/sync-design-system.mjs`, parity-tested |
+| Design tokens + icon registry | `frontend/design-system/`, `frontend/icons/icon-paths.json` | VERIFIED (canonical) | copied byte-identically by `apps/shared/scripts/sync-design-system.mjs`, parity-tested |
 | Persian i18n conventions, KNOWN-word reversal check | `visual-harness/check-persian.js` | VERIFIED | client catalogue is checked against the same KNOWN list |
 | Device Intelligence ("previously specified Web Device Intelligence Engine") | searched models/services/docs for device, fingerprint, MachineGuid, installation key | MISSING | **built** (ADR-138) |
 | Free-quota / abuse policy engine | — | MISSING | not invented (debt `CLIENT-free-quota-policy-engine`) |
@@ -55,7 +55,7 @@ that was actually run in this session, or says it was not run.
   native layer to secure. Flutter would require re-implementing the design system in Dart.
 * **UNKNOWN:** WebView differences (WKWebView on iOS 15 vs WebView2) for `<dialog>`, `interactive-widget`
   keyboard resizing and IndexedDB were not tested on devices.
-* **DECISION:** shared ES-module UI (`clients/app`) + Tauri 2 (`clients/src-tauri`).
+* **DECISION:** shared ES-module UI (`clients/app`) + Tauri 2 (`apps/shared/src-tauri`).
 * **TRADE-OFF:** a WebView UI is less native than SwiftUI/Compose; iOS/Android keyboard and gesture details
   need on-device tuning. Desktop/iOS device keys are OS-protected software keys, not Secure Enclave keys.
 
@@ -200,9 +200,9 @@ See the bottom of this document ("Command log").
 
 ## 18. Artifact locations
 
-No installable package was produced in this environment. Source: `clients/`. CI outputs (when run):
+No installable package was produced in this environment. Source: `apps/shared/`. CI outputs (when run):
 artifacts `aiol-Windows`, `aiol-macOS`, `aiol-android-debug` of the "Client suite CI" workflow.
-End-to-end screenshots: `clients/e2e/out/` (not committed).
+End-to-end screenshots: `apps/shared/e2e/out/` (not committed).
 
 ## 19. Unresolved defects and dependencies
 

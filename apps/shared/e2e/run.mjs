@@ -3,7 +3,7 @@
 // language/RTL → device verification → sign out → sign in again → server-side continuity; plus a second account
 // on the same installation (account switching) and a phone-sized viewport.
 //
-// Prerequisites (see clients/README.md §e2e): Cloud Core on API (default http://127.0.0.1:8010/api/v1) with
+// Prerequisites (see apps/shared/README.md §e2e): Cloud Core on API (default http://127.0.0.1:8010/api/v1) with
 // APP_ENV=development and CORS_ALLOWED_ORIGINS including the client origin. Accounts are created through the
 // development-only /auth/register-organization route.
 import { createRequire } from 'node:module';
@@ -58,6 +58,7 @@ async function signIn(page, who) {
   await page.getByRole('button', { name: 'Use a password instead' }).click();
   await page.locator('#si-email').fill(who.email);
   await page.locator('#si-password').fill(who.password);
+  await page.locator('#si-terms').check();
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.locator('#shell').waitFor({ timeout: 15000 });
 }
@@ -83,11 +84,44 @@ try {
         await page.getByRole('button', { name: /Get help/ }).count() === 1
         && await page.getByRole('button', { name: /Terms/ }).count() === 0);
 
+  // Terms: without the tick, nothing is sent and the user is told why.
+  await page.getByRole('button', { name: 'Use a password instead' }).click();
+  await page.locator('#si-email').fill(owner.email);
+  await page.locator('#si-password').fill(owner.password);
+  const before = requests.length;
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.waitForTimeout(200);
+  check('sign-in without the terms tick is refused locally, with no request',
+        requests.slice(before).every((u) => !u.includes('/auth/native/session'))
+        && (await page.locator('.error-text').textContent()).includes('Terms of Use'));
+  check('the terms row names both documents and what the tick covers',
+        (await page.locator('.signin__terms').textContent()).includes('installation verification'));
+  await page.getByRole('button', { name: 'Use an emailed code instead' }).click();
+
+  // Theme and language buttons exist before sign-in too.
+  check('theme and language buttons on the sign-in screen',
+        await page.locator('#toggle-theme').count() === 1 && await page.locator('#toggle-language').count() === 1);
+
   // 2. sign in
   await signIn(page, owner);
+  const accepted = await api('/clients/config');
+  check('the published terms version is what the app accepted', !!accepted.data.terms.version);
   check('sign-in reaches the shell', await page.locator('#shell').isVisible());
   const storage = await page.evaluate(() => JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }) + document.cookie);
   check('no token in localStorage, sessionStorage or cookies', !/access_token|refresh|eyJ|\.[A-Za-z0-9_-]{20,}/.test(storage), storage.slice(0, 120));
+
+  // Composer: a round send button inside the card, disabled until there is text.
+  check('send is disabled while the composer is empty', await page.locator('#composer-send').isDisabled());
+  check('an empty chat centres greeting and composer', await page.evaluate(() => document.getElementById('shell').dataset.empty) === 'true');
+
+  // Theme button: one click switches and saves to the account.
+  const themeBefore = await page.evaluate(() => document.documentElement.dataset.theme || 'system');
+  await page.locator('#toggle-theme').click();
+  await page.waitForTimeout(400);
+  const themeAfter = await page.evaluate(() => document.documentElement.dataset.theme);
+  check('the theme button switches light/dark and saves it to the account',
+        themeAfter && themeAfter !== themeBefore && (await api('/users/me/preferences', { token: owner.token })).data.theme === themeAfter,
+        `${themeBefore} -> ${themeAfter}`);
 
   // 3–6. new chat, send, render answer with its state
   await page.locator('#composer-input').fill('What is Taranjabin used for?');
@@ -95,6 +129,7 @@ try {
   const answer = page.locator('.msg--assistant').first();
   await answer.waitFor({ timeout: 30000 });
   const state = await answer.getAttribute('data-state');
+  check('the answer arrived over the streaming endpoint', requests.some((u) => u.endsWith('/messages/stream')));
   check('answer rendered with a server answer state', !!state, state);
   check('NEEDS_USER_SOURCE (no topic granted) is shown with its limitation, not an invented answer',
         state === 'NEEDS_USER_SOURCE' && (await answer.locator('.limitation').count()) === 1);
@@ -173,9 +208,7 @@ try {
   await page.keyboard.press('Escape');
 
   // Language: Persian, RTL, saved to the account
-  await page.locator('#account-button').click();
-  await page.locator('#menu-language').click();
-  await page.locator('dialog input[value="fa"]').check();
+  await page.locator('#toggle-language').click();
   await page.waitForFunction(() => document.documentElement.dir === 'rtl'
     && document.getElementById('new-chat')?.textContent.includes('\u06af\u0641\u062a\u06af\u0648'), null, { timeout: 10000 })
     .catch(() => {});

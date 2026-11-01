@@ -495,9 +495,11 @@ already use, and keep the long-lived half of the session in the operating system
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/v1/auth/native/session` | none | `{grant: "login_code", email, code}` or `{grant: "password", email, password}` → `{access_token, expires_in_minutes, refresh_token, refresh_expires_at}`. Same throttles, lockout and indistinguishable failures as `/auth/login-code/verify` and `/auth/login`. Never sets a cookie. |
+| POST | `/api/v1/auth/native/session` | none | `{grant: "login_code", email, code}` or `{grant: "password", email, password}`, plus `accept_terms: true`, `terms_version` (= `CLIENT_TERMS_VERSION`) and optional `client_platform` — otherwise 409 `terms_not_accepted` with `error.terms_version` (ADR-139) → `{access_token, expires_in_minutes, refresh_token, refresh_expires_at}`. Same throttles, lockout and indistinguishable failures as `/auth/login-code/verify` and `/auth/login`. Never sets a cookie. |
 | POST | `/api/v1/auth/native/session/refresh` | none (refresh token in body) | Rotates the refresh secret. A secret rotated away more than 30 s ago revokes the whole session (`reuse_detected`). 401 on every failure. |
 | POST | `/api/v1/auth/native/session/end` | none (refresh token in body) | Sign out. Idempotent, always 204. Does not touch conversations. |
+| POST | `/api/v1/chat/conversations/{id}/messages/stream` | bearer | Same as POST …/messages, as Server-Sent Events: `accepted`, `retrieved`, `generating`, then `message` (the stored validated turn) or `error` {status, reason, message}. 404/409/401 before the stream opens; a replayed `client_request_id` is one `message` event with `Idempotent-Replay: true`. |
+| GET | `/api/v1/clients/updates/{target}/{arch}/{current_version}` | none | Signed desktop update (ADR-140): 200 `{version, url, signature, notes, pub_date}` for a strictly newer, https, signed entry of `CLIENT_UPDATES_JSON`; otherwise 204. |
 | GET | `/api/v1/clients/config?platform=` | none | Operator-configured links (`help`, `learn_more`, `privacy`, `terms`, `docs`, `report_problem`; `null` when unset), `upgrade {url, state}` (`available` · `not_configured` · `not_offered_on_platform`), published `releases`, `languages`, Device Intelligence switch and retention. No tenant data. |
 
 The refresh token is the same `auth_sessions` secret the browser keeps in its HttpOnly cookie

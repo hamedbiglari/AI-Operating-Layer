@@ -128,6 +128,28 @@ export async function openSettings(ctx) {
   if (device.status === DeviceStatus.UNAVAILABLE && !di.enabled) toggle.checked = false;
   await loadMine();
 
+  // Signed desktop updates (ADR-140). Shown only where the shell has an updater; the check is explicit.
+  if (appInfo.platform === 'windows' || appInfo.platform === 'macos') {
+    const upd = h('p', { class: 'subtle', role: 'status', id: 'update-status' });
+    const install = h('button', { class: 'btn btn--primary', type: 'button', hidden: true, id: 'update-install' },
+                      t('settings.update_install'));
+    const check = h('button', { class: 'btn', type: 'button', id: 'update-check', onclick: async () => {
+      check.disabled = true;
+      try {
+        const r = await ctx.bridge.updateCheck(ctx.apiBase);
+        upd.textContent = r.state === 'available' ? t('settings.update_available', { version: r.version })
+          : r.state === 'none' ? t('settings.update_none') : t('settings.update_unavailable');
+        install.hidden = r.state !== 'available';
+      } catch { upd.textContent = t('settings.update_failed'); } finally { check.disabled = false; }
+    } }, t('settings.check_updates'));
+    install.addEventListener('click', async () => {
+      install.disabled = true;
+      try { await ctx.bridge.updateInstall(ctx.apiBase); } catch { upd.textContent = t('settings.update_failed'); install.disabled = false; }
+    });
+    body.append(h('section', { class: 'section' }, h('h3', { text: t('settings.updates') }),
+      h('div', { class: 'row' }, check, install), upd));
+  }
+
   body.append(h('section', { class: 'section' }, h('h3', { text: t('settings.about') }),
     h('p', { text: t('settings.version', { version: appInfo.version, platform: t(`platform.${appInfo.platform}`) }) }),
     h('p', { class: 'subtle', text: t('settings.server', { url: ctx.apiBase }) }),

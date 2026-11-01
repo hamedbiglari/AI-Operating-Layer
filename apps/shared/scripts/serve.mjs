@@ -1,4 +1,4 @@
-// Serves clients/app over http on loopback for development and the end-to-end tests. Static files only.
+// Serves apps/shared/app over http on loopback for development and the end-to-end tests. Static files only.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';

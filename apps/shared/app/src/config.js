@@ -1,4 +1,4 @@
-// Where Cloud Core is. One file, written by the release pipeline (clients/README.md §release), validated here.
+// Where Cloud Core is. One file, written by the release pipeline (apps/shared/README.md §release), validated here.
 //
 // Production builds must point at https. Plain http is accepted only for loopback, i.e. a developer's own
 // Cloud Core. In a browser on a loopback origin, ?api=<url> may override it for local testing; a packaged app

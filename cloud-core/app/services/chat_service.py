@@ -454,7 +454,11 @@ def find_replay(db: Session, *, convo: Conversation, client_request_id: str) -> 
 
 def ask(db: Session, *, convo: Conversation, user: User, question: str,
         attachments: list[UUID] | None = None, adapters: dict | None = None, pricing=None,  # noqa: ANN001
-        client_request_id: str | None = None) -> ConversationMessage:
+        client_request_id: str | None = None, on_event=None) -> ConversationMessage:  # noqa: ANN001
+    """`on_event(name, data)` is called at real pipeline points (question stored, evidence retrieved, model call
+    starting) so a streaming client can show progress. It never receives model text before grounding has been
+    validated: the answer itself is only ever the stored, validated message (ADR-137 §streaming)."""
+    emit = on_event or (lambda name, data: None)
     org = convo.organization_id
     row = _require_enabled(db, org)
 
@@ -468,6 +472,7 @@ def ask(db: Session, *, convo: Conversation, user: User, question: str,
                                 attachments=[str(a) for a in (attachments or [])],
                                 client_request_id=client_request_id)
         db.commit()
+        emit("accepted", {"user_message_id": str(user_msg.id), "position": user_msg.position})
     except IntegrityError:
         db.rollback()
         if client_request_id is None:
@@ -491,6 +496,7 @@ def ask(db: Session, *, convo: Conversation, user: User, question: str,
 
     # ---- retrieve
     units, scope = retrieve(db, organization_id=org, topic_ids=topic_ids, question=question)
+    emit("retrieved", {"units": len(units), "topics": len(topic_ids)})
     owner = scope.pop("unit_owner")
     if not units:
         mode = row.online_research
@@ -581,6 +587,7 @@ def ask(db: Session, *, convo: Conversation, user: User, question: str,
                            ("The selected model has no configured price, and the chat refuses to spend "
                             "against an unknown cost. Set prices in the AI Center."))
 
+    emit("generating", {"units_consulted": len(offered), "units_not_consulted": len(not_consulted)})
     # ---- one ai_job, one item: the project's single AI execution path
     job_key = f"chat-{user_msg.id}"
     job, _created = ai_job_service.create_job(

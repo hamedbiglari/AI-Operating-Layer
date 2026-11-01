@@ -2,13 +2,13 @@ name: Client suite CI
 
 # ADR-137. Builds and tests the official clients. Windows and macOS packages are produced on GitHub-hosted runners,
 # which is the only place in this project's toolchain where those platforms exist. Artifacts are UNSIGNED unless
-# the signing secrets named in clients/README.md are configured; nothing here publishes to a store.
+# the signing secrets named in apps/<platform>/README.md are configured; nothing here publishes to a store.
 
 on:
   push:
-    paths: [ 'clients/**', 'frontend/**', '.github/workflows/clients.yml' ]
+    paths: [ 'apps/**', 'frontend/**', '.github/workflows/clients.yml' ]
   pull_request:
-    paths: [ 'clients/**', 'frontend/**', '.github/workflows/clients.yml' ]
+    paths: [ 'apps/**', 'frontend/**', '.github/workflows/clients.yml' ]
   workflow_dispatch:
 
 permissions:
@@ -24,9 +24,11 @@ jobs:
         with:
           node-version: '22'
       - name: Design system copies match frontend/
-        run: node clients/scripts/sync-design-system.mjs --check
+        run: |
+          node apps/shared/scripts/sync-design-system.mjs --check
+          node apps/shared/scripts/export-platforms.mjs --check
       - name: Unit tests
-        run: cd clients && npm test
+        run: cd apps/shared && npm test
 
   e2e:
     name: Shared UI against a live Cloud Core (Chromium)
@@ -68,12 +70,12 @@ jobs:
       - name: End-to-end
         env:
           PLAYWRIGHT_CORE: ${{ runner.temp }}/pw/node_modules/playwright-core
-        run: cd clients && node e2e/run.mjs
+        run: cd apps/shared && node e2e/run.mjs
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-screenshots
-          path: clients/e2e/out/
+          path: apps/shared/e2e/out/
           retention-days: 7
 
   shell-tests:
@@ -84,7 +86,7 @@ jobs:
       - name: System libraries
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev
       - name: cargo test
-        run: cd clients/src-tauri && cargo test --locked
+        run: cd apps/shared/src-tauri && cargo test --locked
 
   desktop:
     name: Package — ${{ matrix.name }}
@@ -95,9 +97,11 @@ jobs:
         include:
           - name: Windows x64
             os: windows-2022
+            dir: apps/windows
             args: ''
           - name: macOS universal
             os: macos-latest
+            dir: apps/macos
             args: '--target universal-apple-darwin'
     runs-on: ${{ matrix.os }}
     steps:
@@ -110,18 +114,25 @@ jobs:
         run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
       - name: Production API endpoint
         shell: bash
+        working-directory: ${{ matrix.dir }}
         env:
           AIOL_API_BASE_URL: ${{ vars.AIOL_API_BASE_URL }}
+          AIOL_UPDATER_PUBKEY: ${{ vars.AIOL_UPDATER_PUBKEY }}
         run: |
           if [ -n "$AIOL_API_BASE_URL" ]; then
-            # Writes app-config.json and narrows the CSP connect-src to that one origin (debt CLIENT-csp-connect-src).
-            node clients/scripts/configure-release.mjs "$AIOL_API_BASE_URL"
+            # Writes app-config.json, narrows the CSP connect-src to that one origin, and — with an updater key —
+            # enables the signed updater (ADR-140).
+            node scripts/configure-release.mjs "$AIOL_API_BASE_URL"
           else
             echo "::warning::AIOL_API_BASE_URL is not set; this package points at a loopback development server"
           fi
       - name: Build
         shell: bash
+        working-directory: ${{ matrix.dir }}
         env:
+          AIOL_UPDATER_PUBKEY: ${{ vars.AIOL_UPDATER_PUBKEY }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # Optional. Without them the packages are unsigned (and say so in the job summary).
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -132,10 +143,9 @@ jobs:
         run: |
           # Unset secrets arrive as empty strings; Tauri treats a set-but-empty APPLE_CERTIFICATE as "import this
           # certificate" and fails. Drop the empty ones so an unsigned build is really unsigned.
-          for v in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+          for v in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID AIOL_UPDATER_PUBKEY TAURI_SIGNING_PRIVATE_KEY TAURI_SIGNING_PRIVATE_KEY_PASSWORD; do
             if [ -z "${!v}" ]; then unset "$v"; fi
           done
-          cd clients
           npm ci --no-audit --no-fund
           npx tauri build ${{ matrix.args }}
           if [ -z "$APPLE_SIGNING_IDENTITY" ]; then echo "UNSIGNED build" >> "$GITHUB_STEP_SUMMARY"; fi
@@ -143,8 +153,8 @@ jobs:
         with:
           name: aiol-${{ runner.os }}
           path: |
-            clients/src-tauri/target/release/bundle/
-            clients/src-tauri/target/universal-apple-darwin/release/bundle/
+            ${{ matrix.dir }}/src-tauri/target/release/bundle/
+            ${{ matrix.dir }}/src-tauri/target/universal-apple-darwin/release/bundle/
           retention-days: 14
 
   android:
@@ -167,7 +177,7 @@ jobs:
         env:
           AIOL_API_BASE_URL: ${{ vars.AIOL_API_BASE_URL }}
         run: |
-          if [ -n "$AIOL_API_BASE_URL" ]; then node clients/scripts/configure-release.mjs "$AIOL_API_BASE_URL";
+          if [ -n "$AIOL_API_BASE_URL" ]; then node "apps/android/scripts/configure-release.mjs" "$AIOL_API_BASE_URL";
           else echo "::warning::AIOL_API_BASE_URL is not set; this build points at a loopback development server"; fi
       - name: NDK and Rust targets
         run: |
@@ -178,14 +188,14 @@ jobs:
         run: |
           # ANDROID_HOME is a runner shell variable, not a workflow env value, so NDK_HOME is set here.
           export NDK_HOME="$ANDROID_HOME/ndk/27.0.12077973"
-          cd clients
+          cd apps/android
           npm ci --no-audit --no-fund
-          scripts/mobile-setup.sh android
+          bash scripts/mobile-setup.sh android
           npx tauri android build --debug --apk
       - uses: actions/upload-artifact@v7
         with:
           name: aiol-android-debug
-          path: clients/src-tauri/gen/android/app/build/outputs/
+          path: apps/android/src-tauri/gen/android/app/build/outputs/
           retention-days: 14
 
   ios:
@@ -202,17 +212,17 @@ jobs:
         env:
           AIOL_API_BASE_URL: ${{ vars.AIOL_API_BASE_URL }}
         run: |
-          if [ -n "$AIOL_API_BASE_URL" ]; then node clients/scripts/configure-release.mjs "$AIOL_API_BASE_URL";
+          if [ -n "$AIOL_API_BASE_URL" ]; then node "apps/ios/scripts/configure-release.mjs" "$AIOL_API_BASE_URL";
           else echo "::warning::AIOL_API_BASE_URL is not set; this build points at a loopback development server"; fi
       - name: Build
         run: |
           rustup target add aarch64-apple-ios-sim
-          cd clients
+          cd apps/ios
           npm ci --no-audit --no-fund
-          scripts/mobile-setup.sh ios
+          bash scripts/mobile-setup.sh ios
           npx tauri ios build --target aarch64-sim --debug
       - uses: actions/upload-artifact@v7
         with:
           name: aiol-ios-simulator
-          path: clients/src-tauri/gen/apple/build/arm64-sim/AIOL.app
+          path: apps/ios/src-tauri/gen/apple/build/arm64-sim/AIOL.app
           retention-days: 14

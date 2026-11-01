@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Http } from '../app/src/core/http.js';
 import { Conversations, mergeOrdered } from '../app/src/core/conversations.js';
-import { fakeFetch, noSleep } from './helpers.js';
+import { fakeFetch, noSleep, sse } from './helpers.js';
 
 function server() {
   const msgs = [];
@@ -12,6 +12,15 @@ function server() {
     if (req.url.includes('/messages?')) {
       const sorted = [...msgs].sort((a, b) => b.position - a.position);
       return { body: { items: sorted, total: msgs.length, limit: 50, offset: 0 } };
+    }
+    if (req.url.endsWith('/messages/stream') && req.method === 'POST') {
+      if (seen.has(req.body.client_request_id)) return { raw: sse([['message', seen.get(req.body.client_request_id)]]) };
+      const u = { id: `m${++pos}`, position: pos, role: 'user', text: req.body.question, client_request_id: req.body.client_request_id };
+      const a = { id: `m${++pos}`, position: pos, role: 'assistant', text: 'answer', answer_state: 'UNKNOWN', answers_message_id: u.id };
+      msgs.push(u, a);
+      seen.set(req.body.client_request_id, a);
+      return { raw: sse([['accepted', { user_message_id: u.id }], ['retrieved', { units: 3, topics: 1 }],
+                         ['generating', { units_consulted: 3 }], ['message', a]]) };
     }
     if (req.url.endsWith('/messages') && req.method === 'POST') {
       if (seen.has(req.body.client_request_id)) return { body: seen.get(req.body.client_request_id) };
@@ -34,6 +43,7 @@ test('a question is pending until the server answers, then both turns are confir
   store.on(() => states.push(store.thread('c1').messages.map((m) => m.delivery).join(',')));
   await store.ask('c1', 'hello');
   assert.equal(states[0], 'pending');
+  assert.ok(states.length >= 4, 'each server progress event re-renders the pending turn');
   const th = store.thread('c1').messages;
   assert.deepEqual(th.map((m) => [m.role, m.delivery]), [['user', 'confirmed'], ['assistant', 'confirmed']]);
   assert.deepEqual(th.map((m) => m.position), [1, 2]);
@@ -82,4 +92,21 @@ test('reset() drops every list, thread and draft (account switching)', async () 
 test('mergeOrdered sorts confirmed by server position and keeps local turns last', () => {
   const out = mergeOrdered([{ position: 3 }, { position: 1 }], [{ localId: 'x' }]);
   assert.deepEqual(out.map((m) => m.position ?? m.localId), [1, 3, 'x']);
+});
+
+test('progress comes from the server stream; an error event rejects like an HTTP error', async () => {
+  const seen = [];
+  const f = fakeFetch(() => ({ raw: sse([['accepted', {}], ['error', { status: 429, reason: null, message: 'Daily chat limit reached (5 answers in 24 hours).' }]]) }));
+  const store = new Conversations({ http: new Http({ baseUrl: 'https://a.test', token: () => 't', fetch: f, sleep: noSleep }) });
+  store.on(() => seen.push(store.thread('c1').messages[0]?.progress?.name));
+  await assert.rejects(store.ask('c1', 'q'), (e) => e.kind === 'quota_exhausted');
+  assert.ok(seen.includes('accepted'));
+  assert.equal(store.thread('c1').messages[0].delivery, 'failed');
+});
+
+test('a stream that ends without a message is unknown, not failed and not saved', async () => {
+  const f = fakeFetch(() => ({ raw: sse([['accepted', {}], ['retrieved', { units: 1 }]]) }));
+  const store = new Conversations({ http: new Http({ baseUrl: 'https://a.test', token: () => 't', fetch: f, sleep: noSleep }) });
+  await assert.rejects(store.ask('c1', 'q'), (e) => e.kind === 'network');
+  assert.equal(store.thread('c1').messages[0].delivery, 'unknown');
 });

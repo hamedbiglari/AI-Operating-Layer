@@ -8,6 +8,7 @@
     "sync": "node scripts/sync-design-system.mjs",
     "check:sync": "node scripts/sync-design-system.mjs --check",
     "test": "node --test test/*.test.js",
+    "export": "node scripts/export-platforms.mjs",
     "e2e": "node e2e/run.mjs",
     "serve": "node scripts/serve.mjs",
     "tauri": "tauri"

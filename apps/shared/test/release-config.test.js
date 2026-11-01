@@ -25,3 +25,13 @@ test('anything but a plain https URL is refused', () => {
     assert.throws(() => releaseConfig(bad, conf), Error, bad);
   }
 });
+
+test('with an updater key, the release carries the updater, downgrade protection and signed artifacts', () => {
+  const key = 'RWQ' + 'A'.repeat(53);
+  const { tauriConf } = releaseConfig('https://api.aiol.example/api/v1', conf, { updaterPubkey: key });
+  assert.deepEqual(tauriConf.plugins.updater, { pubkey: key, endpoints: [], requireSignedVersion: true });
+  assert.equal(tauriConf.bundle.createUpdaterArtifacts, true);
+  assert.equal(releaseConfig('https://api.aiol.example/api/v1', conf).tauriConf.plugins, undefined,
+               'no key, no updater configuration (the shell does not compile the updater in either)');
+  assert.throws(() => releaseConfig('https://api.aiol.example/api/v1', conf, { updaterPubkey: 'not a key' }));
+});

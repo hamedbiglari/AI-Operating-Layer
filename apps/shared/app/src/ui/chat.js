@@ -30,16 +30,21 @@ export function createChatView(ctx) {
 
   const input = h('textarea', { id: 'composer-input', rows: 1, placeholder: t('chat.placeholder'),
                                 'aria-label': t('chat.placeholder'), enterkeyhint: 'send', dir: 'auto' });
-  const send = h('button', { class: 'btn btn--primary', type: 'submit', id: 'composer-send' },
-                 icon('action-upload'), h('span', { class: 'label', text: t('chat.send') }));
-  const stop = h('button', { class: 'btn', type: 'button', id: 'composer-stop', hidden: true,
-                             onclick: () => inflight?.abort() },
-                 icon('action-close'), h('span', { text: t('chat.stop') }));
+  // Composer, conversational-assistant style: one rounded card, the text grows upward, a round send button sits
+  // inside it and turns into a square stop button while an answer is being written.
+  const send = h('button', { class: 'composer__send', type: 'submit', id: 'composer-send', 'aria-label': t('chat.send'),
+                             title: t('chat.send'), disabled: true }, icon('action-send'));
+  const stop = h('button', { class: 'composer__send composer__send--stop', type: 'button', id: 'composer-stop', hidden: true,
+                             'aria-label': t('chat.stop'), title: t('chat.stop'), onclick: () => inflight?.abort() },
+                 icon('action-stop'));
   const hint = h('p', { class: 'composer__hint subtle', id: 'composer-hint' });
-  const form = h('form', { class: 'composer' }, h('div', { class: 'composer__inner' }, input, send, stop), hint);
+  const form = h('form', { class: 'composer' },
+    h('div', { class: 'composer__card' }, input, h('div', { class: 'composer__bar' }, h('span', { class: 'composer__spacer' }), send, stop)),
+    hint);
+  const syncSend = () => { send.disabled = !input.value.trim() || input.disabled; };
 
   const autosize = () => { input.style.height = 'auto'; input.style.height = `${Math.min(input.scrollHeight, window.innerHeight * 0.4)}px`; };
-  input.addEventListener('input', () => { store.setDraft(conversationId, input.value); autosize(); });
+  input.addEventListener('input', () => { store.setDraft(conversationId, input.value); autosize(); syncSend(); });
   input.addEventListener('keydown', (ev) => {
     // Enter sends on desktop; Shift+Enter is a new line. On touch keyboards Enter is a new line (the Send button sends).
     if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && !matchMedia('(hover: none)').matches) {
@@ -54,6 +59,7 @@ export function createChatView(ctx) {
     store.setDraft(conversationId, '');   // the draft is now a sent question, whichever thread it lands in
     input.value = '';
     autosize();
+    syncSend();
     await ask(text);
   });
 
@@ -72,8 +78,9 @@ export function createChatView(ctx) {
     try {
       const id = await ensureConversation();
       stickToBottom = true;
-      if (retryOf) await store.retry(id, retryOf, { signal: ac.signal });
-      else await store.ask(id, text, { signal: ac.signal });
+      const answer = retryOf ? await store.retry(id, retryOf, { signal: ac.signal })
+        : await store.ask(id, text, { signal: ac.signal });
+      if (answer?.id) fresh_ids.add(answer.id);
       await refreshResearch();
       ctx.onAnswered?.();
     } catch (err) {
@@ -90,6 +97,7 @@ export function createChatView(ctx) {
   function setBusy(busy) {
     send.hidden = busy;
     stop.hidden = !busy;
+    syncSend();
     input.setAttribute('aria-busy', String(busy));
   }
 
@@ -140,7 +148,7 @@ export function createChatView(ctx) {
     if (m.role === 'user') {
       const delivery = m.delivery && m.delivery !== 'confirmed'
         ? h('div', { class: 'delivery', dataset: { state: m.delivery }, role: m.delivery === 'failed' ? 'alert' : null },
-            m.delivery === 'pending' ? [h('span', { class: 'spinner', 'aria-hidden': 'true' }), t('chat.thinking')]
+            m.delivery === 'pending' ? [h('span', { class: 'spinner', 'aria-hidden': 'true' }), progressText(m.progress)]
               : [t(`delivery.${m.delivery}`), m.error && m.delivery === 'failed' ? ` ${m.error.message}` : '',
                  h('button', { class: 'btn btn--ghost', type: 'button', onclick: () => ask(m.text, m) },
                    icon('action-reprocess'), t('chat.retry'))])
@@ -151,9 +159,11 @@ export function createChatView(ctx) {
     const copyBtn = h('button', { class: 'btn btn--ghost icon-btn', type: 'button', 'aria-label': t('chat.copy'),
                                   onclick: async () => { await copy(m.text); toast(t('chat.copied')); } },
                       icon('action-copy'));
+    const body = m.text ? h('div', { class: 'msg__body', dir: 'auto' }) : null;
+    if (body) reveal(body, m);
     return h('article', { class: 'msg msg--assistant', dataset: { id: m.id, state: m.answer_state } },
       h('div', { class: 'msg__meta' }, statePill(m.answer_state)),
-      m.text ? h('div', { class: 'msg__body', dir: 'auto', text: m.text }) : null,
+      body,
       m.limitation ? h('p', { class: 'limitation', dir: 'auto', text: m.limitation }) : null,
       citations(m), researchCard(m),
       h('div', { class: 'msg__actions' }, m.text ? copyBtn : null,
@@ -163,12 +173,43 @@ export function createChatView(ctx) {
         } }, icon('action-reprocess'), t('chat.regenerate')) : null));
   }
 
+  // What the server is doing right now, from its own stream events — never guessed.
+  function progressText(p) {
+    if (!p) return t('chat.thinking');
+    if (p.name === 'accepted') return t('progress.accepted');
+    if (p.name === 'retrieved') return t('progress.retrieved', { n: p.data.units });
+    if (p.name === 'generating') return t('progress.generating', { n: p.data.units_consulted });
+    return t('chat.thinking');
+  }
+
+  // A freshly arrived answer is revealed progressively. The text is already the stored, validated answer; this is
+  // presentation only, skipped for reduced motion and for answers loaded from history.
+  const revealed = new Set();
+  function reveal(node, m) {
+    const fresh = m.id && fresh_ids.has(m.id) && !revealed.has(m.id);
+    if (!fresh || matchMedia('(prefers-reduced-motion: reduce)').matches) { node.textContent = m.text; return; }
+    revealed.add(m.id);
+    const words = m.text.split(/(\s+)/);
+    let i = 0;
+    const step = () => {
+      if (!node.isConnected) return;
+      i = Math.min(words.length, i + 6);
+      node.textContent = words.slice(0, i).join('');
+      if (stickToBottom) thread.scrollTop = thread.scrollHeight;
+      if (i < words.length) requestAnimationFrame(step);
+    };
+    step();
+  }
+  const fresh_ids = new Set();
+
   function render() {
     clear(inner);
     if (!conversationId || !store.thread(conversationId).messages.length) {
       inner.append(h('div', { class: 'empty' }, h('h2', { text: t('chat.empty_title') }),
                      h('p', { class: 'muted', text: t('chat.empty_body') })));
+      ctx.onEmpty?.(true);
     } else {
+      ctx.onEmpty?.(false);
       const th = store.thread(conversationId);
       if (!th.loadedAll) {
         inner.append(h('button', { class: 'btn btn--ghost', type: 'button', onclick: async () => {
@@ -202,5 +243,5 @@ export function createChatView(ctx) {
   function setHint(text) { hint.textContent = text || ''; }
 
   return { thread, form, open, render, setHint, get conversationId() { return conversationId; },
-           focus: () => input.focus(), setEnabled: (on) => { input.disabled = !on; send.disabled = !on; } };
+           focus: () => input.focus(), setEnabled: (on) => { input.disabled = !on; syncSend(); } };
 }

@@ -3,7 +3,7 @@
 import { h } from './dom.js';
 import { icon } from './icons.js';
 
-export function signInView({ t, session, links, openLink, onSignedIn }) {
+export function signInView({ t, session, links, openLink, onSignedIn, terms, toggles }) {
   let mode = 'code';
   let sent = false;
   const status = h('p', { class: 'subtle', role: 'status' });
@@ -15,6 +15,18 @@ export function signInView({ t, session, links, openLink, onSignedIn }) {
   const codeRow = h('div', { hidden: true }, h('label', { for: 'si-code', text: t('signin.code') }), code);
   const pwRow = h('div', { hidden: true }, h('label', { for: 'si-password', text: t('signin.password') }), password);
   const primary = h('button', { class: 'btn btn--primary', type: 'submit' });
+  // ADR-139: one tick accepts the Terms of Use and the Privacy Policy — which include installation verification —
+  // and is recorded by Cloud Core as the user's consent. Nothing else is asked later.
+  const accept = h('input', { type: 'checkbox', id: 'si-terms', required: true });
+  const doc = (key, label) => (links[key]
+    ? h('button', { class: 'linkish', type: 'button', onclick: () => openLink(links[key]) }, t(label))
+    : h('span', { text: t(label) }));
+  const termsRow = h('div', { class: 'signin__terms' },
+    h('label', { class: 'switch', for: 'si-terms' }, accept,
+      h('span', {}, t('signin.terms_before'), ' ', doc('terms', 'settings.terms'), ' ', t('signin.terms_and'), ' ',
+        doc('privacy', 'settings.legal'), t('signin.terms_after'))),
+    h('p', { class: 'subtle', id: 'si-terms-note', text: t('signin.terms_note', { version: terms?.version ?? '' }) }));
+  accept.setAttribute('aria-describedby', 'si-terms-note');
   const toggle = h('button', { class: 'linkish', type: 'button' });
 
   const render = () => {
@@ -28,9 +40,10 @@ export function signInView({ t, session, links, openLink, onSignedIn }) {
 
   const form = h('form', { class: 'signin__card', novalidate: true, 'aria-labelledby': 'si-title' },
     h('div', { class: 'signin__brand' }, h('img', { src: './brand/aiol-logo.svg', alt: '', width: 28, height: 28 }),
-      h('h1', { id: 'si-title', text: t('signin.title'), style: 'font-size: inherit; margin: 0' })),
+      h('h1', { id: 'si-title', text: t('signin.title'), style: 'font-size: inherit; margin: 0; flex: 1' }),
+      toggles ?? null),
     h('div', {}, h('label', { for: 'si-email', text: t('signin.email') }), email),
-    codeRow, pwRow, primary, status, error, toggle,
+    codeRow, pwRow, termsRow, primary, status, error, toggle,
     h('nav', { class: 'signin__links' },
       ...[['help', 'menu.help'], ['privacy', 'settings.legal'], ['terms', 'settings.terms']]
         .filter(([k]) => links[k])
@@ -51,9 +64,11 @@ export function signInView({ t, session, links, openLink, onSignedIn }) {
         render();
         code.focus();
       } else {
+        if (!accept.checked) { error.textContent = t('signin.terms_required'); accept.focus(); return; }
+        const consent = { acceptTerms: true, termsVersion: terms?.version };
         await session.signIn(mode === 'code'
-          ? { email: email.value.trim(), code: code.value.trim() }
-          : { email: email.value.trim(), password: password.value });
+          ? { email: email.value.trim(), code: code.value.trim(), ...consent }
+          : { email: email.value.trim(), password: password.value, ...consent });
         password.value = '';
         onSignedIn();
       }

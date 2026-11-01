@@ -96,9 +96,104 @@ export class Http {
     return { status: res.status, data, headers: res.headers };
   }
 
+  /**
+   * POST that answers with Server-Sent Events (the chat stream). Calls onEvent(name, data) per event and
+   * resolves with the final `message` event's data; an `error` event rejects with the same ApiError a normal
+   * response would. One silent refresh on 401, like request(). Never retried automatically: the chat sends a
+   * client_request_id so its own retry is safe.
+   */
+  async stream(path, body, { signal, onEvent = () => {}, timeoutMs = 180000 } = {}) {
+    for (let refreshed = false; ; refreshed = true) {
+      const tok = this.token();
+      if (!tok) throw new ApiError(ErrorKind.UNAUTHORIZED, 'Sign in to continue.', { status: 401 });
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort('timeout'), timeoutMs);
+      const onAbort = () => ctl.abort('user');
+      signal?.addEventListener('abort', onAbort, { once: true });
+      try {
+        let res;
+        try {
+          res = await this.fetch(this.baseUrl + path, {
+            method: 'POST', signal: ctl.signal, credentials: 'omit', cache: 'no-store', redirect: 'error',
+            headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+            body: JSON.stringify(body),
+          });
+        } catch {
+          if (signal?.aborted) throw networkError(ErrorKind.ABORTED);
+          if (ctl.signal.aborted) throw networkError(ErrorKind.TIMEOUT);
+          throw networkError(ErrorKind.NETWORK);
+        }
+        if (res.status === 401 && !refreshed) {
+          if (await this.refresh()) continue;
+          const lost = new ApiError(ErrorKind.SESSION_EXPIRED, 'Your session has ended. Sign in again.', { status: 401 });
+          this.onSessionLost(lost);
+          throw lost;
+        }
+        if (!res.ok) {
+          let data = null;
+          try { data = JSON.parse(await res.text()); } catch { data = null; }
+          throw fromResponse(res.status, data, { 'retry-after': res.headers.get('retry-after') });
+        }
+        return await readEvents(res, onEvent, () => signal?.aborted || ctl.signal.aborted);
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        if (signal?.aborted) throw networkError(ErrorKind.ABORTED);
+        if (ctl.signal.aborted) throw networkError(ErrorKind.TIMEOUT);
+        throw networkError(ErrorKind.NETWORK);
+      } finally {
+        clearTimeout(timer);
+        signal?.removeEventListener('abort', onAbort);
+      }
+    }
+  }
+
   get(path, o) { return this.request('GET', path, o).then((r) => r.data); }
   post(path, body, o) { return this.request('POST', path, { ...o, body }).then((r) => r.data); }
   put(path, body, o) { return this.request('PUT', path, { ...o, body }).then((r) => r.data); }
   patch(path, body, o) { return this.request('PATCH', path, { ...o, body }).then((r) => r.data); }
   del(path, o) { return this.request('DELETE', path, o).then((r) => r.data); }
+}
+
+/** Parse an SSE body. Resolves with the `message` event's data; rejects on an `error` event or a stream that
+ *  ends without a message (the connection dropped: the answer's fate is unknown, not failed). */
+export async function readEvents(res, onEvent, aborted = () => false) {
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let result;
+  let size = 0;
+  const handle = (block) => {
+    let name = 'message';
+    const data = [];
+    for (const line of block.split('\n')) {
+      if (line.startsWith(':')) continue;
+      if (line.startsWith('event:')) name = line.slice(6).trim();
+      else if (line.startsWith('data:')) data.push(line.slice(5).replace(/^ /, ''));
+    }
+    if (!data.length) return;
+    const payload = JSON.parse(data.join('\n'));
+    if (name === 'error') {
+      throw fromResponse(payload.status ?? 500, { error: { message: payload.message, reason: payload.reason } });
+    }
+    if (name === 'message') result = payload;
+    else onEvent(name, payload);
+  };
+  const reader = res.body.getReader();
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_BYTES) throw new ApiError(ErrorKind.SERVER, 'The response was too large.', { status: res.status });
+    buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+    let at;
+    while ((at = buffer.indexOf('\n\n')) !== -1) {
+      const block = buffer.slice(0, at);
+      buffer = buffer.slice(at + 2);
+      handle(block);
+    }
+  }
+  if (buffer.trim()) handle(buffer);
+  if (result === undefined) {
+    throw networkError(aborted() ? ErrorKind.ABORTED : ErrorKind.NETWORK);
+  }
+  return result;
 }

@@ -42,7 +42,7 @@ export function createShell(ctx) {
       h('button', { class: 'btn btn--ghost icon-btn topbar__menu', type: 'button', id: 'open-drawer',
                     'aria-label': t('nav.open_menu'), 'aria-controls': 'sidebar', onclick: () => setDrawer(true) },
         icon('sidebar-toggle')),
-      title),
+      title, ctx.toggles ? ctx.toggles() : null),
     banner, chat.thread, chat.form);
   const scrim = h('div', { class: 'scrim', hidden: true, onclick: () => setDrawer(false) });
   const root = h('div', { class: 'shell', id: 'shell' }, sidebar, main, scrim);

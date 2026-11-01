@@ -101,6 +101,10 @@ export class WebBridge {
 
   /** A browser has no OS-installation identifier and none is derived (no fingerprinting). */
   async platformSignals() { return {}; }
+
+  /** A browser is updated by reloading; there is no app updater here. */
+  async updateCheck() { return { state: 'unavailable' }; }
+  async updateInstall() { throw new Error('unavailable'); }
 }
 
 export class TauriBridge {
@@ -133,6 +137,10 @@ export class TauriBridge {
   }
   deviceSign(text) { return this.invoke('device_key_sign', { message: text }); }
   deviceKeyDelete() { return this.invoke('device_key_delete'); }
+  /** Signed desktop updates (ADR-140): {state: unavailable|none|available, version?, notes?}. */
+  updateCheck(apiBase) { return this.invoke('update_check', { apiBase }); }
+  /** Downloads, verifies the signature, installs and restarts. Rejects if verification fails. */
+  updateInstall(apiBase) { return this.invoke('update_install', { apiBase }); }
   /** Windows: {machine_guid}; other platforms: {}. Pseudonymised by Cloud Core on arrival. */
   async platformSignals() {
     try { return (await this.invoke('platform_signals')) ?? {}; } catch { return {}; }

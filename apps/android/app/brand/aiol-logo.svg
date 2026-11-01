@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="256" height="256" role="img" aria-labelledby="t d">
+  <title id="t">AI Operating Layer</title><desc id="d">Scattered sources connected into one unified piece of knowledge.</desc>
+  <defs><radialGradient id="h" cx=".36" cy=".32" r=".8"><stop offset="0" stop-color="#22d3ee"/><stop offset=".6" stop-color="#8b5cf6"/><stop offset="1" stop-color="#f472b6"/></radialGradient>
+  <style>.m{transform-origin:16px 16px;animation:br 5.2s ease-in-out infinite}.k{stroke-width:1.15;stroke-linecap:round;opacity:.9}
+  .n{fill:none;stroke-width:.97;transform-box:fill-box;transform-origin:center;animation:nd 5.2s ease-in-out infinite}
+  .n2{animation-delay:-1s}.n3{animation-delay:-2s}.n4{animation-delay:-3s}.n5{animation-delay:-4s}
+  .h{transform-box:fill-box;transform-origin:center;animation:hb 5.2s ease-in-out infinite}
+  @keyframes br{0%,100%{transform:scale(.95)}50%{transform:scale(1.05)}}@keyframes hb{0%,100%{transform:scale(.9)}50%{transform:scale(1.12)}}
+  @keyframes nd{0%,100%{transform:scale(.86);opacity:.8}50%{transform:scale(1.14);opacity:1}}
+  @media (prefers-reduced-motion:reduce){.m,.h,.n{animation:none}}</style></defs>
+  <g class="m"><line class="k" x1="16.00" y1="12.40" x2="16.00" y2="7.00" stroke="#8b5cf6"/><line class="k" x1="19.49" y1="15.13" x2="22.36" y2="14.42" stroke="#22d3ee"/><line class="k" x1="17.91" y1="19.05" x2="21.19" y2="24.31" stroke="#f472b6"/><line class="k" x1="13.78" y1="18.84" x2="11.60" y2="21.63" stroke="#22d3ee"/><line class="k" x1="12.54" y1="15.01" x2="7.83" y2="13.66" stroke="#8b5cf6"/><circle class="n n1" cx="16.00" cy="4.60" r="2.05" stroke="#8b5cf6"/><circle class="n n2" cx="24.34" cy="13.92" r="1.7" stroke="#22d3ee"/><circle class="n n3" cx="22.52" cy="26.43" r="2.15" stroke="#f472b6"/><circle class="n n4" cx="10.27" cy="23.33" r="1.8" stroke="#22d3ee"/><circle class="n n5" cx="5.62" cy="13.02" r="1.95" stroke="#8b5cf6"/><circle class="h" cx="16" cy="16" r="3.1" fill="url(#h)"/></g>
+</svg>

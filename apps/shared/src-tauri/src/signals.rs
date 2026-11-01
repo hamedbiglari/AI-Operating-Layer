@@ -35,6 +35,7 @@ fn machine_guid() -> Option<String> {
 }
 
 /// Accept only a well-formed GUID; anything else is treated as unavailable rather than sent.
+#[cfg_attr(not(any(target_os = "windows", test)), allow(dead_code))]
 pub fn normalise(raw: &str) -> Option<String> {
     let v = raw.trim().trim_matches(|c| c == '{' || c == '}').to_ascii_lowercase();
     let parts: Vec<&str> = v.split('-').collect();

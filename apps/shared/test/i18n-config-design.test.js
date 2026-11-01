@@ -6,7 +6,7 @@ import { createI18n, MESSAGES } from '../app/src/core/i18n.js';
 import { validateApiBase } from '../app/src/config.js';
 import { isSafeExternalUrl } from '../app/src/core/platform.js';
 
-const repo = new URL('../../', import.meta.url);
+const repo = new URL('../../../', import.meta.url);
 
 test('every key exists in both catalogues and no Persian value is empty or an English copy', () => {
   const en = Object.keys(MESSAGES.en).sort();

@@ -1,0 +1,249 @@
+/*
+ * AI Operating Layer — canonical design tokens.
+ *
+ * ONE source of truth for colour, type, space, radius and elevation across
+ * the Cloud Web App and the WordPress plugin. Components consume tokens;
+ * components never hard-code a hex value. (Checkpoint §34, §55.)
+ *
+ * WHY THESE VALUES
+ *
+ * The status hues are inherited from the plugin's existing admin.css rather
+ * than re-picked, because the plugin and the Web App must read as one
+ * product (§2, §54) and those values were already chosen for AA contrast on
+ * white. Two semantic categories §34 names but the plugin never had —
+ * PROCESSING and ARCHIVED — are added here. Processing is deliberately NOT
+ * a shade of the info blue: "a request is in flight" and "here is a piece of
+ * information" are different facts, and a user scanning a list of 248
+ * sources needs to separate them at a glance.
+ *
+ * Every status token is paired in markup with an icon and a word. Colour is
+ * never the only carrier of state (§34, §57).
+ *
+ * TYPOGRAPHY: three families, each with a job (§35).
+ *   --font-ui      Latin interface text
+ *   --font-fa      Persian / Arabic-script content — a real face, first in
+ *                  the stack for [lang="fa"], not a fallback bolted on
+ *   --font-mono    identifiers ONLY — DOI, PMID, SKU, UUID, SHA-256, tokens.
+ *                  Monospace here is informational: it makes character-level
+ *                  differences in an identifier visible, and it gives bidi
+ *                  a neutral run to isolate. It is not a styling flourish
+ *                  for small labels.
+ *
+ * DARK MODE is supported because this is an operations surface people keep
+ * open for long sessions. The status hues lighten in dark mode rather than
+ * inverting, so the same colour still means the same thing.
+ */
+
+:root {
+
+  /* Brand identity (logo + auth brand panel). The panel stays dark in both themes. */
+  --logo-a: #8b5cf6;
+  --logo-b: #22d3ee;
+  --logo-c: #f472b6;
+  --logo-core: #ffffff;
+  --on-brand: #ffffff;
+  --auth-ink-1: #070718;
+  --auth-ink-2: #140f3a;
+  --auth-ink-text: #eef0ff;
+  --auth-ink-muted: #a9acd6;
+  color-scheme: light dark;
+
+  /* ---------- Space: 4px base, no arbitrary values ---------- */
+  --space-0: 0;
+  --space-1: 0.25rem;   /*  4px */
+  --space-2: 0.5rem;    /*  8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.5rem;    /* 24px */
+  --space-6: 2rem;      /* 32px */
+  --space-7: 3rem;      /* 48px */
+  --space-8: 4rem;      /* 64px */
+
+  /* ---------- Radius: moderate, and tiered by what it wraps ---------- */
+  --radius-sm: 4px;     /* pills, inputs, small controls */
+  --radius-md: 8px;     /* cards, panels, dialogs */
+  --radius-full: 999px; /* status pills, avatars */
+
+  /* ---------- Type ---------- */
+  --font-ui: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+             "Segoe UI", Roboto, sans-serif;
+  --font-fa: "Vazirmatn", "IRANSans", "Segoe UI", Tahoma, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo,
+               Consolas, monospace;
+
+  /* A small, deliberate scale. Nothing between 20 and 28: an interface
+     with five heading sizes has no hierarchy, it has a gradient. */
+  --text-xs: 0.75rem;   /* 12px — floor. Nothing smaller carries meaning. */
+  --text-sm: 0.8125rem; /* 13px — metadata, table cells */
+  --text-base: 0.875rem;/* 14px — body / UI default */
+  --text-md: 1rem;      /* 16px — long-form reading, dialog body */
+  --text-lg: 1.25rem;   /* 20px — card and section titles */
+  --text-xl: 1.75rem;   /* 28px — page title */
+  --text-2xl: 2.25rem;  /* 36px — stat card figure */
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;  /* Persian needs more; see [lang="fa"] below */
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  /* Reserved for irreversible actions and their consequences (§22, §77).
+     Everything else in the system tops out at --weight-semibold, so bold
+     text is never decorative here — it is the one visual signal reserved
+     for "this cannot be undone", and it always appears together with the
+     danger colour and an explicit word, never alone. */
+  --weight-bold: 700;
+
+  --measure: 68ch; /* readable line length for prose blocks */
+
+  /* ---------- Neutral surfaces (light) ---------- */
+  --canvas:          #f6f7f9;
+  --surface:         #ffffff;
+  --surface-sunken:  #f1f3f5;
+  --surface-raised:  #ffffff;
+  --border:          #d8dce1;
+  --border-strong:   #b6bcc4;
+  --text:            #15191e;
+  --text-muted:      #5a626c;
+  --text-subtle:     #828a94;
+
+  /* ---------- Semantic status (light) ----------
+     Each has a foreground (text/icon) and a tint (background of the pill
+     or row highlight). Never use the foreground as a background. */
+  --primary:            #1f4faa;
+  --primary-contrast:   #ffffff;
+  --primary-tint:       #e8eefb;
+
+  --success:            #00713c;
+  --success-tint:       #e2f3ea;
+  --warning:            #8a6100;
+  --warning-tint:       #fbf0d9;
+  --danger:             #b32d2e;
+  --danger-tint:        #fbe7e7;
+  --info:               #2271b1;
+  --info-tint:          #e6f0f8;
+  --processing:         #5b3fb5;   /* distinct from info, on purpose */
+  --processing-tint:    #ece7fa;
+  --archived:           #5a626c;
+  --archived-tint:      #eceef1;
+  --unknown:            #5a626c;   /* UNKNOWN is muted, never red (§69) */
+  --unknown-tint:       #eceef1;
+
+  --focus: #1f4faa;
+
+  /* ---------- Elevation: two levels only ---------- */
+  --shadow-1: 0 1px 2px rgba(21, 25, 30, 0.06);
+  --shadow-2: 0 8px 24px rgba(21, 25, 30, 0.12);
+
+  /* ---------- Icon geometry (§57) ---------- */
+  --icon-size: 16px;
+  --icon-size-lg: 20px;
+  --icon-stroke: 1.75;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas:         #101418;
+    --surface:        #181d23;
+    --surface-sunken: #12161b;
+    --surface-raised: #1e242b;
+    --border:         #2c333b;
+    --border-strong:  #414a54;
+    --text:           #e7eaee;
+    --text-muted:     #a2abb5;
+    --text-subtle:    #7b848e;
+
+    --primary:          #7ba3ef;
+    --primary-contrast: #101418;
+    --primary-tint:     #1b2740;
+
+    --success:      #4cc38a;  --success-tint:    #10281d;
+    --warning:      #d9a23a;  --warning-tint:    #2b2210;
+    --danger:       #f07171;  --danger-tint:     #2e1618;
+    --info:         #6fb3e0;  --info-tint:       #122430;
+    --processing:   #a894ee;  --processing-tint: #1f1a33;
+    --archived:     #a2abb5;  --archived-tint:   #1d2228;
+    --unknown:      #a2abb5;  --unknown-tint:    #1d2228;
+
+    --focus: #7ba3ef;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.55);
+  }
+}
+
+:root[data-theme="dark"] {
+  --canvas:         #101418;
+  --surface:        #181d23;
+  --surface-sunken: #12161b;
+  --surface-raised: #1e242b;
+  --border:         #2c333b;
+  --border-strong:  #414a54;
+  --text:           #e7eaee;
+  --text-muted:     #a2abb5;
+  --text-subtle:    #7b848e;
+
+  --primary:          #7ba3ef;
+  --primary-contrast: #101418;
+  --primary-tint:     #1b2740;
+
+  --success:      #4cc38a;  --success-tint:    #10281d;
+  --warning:      #d9a23a;  --warning-tint:    #2b2210;
+  --danger:       #f07171;  --danger-tint:     #2e1618;
+  --info:         #6fb3e0;  --info-tint:       #122430;
+  --processing:   #a894ee;  --processing-tint: #1f1a33;
+  --archived:     #a2abb5;  --archived-tint:   #1d2228;
+  --unknown:      #a2abb5;  --unknown-tint:    #1d2228;
+
+  --focus: #7ba3ef;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+/*
+ * Persian is not a translation layer over a Latin design (§35, §37).
+ * Arabic-script type has a taller effective x-height and needs more leading
+ * and slightly larger size at the same optical weight than Latin does.
+ * `lang`, not `dir`, selects the face — a Persian title inside an LTR page
+ * still needs the Persian face.
+ */
+[lang="fa"], [lang^="fa-"], [lang="ar"], [lang^="ar-"] {
+  font-family: var(--font-fa);
+  line-height: var(--leading-relaxed);
+  font-size: 1.05em;
+}
+
+/* Identifiers: neutral direction, never reordered by surrounding RTL text.
+   `bdi` is the element; this class is for cases where an element already
+   exists and only needs isolating. (§36) */
+.identifier,
+bdi.identifier {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  unicode-bidi: isolate;
+  direction: ltr;
+  word-break: break-all;
+}
+
+/* Numbers in a Persian UI stay legible either way: this opts a run into
+   Latin digits where a scientific or commercial value must be unambiguous
+   (a DOI, an SKU, a price). Prose numbers keep the locale's own digits. */
+.numeric-latin {
+  font-variant-numeric: tabular-nums;
+  -moz-font-feature-settings: "ss01";
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root { --border: CanvasText; --border-strong: CanvasText; }
+}

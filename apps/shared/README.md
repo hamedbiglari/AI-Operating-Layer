@@ -5,7 +5,7 @@ iOS** (ADR-137). Linux is not a release target. All four talk to the same Cloud 
 system, one conversation history, one Device Intelligence registry (ADR-138).
 
 ```
-clients/
+apps/shared/
   app/                  shared UI — plain ES modules, no bundler (the repository's convention)
     src/core/           http, errors, session, conversations, device, i18n, platform bridge
     src/ui/             sign-in, shell + account menu, chat, settings/usage/language/apps/upgrade
@@ -31,7 +31,7 @@ clients/
 ## Develop
 
 ```bash
-cd clients
+cd apps/shared
 npm ci
 npm test                         # unit tests
 npm run check:sync               # vendored design system == frontend/
@@ -54,13 +54,13 @@ cd cloud-core && APP_ENV=development CORS_ALLOWED_ORIGINS=http://127.0.0.1:5174 
 ```
 
 ```bash
-cd clients && node e2e/run.mjs   # PLAYWRIGHT_CORE=<path to playwright-core> as in visual-harness/e2e
+cd apps/shared && node e2e/run.mjs   # PLAYWRIGHT_CORE=<path to playwright-core> as in visual-harness/e2e
 ```
 
 ### Native shell tests (any host with Rust; Linux also needs libwebkit2gtk-4.1-dev)
 
 ```bash
-cd clients/src-tauri && cargo test --locked
+cd apps/shared/src-tauri && cargo test --locked
 ```
 
 ## Build and release

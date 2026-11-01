@@ -25,7 +25,8 @@ test('sign-in keeps the access token in memory and the refresh secret only in th
   assert.equal(session.state, 'signed_in');
   assert.equal(session.token(), 'a1');
   assert.equal(await bridge.vaultGet('aiol.refresh'), 'sid.secret1');
-  assert.deepEqual(f.calls[0].body, { grant: 'login_code', email: 'a@b.dev', code: '123456' });
+  assert.deepEqual(f.calls[0].body, { grant: 'login_code', email: 'a@b.dev', code: '123456', accept_terms: false,
+                                      terms_version: null, client_platform: 'web' });
   assert.ok(!f.calls[0].url.includes('secret'), 'no secret in a URL');
 });
 
@@ -154,4 +155,11 @@ test('device: platform signals ride along with register and verify, and only whe
   const n = f.calls.length;
   await d.ensure();
   assert.equal(f.calls.length, n, 'off: no signal is read or sent');
+});
+
+test('the sign-in checkbox is sent as consent with the published terms version', async () => {
+  const { session, f } = setup((req) => (req.url.endsWith('/auth/native/session') ? { body: TOKENS(1) } : { body: ME }));
+  await session.signIn({ email: 'a@b.dev', password: 'pw', acceptTerms: true, termsVersion: '2026-11-01' });
+  assert.deepEqual(f.calls[0].body, { grant: 'password', email: 'a@b.dev', password: 'pw', accept_terms: true,
+                                      terms_version: '2026-11-01', client_platform: 'web' });
 });

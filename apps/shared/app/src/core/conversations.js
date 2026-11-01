@@ -125,9 +125,16 @@ export class Conversations {
     this.drafts.delete(id);
     this.emit();
     try {
-      const answer = await this.http.post(`/chat/conversations/${id}/messages`,
-                                          { question: local.text, client_request_id: local.clientRequestId },
-                                          { signal, timeoutMs: 180000, retries: 0 });
+      // Streamed: real server progress (stored → evidence found → writing) arrives as events; the answer itself
+      // is the stored, grounding-validated message, delivered whole (ADR-137 §streaming).
+      local.progress = null;
+      local.accepted = false;
+      const answer = await this.http.stream(`/chat/conversations/${id}/messages/stream`,
+                                            { question: local.text, client_request_id: local.clientRequestId },
+                                            { signal, onEvent: (name, data) => {
+                                              if (name === 'accepted') local.accepted = true;
+                                              local.progress = { name, data }; this.emit(); } });
+      local.progress = null;
       t.messages = t.messages.filter((m) => m !== local);
       // The answer carries answers_message_id; the user turn itself comes back with the next thread load.
       t.messages = mergeOrdered(t.messages.filter((m) => m.delivery === 'confirmed').concat(
@@ -138,7 +145,10 @@ export class Conversations {
       this.#touch(id);
       return answer;
     } catch (err) {
-      if (err.kind === ErrorKind.ABORTED || err.kind === ErrorKind.TIMEOUT || err.kind === ErrorKind.IN_PROGRESS) {
+      local.progress = null;
+      // Once the server said it stored the question, a dropped connection does not mean "not sent".
+      const stored = local.accepted && (err.kind === ErrorKind.NETWORK);
+      if (stored || err.kind === ErrorKind.ABORTED || err.kind === ErrorKind.TIMEOUT || err.kind === ErrorKind.IN_PROGRESS) {
         local.delivery = 'unknown';
       } else {
         local.delivery = 'failed';

@@ -10,9 +10,11 @@
 //!   device_key_delete
 //!   open_external                  https / mailto only, validated here as well as in the UI
 //!   platform_signals               Windows MachineGuid (read-only); GDID reported unsupported (§16.1)
+//!   update_check / update_install  signed desktop updates; absent key = "unavailable" (ADR-140)
 mod device_key;
 mod links;
 mod signals;
+mod updates;
 mod vault;
 
 use serde::Serialize;
@@ -190,6 +192,9 @@ fn open_external(app: tauri::AppHandle, url: String) -> Result<(), String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init());
+    // ADR-140: the updater exists only in builds that carry a verification key (see updates.rs).
+    #[cfg(desktop)]
+    let builder = if updates::PUBKEY.is_some() { builder.plugin(tauri_plugin_updater::Builder::new().build()) } else { builder };
     #[cfg(target_os = "android")]
     let builder = builder.plugin(commands::plugin());
     builder
@@ -197,6 +202,8 @@ pub fn run() {
             app_info,
             open_external,
             signals::platform_signals,
+            updates::imp::update_check,
+            updates::imp::update_install,
             commands::vault_get,
             commands::vault_set,
             commands::vault_delete,

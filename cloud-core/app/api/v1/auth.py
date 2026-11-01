@@ -347,6 +347,45 @@ class NativeSessionOpen(BaseModel):
     email: EmailStr
     code: str | None = Field(default=None, min_length=6, max_length=6)
     password: str | None = Field(default=None, min_length=1, max_length=200)
+    # ADR-139: the sign-in checkbox. Required for the current CLIENT_TERMS_VERSION; one tick covers everything
+    # listed next to it (terms, privacy, installation verification), so nothing else is asked afterwards.
+    accept_terms: bool = False
+    terms_version: str | None = Field(default=None, max_length=40)
+    client_platform: Literal["windows", "macos", "android", "ios", "web"] | None = None
+
+
+NATIVE_CONSENTS = ["terms", "privacy", "device_intelligence"]
+
+
+def _require_terms(payload: NativeSessionOpen) -> None:
+    """Checked before any credential is verified, so a refused request never consumes a login code or a
+    password attempt. The version must be the one currently published, so an old client cannot accept terms
+    the user was never shown."""
+    if not payload.accept_terms or payload.terms_version != settings.CLIENT_TERMS_VERSION:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
+            "code": "terms_not_accepted",
+            "message": "Accept the Terms of Use and the Privacy Policy to sign in.",
+            "terms_version": settings.CLIENT_TERMS_VERSION})
+
+
+def _record_terms(db: Session, user: User, payload: NativeSessionOpen) -> None:
+    from sqlalchemy import select as _select
+
+    from app.models.legal_acceptance import LegalAcceptance
+    from app.services.audit import record_audit_log
+
+    exists = db.execute(_select(LegalAcceptance).where(
+        LegalAcceptance.user_id == user.id, LegalAcceptance.terms_version == payload.terms_version)
+    ).scalar_one_or_none()
+    if exists is None:
+        db.add(LegalAcceptance(organization_id=user.organization_id, user_id=user.id,
+                               terms_version=payload.terms_version, consents=list(NATIVE_CONSENTS),
+                               client_platform=payload.client_platform))
+        record_audit_log(db, organization_id=user.organization_id, user_id=user.id, action="legal.terms_accepted",
+                         resource_type="user", resource_id=user.id,
+                         new_value={"terms_version": payload.terms_version, "consents": NATIVE_CONSENTS,
+                                    "client_platform": payload.client_platform})
+        db.flush()
 
 
 class NativeRefresh(BaseModel):
@@ -377,6 +416,7 @@ def open_native_session(payload: NativeSessionOpen, request: Request,
     throttles and the same deliberately indistinguishable failures."""
     import hashlib
 
+    _require_terms(payload)
     if payload.grant == "login_code":
         from app.services import login_code_service
 
@@ -400,6 +440,7 @@ def open_native_session(payload: NativeSessionOpen, request: Request,
         user = auth_service.authenticate(db, email=str(payload.email), password=payload.password)
         if user is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+    _record_terms(db, user, payload)          # committed by session start, in the same transaction
     started = auth_session_service.start(db, user=user, user_agent=request.headers.get("user-agent"),
                                          ip=client_ip(request))
     return _native_response(started)

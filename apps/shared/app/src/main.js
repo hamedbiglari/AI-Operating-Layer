@@ -8,6 +8,7 @@ import { DeviceIntelligence } from './core/device.js';
 import { createI18n } from './core/i18n.js';
 import { detectBridge } from './core/platform.js';
 import { h, clear } from './ui/dom.js';
+import { icon } from './ui/icons.js';
 import { signInView } from './ui/signin.js';
 import { createShell } from './ui/shell.js';
 import { createChatView } from './ui/chat.js';
@@ -24,6 +25,31 @@ function applyAppearance(i18n, theme) {
   root.lang = i18n.lang;
   root.dir = i18n.dir;
   if (theme === 'light' || theme === 'dark') root.dataset.theme = theme; else delete root.dataset.theme;
+}
+
+/** Current effective theme: an explicit choice, or what the operating system prefers. */
+function effectiveTheme(theme) {
+  if (theme === 'light' || theme === 'dark') return theme;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+/**
+ * The two always-visible buttons: light/dark theme and Persian/English. `save(patch)` persists the choice —
+ * to the account when signed in, to this installation otherwise.
+ */
+function togglesFactory({ t, i18n, getTheme, save }) {
+  return () => {
+    const dark = effectiveTheme(getTheme()) === 'dark';
+    const theme = h('button', { class: 'btn btn--ghost icon-btn', type: 'button', id: 'toggle-theme',
+      'aria-pressed': String(dark), 'aria-label': t(dark ? 'toggle.to_light' : 'toggle.to_dark'),
+      title: t(dark ? 'toggle.to_light' : 'toggle.to_dark'),
+      onclick: () => save({ theme: dark ? 'light' : 'dark' }) }, icon(dark ? 'theme' : 'theme-dark'));
+    const other = i18n.lang === 'fa' ? 'en' : 'fa';
+    const lang = h('button', { class: 'btn btn--ghost lang-btn', type: 'button', id: 'toggle-language', lang: other,
+      'aria-label': t('toggle.language'), title: t('toggle.language'), onclick: () => save({ language: other }) },
+      icon('language'), h('span', { text: other === 'fa' ? '\u0641\u0627\u0631\u0633\u06cc' : 'English' }));
+    return h('div', { class: 'toggles', role: 'group', 'aria-label': t('toggle.group') }, lang, theme);
+  };
 }
 
 function toast(text) {
@@ -62,7 +88,8 @@ async function boot() {
   const store = new Conversations({ http });
   const device = new DeviceIntelligence({ bridge, http });
   const appInfo = await bridge.appInfo();
-  let clientConfig = { links: {}, upgrade: { state: 'not_configured' }, releases: [], device_intelligence: { enabled: false } };
+  let clientConfig = { links: {}, upgrade: { state: 'not_configured' }, releases: [], device_intelligence: { enabled: false },
+                       terms: null };
   try {
     clientConfig = await http.get(`/clients/config?platform=${encodeURIComponent(appInfo.platform)}`, { auth: false });
   } catch { /* offline at launch: links stay hidden until the next launch */ }
@@ -74,16 +101,26 @@ async function boot() {
   let renewTimer = null;
   const online = () => navigator.onLine !== false;
 
+  // Signed out, a theme or language choice belongs to this installation; it moves to the account at sign-in.
+  const localToggles = togglesFactory({ t, i18n, getTheme: () => readLocal().theme, save: (patch) => {
+    const next = { ...readLocal(), ...patch };
+    writeLocal(next);
+    if (patch.language) i18n.set(patch.language);
+    applyAppearance(i18n, next.theme);
+    showSignIn();
+  } });
+
   function showSignIn(message) {
     clearInterval(renewTimer);
     store.reset();
-    clear(app).append(signInView({ t, session, links: clientConfig.links, openLink, onSignedIn: showApp }));
+    clear(app).append(signInView({ t, session, links: clientConfig.links, openLink, onSignedIn: showApp,
+                                   terms: clientConfig.terms, toggles: localToggles() }));
     if (message) toast(message);
   }
 
   async function showApp() {
     const ctx = {
-      t, i18n, http, store, session, device, appInfo, toast, copy, openLink, online, apiBase: config.apiBaseUrl,
+      t, i18n, http, store, session, device, appInfo, toast, copy, openLink, online, apiBase: config.apiBaseUrl, bridge,
       get clientConfig() { return clientConfig; },
       preferences: { language: i18n.lang, theme: readLocal().theme ?? 'system' },
       onConversationCreated: () => shell.renderHistory(),
@@ -101,6 +138,11 @@ async function boot() {
         if (relang) await showApp(); // rebuild with the new language and direction; the server keeps the chats
       } catch (err) { toast(err.message); }
     };
+    ctx.toggles = togglesFactory({ t, i18n, getTheme: () => ctx.preferences.theme, save: async (patch) => {
+      await ctx.savePreferences(patch);
+      if (!patch.language) shell.root.querySelector('.toggles')?.replaceWith(ctx.toggles());
+    } });
+    ctx.onEmpty = (empty) => { shell.root.dataset.empty = String(empty); };
     ctx.openSettings = () => openSettings(ctx);
     ctx.openUsage = () => openUsage(ctx);
     ctx.openLanguage = () => openLanguage(ctx);

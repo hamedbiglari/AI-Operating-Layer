@@ -8,6 +8,7 @@ What these tests defend:
 """
 from __future__ import annotations
 
+import json
 import re
 import uuid
 
@@ -20,6 +21,7 @@ from app.models.conversation import Conversation, ConversationMessage
 from app.services import email_delivery
 
 N = "/api/v1/auth/native/session"
+TERMS = {"accept_terms": True, "terms_version": settings.CLIENT_TERMS_VERSION, "client_platform": "windows"}
 C = "/api/v1/chat"
 
 
@@ -39,7 +41,7 @@ def _native_by_code(client, register_org, outbox):
     org = register_org()
     email = org["user"]["email"]
     assert client.post("/api/v1/auth/login-code/request", json={"email": email}).status_code == 202
-    r = client.post(N, json={"grant": "login_code", "email": email, "code": _code(outbox)},
+    r = client.post(N, json={"grant": "login_code", "email": email, "code": _code(outbox), **TERMS},
                     headers={"User-Agent": "AIOL-Desktop/0.1.0 (windows)"})
     assert r.status_code == 200, r.text
     return org, r
@@ -59,16 +61,16 @@ def test_native_sign_in_with_a_code_returns_both_tokens_in_the_body_and_sets_no_
 
 def test_native_sign_in_with_a_password(client, register_org):
     org = register_org()
-    r = client.post(N, json={"grant": "password", "email": org["user"]["email"], "password": org["password"]})
+    r = client.post(N, json={"grant": "password", "email": org["user"]["email"], "password": org["password"], **TERMS})
     assert r.status_code == 200, r.text
-    bad = client.post(N, json={"grant": "password", "email": org["user"]["email"], "password": "wrong-password"})
+    bad = client.post(N, json={"grant": "password", "email": org["user"]["email"], "password": "wrong-password", **TERMS})
     assert bad.status_code == 401 and "refresh_token" not in bad.text
 
 
 def test_a_grant_without_its_secret_is_refused(client, register_org):
     org = register_org()
-    assert client.post(N, json={"grant": "password", "email": org["user"]["email"]}).status_code == 422
-    assert client.post(N, json={"grant": "login_code", "email": org["user"]["email"]}).status_code == 422
+    assert client.post(N, json={"grant": "password", "email": org["user"]["email"], **TERMS}).status_code == 422
+    assert client.post(N, json={"grant": "login_code", "email": org["user"]["email"], **TERMS}).status_code == 422
 
 
 def test_only_the_hash_of_the_refresh_secret_is_stored(client, register_org, outbox, db_session):
@@ -225,3 +227,144 @@ def test_production_refuses_non_https_client_links():
     with pytest.raises(InsecureProductionConfigError, match="CLIENT_HELP_URL"):
         Settings(APP_ENV="production", SECRET_KEY="x" * 40,
                  DATABASE_URL="postgresql+psycopg://u:p@db/aiol", CLIENT_HELP_URL="http://help.example.dev")
+
+
+# ------------------------------------------------------------------ terms acceptance at sign-in (ADR-139)
+def test_sign_in_without_ticking_the_terms_is_refused_before_credentials_are_checked(client, register_org):
+    org = register_org()
+    base = {"grant": "password", "email": org["user"]["email"], "password": org["password"]}
+    for extra in ({}, {"accept_terms": False, "terms_version": settings.CLIENT_TERMS_VERSION},
+                  {"accept_terms": True, "terms_version": "1999-01-01"}, {"accept_terms": True}):
+        r = client.post(N, json={**base, **extra})
+        assert r.status_code == 409, extra
+        assert r.json()["error"]["reason"] == "terms_not_accepted"
+        assert r.json()["error"]["terms_version"] == settings.CLIENT_TERMS_VERSION
+        assert "refresh_token" not in r.text
+
+
+def test_accepting_records_one_row_per_version_with_everything_the_tick_covered(client, register_org, db_session):
+    from app.models.audit_log import AuditLog
+    from app.models.legal_acceptance import LegalAcceptance
+
+    org = register_org()
+    body = {"grant": "password", "email": org["user"]["email"], "password": org["password"], **TERMS}
+    assert client.post(N, json=body).status_code == 200
+    assert client.post(N, json=body).status_code == 200
+    rows = db_session.execute(select(LegalAcceptance).where(
+        LegalAcceptance.user_id == uuid.UUID(org["user"]["id"]))).scalars().all()
+    assert len(rows) == 1, "signing in again does not duplicate the acceptance"
+    assert rows[0].terms_version == settings.CLIENT_TERMS_VERSION
+    assert rows[0].consents == ["terms", "privacy", "device_intelligence"]
+    assert rows[0].client_platform == "windows"
+    assert db_session.execute(select(AuditLog).where(AuditLog.action == "legal.terms_accepted")).scalars().first()
+
+
+def test_a_failed_password_records_no_acceptance(client, register_org, db_session):
+    from app.models.legal_acceptance import LegalAcceptance
+
+    org = register_org()
+    r = client.post(N, json={"grant": "password", "email": org["user"]["email"], "password": "nope-nope", **TERMS})
+    assert r.status_code == 401
+    assert db_session.execute(select(LegalAcceptance).where(
+        LegalAcceptance.user_id == uuid.UUID(org["user"]["id"]))).first() is None
+
+
+def test_client_config_publishes_the_terms_version(client):
+    terms = client.get("/api/v1/clients/config").json()["terms"]
+    assert terms == {"version": settings.CLIENT_TERMS_VERSION, "consents": ["terms", "privacy", "device_intelligence"]}
+
+
+# ------------------------------------------------------------------ streaming (ADR-137 §streaming)
+def _events(text):
+    out = []
+    for block in text.strip().split("\n\n"):
+        lines = [x for x in block.split("\n") if not x.startswith(":")]
+        if not lines:
+            continue
+        name = lines[0].split(": ", 1)[1]
+        data = json.loads(lines[1].split(": ", 1)[1])
+        out.append((name, data))
+    return out
+
+
+def test_streaming_emits_progress_then_the_same_stored_message(client, register_org, db_session):
+    _, h, convo = _chat_ready(client, register_org)
+    r = client.post(f"{C}/conversations/{convo['id']}/messages/stream", headers=h,
+                    json={"question": "What is Taranjabin?", "client_request_id": "req_stream001"})
+    assert r.status_code == 200 and r.headers["content-type"].startswith("text/event-stream")
+    ev = _events(r.text)
+    names = [n for n, _ in ev]
+    assert names[0] == "accepted" and names[-1] == "message", names
+    msg = ev[-1][1]
+    assert msg["role"] == "assistant" and msg["answer_state"] == "NEEDS_USER_SOURCE"
+    stored = client.get(f"{C}/conversations/{convo['id']}/messages", headers=h).json()["items"]
+    assert msg["id"] in {m["id"] for m in stored}, "the streamed message is the stored one"
+
+
+def test_streaming_replays_a_known_request_without_asking_again(client, register_org, db_session):
+    _, h, convo = _chat_ready(client, register_org)
+    body = {"question": "q", "client_request_id": "req_stream002"}
+    first = _events(client.post(f"{C}/conversations/{convo['id']}/messages/stream", headers=h, json=body).text)[-1][1]
+    again = client.post(f"{C}/conversations/{convo['id']}/messages/stream", headers=h, json=body)
+    assert again.headers.get("Idempotent-Replay") == "true"
+    assert _events(again.text) == [("message", first)]
+    row = db_session.get(Conversation, uuid.UUID(convo["id"]))
+    db_session.refresh(row)
+    assert row.message_count == 2
+
+
+def test_streaming_refuses_before_opening_the_stream(client, register_org):
+    _, h, convo = _chat_ready(client, register_org)
+    _, h2, _ = _chat_ready(client, register_org)
+    assert client.post(f"{C}/conversations/{convo['id']}/messages/stream", headers=h2,
+                       json={"question": "q"}).status_code == 404
+    assert client.post(f"{C}/conversations/{convo['id']}/messages/stream", json={"question": "q"}).status_code == 401
+    client.post(f"{C}/conversations/{convo['id']}/archive", headers=h)
+    assert client.post(f"{C}/conversations/{convo['id']}/messages/stream", headers=h,
+                       json={"question": "q"}).status_code == 409
+
+
+def test_a_refusal_inside_the_pipeline_becomes_an_error_event(client, register_org):
+    org, h, convo = _chat_ready(client, register_org)
+    client.put(f"{C}/settings", headers=h, json={"messages_per_user_per_day": 1})
+    client.post(f"{C}/conversations/{convo['id']}/messages", headers=h, json={"question": "one"})
+    ev = _events(client.post(f"{C}/conversations/{convo['id']}/messages/stream", headers=h,
+                             json={"question": "two"}).text)
+    assert ev[-1][0] == "error" and ev[-1][1]["status"] == 429
+
+
+# ------------------------------------------------------------------ signed desktop updates (ADR-140)
+U = "/api/v1/clients/updates"
+SIG = "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkK" * 2
+
+
+def _updates(monkeypatch, entries):
+    monkeypatch.setattr(settings, "CLIENT_UPDATES_JSON", json.dumps(entries))
+
+
+def test_no_configured_update_is_204(client, monkeypatch):
+    monkeypatch.setattr(settings, "CLIENT_UPDATES_JSON", "")
+    assert client.get(f"{U}/windows/x86_64/0.1.0").status_code == 204
+
+
+def test_a_newer_signed_release_is_offered(client, monkeypatch):
+    _updates(monkeypatch, {"windows-x86_64": {"version": "0.2.0", "url": "https://dl.aiol.example/AIOL_0.2.0.msi",
+                                              "signature": SIG, "notes": "Fixes", "pub_date": "2026-11-01T00:00:00Z"}})
+    r = client.get(f"{U}/windows/x86_64/0.1.0")
+    assert r.status_code == 200
+    assert r.json() == {"version": "0.2.0", "url": "https://dl.aiol.example/AIOL_0.2.0.msi", "signature": SIG,
+                        "notes": "Fixes", "pub_date": "2026-11-01T00:00:00Z"}
+
+
+def test_same_older_unsigned_or_insecure_releases_are_never_offered(client, monkeypatch):
+    good = {"version": "0.2.0", "url": "https://dl.aiol.example/a.msi", "signature": SIG}
+    for entry, current in ((good, "0.2.0"), (good, "0.3.0"), ({**good, "signature": ""}, "0.1.0"),
+                           ({**good, "url": "http://dl.aiol.example/a.msi"}, "0.1.0"),
+                           ({**good, "version": "banana"}, "0.1.0"), (good, "not-a-version")):
+        _updates(monkeypatch, {"windows-x86_64": entry})
+        assert client.get(f"{U}/windows/x86_64/{current}").status_code == 204, (entry, current)
+    _updates(monkeypatch, {"windows-x86_64": good})
+    assert client.get(f"{U}/linux/x86_64/0.1.0").status_code == 204
+    assert client.get(f"{U}/windows/sparc/0.1.0").status_code == 204
+    monkeypatch.setattr(settings, "CLIENT_UPDATES_JSON", "{broken")
+    assert client.get(f"{U}/windows/x86_64/0.1.0").status_code == 204

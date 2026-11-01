@@ -7,12 +7,16 @@ export function fakeFetch(handler) {
     calls.push(req);
     const out = await handler(req, calls.length);
     if (out instanceof Error) throw out;
-    const { status = 200, body = null, headers = {} } = out;
-    const text = body == null ? '' : JSON.stringify(body);
+    const { status = 200, body = null, headers = {}, raw } = out;
+    const text = raw ?? (body == null ? '' : JSON.stringify(body));
+    const bytes = new TextEncoder().encode(text);
     return {
       ok: status >= 200 && status < 300, status,
       headers: { get: (k) => ({ 'content-length': String(text.length), ...headers })[k.toLowerCase()] ?? null },
       text: async () => text,
+      // A body delivered in small chunks, so the SSE parser sees events split across reads.
+      body: { getReader() { let i = 0; return { read: async () => (i >= bytes.length ? { done: true }
+        : { done: false, value: bytes.slice(i, (i += 7)) }) }; } },
     };
   };
   fn.calls = calls;
@@ -39,3 +43,8 @@ export class MemoryStorage {
 }
 
 export const noSleep = async () => {};
+
+/** Server-Sent Events text for a list of [name, data] pairs. */
+export function sse(events) {
+  return events.map(([n, d]) => `event: ${n}\ndata: ${JSON.stringify(d)}\n\n`).join('') ;
+}

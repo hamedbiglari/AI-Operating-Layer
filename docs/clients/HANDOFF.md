@@ -1,13 +1,13 @@
 # Client suite — handoff (resume here)
 
 Branch: `claude/nice-fermi-du1d71` (pushed). ADRs: 137 (clients), 138 (Device Intelligence).
-Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README.md`.
+Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `apps/shared/README.md`.
 
 ## Done (verified)
 - Cloud Core: native session routes, chat `client_request_id`, `/clients/config`, `/devices/*`, migration 0049.
   Full suite on a fresh DB: 1794 passed, 0 failed, coverage 93.54 %.
 - Shared UI (`clients/app`): 30/30 unit tests, 39/39 end-to-end checks against a live Cloud Core.
-- Tauri shell (`clients/src-tauri`): 5/5 Rust tests; type-checks for Windows and Android.
+- Tauri shell (`apps/shared/src-tauri`): 5/5 Rust tests; type-checks for Windows and Android.
 - Commits: 7c73827 (backend + CI), 1e1bca8 (clients), f8372ea (docs), 01b4467 (sorting + test fix).
 
 ## CI results so far
@@ -25,6 +25,10 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
 - **Run 41223589699 (33be46e): every job green — Windows, macOS, Android (debug APK) and iOS simulator all
   built.** Artifacts: aiol-Windows, aiol-macOS, aiol-android-debug, aiol-ios-simulator (kept 14 days).
 
+- 2026-11-01: streaming (SSE progress + validated answer), sign-in consent checkbox (ADR-139, migration 0051),
+  signed desktop updater (ADR-140), theme/language buttons, conversational composer, and the standalone folders
+  apps/windows, apps/macos, apps/android, apps/ios generated from apps/shared.
+
 ## In progress
 - Nothing running. Latest client CI: run 41226260763 (ea47b51) green, including the Windows build of the
   MachineGuid reader. Retention purge scheduled; release CSP narrowing in place.
@@ -32,7 +36,7 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
 ## Next steps, in order
 1. CI result above → fix failures → update platform statuses (BUILD VERIFIED / PACKAGE GENERATED only
    with job evidence).
-2. Signing: add secrets named in clients/README.md (Authenticode, Apple Developer ID + notarization,
+2. Signing: add secrets named in apps/shared/README.md (Authenticode, Apple Developer ID + notarization,
    Android keystore, Apple team) — owner action.
 3. Repository variable `AIOL_API_BASE_URL` (https production API) — owner action.
 4. Debt rows `CLIENT-*` in docs/ai-context/DEBT_REGISTER.md (dashboard Device Intelligence screen,

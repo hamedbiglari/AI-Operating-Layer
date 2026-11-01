@@ -132,10 +132,17 @@ label { display: block; font-weight: var(--weight-medium); margin-block-end: var
 .thread { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-5) var(--space-4); scroll-padding-block-end: var(--space-6); }
 .thread__inner { max-width: var(--composer-max); margin: 0 auto; display: grid; gap: var(--space-5); }
 .empty { max-width: 32rem; margin: 12vh auto 0; text-align: center; display: grid; gap: var(--space-2); }
-.empty h2 { font-size: var(--text-xl); margin: 0; }
+.empty h2 { font-size: var(--text-xl); margin: 0; font-weight: var(--weight-normal); }
 .msg { display: grid; gap: var(--space-2); }
 .msg--user { justify-items: end; }
-.msg--user .msg__body { background: var(--primary-tint); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); max-width: 85%; }
+/* Conversational layout: the person's turn is a soft bubble on the end side; the assistant's answer is plain,
+   full-width reading text with its actions underneath — no bubble, no frame. */
+.msg--user .msg__body { background: var(--surface-sunken); padding: var(--space-3) var(--space-4); border-radius: calc(var(--radius-md) * 2); max-width: 85%; }
+.msg--assistant .msg__body { font-size: var(--text-md); line-height: var(--leading-relaxed); }
+.msg--assistant .msg__meta { order: 3; }
+.msg--assistant .msg__actions { opacity: .55; transition: opacity var(--motion); }
+.msg--assistant:hover .msg__actions, .msg--assistant:focus-within .msg__actions { opacity: 1; }
+@media (hover: none) { .msg--assistant .msg__actions { opacity: 1; } }
 .msg__body { white-space: pre-wrap; overflow-wrap: anywhere; unicode-bidi: plaintext; }
 .msg__body code, .msg__body pre { font-family: var(--font-mono); }
 .msg__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
@@ -159,10 +166,46 @@ label { display: block; font-weight: var(--weight-medium); margin-block-end: var
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; border-top-color: var(--processing); } }
 
-.composer { padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom)); border-block-start: 1px solid var(--border); background: var(--canvas); }
-.composer__inner { max-width: var(--composer-max); margin: 0 auto; display: flex; gap: var(--space-2); align-items: flex-end; }
-.composer textarea { resize: none; min-height: 44px; max-height: 40vh; line-height: var(--leading-normal); unicode-bidi: plaintext; }
-.composer__hint { max-width: var(--composer-max); margin: var(--space-1) auto 0; }
+/* Composer: one rounded card; the text grows upward; a round send button sits inside it and becomes a square
+   stop button while an answer is being written. */
+.composer { padding: var(--space-2) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom)); background: var(--canvas); }
+.composer__card {
+  max-width: var(--composer-max); margin: 0 auto; background: var(--surface); border: 1px solid var(--border);
+  border-radius: calc(var(--radius-md) * 2); box-shadow: var(--shadow-1); padding: var(--space-3) var(--space-3) var(--space-2) var(--space-4);
+  display: grid; gap: var(--space-1); transition: border-color var(--motion), box-shadow var(--motion);
+}
+.composer__card:focus-within { border-color: var(--border-strong); box-shadow: var(--shadow-2); }
+.composer textarea {
+  resize: none; min-height: 28px; max-height: 40vh; border: 0; padding: var(--space-1) 0; background: transparent;
+  font-size: var(--text-md); line-height: var(--leading-normal); unicode-bidi: plaintext; outline: none;
+}
+.composer textarea:focus-visible { outline: none; }
+.composer__bar { display: flex; align-items: center; gap: var(--space-2); }
+.composer__spacer { flex: 1; }
+.composer__send {
+  inline-size: 36px; block-size: 36px; border-radius: var(--radius-full); border: 0; cursor: pointer;
+  display: inline-grid; place-items: center; background: var(--text); color: var(--canvas); flex: none;
+  transition: opacity var(--motion), transform var(--motion);
+}
+.composer__send .icon { width: 18px; height: 18px; stroke-width: 2.25; }
+.composer__send[disabled] { opacity: .3; cursor: default; }
+.composer__send:not([disabled]):hover { transform: scale(1.05); }
+.composer__send--stop .icon { fill: currentColor; }
+.composer__hint { max-width: var(--composer-max); margin: var(--space-1) auto 0; text-align: center; }
+
+/* An empty conversation centres the greeting and the composer together, like a fresh assistant chat. */
+.shell[data-empty="true"] .main { justify-content: center; }
+.shell[data-empty="true"] .thread { flex: 0 0 auto; overflow: visible; padding-block: 0; }
+.shell[data-empty="true"] .empty { margin: 0 auto var(--space-5); }
+.shell[data-empty="true"] .topbar { position: absolute; inset-inline: 0; inset-block-start: 0; border: 0; }
+.shell[data-empty="true"] .main { position: relative; }
+
+/* Theme and language: always visible. */
+.toggles { display: flex; gap: var(--space-1); align-items: center; margin-inline-start: auto; }
+.lang-btn { font-size: var(--text-sm); }
+.signin__terms { display: grid; gap: var(--space-1); }
+.signin__terms .switch { align-items: flex-start; font-weight: var(--weight-normal); }
+.signin__terms .switch input { margin-block-start: 2px; flex: none; }
 
 /* ---------- dialogs ---------- */
 dialog {

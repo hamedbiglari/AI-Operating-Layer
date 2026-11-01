@@ -50,8 +50,11 @@ export class Session {
     return this.http.post('/auth/login-code/request', { email }, { auth: false });
   }
 
-  async signIn({ email, code, password }) {
+  async signIn({ email, code, password, acceptTerms = false, termsVersion = null }) {
     const body = code ? { grant: 'login_code', email, code } : { grant: 'password', email, password };
+    // ADR-139: the sign-in checkbox. Cloud Core refuses without it and records it as consent.
+    Object.assign(body, { accept_terms: acceptTerms, terms_version: termsVersion,
+                          client_platform: this.bridge.kind === 'unknown' ? null : this.bridge.kind });
     const data = await this.http.post('/auth/native/session', body, { auth: false });
     await this.#accept(data);
     await this.#loadMe();

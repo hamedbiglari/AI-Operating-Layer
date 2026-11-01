@@ -213,6 +213,14 @@ class Settings(BaseSettings):
     # Store billing rules differ from web/desktop. Until a policy-reviewed purchase flow exists for a
     # mobile platform, the upgrade link is withheld from it (ADR-137 §billing).
     CLIENT_UPGRADE_PLATFORMS: str = "web,windows,macos"
+    # The Terms of Use / Privacy Policy version the sign-in checkbox accepts (ADR-139). Change it when the
+    # documents change; every native sign-in then records acceptance of the new version.
+    CLIENT_TERMS_VERSION: str = "2026-11-01"
+    # Signed desktop updates (ADR-140). JSON object keyed "<platform>-<arch>" (e.g. "windows-x86_64",
+    # "darwin-aarch64"), each {"version", "url", "signature", "notes"?, "pub_date"?}. `signature` is the minisign
+    # signature `tauri build` writes next to the bundle when TAURI_SIGNING_PRIVATE_KEY is set; the app verifies it
+    # against the public key compiled into it. Empty = no update is ever offered.
+    CLIENT_UPDATES_JSON: str = ""
 
     # --- Device Intelligence (ADR-138) ---
     # Optional installation-continuity evidence. Never an identity proof, never an enforcement input
