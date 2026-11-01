@@ -142,34 +142,120 @@ def test_list_users_is_paginated(client: TestClient, register_org) -> None:
     assert body["total"] >= 4  # owner + 3 teammates
 
 
-def test_user_edits_own_profile(client: TestClient, register_org) -> None:
-    """V5-settings-self-profile: PATCH /users/me changes only the caller's own name and email."""
-    org, other = register_org(), register_org()
-    viewer = {"email": "viewer-self@example.dev", "name": "Viewer", "password": "supersecret123", "role": "viewer"}
+import re  # noqa: E402
+
+import pytest  # noqa: E402
+
+from app.core.config import settings  # noqa: E402
+from app.services import email_delivery  # noqa: E402
+
+
+@pytest.fixture()
+def outbox(monkeypatch):
+    """Delivery replaced by a capturing function here only (as in test_login_code.py)."""
+    sent = []
+    monkeypatch.setattr(settings, "SMTP_HOST", "smtp.test.invalid")
+    monkeypatch.setattr(email_delivery, "send", lambda **kw: sent.append(kw))
+    return sent
+
+
+def _viewer(client: TestClient, register_org, email: str = "viewer-self@example.dev") -> tuple[dict, dict]:
+    org = register_org()
+    viewer = {"email": email, "name": "Viewer", "password": "supersecret123", "role": "viewer"}
     assert client.post("/api/v1/users", json=viewer, headers=org["headers"]).status_code == 201
     token = client.post("/api/v1/auth/login", data={"username": viewer["email"], "password": viewer["password"]}).json()["access_token"]
-    h = {"Authorization": f"Bearer {token}"}
+    return org, {"Authorization": f"Bearer {token}"}
 
-    # A viewer may edit their own profile (no admin role needed); email is stored lower-case.
-    r = client.patch("/api/v1/users/me", json={"name": "Viewer Renamed", "email": "Viewer.New@Example.dev"}, headers=h)
+
+def test_user_edits_own_profile(client: TestClient, register_org) -> None:
+    """V5-settings-self-profile: PATCH /users/me changes only the caller's own name; never the sign-in email."""
+    _, h = _viewer(client, register_org)
+    r = client.patch("/api/v1/users/me", json={"name": "Viewer Renamed"}, headers=h)
     assert r.status_code == 200, r.text
-    assert r.json()["name"] == "Viewer Renamed" and r.json()["email"] == "viewer.new@example.dev"
-    assert r.json()["role"] == "viewer"
-    me = client.get("/api/v1/auth/me", headers=h).json()["user"]
-    assert me["name"] == "Viewer Renamed" and me["email"] == "viewer.new@example.dev"
-
-    # Only name and email: a role in the body is ignored, never applied.
+    assert r.json()["name"] == "Viewer Renamed" and r.json()["role"] == "viewer"
+    assert client.get("/api/v1/auth/me", headers=h).json()["user"]["name"] == "Viewer Renamed"
+    # Only the name: a role in the body is ignored, never applied.
     r = client.patch("/api/v1/users/me", json={"role": "owner"}, headers=h)
     assert r.status_code == 200 and r.json()["role"] == "viewer"
-
-    # An address already used anywhere on the platform is refused; nothing changes.
-    other_email = client.get("/api/v1/auth/me", headers=other["headers"]).json()["user"]["email"]
-    r = client.patch("/api/v1/users/me", json={"email": other_email}, headers=h)
-    assert r.status_code == 409
-    assert client.get("/api/v1/auth/me", headers=h).json()["user"]["email"] == "viewer.new@example.dev"
-
+    # The sign-in email cannot be changed here (V5-self-email-verification): 422, and nothing changes.
+    r = client.patch("/api/v1/users/me", json={"name": "X", "email": "new@example.dev"}, headers=h)
+    assert r.status_code == 422
+    me = client.get("/api/v1/auth/me", headers=h).json()["user"]
+    assert me["email"] == "viewer-self@example.dev" and me["name"] == "Viewer Renamed"
     # Invalid input.
-    assert client.patch("/api/v1/users/me", json={"email": "not-an-email"}, headers=h).status_code == 422
     assert client.patch("/api/v1/users/me", json={"name": ""}, headers=h).status_code == 422
     assert client.patch("/api/v1/users/me", json={"name": "   "}, headers=h).status_code == 422
     assert client.patch("/api/v1/users/me", json={"name": "x"}).status_code == 401
+
+
+REQ, VER = "/api/v1/users/me/email-change-request", "/api/v1/users/me/email-change-verify"
+
+
+def _code(outbox) -> str:
+    return re.search(r"\b(\d{6})\b", outbox[-1]["body"]).group(1)
+
+
+def test_email_change_needs_the_code_sent_to_the_new_address(client: TestClient, register_org, outbox) -> None:
+    """V5-self-email-verification: request -> code to the NEW address -> verify; only then the email changes."""
+    _, h = _viewer(client, register_org)
+    r = client.post(REQ, json={"new_email": "Viewer.New@Example.dev"}, headers=h)
+    assert r.status_code == 202, r.text
+    assert r.json()["sent_to"] == "viewer.new@example.dev"
+    assert len(outbox) == 1 and outbox[0]["to"] == "viewer.new@example.dev"
+    code = _code(outbox)
+    # Nothing has changed yet.
+    assert client.get("/api/v1/auth/me", headers=h).json()["user"]["email"] == "viewer-self@example.dev"
+    # A wrong code is refused and changes nothing.
+    wrong = "000000" if code != "000000" else "111111"
+    assert client.post(VER, json={"code": wrong}, headers=h).status_code == 400
+    assert client.post(VER, json={"code": "12ab56"}, headers=h).status_code == 422
+    # The right code applies the change; the old address is told.
+    r = client.post(VER, json={"code": code}, headers=h)
+    assert r.status_code == 200, r.text
+    assert r.json()["email"] == "viewer.new@example.dev"
+    assert client.get("/api/v1/auth/me", headers=h).json()["user"]["email"] == "viewer.new@example.dev"
+    assert outbox[-1]["to"] == "viewer-self@example.dev" and "changed" in outbox[-1]["subject"]
+    # The code is single-use; signing in uses the new address.
+    assert client.post(VER, json={"code": code}, headers=h).status_code == 404
+    assert client.post("/api/v1/auth/login", data={"username": "viewer.new@example.dev", "password": "supersecret123"}).status_code == 200
+
+
+def test_email_change_refusals(client: TestClient, register_org, outbox, monkeypatch) -> None:
+    org, h = _viewer(client, register_org, "viewer-refuse@example.dev")
+    other_email = client.get("/api/v1/auth/me", headers=org["headers"]).json()["user"]["email"]
+    # Taken address (409), own address (422), not an address (422): nothing is sent.
+    assert client.post(REQ, json={"new_email": other_email.upper()}, headers=h).status_code == 409
+    assert client.post(REQ, json={"new_email": "viewer-refuse@example.dev"}, headers=h).status_code == 422
+    assert client.post(REQ, json={"new_email": "not-an-email"}, headers=h).status_code == 422
+    assert outbox == []
+    # No pending request: verify answers 404.
+    assert client.post(VER, json={"code": "123456"}, headers=h).status_code == 404
+    # The same address again inside the resend window: 429 with Retry-After.
+    assert client.post(REQ, json={"new_email": "a1@example.dev"}, headers=h).status_code == 202
+    r = client.post(REQ, json={"new_email": "a1@example.dev"}, headers=h)
+    assert r.status_code == 429 and int(r.headers["Retry-After"]) > 0
+    # A different address supersedes the earlier request: the first code no longer works.
+    first = _code(outbox)
+    assert client.post(REQ, json={"new_email": "a2@example.dev"}, headers=h).status_code == 202
+    second = _code(outbox)
+    if first != second:
+        assert client.post(VER, json={"code": first}, headers=h).status_code == 400
+    # Three wrong codes void the request.
+    bad = "000000" if second != "000000" else "111111"
+    for _ in range(settings.LOGIN_CODE_MAX_FAILURES - 1 - (1 if first != second else 0)):
+        assert client.post(VER, json={"code": bad}, headers=h).status_code == 400
+    assert client.post(VER, json={"code": bad}, headers=h).status_code == 429
+    assert client.post(VER, json={"code": second}, headers=h).status_code == 404
+    assert client.get("/api/v1/auth/me", headers=h).json()["user"]["email"] == "viewer-refuse@example.dev"
+    # The address taken by someone else between request and verify: 409 at verify, nothing changes.
+    assert client.post(REQ, json={"new_email": "race@example.dev"}, headers=h).status_code == 202
+    code = _code(outbox)
+    assert client.post("/api/v1/users", json={"email": "race@example.dev", "name": "R", "password": "supersecret123",
+                                              "role": "viewer"}, headers=org["headers"]).status_code == 201
+    assert client.post(VER, json={"code": code}, headers=h).status_code == 409
+    assert client.get("/api/v1/auth/me", headers=h).json()["user"]["email"] == "viewer-refuse@example.dev"
+    # Without SMTP nothing is created and the caller is told (503).
+    monkeypatch.setattr(settings, "SMTP_HOST", None)
+    assert client.post(REQ, json={"new_email": "nosmtp@example.dev"}, headers=h).status_code == 503
+    # Auth required.
+    assert client.post(REQ, json={"new_email": "x@example.dev"}).status_code == 401

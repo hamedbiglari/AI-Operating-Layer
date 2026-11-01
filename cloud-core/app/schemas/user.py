@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.models.enums import UserRole, UserStatus
 
@@ -37,7 +37,23 @@ class UserUpdate(BaseModel):
 
 
 class UserSelfUpdate(BaseModel):
-    """PATCH /users/me: the signed-in user's own name and email. Role and status stay admin-only."""
+    """PATCH /users/me: the signed-in user's own name. Role and status stay admin-only, and the sign-in email changes
+    only through the confirmed flow (POST /users/me/email-change-request, then -verify; V5-self-email-verification)."""
 
     name: str | None = Field(default=None, min_length=1, max_length=255)
-    email: EmailStr | None = None
+    email: str | None = None
+
+    @field_validator("email")
+    @classmethod
+    def _no_direct_email(cls, v: str | None) -> None:
+        if v is not None:
+            raise ValueError("The sign-in email changes only after confirmation: use POST /users/me/email-change-request.")
+        return None
+
+
+class EmailChangeRequestIn(BaseModel):
+    new_email: EmailStr
+
+
+class EmailChangeVerifyIn(BaseModel):
+    code: str = Field(min_length=6, max_length=6, pattern="^[0-9]{6}$")

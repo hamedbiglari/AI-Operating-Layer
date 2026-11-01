@@ -13,8 +13,12 @@
  *           Organization card; an admin renames the organization with one
  *           PATCH; a viewer is told only an owner or admin can; the top-bar
  *           language button saves the language (V5-topbar-lang-save-bug);
- *           Edit profile: name and email with one PATCH /users/me, the Account
- *           card follows, 409 and empty-name messages (V5-settings-self-profile);
+ *           Edit profile: the name with one PATCH /users/me, the Account card
+ *           follows (V5-settings-self-profile); the email is read-only and
+ *           changes only through Change email: the new address (one POST
+ *           .../email-change-request), then the 6-digit code sent to it (one
+ *           POST .../email-change-verify); 409, wrong code, bad input each say
+ *           why (V5-self-email-verification);
  *           Reset: not connected = this device only; connected = one PUT of the
  *           defaults first, then this device (V5-settings-reset-backend); Log out opens the
  *           login page with no token left; Persian over live content.
@@ -39,6 +43,7 @@ const FA = {
   dark: [0x62A, 0x6CC, 0x631, 0x647],
   role: [0x646, 0x642, 0x634],
   org: [0x633, 0x627, 0x632, 0x645, 0x627, 0x646],
+  changeEmail: [0x62A, 0x63A, 0x6CC, 0x6CC, 0x631, 0x20, 0x627, 0x6CC, 0x645, 0x6CC, 0x644],
   editMine: [0x648, 0x6CC, 0x631, 0x627, 0x6CC, 0x634, 0x20, 0x646, 0x645, 0x627, 0x6CC, 0x647, 0x654, 0x20, 0x645, 0x646],
   resetDone: [0x628, 0x627, 0x632, 0x646, 0x634, 0x627, 0x646, 0x6CC, 0x20, 0x634, 0x62F, 0x2E, 0x20, 0x62A, 0x631, 0x62C, 0x6CC, 0x62D, 0x627, 0x62A, 0x20, 0x630, 0x62E, 0x6CC, 0x631, 0x647, 0x200C, 0x634, 0x62F, 0x647, 0x654, 0x20, 0x634, 0x645, 0x627, 0x20, 0x628, 0x647, 0x20, 0x67E, 0x6CC, 0x634, 0x200C, 0x641, 0x631, 0x636, 0x20, 0x628, 0x631, 0x6AF, 0x634, 0x62A, 0x2E],
   savedAt: [0x62F, 0x631, 0x20, 0x62D, 0x633, 0x627, 0x628, 0x20, 0x634, 0x645, 0x627, 0x20, 0x630, 0x62E, 0x6CC, 0x631, 0x647, 0x20, 0x634, 0x62F, 0x20, 0x28, 0x7B, 0x64, 0x7D, 0x29, 0x2E],
@@ -67,8 +72,19 @@ function installMock(role) {
       updated_at: '2026-10-31T08:00:00Z', language: 'en' }, JSON.parse(opt.body)));
     if (p === '/users/me' && method === 'PATCH') {
       const body = JSON.parse(opt.body);
-      if (body.email && body.email.toLowerCase() === 'taken@shop.test') return reply({ error: { code: 'CONFLICT', message: 'Email is already registered' } }, 409);
-      return reply({ name: body.name || 'Hamed B', email: (body.email || 'owner@shop.test').toLowerCase(), role: window.__role });
+      if ('email' in body) return reply({ error: { message: 'The sign-in email changes only after confirmation' } }, 422);
+      return reply({ name: body.name || 'Hamed B', email: window.__email || 'owner@shop.test', role: window.__role });
+    }
+    if (p === '/users/me/email-change-request' && method === 'POST') {
+      const to = JSON.parse(opt.body).new_email.toLowerCase();
+      if (to === 'taken@shop.test') return reply({ error: { code: 'CONFLICT', message: 'Email is already registered' } }, 409);
+      window.__pending = to;
+      return reply({ sent_to: to, expires_in_seconds: 300, resend_after_seconds: 300 }, 202);
+    }
+    if (p === '/users/me/email-change-verify' && method === 'POST') {
+      if (JSON.parse(opt.body).code !== '123456') return reply({ error: { message: 'That code is not correct.' } }, 400);
+      window.__email = window.__pending;
+      return reply({ name: 'Hamed Biglari', email: window.__pending, role: window.__role });
     }
     if (p === '/organizations/me' && method === 'PATCH') return reply({ name: JSON.parse(opt.body).name, slug: 'toranj', status: 'active' });
     if (p === '/agent-network/memory-profiles' || p === '/agent-network/background-policies') return reply([]);
@@ -118,32 +134,63 @@ function installMock(role) {
   check('one GET /auth/me; the Account card', [await requests('^GET /auth/me$'), await facts('#account-kv')],
     [['GET /auth/me'], [['Name', 'Hamed B'], ['Email', 'owner@shop.test'], ['Role', 'Admin']]]);
   check('the Organization card', await facts('#settings-org'), [['Name', 'Toranj'], ['Slug', 'toranj'], ['Status', 'Active']]);
-  // Edit profile (V5-settings-self-profile).
+  // Edit profile (V5-settings-self-profile): the name only.
   await page.evaluate(() => document.querySelector('[data-toggle-edit="me"]').click()); await settle();
-  check('Edit profile: the panel opens with the account name and email', await page.evaluate(() => [!document.getElementById('edit-panel-me').hidden,
-    document.getElementById('profile-me-name').value, document.getElementById('profile-me-email').value]), [true, 'Hamed B', 'owner@shop.test']);
-  const submitProfile = async (name, email) => { await page.fill('#profile-me-name', name); await page.fill('#profile-me-email', email);
+  check('Edit profile: the panel opens with the name; the email is read-only, with Change email beside it', await page.evaluate(() => [
+    !document.getElementById('edit-panel-me').hidden, document.getElementById('profile-me-name').value, document.getElementById('profile-me-email').value,
+    document.getElementById('profile-me-email').readOnly, document.getElementById('profile-me-change-email').textContent,
+    document.getElementById('email-change-form').hidden]), [true, 'Hamed B', 'owner@shop.test', true, 'Change email', true]);
+  const submitName = async (name) => { await page.fill('#profile-me-name', name);
     await page.evaluate(() => document.getElementById('profile-me-form').requestSubmit()); await settle(); };
-  let pb = (await requests('^PATCH /users/me')).length;
-  await submitProfile('Hamed B', 'owner@shop.test');
+  const pb = (await requests('^PATCH /users/me')).length;
+  await submitName('Hamed B');
   check('nothing changed: nothing sent', [await text('profile-me-msg'), (await requests('^PATCH /users/me')).length - pb], ['Nothing to save.', 0]);
-  await submitProfile('  ', 'owner@shop.test');
+  await submitName('  ');
   check('an empty name is refused before sending', [await text('profile-me-msg'), (await requests('^PATCH /users/me')).length - pb], ['Enter your name.', 0]);
-  await submitProfile('Hamed B', 'not-an-email');
-  check('an invalid email is refused before sending', [await text('profile-me-msg'), (await requests('^PATCH /users/me')).length - pb], ['Enter a valid email address.', 0]);
-  await submitProfile('Hamed Biglari', 'Hamed@Shop.test');
-  check('save: one PATCH with only the changed fields; Saved.; the Account card follows', [(await requests('^PATCH /users/me')).slice(pb),
-    await text('profile-me-msg'), await facts('#account-kv')], [['PATCH /users/me {"name":"Hamed Biglari","email":"Hamed@Shop.test"}'], 'Saved.',
-    [['Name', 'Hamed Biglari'], ['Email', 'hamed@shop.test'], ['Role', 'Admin']]]);
-  await submitProfile('Hamed Biglari', 'taken@shop.test');
-  check('409: the address is taken; the Account card keeps the saved values', [await text('profile-me-msg'), (await facts('#account-kv'))[1]],
-    ['That email address is already registered.', ['Email', 'hamed@shop.test']]);
+  await submitName('Hamed Biglari');
+  check('save: one PATCH with the name only; Saved.; the Account card follows', [(await requests('^PATCH /users/me')).slice(pb),
+    await text('profile-me-msg'), await facts('#account-kv')], [['PATCH /users/me {"name":"Hamed Biglari"}'], 'Saved.',
+    [['Name', 'Hamed Biglari'], ['Email', 'owner@shop.test'], ['Role', 'Admin']]]);
+
+  // Change email (V5-self-email-verification): the new address, then the code sent to it.
+  const mailPosts = () => requests('^POST /users/me/email-change');
+  const submitStep = async (v) => { await page.fill('#email-change-input', v);
+    await page.evaluate(() => document.getElementById('email-change-form').requestSubmit()); await settle(); };
+  await page.evaluate(() => document.getElementById('profile-me-change-email').click()); await settle();
+  check('Change email: step 1 asks for the new address', await page.evaluate(() => [document.getElementById('email-change-form').hidden,
+    document.getElementById('email-change-step').textContent, document.querySelector('#email-change-form button[type=submit]').textContent]),
+    [false, 'A 6-digit code will be sent to the new address. Your sign-in email changes only when you enter it.', 'Send code']);
+  await submitStep('not-an-email');
+  check('step 1: not an address, refused before sending', [await text('profile-me-msg'), (await mailPosts()).length], ['Enter a valid email address.', 0]);
+  await submitStep('Owner@Shop.test');
+  check('step 1: the current address, refused before sending', [await text('profile-me-msg'), (await mailPosts()).length], ['That is already your sign-in email.', 0]);
+  await submitStep('taken@shop.test');
+  check('step 1: 409, the address is taken', [await text('profile-me-msg'), (await facts('#account-kv'))[1]],
+    ['That email address is already registered.', ['Email', 'owner@shop.test']]);
+  await submitStep('Hamed@Shop.test');
+  check('step 1: one request; step 2 names where the code went; the email is unchanged so far', [(await mailPosts()).slice(1),
+    await text('email-change-step'), await page.evaluate(() => document.querySelector('#email-change-form button[type=submit]').textContent),
+    (await facts('#account-kv'))[1]], [['POST /users/me/email-change-request {"new_email":"Hamed@Shop.test"}'],
+    'Enter the 6-digit code sent to ' + iso('hamed@shop.test') + '.', 'Confirm', ['Email', 'owner@shop.test']]);
+  let mp = (await mailPosts()).length;
+  await submitStep('12a');
+  check('step 2: not six digits, refused before sending', [await text('profile-me-msg'), (await mailPosts()).length - mp], ['Enter the 6 digits of the code.', 0]);
+  await submitStep('000000');
+  check('step 2: a wrong code changes nothing', [await text('profile-me-msg'), (await facts('#account-kv'))[1]], ['That code is not correct.', ['Email', 'owner@shop.test']]);
+  mp = (await mailPosts()).length;
+  await submitStep('123456');
+  check('step 2: the right code: one verify; the new address everywhere; the form closes', [(await mailPosts()).slice(mp), await text('profile-me-msg'),
+    (await facts('#account-kv'))[1], await page.evaluate(() => [document.getElementById('profile-me-email').value, document.getElementById('email-change-form').hidden])],
+    [['POST /users/me/email-change-verify {"code":"123456"}'], 'Your sign-in email is now ' + iso('hamed@shop.test') + '.', ['Email', 'hamed@shop.test'],
+      ['hamed@shop.test', true]]);
+  await page.evaluate(() => document.getElementById('profile-me-change-email').click()); await settle();
   await lang('fa');
-  check('fa: the editor title', await page.evaluate(() => document.querySelector('#edit-panel-me .card__title').textContent), F('editMine'));
+  check('fa: the editor title and the Change email button', await page.evaluate(() => [document.querySelector('#edit-panel-me .card__title').textContent,
+    document.getElementById('profile-me-change-email').textContent]), [F('editMine'), F('changeEmail')]);
   await lang('en');
-  await page.evaluate(() => Array.from(document.querySelectorAll('#profile-me-form button')).find((b) => b.type === 'button').click()); await settle();
-  check('Cancel closes the editor and restores the saved values', await page.evaluate(() => [document.getElementById('edit-panel-me').hidden,
-    document.getElementById('profile-me-email').value]), [true, 'hamed@shop.test']);
+  await page.evaluate(() => Array.from(document.querySelectorAll('#profile-me-form > button')).find((x) => x.textContent === 'Cancel').click()); await settle();
+  check('Cancel closes the editor (and the email form) and keeps the saved values', await page.evaluate(() => [document.getElementById('edit-panel-me').hidden,
+    document.getElementById('email-change-form').hidden, document.getElementById('profile-me-email').value]), [true, true, 'hamed@shop.test']);
   await page.fill('#settings-org-name', 'Toranj Co');
   await page.evaluate(() => document.querySelector('.settings-org-form').requestSubmit()); await settle();
   check('rename: one PATCH; Saved.; the name updates', [await requests('^PATCH /organizations'), await text('settings-org-msg'), (await facts('#settings-org'))[0]],

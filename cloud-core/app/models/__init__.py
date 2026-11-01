@@ -79,6 +79,7 @@ from app.models.ai_center import (AIDiscoveryEntry, AIHealthEvent, AIModel, AIPr
                                   AIRoutingDecision, AIRoutingPolicy, AIRoutingStep, AIWorkingMemory, KnowledgeKeyword,
                                   AIJob, AIJobItem)
 from app.models.login_code import LoginCode, LoginCodeThrottle
+from app.models.email_change import EmailChangeRequest
 from app.models.signup_code import SignupCode
 from app.models.keyword_trace import KeywordTrace
 from app.models.demand import DemandConnection, DemandSignal
@@ -100,6 +101,7 @@ from app.models.visibility_budget import VisibilityBudget
 from app.models.wordpress_mapping import WordPressMapping
 
 __all__ = [
+    "EmailChangeRequest",
     "PlatformAdmin",
     "Organization",
     "User",

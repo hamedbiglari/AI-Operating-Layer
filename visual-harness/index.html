@@ -11683,33 +11683,85 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }
     var nameIn = field('Name', 'text', 'profile-me-name', me.user.name, 255);
     var mailIn = field('Email', 'email', 'profile-me-email', me.user.email, 320);
+    // The sign-in email is not edited here: it changes only after a code sent to the new address is entered
+    // (V5-self-email-verification), through the two-step form that Change email opens.
+    mailIn.readOnly = true; mailIn.setAttribute('aria-readonly', 'true');
+    var changeMail = mailIn.parentNode.appendChild(el('button', 'btn btn--quiet')); changeMail.type = 'button';
+    changeMail.id = 'profile-me-change-email'; changeMail.setAttribute('aria-controls', 'email-change-form');
+    AIOL_I18N.set(changeMail, 'Change email');
     var save = f.appendChild(el('button', 'btn btn--primary')); save.type = 'submit'; AIOL_I18N.set(save, 'Save');
     var cancel = f.appendChild(el('button', 'btn')); cancel.type = 'button'; AIOL_I18N.set(cancel, 'Cancel');
+    var ec = sec.appendChild(el('form', 'settings-org-form')); ec.id = 'email-change-form'; ec.noValidate = true; ec.hidden = true;
+    var ecHead = ec.appendChild(el('p', 'aic-hint')); ecHead.id = 'email-change-step';
+    var ecLab = ec.appendChild(el('label', 'field')), ecCap = ecLab.appendChild(el('span', 'field__label'));
+    var ecIn = ecLab.appendChild(el('input')); ecIn.id = 'email-change-input'; ecIn.dir = 'ltr';
+    var ecGo = ec.appendChild(el('button', 'btn btn--primary')); ecGo.type = 'submit';
+    var ecBack = ec.appendChild(el('button', 'btn')); ecBack.type = 'button'; AIOL_I18N.set(ecBack, 'Cancel');
     var msg = sec.appendChild(el('p', 'aic-hint')); msg.id = 'profile-me-msg'; msg.setAttribute('role', 'status');
-    var toggle = document.querySelector('[data-toggle-edit="me"]');
+    var toggle = document.querySelector('[data-toggle-edit="me"]'), step = 'email', target = '';
+    function showStep(s) {
+      step = s; ec.hidden = false; ecIn.value = '';
+      if (s === 'email') {
+        AIOL_I18N.set(ecHead, 'A 6-digit code will be sent to the new address. Your sign-in email changes only when you enter it.');
+        AIOL_I18N.set(ecCap, 'New email'); AIOL_I18N.set(ecGo, 'Send code');
+        ecIn.type = 'email'; ecIn.maxLength = 320; ecIn.autocomplete = 'email'; ecIn.removeAttribute('inputmode');
+      } else {
+        AIOL_I18N.set(ecHead, 'Enter the 6-digit code sent to {email}.', { email: target });
+        AIOL_I18N.set(ecCap, 'Code'); AIOL_I18N.set(ecGo, 'Confirm');
+        ecIn.type = 'text'; ecIn.maxLength = 6; ecIn.autocomplete = 'one-time-code'; ecIn.setAttribute('inputmode', 'numeric');
+      }
+      ecIn.focus();
+    }
+    changeMail.addEventListener('click', function () { AIOL_I18N.set(msg, ''); showStep('email'); });
+    ecBack.addEventListener('click', function () { ec.hidden = true; AIOL_I18N.set(msg, ''); changeMail.focus(); });
+    ec.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var v = ecIn.value.trim();
+      if (step === 'email') {
+        if (!v || !ecIn.checkValidity()) { AIOL_I18N.set(msg, 'Enter a valid email address.'); ecIn.focus(); return; }
+        if (v.toLowerCase() === me.user.email) { AIOL_I18N.set(msg, 'That is already your sign-in email.'); ecIn.focus(); return; }
+        ecGo.disabled = true; AIOL_I18N.set(msg, 'Sending…');
+        api('/users/me/email-change-request', { method: 'POST', body: { new_email: v } }).then(function (r) {
+          target = r.sent_to; AIOL_I18N.set(msg, ''); showStep('code');
+        }).catch(function (er) {
+          if (er.status === 409) AIOL_I18N.set(msg, 'That email address is already registered.');
+          else if (er.status === 422) AIOL_I18N.set(msg, 'Enter a different, valid email address.');
+          else if (er.status === 429) AIOL_I18N.set(msg, 'A code was sent recently. Try again in a few minutes.');
+          else if (er.status === 503) AIOL_I18N.set(msg, 'Email delivery is not set up on AI Core, so no code can be sent.');
+          else AIOL_I18N.set(msg, 'Not sent ({error}).', { error: er.message });
+        }).then(function () { ecGo.disabled = false; });
+        return;
+      }
+      if (!/^[0-9]{6}$/.test(v)) { AIOL_I18N.set(msg, 'Enter the 6 digits of the code.'); ecIn.focus(); return; }
+      ecGo.disabled = true; AIOL_I18N.set(msg, 'Checking…');
+      api('/users/me/email-change-verify', { method: 'POST', body: { code: v } }).then(function (u) {
+        // The shared /auth/me answer, so every screen that reads it shows the new address.
+        me.user.email = u.email; mailIn.value = u.email; ec.hidden = true; renderAccount();
+        AIOL_I18N.set(msg, 'Your sign-in email is now {email}.', { email: u.email });
+      }).catch(function (er) {
+        if (er.status === 400) AIOL_I18N.set(msg, 'That code is not correct.');
+        else if (er.status === 404) { AIOL_I18N.set(msg, 'No code is waiting any more. Ask for a new one.'); showStep('email'); }
+        else if (er.status === 429) { AIOL_I18N.set(msg, 'Too many wrong codes. Ask for a new code.'); showStep('email'); }
+        else if (er.status === 409) AIOL_I18N.set(msg, 'That email address is already registered.');
+        else AIOL_I18N.set(msg, 'Not changed ({error}).', { error: er.message });
+      }).then(function () { ecGo.disabled = false; });
+    });
     cancel.addEventListener('click', function () {
-      nameIn.value = me.user.name; mailIn.value = me.user.email; AIOL_I18N.set(msg, '');
+      nameIn.value = me.user.name; ec.hidden = true; AIOL_I18N.set(msg, '');
       if (!panel.hidden && toggle) toggle.click();
     });
     f.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      var name = nameIn.value.trim(), email = mailIn.value.trim(), body = {};
+      var name = nameIn.value.trim();
       if (!name) { AIOL_I18N.set(msg, 'Enter your name.'); nameIn.focus(); return; }
-      if (!email || !mailIn.checkValidity()) { AIOL_I18N.set(msg, 'Enter a valid email address.'); mailIn.focus(); return; }
-      if (name !== me.user.name) body.name = name;
-      if (email.toLowerCase() !== me.user.email) body.email = email;
-      if (!body.name && !body.email) { AIOL_I18N.set(msg, 'Nothing to save.'); return; }
+      if (name === me.user.name) { AIOL_I18N.set(msg, 'Nothing to save.'); return; }
       save.disabled = true; AIOL_I18N.set(msg, 'Saving…');
-      api('/users/me', { method: 'PATCH', body: body }).then(function (u) {
-        // The shared /auth/me answer, so every screen that reads it shows the new name and email.
-        me.user.name = u.name; me.user.email = u.email;
-        nameIn.value = u.name; mailIn.value = u.email;
+      api('/users/me', { method: 'PATCH', body: { name: name } }).then(function (u) {
+        // The shared /auth/me answer, so every screen that reads it shows the new name.
+        me.user.name = u.name; nameIn.value = u.name;
         renderAccount(); AIOL_I18N.set(msg, 'Saved.');
-      }).catch(function (er) {
-        if (er.status === 409) AIOL_I18N.set(msg, 'That email address is already registered.');
-        else if (er.status === 422) AIOL_I18N.set(msg, 'Enter a valid email address.');
-        else AIOL_I18N.set(msg, 'Not saved ({error}).', { error: er.message });
-      }).then(function () { save.disabled = false; });
+      }).catch(function (er) { AIOL_I18N.set(msg, 'Not saved ({error}).', { error: er.message }); })
+        .then(function () { save.disabled = false; });
     });
   }
   Object.keys(SCREENS).forEach(function (id) {
@@ -16129,7 +16181,27 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Day 25: 20 observations, 152 requests": "روز ۲۵: ۲۰ مشاهده، ۱۵۲ درخواست",
     "Day 26: 22 observations, 161 requests": "روز ۲۶: ۲۲ مشاهده، ۱۶۱ درخواست",
     "Day 27: 19 observations, 144 requests": "روز ۲۷: ۱۹ مشاهده، ۱۴۴ درخواست",
-    "Day 28: 21 observations, 156 requests": "روز ۲۸: ۲۱ مشاهده، ۱۵۶ درخواست"
+    "Day 28: 21 observations, 156 requests": "روز ۲۸: ۲۱ مشاهده، ۱۵۶ درخواست",
+    "Change email": "تغییر ایمیل",
+    "A 6-digit code will be sent to the new address. Your sign-in email changes only when you enter it.": "یک کد ۶ رقمی به نشانی جدید فرستاده می‌شود. ایمیل ورود شما فقط وقتی تغییر می‌کند که آن را وارد کنید.",
+    "New email": "ایمیل جدید",
+    "Send code": "فرستادن کد",
+    "Enter the 6-digit code sent to {email}.": "کد ۶ رقمی فرستاده‌شده به {email} را وارد کنید.",
+    "Code": "کد",
+    "Confirm": "تأیید",
+    "That is already your sign-in email.": "این همین حالا ایمیل ورود شماست.",
+    "Sending…": "در حال فرستادن…",
+    "Enter a different, valid email address.": "یک نشانی ایمیل معتبر و متفاوت وارد کنید.",
+    "A code was sent recently. Try again in a few minutes.": "به‌تازگی کدی فرستاده شده است. چند دقیقهٔ دیگر دوباره تلاش کنید.",
+    "Email delivery is not set up on AI Core, so no code can be sent.": "ارسال ایمیل در AI Core راه‌اندازی نشده است، پس هیچ کدی فرستاده نمی‌شود.",
+    "Not sent ({error}).": "فرستاده نشد ({error}).",
+    "Enter the 6 digits of the code.": "۶ رقم کد را وارد کنید.",
+    "Checking…": "در حال بررسی…",
+    "Your sign-in email is now {email}.": "ایمیل ورود شما اکنون {email} است.",
+    "That code is not correct.": "این کد درست نیست.",
+    "No code is waiting any more. Ask for a new one.": "دیگر کدی در انتظار نیست. کد تازه‌ای بخواهید.",
+    "Too many wrong codes. Ask for a new code.": "کدهای نادرست بیش از حد. کد تازه‌ای بخواهید.",
+    "Not changed ({error}).": "تغییر نکرد ({error})."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

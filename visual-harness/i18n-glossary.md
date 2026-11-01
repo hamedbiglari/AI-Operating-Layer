@@ -2038,3 +2038,30 @@ The live stats and per-day chart of #screen-visibility-detail (V5-visibility-det
 | Day 26: 22 observations, 161 requests | روز ۲۶: ۲۲ مشاهده، ۱۶۱ درخواست |
 | Day 27: 19 observations, 144 requests | روز ۲۷: ۱۹ مشاهده، ۱۴۴ درخواست |
 | Day 28: 21 observations, 156 requests | روز ۲۸: ۲۱ مشاهده، ۱۵۶ درخواست |
+
+## Confirmed email change (pre-release security fix)
+
+The two-step sign-in email change on Settings (V5-self-email-verification): the new address, then the 6-digit code sent to it. Email (ایمیل), code (کد) and sign-in (ورود) follow the glossary; AI Core stays as written.
+
+| English | Persian |
+|---|---|
+| Change email | تغییر ایمیل |
+| A 6-digit code will be sent to the new address. Your sign-in email changes only when you enter it. | یک کد ۶ رقمی به نشانی جدید فرستاده می‌شود. ایمیل ورود شما فقط وقتی تغییر می‌کند که آن را وارد کنید. |
+| New email | ایمیل جدید |
+| Send code | فرستادن کد |
+| Enter the 6-digit code sent to {email}. | کد ۶ رقمی فرستاده‌شده به {email} را وارد کنید. |
+| Code | کد |
+| Confirm | تأیید |
+| That is already your sign-in email. | این همین حالا ایمیل ورود شماست. |
+| Sending… | در حال فرستادن… |
+| Enter a different, valid email address. | یک نشانی ایمیل معتبر و متفاوت وارد کنید. |
+| A code was sent recently. Try again in a few minutes. | به‌تازگی کدی فرستاده شده است. چند دقیقهٔ دیگر دوباره تلاش کنید. |
+| Email delivery is not set up on AI Core, so no code can be sent. | ارسال ایمیل در AI Core راه‌اندازی نشده است، پس هیچ کدی فرستاده نمی‌شود. |
+| Not sent ({error}). | فرستاده نشد ({error}). |
+| Enter the 6 digits of the code. | ۶ رقم کد را وارد کنید. |
+| Checking… | در حال بررسی… |
+| Your sign-in email is now {email}. | ایمیل ورود شما اکنون {email} است. |
+| That code is not correct. | این کد درست نیست. |
+| No code is waiting any more. Ask for a new one. | دیگر کدی در انتظار نیست. کد تازه‌ای بخواهید. |
+| Too many wrong codes. Ask for a new code. | کدهای نادرست بیش از حد. کد تازه‌ای بخواهید. |
+| Not changed ({error}). | تغییر نکرد ({error}). |

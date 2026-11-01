@@ -117,21 +117,15 @@ def update_user(
     return user
 
 
-def update_self(db: Session, *, user: User, name: str | None, email: str | None) -> User:
-    """The signed-in user's own profile (V5-settings-self-profile). Email is stored lower-case and stays unique
-    across the platform; the change is audit-logged with the old and new values."""
-    old_value = {"name": user.name, "email": user.email}
+def update_self(db: Session, *, user: User, name: str | None) -> User:
+    """The signed-in user's own name (V5-settings-self-profile), audit-logged with the old and new values. The sign-in
+    email is not changed here: see email_change_service (V5-self-email-verification)."""
+    old_value = {"name": user.name}
     if name is not None:
         user.name = name.strip()
-    if email is not None:
-        user.email = email.lower()
-    if {"name": user.name, "email": user.email} == old_value:
+    if {"name": user.name} == old_value:
         return user
-    try:
-        db.flush()
-    except IntegrityError as exc:
-        db.rollback()
-        raise EmailAlreadyRegisteredError(email) from exc
+    db.flush()
     record_audit_log(
         db,
         organization_id=user.organization_id,
@@ -140,7 +134,7 @@ def update_self(db: Session, *, user: User, name: str | None, email: str | None)
         resource_type="user",
         resource_id=user.id,
         old_value=old_value,
-        new_value={"name": user.name, "email": user.email},
+        new_value={"name": user.name},
     )
     db.commit()
     db.refresh(user)
