@@ -19,6 +19,30 @@ At the end it **revokes the test credential** (`DELETE /ai-center/accounts/{id}/
 does not stay stored in the database. The provider, account, model and policy rows stay (labelled
 `e2e-real-<timestamp>`); delete them in AI Center when you no longer want them.
 
+## Quick start (Windows, one command)
+
+`scripts/start-real-e2e.ps1` does steps 1 and 3 below for you: it checks the variables, starts postgres,
+redis and the Celery worker with docker compose (migrations run first), starts AI Core locally on port 8010,
+runs `real-keys.js`, and stops the backend afterwards, also when a check fails.
+
+```powershell
+$env:ANTHROPIC_API_KEY = 'sk-ant-...'      # your key
+$env:AI_CREDENTIAL_KEY = '<Fernet key>'    # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+$env:AIOL_TOKEN        = '<owner/admin access token>'          # see step 2
+$env:AIOL_TOPIC_ID     = '<knowledge object id with evidence>' # see step 2
+.\scripts\start-real-e2e.ps1               # add -StopStack to stop the containers at the end
+```
+
+Before the first run: `cloud-core\.venv` must exist with `pip install -r requirements.txt` done (the pinned
+FastAPI matters), Docker must be running, and `PLAYWRIGHT_CORE` should point at a playwright-core install
+(the script looks in the global npm folder if it is not set; `PW_EXE` is optional). The worker container runs
+in development mode with your `AI_CREDENTIAL_KEY`, so it can decrypt the credential the backend stores; keep
+the same key between runs. The token and the topic must come from the database the stack uses (step 2, with
+the backend on port 8010). If your `.env` changes `POSTGRES_*` or the ports, set the same values in the
+shell before running the script.
+
+The manual steps below do the same by hand, on any OS.
+
 ## Which key does what
 
 | Variable | Read by | Needed here |

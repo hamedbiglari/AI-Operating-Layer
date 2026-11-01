@@ -20,6 +20,10 @@ x-cloud-core: &cloud-core
     # Inside the stack the services are reached by name, whatever .env says for local (non-Docker) runs.
     DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-aiol}:${POSTGRES_PASSWORD:-aiol_dev_password}@postgres:5432/${POSTGRES_DB:-aiol}
     REDIS_URL: ${REDIS_URL_INTERNAL:-redis://redis:6379/0}
+    # Resolved from the shell first, then .env, so a script can run the stack in development mode and give
+    # the worker the same credential key as a backend started outside Docker (scripts/start-real-e2e.ps1).
+    APP_ENV: ${APP_ENV:-production}
+    AI_CREDENTIAL_KEY: ${AI_CREDENTIAL_KEY:-}
   volumes:
     # Uploaded source files: written by the API, read by the worker that converts them.
     - sources:/var/lib/aiol/sources
