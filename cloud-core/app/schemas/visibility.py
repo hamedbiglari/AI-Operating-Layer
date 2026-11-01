@@ -1,7 +1,7 @@
 """Phase 12 contracts. No composite score appears anywhere by design."""
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -106,3 +106,41 @@ class VisibilityBudgetRead(BaseModel):
 class VisibilityBudgetUpdate(BaseModel):
     period_limit: float = Field(ge=0)
     currency: str = Field(default="USD", min_length=3, max_length=3)
+
+
+class VisibilityCountryCount(BaseModel):
+    country: str
+    requests: int
+
+
+class VisibilityKeyCount(BaseModel):
+    key: str
+    requests: int
+
+
+class VisibilityDayCount(BaseModel):
+    day: date
+    observations: int
+    requests: int
+
+
+class VisibilityAggregates(BaseModel):
+    """The visibility report's numbers for a rolling window, in one response (V5-visibility-detail-aggregates).
+    Counts of stored rows only: no score, no estimate; unknown actors and missing countries are reported, not
+    folded in or guessed."""
+
+    days: int
+    since: datetime
+    until: datetime
+    platform_observations: int
+    automated_requests: int
+    unclassified_requests: int
+    countries_reached: int
+    top_country: VisibilityCountryCount | None
+    requests_without_country: int
+    mean_dwell_ms: int | None
+    dwell_samples: int
+    by_day: list[VisibilityDayCount]
+    by_country: list[VisibilityCountryCount]
+    by_actor_type: list[VisibilityKeyCount]
+    top_pages: list[VisibilityKeyCount]

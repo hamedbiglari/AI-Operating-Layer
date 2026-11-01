@@ -65,11 +65,13 @@ from app.schemas.visibility import (
     VisibilityBudgetUpdate,
     VisibilityObservationCreate,
     VisibilityObservationRead,
+    VisibilityAggregates,
     VisibilitySummary,
 )
 from app.security.dependencies import get_current_user, require_roles
 from app.services import (
     search_intelligence_service,
+    visibility_report_service,
     visibility_run_service,
     visibility_service,
 )
@@ -121,6 +123,18 @@ def get_observation(
     return visibility_service.get_observation_or_404(
         db, observation_id=observation_id, organization_id=current_user.organization_id
     )
+
+
+@router.get("/aggregates", response_model=VisibilityAggregates)
+def aggregates(
+    days: int = Query(default=28, ge=1, le=490),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> VisibilityAggregates:
+    """Everything the visibility report shows for the last `days` days in one call: platform observations,
+    automated requests, countries, mean time on page, per-day series, countries, actor types and top pages."""
+    return VisibilityAggregates(**visibility_report_service.aggregates(
+        db, organization_id=current_user.organization_id, days=days))
 
 
 @router.get("/summary", response_model=VisibilitySummary)
