@@ -3490,6 +3490,75 @@ button.card { color: inherit; font: inherit; }
   #screen-dashboard a.stat--link:hover { transform: none; }
 }
 </style>
+<style>
+/* ---------- Design elevation (polish, part 2): Settings, Admin, AI Center, AI executions, Memory ----------
+   Same rules as the Dashboard/Sources/Knowledge block: scoped to these screens, tokens only (light and
+   dark follow), logical properties only (Persian mirrors as-is), no letter-spacing on text that can be
+   Persian, no motion under prefers-reduced-motion. Layout, IDs and behaviour are unchanged. */
+
+/* Page head: one gap (the header's) between the intro note and the content, not two. */
+:is(#screen-settings, #screen-admin-overview, #screen-admin-users, #screen-ai-center, #screen-ai-executions, #screen-memory) .page-intro {
+  margin-block: var(--space-3) 0;
+  padding-block: var(--space-4);
+}
+
+/* Cards: one surface language: a soft shadow, a section-sized title, a calm gap below the title. */
+:is(#screen-settings, #screen-admin-overview, #screen-admin-users, #screen-ai-center, #screen-ai-executions, #screen-memory) .card {
+  box-shadow: var(--shadow-1);
+}
+:is(#screen-settings, #screen-ai-center, #screen-ai-executions, #screen-memory) .card > .card__title,
+:is(#screen-settings, #screen-ai-center, #screen-ai-executions, #screen-memory) .card > h2.card__title {
+  font-size: var(--text-md);
+  margin-block-end: var(--space-3);
+}
+:is(#screen-settings, #screen-ai-center, #screen-memory) .live-panel--compact > .card__title { font-size: var(--text-base); margin: 0; }
+
+/* Settings: label/value lists read as divided rows. */
+#screen-settings .kv { gap: 0 var(--space-4); }
+#screen-settings .kv > dt, #screen-settings .kv > dd {
+  padding-block: var(--space-2);
+  border-block-start: 1px solid var(--border);
+}
+#screen-settings .kv > dt:first-of-type, #screen-settings .kv > dt:first-of-type + dd { border-block-start: 0; }
+#screen-settings .kv > dt { font-size: var(--text-sm); color: var(--text-muted); }
+#screen-settings .kv > dd { color: var(--text); }
+#screen-settings .rq-section { padding-block-start: var(--space-4); border-block-start: 1px solid var(--border); }
+
+/* Stat grids (Admin overview, AI executions): the figure carries the card, as on the Dashboard. */
+:is(#screen-admin-overview, #screen-ai-executions) .stat-grid { gap: var(--space-4); }
+:is(#screen-admin-overview, #screen-ai-executions) .stat {
+  padding: var(--space-5);
+  gap: var(--space-3);
+  box-shadow: var(--shadow-1);
+  align-content: start;
+}
+:is(#screen-admin-overview, #screen-ai-executions) .stat__value { font-size: var(--text-2xl); line-height: 1.05; }
+:is(#screen-admin-overview, #screen-ai-executions) .stat--attention { background: linear-gradient(var(--warning-tint), var(--warning-tint)) padding-box, var(--surface); }
+
+/* Tables: framed, with a quiet head; the list is the content. */
+:is(#screen-admin-users, #screen-ai-center, #screen-ai-executions, #screen-memory) .table-wrap {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+}
+:is(#screen-admin-users, #screen-ai-center, #screen-ai-executions, #screen-memory) .table thead th { color: var(--text-muted); font-size: var(--text-xs); }
+:is(#screen-admin-users, #screen-ai-center, #screen-ai-executions, #screen-memory) .table tbody tr { transition: background-color .12s ease-out; }
+
+/* AI Center: sub-forms sit in their own quiet band instead of a bare rule. */
+#screen-ai-center .aic-form:not(.aic-form--inline) {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+#screen-ai-center .aic-policy { background: var(--surface); box-shadow: var(--shadow-1); }
+
+/* Toolbars above lists: aligned and spaced like Sources. */
+:is(#screen-admin-users, #screen-memory) :is(.toolbar, .live-toolbar) { margin-block-end: var(--space-4); }
+
+@media (prefers-reduced-motion: reduce) {
+  :is(#screen-admin-users, #screen-ai-center, #screen-ai-executions, #screen-memory) .table tbody tr { transition: none; }
+}
+</style>
 </head>
 <body>
 
