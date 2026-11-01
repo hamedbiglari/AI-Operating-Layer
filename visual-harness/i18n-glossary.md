@@ -1555,3 +1555,29 @@ Blog, page sections and newsletter subscribers. Post titles, section labels, add
 | Home | صفحهٔ اصلی |
 | Everyone who joined the newsletter from the public website. An address is stored only with explicit consent, which is recorded with its date and wording. Export as CSV, mark someone unsubscribed, or erase an address completely on request. | همهٔ کسانی که از وب‌سایت عمومی به خبرنامه پیوسته‌اند. هر نشانی فقط با رضایت صریح نگه داشته می‌شود که با تاریخ و متن آن ثبت می‌شود. خروجی CSV بگیرید، اشتراک کسی را لغو کنید، یا در صورت درخواست، نشانی را به‌طور کامل پاک کنید. |
 | Export CSV | خروجی CSV |
+
+## Settings (Step 13B)
+
+The Settings messages added with the account, organization, reset and log-out wiring.
+
+| English | Persian |
+|---|---|
+| Reset on this device. The preferences saved to your account are unchanged. | روی این دستگاه بازنشانی شد. ترجیحات ذخیره‌شده در حساب شما تغییری نکرد. |
+| Organization | سازمان |
+| Could not read your account from AI Core. | خواندن حساب شما از AI Core ممکن نشد. |
+| Only an owner or admin can rename the organization. | فقط مالک یا مدیر می‌تواند نام سازمان را تغییر دهد. |
+| Organization name | نام سازمان |
+| Enter a name. | یک نام وارد کنید. |
+| Saved. | ذخیره شد. |
+| Not saved ({error}). | ذخیره نشد ({error}). |
+| Role | نقش |
+| Slug | نامک |
+| Owner | مالک |
+| Researcher | پژوهشگر |
+| Editor | ویراستار |
+| Analyst | تحلیلگر |
+| Viewer | بیننده |
+| Suspended | معلق |
+| Light | روشن |
+| Dark | تیره |
+| Same as the device | مانند دستگاه |
