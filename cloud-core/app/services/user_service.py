@@ -115,3 +115,33 @@ def update_user(
     db.commit()
     db.refresh(user)
     return user
+
+
+def update_self(db: Session, *, user: User, name: str | None, email: str | None) -> User:
+    """The signed-in user's own profile (V5-settings-self-profile). Email is stored lower-case and stays unique
+    across the platform; the change is audit-logged with the old and new values."""
+    old_value = {"name": user.name, "email": user.email}
+    if name is not None:
+        user.name = name.strip()
+    if email is not None:
+        user.email = email.lower()
+    if {"name": user.name, "email": user.email} == old_value:
+        return user
+    try:
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        raise EmailAlreadyRegisteredError(email) from exc
+    record_audit_log(
+        db,
+        organization_id=user.organization_id,
+        user_id=user.id,
+        action="user.profile_updated",
+        resource_type="user",
+        resource_id=user.id,
+        old_value=old_value,
+        new_value={"name": user.name, "email": user.email},
+    )
+    db.commit()
+    db.refresh(user)
+    return user

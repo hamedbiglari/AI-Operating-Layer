@@ -21,7 +21,7 @@ to PUBLISHED without passing through a review state.
 from uuid import UUID
 
 from fastapi import HTTPException, status as http_status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -75,6 +75,7 @@ def list_products(
     category: str | None,
     brand: str | None,
     knowledge_object_id: UUID | None,
+    search: str | None = None,
     sort: SortParams | None = None,
     limit: int,
     offset: int,
@@ -88,6 +89,11 @@ def list_products(
         base = base.where(Product.brand == brand)
     if knowledge_object_id:
         base = base.where(Product.knowledge_object_id == knowledge_object_id)
+    if search and search.strip():
+        # Case-insensitive substring on name or SKU; LIKE wildcards in the text are matched literally.
+        term = search.strip().replace("!", "!!").replace("%", "!%").replace("_", "!_")
+        like = f"%{term}%"
+        base = base.where(or_(Product.name.ilike(like, escape="!"), Product.sku.ilike(like, escape="!")))
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
     rows = db.execute(apply_sort(base, Product, sort, "created_at", SortDirection.DESC).limit(limit).offset(offset)).scalars().all()

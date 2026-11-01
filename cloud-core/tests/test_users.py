@@ -140,3 +140,36 @@ def test_list_users_is_paginated(client: TestClient, register_org) -> None:
     assert body["offset"] == 0
     assert len(body["items"]) == 2
     assert body["total"] >= 4  # owner + 3 teammates
+
+
+def test_user_edits_own_profile(client: TestClient, register_org) -> None:
+    """V5-settings-self-profile: PATCH /users/me changes only the caller's own name and email."""
+    org, other = register_org(), register_org()
+    viewer = {"email": "viewer-self@example.dev", "name": "Viewer", "password": "supersecret123", "role": "viewer"}
+    assert client.post("/api/v1/users", json=viewer, headers=org["headers"]).status_code == 201
+    token = client.post("/api/v1/auth/login", data={"username": viewer["email"], "password": viewer["password"]}).json()["access_token"]
+    h = {"Authorization": f"Bearer {token}"}
+
+    # A viewer may edit their own profile (no admin role needed); email is stored lower-case.
+    r = client.patch("/api/v1/users/me", json={"name": "Viewer Renamed", "email": "Viewer.New@Example.dev"}, headers=h)
+    assert r.status_code == 200, r.text
+    assert r.json()["name"] == "Viewer Renamed" and r.json()["email"] == "viewer.new@example.dev"
+    assert r.json()["role"] == "viewer"
+    me = client.get("/api/v1/auth/me", headers=h).json()["user"]
+    assert me["name"] == "Viewer Renamed" and me["email"] == "viewer.new@example.dev"
+
+    # Only name and email: a role in the body is ignored, never applied.
+    r = client.patch("/api/v1/users/me", json={"role": "owner"}, headers=h)
+    assert r.status_code == 200 and r.json()["role"] == "viewer"
+
+    # An address already used anywhere on the platform is refused; nothing changes.
+    other_email = client.get("/api/v1/auth/me", headers=other["headers"]).json()["user"]["email"]
+    r = client.patch("/api/v1/users/me", json={"email": other_email}, headers=h)
+    assert r.status_code == 409
+    assert client.get("/api/v1/auth/me", headers=h).json()["user"]["email"] == "viewer.new@example.dev"
+
+    # Invalid input.
+    assert client.patch("/api/v1/users/me", json={"email": "not-an-email"}, headers=h).status_code == 422
+    assert client.patch("/api/v1/users/me", json={"name": ""}, headers=h).status_code == 422
+    assert client.patch("/api/v1/users/me", json={"name": "   "}, headers=h).status_code == 422
+    assert client.patch("/api/v1/users/me", json={"name": "x"}).status_code == 401

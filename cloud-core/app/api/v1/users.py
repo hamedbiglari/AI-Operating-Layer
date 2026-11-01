@@ -16,7 +16,7 @@ from app.db.session import get_db
 from app.models.enums import ADMIN_ROLES, UserRole, UserStatus
 from app.models.user import User
 from app.schemas.common import Page, PaginationParams, SortParams
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import UserCreate, UserRead, UserSelfUpdate, UserUpdate
 from app.security.dependencies import get_current_user, require_roles
 from app.services import user_service
 
@@ -69,6 +69,24 @@ def create_user(
             role=payload.role,
             actor_user_id=current_user.id,
         )
+    except user_service.EmailAlreadyRegisteredError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email is already registered"
+        ) from None
+
+
+# Declared before /{user_id}: "me" is not a UUID, so the parameterised route would answer 422 first.
+@router.patch("/me", response_model=UserRead)
+def update_me(
+    payload: UserSelfUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> User:
+    """Any signed-in user may change their own name and email (V5-settings-self-profile); nothing else."""
+    if payload.name is not None and not payload.name.strip():
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Name cannot be blank")
+    try:
+        return user_service.update_self(db, user=current_user, name=payload.name, email=payload.email)
     except user_service.EmailAlreadyRegisteredError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Email is already registered"

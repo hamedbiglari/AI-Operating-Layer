@@ -178,3 +178,29 @@ def test_viewer_cannot_create_product(client: TestClient, register_org) -> None:
 
     response = _create_product(client, viewer_headers)
     assert response.status_code == 403
+
+
+def test_products_search_by_name_or_sku(client: TestClient, register_org) -> None:
+    """V5-products-search: ?search= matches name or SKU, case-insensitive, within the caller's organization."""
+    org, other = register_org(), register_org()
+    h = org["headers"]
+    for name, slug, sku in (("Taranjabin 500g", "t-500", "TRJ-500"), ("Saffron threads", "saffron", "SAF_01"),
+                            ("Rose water 100%", "rose", None)):
+        assert _create_product(client, h, name=name, slug=slug, sku=sku).status_code == 201
+    assert _create_product(client, other["headers"], name="Taranjabin other org", slug="t-other").status_code == 201
+
+    def names(q: str) -> list[str]:
+        r = client.get("/api/v1/products", params={"search": q}, headers=h)
+        assert r.status_code == 200, r.text
+        return sorted(p["name"] for p in r.json()["items"])
+
+    assert names("taranjabin") == ["Taranjabin 500g"]          # name, case-insensitive; other org not seen
+    assert names("trj-5") == ["Taranjabin 500g"]               # SKU
+    assert names("  saffron  ") == ["Saffron threads"]         # trimmed
+    assert names("%") == ["Rose water 100%"]                   # LIKE wildcards match literally
+    assert names("_") == ["Saffron threads"]
+    assert names("nothing-like-this") == []
+    r = client.get("/api/v1/products", params={"search": "taranjabin"}, headers=h).json()
+    assert r["total"] == 1
+    assert len(names("")) == 3                                 # empty search = no filter
+    assert client.get("/api/v1/products", params={"search": "x" * 201}, headers=h).status_code == 422

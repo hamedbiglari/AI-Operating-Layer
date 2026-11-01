@@ -6431,12 +6431,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       <dt>Sign-in method</dt><dd>Email code</dd>
     </dl>
     <div class="page-actions" style="margin-top:var(--space-3)">
-      <button class="btn" type="button" data-debt-hidden="V5-settings-self-profile" data-toggle-edit="me" aria-expanded="false" aria-controls="edit-panel-me"><svg class="icon icon--mirror" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.9a2 2 0 0 1 2.8 2.8L8.4 17.6 4 19.5l1.9-4.4z"/></svg>Edit profile</button>
+      <button class="btn" type="button" data-toggle-edit="me" aria-expanded="false" aria-controls="edit-panel-me"><svg class="icon icon--mirror" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.9a2 2 0 0 1 2.8 2.8L8.4 17.6 4 19.5l1.9-4.4z"/></svg>Edit profile</button>
       <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M9.5 9a2.5 2.5 0 1 1 3.7 2.2c-.7.5-1.2.9-1.2 1.8M12 17h.01"/></svg>Get help</button>
     </div>
   </div>
 
-  <div id="profile-slot-me" data-live-keep data-debt-hidden="V5-settings-self-profile"></div>
+  <div id="profile-slot-me" data-live-keep></div>
 
   <div class="card" style="margin-top:var(--space-4)" id="settings-preferences" data-live-keep>
     <h2 class="card__title">Preferences saved to your account</h2>
@@ -6537,12 +6537,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   </div>
   <div class="callout page-intro" role="note"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8.2h.01"/></svg></span><div><p>Product identity and commercial Offer are kept separate on purpose (DEC-0006): a Product is what it <em>is</em> — brand, origin, ingredients, certifications; an Offer is where it can be <em>bought</em> — price, stock, availability. A Product can exist, fully described, with zero offers.</p></div></div>
 
-  <div class="toolbar" data-debt-hidden="V5-products-search" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;margin-block-end:var(--space-4)">
+  <div class="toolbar" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;margin-block-end:var(--space-4)">
     <label style="flex:1 1 260px;min-width:200px">
       <span class="visually-hidden">Search products</span>
       <input type="search" placeholder="Search by name or SKU…" style="width:100%;font:inherit;padding:8px 12px;min-height:36px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text)">
     </label>
-    <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h17l-6.5 7.4V20l-4-2.2v-4.9z"/></svg>Filter</button>
   </div>
   <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it"><table class="table" style="margin-top:var(--space-4)">
     <caption class="visually-hidden">Products, one row per SKU family</caption>
@@ -7319,19 +7318,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   };
 
   // ---- the user's own profile (Settings) ----
+  // Settings (V5-settings-self-profile): the Edit profile button opens this panel. Connected to AI Core it holds the
+  // name and email form (PATCH /users/me, built by the live layer); until then it says so. The identity, address and
+  // document sample has no backend and is not shown.
   var slot = document.getElementById('profile-slot-me');
   if (slot) {
-    slot.appendChild(readCard('me', false));
     var panel = el('div', { 'class': 'card edit-section edit-inline', id: 'edit-panel-me' }); panel.hidden = true;
     var sec = el('section', { 'class': 'card edit-section' });
     sec.appendChild(el('h2', { 'class': 'card__title' }, 'Edit my profile'));
-    sec.appendChild(el('p', { 'class': 'edit-hint' }, 'Fields marked * are required for verification. You can save a partly completed profile and come back later.'));
-    sec.appendChild(editGroups('me', false)); panel.appendChild(sec);
-    var bar = el('div', { 'class': 'edit-savebar edit-savebar--inline' });
-    bar.appendChild(el('button', { type: 'button', 'class': 'btn', 'data-close-edit': 'me' }, 'Cancel'));
-    bar.appendChild(el('button', { type: 'button', 'class': 'btn btn--primary', 'data-save-edit': 'me' }, 'Save changes'));
-    panel.appendChild(bar); slot.appendChild(panel);
-    render('me');
+    sec.appendChild(el('p', { 'class': 'profile-missing' }, 'Connect to AI Core to change your name or email address.'));
+    panel.appendChild(sec); slot.appendChild(panel);
   }
   // ---- super admin: every user page ----
   ['u1', 'u2', 'u3', 'u4', 'u5'].forEach(function (uid) {
@@ -10994,9 +10990,19 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     preorder: ['Pre-order', 'badge--info'], backorder: ['Backorder', 'badge--warning'], discontinued: ['Discontinued', 'badge--unknown'] };
   var OFFER_CONDITION = { new: 'New', used: 'Used', refurbished: 'Refurbished' };
   function productsScreen(panel) {
-    var LIMIT = 50, st = { status: '', offset: 0 }, p = {};
+    var LIMIT = 50, st = { status: '', search: '', offset: 0 }, p = {};
     return visScreen(panel, 'screen-products', function (body) {
-      var bar = body.appendChild(el('div', 'prod-bar')), lab = bar.appendChild(el('label', 'field'));
+      var bar = body.appendChild(el('div', 'prod-bar'));
+      // Server-side search on name or SKU (V5-products-search); typing waits 300 ms before it asks again.
+      var sl = bar.appendChild(el('label', 'field')), scap = sl.appendChild(el('span', 'field__label'));
+      AIOL_I18N.set(scap, 'Search');
+      p.search = sl.appendChild(el('input')); p.search.type = 'search'; p.search.id = 'prod-search'; p.search.maxLength = 200;
+      var wait = null;
+      p.search.addEventListener('input', function () {
+        clearTimeout(wait);
+        wait = setTimeout(function () { var q = p.search.value.trim(); if (q === st.search) return; st.search = q; st.offset = 0; panel.__visLoad(); }, 300);
+      });
+      var lab = bar.appendChild(el('label', 'field'));
       var lt = el('span', 'field__label'); AIOL_I18N.set(lt, 'Status'); lab.appendChild(lt);
       p.status = lab.appendChild(el('select')); p.status.id = 'prod-status';
       [['', 'All statuses'], ['draft', 'Draft'], ['in_review', 'In review'], ['published', 'Published'], ['archived', 'Archived']].forEach(function (o) {
@@ -11014,7 +11020,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       p.detail = body.appendChild(el('div', 'card vis-detail')); p.detail.id = 'prod-detail'; p.detail.tabIndex = -1;
       return p;
     }, function () {
-      return api('/products?limit=' + LIMIT + '&offset=' + st.offset + '&sort_by=name&sort_dir=asc' + (st.status ? '&status=' + st.status : ''));
+      return api('/products?limit=' + LIMIT + '&offset=' + st.offset + '&sort_by=name&sort_dir=asc' + (st.status ? '&status=' + st.status : '')
+        + (st.search ? '&search=' + encodeURIComponent(st.search) : ''));
     }, function (p, page) {
       p.rows.textContent = ''; p.detail.hidden = true;
       AIOL_I18N.set(p.note, '{from}–{to} of {total|product|products}.', { from: page.items.length ? page.offset + 1 : 0, to: page.offset + page.items.length, total: page.total });
@@ -11026,10 +11033,21 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         open.addEventListener('click', function () { productDetail(p.detail, it); });
         visRow(p.rows, [name, prodText(it.category), prodText(it.origin), prodKnowledge(it), visBadge(PRODUCT_STATUS, it.status), open]);
       });
-      if (!page.items.length) visRow(p.rows, [AIOL_I18N.set(visNA(), 'No products yet.')]);
+      var none = visNA();
+      if (!page.items.length && st.search) visRow(p.rows, [AIOL_I18N.set(none, 'No products match {query}.', { query: st.search })]);
+      else if (!page.items.length) visRow(p.rows, [AIOL_I18N.set(visNA(), 'No products yet.')]);
       p.prev.disabled = page.offset === 0; p.next.disabled = page.offset + page.items.length >= page.total;
     }, 'Could not load products ({error}).');
   }
+  // Sample mode: the Products toolbar filters the sample rows by name or SKU (connected, the search runs on the server).
+  (function () {
+    var scr = document.getElementById('screen-products'), inp = scr && scr.querySelector('.toolbar input[type=search]');
+    if (!inp) return;
+    inp.addEventListener('input', function () {
+      var q = inp.value.trim().toLowerCase();
+      scr.querySelectorAll('.table-wrap tbody tr').forEach(function (tr) { tr.hidden = !!q && tr.textContent.toLowerCase().indexOf(q) === -1; });
+    });
+  })();
   function prodText(v) {
     if (!v) return AIOL_I18N.set(visNA(), 'Not set');
     var b = el('bdi', null, v); b.dir = 'auto'; return b;
@@ -11395,10 +11413,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       orgCard.textContent = '';
       var h = orgCard.appendChild(el('h2', 'card__title')); AIOL_I18N.set(h, 'Organization');
       if (!me || !me.user) { var miss = orgCard.appendChild(el('p', 'profile-missing')); AIOL_I18N.set(miss, 'Could not read your account from AI Core.'); return; }
-      kvBox.textContent = '';
-      fact(kvBox, 'Name', text(me.user.name));
-      fact(kvBox, 'Email', identifier(me.user.email));
-      fact(kvBox, 'Role', word(ROLE_LABEL, me.user.role));
+      function renderAccount() {
+        kvBox.textContent = '';
+        fact(kvBox, 'Name', text(me.user.name));
+        fact(kvBox, 'Email', identifier(me.user.email));
+        fact(kvBox, 'Role', word(ROLE_LABEL, me.user.role));
+      }
+      renderAccount();
+      liveProfileEditor(me, renderAccount);
       var org = me.organization || {}, dl = orgCard.appendChild(el('dl', 'kv'));
       var nameDd = text(org.name);
       fact(dl, 'Name', nameDd);
@@ -11425,6 +11447,56 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
           else AIOL_I18N.set(msg, 'Not saved ({error}).', { error: er.message });
         }).then(function () { save.disabled = false; });
       });
+    });
+  }
+  // Self profile (V5-settings-self-profile). The Edit profile button opens #edit-panel-me; connected, that panel holds
+  // a real name and email form (PATCH /users/me) instead of the verification sample, which has no backend.
+  function liveProfileEditor(me, renderAccount) {
+    var slot = document.getElementById('profile-slot-me'), panel = document.getElementById('edit-panel-me');
+    if (!slot || !panel) return;
+    Array.prototype.forEach.call(slot.children, function (c) { if (c !== panel) c.hidden = true; });
+    panel.textContent = '';
+    var sec = panel.appendChild(el('section', 'card edit-section'));
+    var head = sec.appendChild(el('h2', 'card__title')), hint = sec.appendChild(el('p', 'aic-hint'));
+    AIOL_I18N.set(head, 'Edit my profile');
+    AIOL_I18N.set(hint, 'Your sign-in codes are sent to this email address.');
+    var f = sec.appendChild(el('form', 'settings-org-form')); f.id = 'profile-me-form'; f.noValidate = true;
+    function field(label, type, id, value, max) {
+      var lab = f.appendChild(el('label', 'field')), cap = lab.appendChild(el('span', 'field__label'));
+      AIOL_I18N.set(cap, label);
+      var i = lab.appendChild(el('input')); i.type = type; i.id = id; i.value = value || ''; i.maxLength = max;
+      if (type === 'email') i.dir = 'ltr';
+      return i;
+    }
+    var nameIn = field('Name', 'text', 'profile-me-name', me.user.name, 255);
+    var mailIn = field('Email', 'email', 'profile-me-email', me.user.email, 320);
+    var save = f.appendChild(el('button', 'btn btn--primary')); save.type = 'submit'; AIOL_I18N.set(save, 'Save');
+    var cancel = f.appendChild(el('button', 'btn')); cancel.type = 'button'; AIOL_I18N.set(cancel, 'Cancel');
+    var msg = sec.appendChild(el('p', 'aic-hint')); msg.id = 'profile-me-msg'; msg.setAttribute('role', 'status');
+    var toggle = document.querySelector('[data-toggle-edit="me"]');
+    cancel.addEventListener('click', function () {
+      nameIn.value = me.user.name; mailIn.value = me.user.email; AIOL_I18N.set(msg, '');
+      if (!panel.hidden && toggle) toggle.click();
+    });
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = nameIn.value.trim(), email = mailIn.value.trim(), body = {};
+      if (!name) { AIOL_I18N.set(msg, 'Enter your name.'); nameIn.focus(); return; }
+      if (!email || !mailIn.checkValidity()) { AIOL_I18N.set(msg, 'Enter a valid email address.'); mailIn.focus(); return; }
+      if (name !== me.user.name) body.name = name;
+      if (email.toLowerCase() !== me.user.email) body.email = email;
+      if (!body.name && !body.email) { AIOL_I18N.set(msg, 'Nothing to save.'); return; }
+      save.disabled = true; AIOL_I18N.set(msg, 'Saving…');
+      api('/users/me', { method: 'PATCH', body: body }).then(function (u) {
+        // The shared /auth/me answer, so every screen that reads it shows the new name and email.
+        me.user.name = u.name; me.user.email = u.email;
+        nameIn.value = u.name; mailIn.value = u.email;
+        renderAccount(); AIOL_I18N.set(msg, 'Saved.');
+      }).catch(function (er) {
+        if (er.status === 409) AIOL_I18N.set(msg, 'That email address is already registered.');
+        else if (er.status === 422) AIOL_I18N.set(msg, 'Enter a valid email address.');
+        else AIOL_I18N.set(msg, 'Not saved ({error}).', { error: er.message });
+      }).then(function () { save.disabled = false; });
     });
   }
   Object.keys(SCREENS).forEach(function (id) {
@@ -12351,16 +12423,30 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   document.querySelectorAll('[data-pref-notif]').forEach(function (c) { c.addEventListener('change', function () { var n = {}; n[c.getAttribute('data-pref-notif')] = c.checked; savePrefs({ notifications: n }); }); });
   document.addEventListener('aiol:live', loadPrefs);
   /* ---------- Settings (13B): reset on this device only; log out ---------- */
-  // Reset clears what this page keeps in the browser and puts the language and theme pickers back to their
-  // defaults without saving them: the preferences stored in AI Core stay (V5-settings-reset-backend).
-  var resetBtn = $('settings-reset');
-  if (resetBtn) resetBtn.addEventListener('click', function () {
+  // Reset (V5-settings-reset-backend). Connected: the defaults are saved to the account first (PUT; an empty
+  // `notifications` and a null `font` clear what was stored); only then is this device cleared. Not connected:
+  // this device only, and the message says the saved preferences are unchanged.
+  var PREF_DEFAULTS = { language: 'en', theme: 'system', font: null, notifications: {}, usage_alert_threshold: 80 };
+  function resetDevice() {
     try { localStorage.clear(); } catch (e) { /* storage may be blocked */ }
     applying = true;
     [['pick-lang', 'en'], ['pick-theme', 'light']].forEach(function (d) { var sel = $(d[0]);
       if (sel && sel.value !== d[1]) { sel.value = d[1]; sel.dispatchEvent(new Event('change', { bubbles: true })); } });
     applying = false;
-    AIOL_I18N.set($('settings-reset-msg'), 'Reset on this device. The preferences saved to your account are unchanged.');
+  }
+  var resetBtn = $('settings-reset');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    var msg = $('settings-reset-msg');
+    if (!live()) { resetDevice(); AIOL_I18N.set(msg, 'Reset on this device. The preferences saved to your account are unchanged.'); return; }
+    resetBtn.disabled = true; AIOL_I18N.set(msg, 'Resetting…');
+    api('/users/me/preferences', 'PUT', PREF_DEFAULTS).then(function (pf) {
+      resetDevice(); showSaved(pf);
+      document.querySelectorAll('[data-pref-notif]').forEach(function (c) { c.checked = !!pf.notifications[c.getAttribute('data-pref-notif')]; });
+      $('pref-status').className = ''; AIOL_I18N.set($('pref-status'), 'Saved to your account ({d}).', { d: { date: pf.updated_at } });
+      AIOL_I18N.set(msg, 'Reset. Your saved preferences are back to their defaults.');
+    }).catch(function (e) {
+      AIOL_I18N.set(msg, 'Not reset ({error}). Nothing was changed.', { error: e.message });
+    }).then(function () { resetBtn.disabled = false; });
   });
   // Log out: the token lives only in this page's memory, so leaving it is enough — open the login page afresh.
   document.querySelectorAll('[data-logout]').forEach(function (btn) { btn.addEventListener('click', function (e) {
@@ -15736,7 +15822,23 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Revoke": "باطل کردن",
     "Revoke platform admin from {email}?": "مدیریت پلتفرم از {email} باطل شود؟",
     "Platform admin revoked from {who}.": "مدیریت پلتفرم از {who} باطل شد.",
-    "Make admin": "مدیر کردن"
+    "Make admin": "مدیر کردن",
+    "Edit profile": "ویرایش نمایه",
+    "Edit account": "ویرایش حساب",
+    "Close editor": "بستن ویرایشگر",
+    "Edit my profile": "ویرایش نمایهٔ من",
+    "Your sign-in codes are sent to this email address.": "کدهای ورود شما به این نشانی ایمیل فرستاده می‌شوند.",
+    "Connect to AI Core to change your name or email address.": "برای تغییر نام یا نشانی ایمیل خود به AI Core وصل شوید.",
+    "Enter your name.": "نام خود را وارد کنید.",
+    "Enter a valid email address.": "یک نشانی ایمیل معتبر وارد کنید.",
+    "Nothing to save.": "چیزی برای ذخیره نیست.",
+    "That email address is already registered.": "این نشانی ایمیل قبلاً ثبت شده است.",
+    "Search products": "جست‌وجوی محصولات",
+    "Search by name or SKU…": "جست‌وجو با نام یا کد کالا…",
+    "No products match {query}.": "هیچ محصولی با {query} منطبق نیست.",
+    "Resetting…": "در حال بازنشانی…",
+    "Reset. Your saved preferences are back to their defaults.": "بازنشانی شد. ترجیحات ذخیره‌شدهٔ شما به پیش‌فرض برگشت.",
+    "Not reset ({error}). Nothing was changed.": "بازنشانی نشد ({error}). چیزی تغییر نکرد."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

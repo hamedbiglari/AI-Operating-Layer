@@ -52,6 +52,14 @@ def put_preferences(body: PreferencesIn, user: User = Depends(get_current_user),
                               usage_alert_threshold=80)
         db.add(row)
     data = body.model_dump(exclude_none=True)
+    # A reset (V5-settings-reset-backend) sends the defaults: an explicit empty `notifications` clears the stored
+    # overrides (every notification back to its default), an explicit `font: null` restores the system font.
+    # Any other partial update still merges, so one toggle never wipes the others.
+    if "font" in body.model_fields_set and body.font is None:
+        row.font = None
+    if data.get("notifications") == {}:
+        row.notifications = {}
+        del data["notifications"]
     if "notifications" in data:
         unknown = set(data["notifications"]) - set(NOTIFICATION_KEYS)
         if unknown:

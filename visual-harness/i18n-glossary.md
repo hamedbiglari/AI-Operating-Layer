@@ -1916,3 +1916,26 @@ Runtime text of the Research engine card (V5-settings-research-runtime-fa) and t
 | Revoke platform admin from {email}? | مدیریت پلتفرم از {email} باطل شود؟ |
 | Platform admin revoked from {who}. | مدیریت پلتفرم از {who} باطل شد. |
 | Make admin | مدیر کردن |
+
+## Self profile, product search and settings reset (debt, priority 1)
+
+The Settings name and email editor (V5-settings-self-profile), the Products search (V5-products-search) and the account-wide settings reset (V5-settings-reset-backend). SKU follows the glossary (کد کالا); AI Core stays as written.
+
+| English | Persian |
+|---|---|
+| Edit profile | ویرایش نمایه |
+| Edit account | ویرایش حساب |
+| Close editor | بستن ویرایشگر |
+| Edit my profile | ویرایش نمایهٔ من |
+| Your sign-in codes are sent to this email address. | کدهای ورود شما به این نشانی ایمیل فرستاده می‌شوند. |
+| Connect to AI Core to change your name or email address. | برای تغییر نام یا نشانی ایمیل خود به AI Core وصل شوید. |
+| Enter your name. | نام خود را وارد کنید. |
+| Enter a valid email address. | یک نشانی ایمیل معتبر وارد کنید. |
+| Nothing to save. | چیزی برای ذخیره نیست. |
+| That email address is already registered. | این نشانی ایمیل قبلاً ثبت شده است. |
+| Search products | جست‌وجوی محصولات |
+| Search by name or SKU… | جست‌وجو با نام یا کد کالا… |
+| No products match {query}. | هیچ محصولی با {query} منطبق نیست. |
+| Resetting… | در حال بازنشانی… |
+| Reset. Your saved preferences are back to their defaults. | بازنشانی شد. ترجیحات ذخیره‌شدهٔ شما به پیش‌فرض برگشت. |
+| Not reset ({error}). Nothing was changed. | بازنشانی نشد ({error}). چیزی تغییر نکرد. |

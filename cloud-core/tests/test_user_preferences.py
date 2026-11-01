@@ -35,3 +35,29 @@ def test_preferences_are_per_user_and_per_tenant(client: TestClient, register_or
 
 def test_preferences_require_authentication(client: TestClient) -> None:
     assert client.get(P).status_code == 401
+
+
+def test_reset_sends_the_defaults(client: TestClient, register_org) -> None:
+    """V5-settings-reset-backend: PUT with the defaults resets every stored preference; partial updates still merge."""
+    org = register_org()
+    h = org["headers"]
+    client.put(P, headers=h, json={"language": "fa", "theme": "dark", "font": "Vazirmatn",
+                                  "notifications": {"weekly_summary": False, "security_alerts": False},
+                                  "usage_alert_threshold": 95})
+    r = client.put(P, headers=h, json={"language": "en", "theme": "system", "font": None,
+                                       "notifications": {}, "usage_alert_threshold": 80})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["language"] == "en" and body["theme"] == "system" and body["font"] is None
+    assert body["usage_alert_threshold"] == 80
+    assert all(body["notifications"].values())                 # every notification back to its default (on)
+    again = client.get(P, headers=h).json()
+    assert again["font"] is None and all(again["notifications"].values())
+    # A later single toggle merges into the defaults and keeps the rest.
+    client.put(P, headers=h, json={"notifications": {"weekly_summary": False}})
+    n = client.get(P, headers=h).json()["notifications"]
+    assert n["weekly_summary"] is False and n["security_alerts"] is True
+    # Omitting font leaves it alone; only an explicit null clears it.
+    client.put(P, headers=h, json={"font": "Vazirmatn"})
+    client.put(P, headers=h, json={"theme": "dark"})
+    assert client.get(P, headers=h).json()["font"] == "Vazirmatn"

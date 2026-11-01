@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /*
  * Browser checks for the Products screen (Step 11).
- *   Sample: the Offers and Availability columns (V5-products-offer-summary),
- *           the search toolbar (V5-products-search) and New product
- *           (V5-products-create-ui) are hidden as debt.
+ *   Sample: the Offers and Availability columns (V5-products-offer-summary)
+ *           and New product (V5-products-create-ui) are hidden as debt; the
+ *           search toolbar shows and filters the sample rows.
+ *   Search (V5-products-search): connected, typing asks the server once
+ *           (&search=, back to the first page); no match says so.
  *   Live:   GET /products (one call, sorted by name, 50 per page); the
  *           status filter and the pager are server-side; a row opens from
  *           the loaded list and reads that product's offers (one call);
@@ -69,10 +71,12 @@ function installMock(data) {
     window.__requests.push(method + ' ' + p);
     if (window.__fail && p.indexOf(window.__fail) === 0) return reply({}, 500);
     const d = window.__data;
-    let m = p.match(/^\/products\?limit=50&offset=(\d+)&sort_by=name&sort_dir=asc(&status=(\w+))?$/);
+    let m = p.match(/^\/products\?limit=50&offset=(\d+)&sort_by=name&sort_dir=asc(&status=(\w+))?(&search=([^&]+))?$/);
     if (m) {
-      const items = m[3] ? d.products.filter((x) => x.status === m[3]) : d.products;
-      return reply({ items, total: m[3] ? items.length : d.total, limit: 50, offset: Number(m[1]) });
+      const q = m[5] ? decodeURIComponent(m[5]).toLowerCase() : '';
+      let items = m[3] ? d.products.filter((x) => x.status === m[3]) : d.products;
+      if (q) items = items.filter((x) => (x.name + ' ' + (x.sku || '')).toLowerCase().indexOf(q) !== -1);
+      return reply({ items, total: m[3] || q ? items.length : d.total, limit: 50, offset: Number(m[1]) });
     }
     m = p.match(/^\/products\/([^/]+)\/offers\?limit=200$/);
     if (m) { const items = d.offers[m[1]] || []; return reply({ items, total: items.length, limit: 200, offset: 0 }); }
@@ -86,7 +90,7 @@ function installMock(data) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(pageUrl);
-  const settle = () => page.waitForTimeout(150);
+  const settle = (ms) => page.waitForTimeout(ms || 150);
   const go = async (hash) => { await page.evaluate((h) => { location.hash = h; }, hash); await settle(); };
   const lang = async (l) => { await page.selectOption('#pick-lang', l); await settle(); };
   const connect = async () => { await page.evaluate(() => window.AIOL_LIVE_CONNECT('http://core.test', 'tok')); await settle(); };
@@ -119,10 +123,20 @@ function installMock(data) {
   });
 
   // Sample mode.
-  check('sample: Offers + Availability (3 rows + header), search and New product hidden as debt',
+  check('sample: Offers + Availability (3 rows + header) and New product hidden as debt; no search debt left',
     [(await shown('#screen-products [data-debt-hidden="V5-products-offer-summary"]')).filter((x) => !x).length,
       await shown('#screen-products [data-debt-hidden="V5-products-search"]'), await shown('#screen-products [data-debt-hidden="V5-products-create-ui"]')],
-    [8, [false], [false]]);
+    [8, [], [false]]);
+  const sampleRows = () => page.evaluate(() => Array.from(document.querySelectorAll('#screen-products .table-wrap tbody tr'))
+    .filter((tr) => !tr.hidden).map((tr) => tr.cells[0].textContent.trim()));
+  const allSample = await sampleRows();
+  const firstWord = allSample[0].split(/\s+/)[0];
+  await page.fill('#screen-products .toolbar input[type=search]', firstWord.toUpperCase()); await settle();
+  const filtered = await sampleRows();
+  check('sample: the toolbar filters the sample rows (case-insensitive)', [filtered.length >= 1, filtered.length < allSample.length,
+    filtered.every((t) => t.toLowerCase().indexOf(firstWord.toLowerCase()) !== -1)], [true, true, true]);
+  await page.fill('#screen-products .toolbar input[type=search]', ''); await settle();
+  check('sample: clearing the search shows every row again', (await sampleRows()).length, allSample.length);
 
   // Live.
   await page.evaluate(installMock, DATA);
@@ -158,6 +172,19 @@ function installMock(data) {
   v = await view();
   check('status filter: server-side, back to the first page', [(await requests()).slice(before), v.note, v.rows.length],
     [['GET /products?limit=50&offset=0&sort_by=name&sort_dir=asc&status=published'], '1' + EN + '1 of 1 product.', 1]);
+  await page.selectOption('#prod-status', ''); await settle();
+  before = (await requests()).length;
+  await page.fill('#prod-search', 'saf'); await settle(700);
+  v = await view();
+  check('search: one server request with &search=, first page; the matching row', [(await requests()).slice(before), v.note, v.rows.length],
+    [['GET /products?limit=50&offset=0&sort_by=name&sort_dir=asc&search=saf'], '1' + EN + '1 of 1 product.', 1]);
+  await page.fill('#prod-search', 'zzz'); await settle(700);
+  check('search: no match says so', await page.evaluate(() => document.querySelector('#screen-products .vis-live tbody').textContent.trim()),
+    'No products match ' + iso('zzz') + '.');
+  before = (await requests()).length;
+  await page.fill('#prod-search', ''); await settle(700);
+  check('search: cleared, the full list again', (await requests()).slice(before), ['GET /products?limit=50&offset=0&sort_by=name&sort_dir=asc']);
+  await page.selectOption('#prod-status', 'published'); await settle(300);
 
   // Persian.
   await lang('fa');
