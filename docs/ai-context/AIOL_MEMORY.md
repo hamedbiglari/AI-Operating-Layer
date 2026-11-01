@@ -121,13 +121,14 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): e7f245f
+- sha (last non-docs commit): 192c302
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ e7f245f (9E). 9D (4d4bd81, run 85) green; 9A-9C
-  (runs 81, 82, 84) green.
-- last code commit: "feat(ai): live ai center screen (9E)" @ e7f245f
-- last feature commit: "feat(ai): live ai center screen (9E)" @ e7f245f
+- last_ci: in_progress @ 192c302 (9F, run 87). 9E (code in cf95932,
+  run 86) green; 9D (4d4bd81, run 85) green; 9A-9C (runs 81, 82, 84)
+  green.
+- last code commit: "feat(ai): live command workspace screen (9F)" @ 192c302
+- last feature commit: "feat(ai): live command workspace screen (9F)" @ 192c302
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -353,6 +354,15 @@ file from scratch (do not diff). Output only the file content.
     console script stay English. The duplicate discovery read on
     connect is still there. e2e/ai-center.js (17); --require adds
     screen-ai-center.
+  - 9F @ 192c302 — #screen-chat (Command workspace) wired to the
+    backend; Rule 17 already satisfied by the backend. Core runtime
+    text (command list, editor header, save line, resume banner, plan
+    basics, versions, messages) through AIOL_I18N.set. 93 FA entries.
+    Debt V5-command-workspace-runtime-fa: the deep result renderers
+    (synthesis plan line, budget/filter/cost/coverage lines, audit
+    findings, per-result lists, publication message) still build
+    English by concatenation. e2e/command-workspace.js (18); --require
+    adds screen-chat.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -361,16 +371,16 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center
-  and 19 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat
+  and 20 browser suites.
 
 ## 5. In progress — next step
 
 - Step 8 (Knowledge tools) is DONE (see §4).
-- Step 9 (AI) is almost complete: 9A-9E done (see §4).
-- Next up: 9F (Command workspace) or Step 10 (Visibility, incl.
-  #screen-access). Also open from 9E: V5-ai-center-runtime-fa and the
-  duplicate discovery read on connect.
+- Step 9 (AI) is 100% complete: 9A-9F done (see §4).
+- Next up: Step 10 (Visibility, incl. #screen-access). Still open from
+  9E/9F: V5-ai-center-runtime-fa, V5-command-workspace-runtime-fa and
+  the duplicate discovery read on connect.
 - Debt rows added in 9A, both OPEN: V5-ai-prompts, V5-ai-center-deletes.
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
@@ -389,11 +399,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the 9F (Command workspace) prompt,
-or Step 10 if the user chooses.
+State in sync → user says "go" → send the Step 10 (Visibility) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the 9F (Command workspace) prompt.
+Case B — user says "go": send the Step 10 (Visibility) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -464,6 +473,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   change). Agent Network belongs to AI Center (9E), which is next.
 - v20 @ e7f245f — 9E shipped (AI Center: all static text in Persian; the
   three core tabs translated at runtime; data-live-keep fix). 9F next.
+- v21 @ 192c302 — 9F shipped (Command workspace live; core runtime text
+  translated; debt V5-command-workspace-runtime-fa). Step 9 is complete;
+  Step 10 (Visibility) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -681,8 +693,8 @@ Session / memory:
 - 7E Add source (Upload + URL only, ~1h).
 - Step 8 (Knowledge tools) complete: 8A, 8B-1, 8B-2, 8B-3, 8C, 8D.
   V5-matrix-coverage-runtime-fa is OPEN.
-- Step 9 (AI) almost complete: 9A-9E done; 9F remains (V5-ai-center-runtime-fa
-  open).
+- Step 9 (AI) complete: 9A-9F done (V5-ai-center-runtime-fa and
+  V5-command-workspace-runtime-fa open). Step 10 (Visibility) is next.
 - Steps 10–14 (Visibility, Commerce, Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
