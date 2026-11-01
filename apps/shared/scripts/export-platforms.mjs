@@ -10,7 +10,7 @@
 // Usage:  node scripts/export-platforms.mjs           write all four
 //         node scripts/export-platforms.mjs --check   verify, change nothing
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const shared = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -42,7 +42,7 @@ function filesUnder(dir, base = dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) out.push(...filesUnder(p, base));
-    else out.push(relative(base, p));
+    else out.push(relative(base, p).split(sep).join('/')); // '/' on every OS: the keys are platform paths, not Windows paths
   }
   return out.sort();
 }

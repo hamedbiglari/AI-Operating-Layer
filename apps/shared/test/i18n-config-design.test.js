@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { createI18n, MESSAGES } from '../app/src/core/i18n.js';
 import { validateApiBase } from '../app/src/config.js';
 import { isSafeExternalUrl } from '../app/src/core/platform.js';
@@ -59,7 +60,7 @@ test('external links: https and mailto only', () => {
 });
 
 test('the vendored design system is byte-identical to frontend/ (no second design system)', () => {
-  execFileSync(process.execPath, [new URL('../scripts/sync-design-system.mjs', import.meta.url).pathname, '--check']);
+  execFileSync(process.execPath, [fileURLToPath(new URL('../scripts/sync-design-system.mjs', import.meta.url)), '--check']);
 });
 
 test('client styles use tokens only: no colour literals outside rgba scrims', () => {

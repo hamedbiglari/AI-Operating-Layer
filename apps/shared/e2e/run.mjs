@@ -64,7 +64,8 @@ async function signIn(page, who) {
 }
 
 const server = await start(PORT);
-const browser = await chromium.launch();
+// PW_EXE: an installed Chromium to use instead of the one matching playwright-core (as in visual-harness/e2e).
+const browser = await chromium.launch(process.env.PW_EXE ? { executablePath: process.env.PW_EXE } : {});
 try {
   const owner = await makeOrg('owner');
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
