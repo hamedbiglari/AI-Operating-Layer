@@ -98,3 +98,25 @@ def test_tenant_routes_stay_isolated_for_a_platform_admin(client, db_session, re
     assert [u["id"] for u in mine["items"]] == [a["user"]["id"]]
     assert client.get(f"/api/v1/users/{other['id']}", headers=h).status_code == 404
     assert client.get("/api/v1/organizations/me", headers=h).json()["id"] == a["organization"]["id"]
+
+
+def test_grant_and_revoke_platform_admin(client, db_session, register_org):
+    a, b = register_org(), register_org()
+    member = _member(client, b["headers"], "editor", "Grant Me")
+    _grant(db_session, a)
+    h = a["headers"]
+    assert client.post(f"{A}/grant", headers=b["headers"], json={"email": member["email"]}).status_code == 403
+    r = client.post(f"{A}/grant", headers=h, json={"email": member["email"].upper()})
+    assert r.status_code == 200 and r.json()["is_platform_admin"] is True and r.json()["organization_name"]
+    assert client.post(f"{A}/grant", headers=h, json={"user_id": member["id"]}).status_code == 200   # idempotent
+    mh = _login(client, member["email"])
+    assert client.get(f"{A}/overview", headers=mh).status_code == 200
+    listed = client.get(f"{A}/users", headers=h, params={"q": member["email"]}).json()["items"][0]
+    assert listed["is_platform_admin"] is True
+    assert client.post(f"{A}/grant", headers=h, json={"email": "nobody@example.com"}).status_code == 404
+    assert client.post(f"{A}/grant", headers=h, json={}).status_code == 422
+    assert client.post(f"{A}/grant", headers=h, json={"email": member["email"], "user_id": member["id"]}).status_code == 422
+    assert client.delete(f"{A}/grant/{a['user']['id']}", headers=h).status_code == 409          # not your own
+    assert client.delete(f"{A}/grant/{member['id']}", headers=h).status_code == 204
+    assert client.get(f"{A}/overview", headers=mh).status_code == 403
+    assert client.delete(f"{A}/grant/{member['id']}", headers=h).status_code == 404

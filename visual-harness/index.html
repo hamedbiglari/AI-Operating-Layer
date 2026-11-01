@@ -10964,9 +10964,48 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   }
   function adminUsersScreen(panel) {
     var LIMIT = 50, st = { offset: 0, q: '' };
+    // Grant or revoke, then re-read the list and say what happened; the server's refusals get their own sentence.
+    function changeGrant(p, call, done, args) {
+      call.then(function () { return panel.__visLoad(); }).then(function () { p.say('done', done, args); }).catch(function (e) {
+        if (e.status === 404) p.say('error', 'No user or platform admin matches that.');
+        else if (e.status === 409) p.say('error', 'You cannot revoke your own platform-admin grant.');
+        else if (e.status === 422) p.say('error', 'Enter a valid email or user ID.');
+        else p.say('error', '{error}', { error: e.message });
+      });
+    }
+    function grantCell(p, u, me) {
+      var w = el('span', 'aic-actions');
+      if (u.is_platform_admin) {
+        w.appendChild(visBadge({ yes: ['Platform admin', 'badge--info'] }, 'yes'));
+        if (!me || !me.user || me.user.id !== u.id) {
+          var rv = w.appendChild(el('button', 'btn btn--quiet btn--danger')); rv.type = 'button'; AIOL_I18N.set(rv, 'Revoke');
+          rv.addEventListener('click', function () {
+            var ask = el('span'); AIOL_I18N.set(ask, 'Revoke platform admin from {email}?', { email: u.email });
+            if (!window.confirm(ask.textContent)) return;
+            changeGrant(p, api('/admin/grant/' + encodeURIComponent(u.id), { method: 'DELETE' }), 'Platform admin revoked from {who}.', { who: u.email });
+          });
+        }
+      } else {
+        var gr = w.appendChild(el('button', 'btn btn--quiet')); gr.type = 'button'; AIOL_I18N.set(gr, 'Make admin');
+        gr.addEventListener('click', function () {
+          changeGrant(p, api('/admin/grant', { method: 'POST', body: { user_id: u.id } }), 'Platform admin granted to {who}.', { who: u.email });
+        });
+      }
+      return w;
+    }
     return visScreen(panel, 'screen-admin-users', function (body) {
       var p = {};
       p.bar = adminSearch(body, 'admin-users-q', 'Search by name, email or organization', st, function () { panel.__visLoad(); });
+      // Platform admins grant or revoke the platform-admin role here (V5-admin-grant).
+      var grantBtn = p.bar.appendChild(el('button', 'btn')); grantBtn.type = 'button'; grantBtn.id = 'admin-grant';
+      AIOL_I18N.set(grantBtn, 'Grant admin…');
+      grantBtn.addEventListener('click', function () {
+        var who = window.prompt(AIOL_I18N.format('Grant platform admin to which user? Enter an email or a user ID.', {}, AIOL_I18N.lang()));
+        if (!who || !who.trim()) return;
+        who = who.trim();
+        changeGrant(p, api('/admin/grant', { method: 'POST', body: /^[0-9a-f-]{36}$/i.test(who) ? { user_id: who } : { email: who } }),
+          'Platform admin granted to {who}.', { who: who });
+      });
       p.card = visCard(body, 'Users'); p.note = p.card.appendChild(el('p', 'vis-note')); p.table = p.card.appendChild(el('div'));
       p.pager = adminPager(p.card, st, LIMIT, function () { panel.__visLoad(); });
       return p;
@@ -10975,18 +11014,20 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         var platform = !!(me && me.is_platform_admin);
         var path = platform ? '/admin/users?limit=' + LIMIT + '&offset=' + st.offset + (st.q ? '&q=' + encodeURIComponent(st.q) : '')
           : '/users?limit=' + LIMIT + '&offset=' + st.offset;
-        return api(path).then(function (page) { return { page: page, platform: platform }; });
+        return api(path).then(function (page) { return { page: page, platform: platform, me: me }; });
       });
-    }, function (p, r) {
+    }, function (p, r, status) {
+      p.say = status;
       var page = r.page; p.bar.hidden = !r.platform; p.table.textContent = '';
       AIOL_I18N.set(p.note, r.platform ? 'Every user on the platform: {n|user|users}.' : 'Users of your organization: {n|user|users}.', { n: page.total });
-      var heads = r.platform ? ['Name', 'Email', 'Organization', 'Role', 'Status', 'Joined'] : ['Name', 'Email', 'Role', 'Status', 'Joined'];
+      var heads = r.platform ? ['Name', 'Email', 'Organization', 'Role', 'Status', 'Joined', 'Platform admin'] : ['Name', 'Email', 'Role', 'Status', 'Joined'];
       var rows = visTable(p.table, r.platform ? 'Every user on the platform' : 'Users of your organization', heads);
       page.items.forEach(function (u) {
         var a = el('a'); a.href = '#screen-admin-user-detail?id=' + encodeURIComponent(u.id); a.appendChild(adminText(u.name));
         var cells = [a, identifier(u.email)];
         if (r.platform) cells.push(adminText(u.organization_name));
         cells.push(visWord(el('span'), ADMIN_ROLE, u.role), visBadge(ADMIN_USER_STATUS, u.status), adminDay(u.created_at));
+        if (r.platform) cells.push(grantCell(p, u, r.me));
         visRow(rows, cells);
       });
       if (!page.items.length) visRow(rows, [AIOL_I18N.set(visNA(), 'No users match.')]);
@@ -12246,7 +12287,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function api(path, method, body) { var L = live(); var h = { Authorization: 'Bearer ' + L.token }; if (body) h['Content-Type'] = 'application/json';
     return fetch(L.base + '/api/v1' + path, { method: method || 'GET', headers: h, body: body ? JSON.stringify(body) : undefined })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) throw new Error((b.error && b.error.message) || ('HTTP ' + r.status)); return b; }); }); }
-  function msg(t) { $('rq-msg').textContent = t; }
+  // Every message is a template (V5-settings-research-runtime-fa): it follows the language switch; fixed labels
+  // added to the page are translated by the Persian layer as they appear. Server text is shown as sent in {error}.
+  function msg(t, a) { AIOL_I18N.set($('rq-msg'), t || '', a); }
+  function tpl(tag, cls, t, a) { var n = el(tag, cls); AIOL_I18N.set(n, t, a); return n; }
   function link(href, text) { var a = el('a', null, text); a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; return a; }
   var ACCESS = { full_text_available: ['Full text read', 'badge--success'], abstract_only: ['Abstract only', 'badge--info'], metadata_only: ['Metadata only', 'badge--warning'],
     restricted: ['Restricted', 'badge--danger'], unavailable: ['Unavailable', 'badge--danger'], unknown: ['Unknown', 'badge--unknown'] };
@@ -12260,19 +12304,20 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     r.items.forEach(function (k) { var o = el('option', null, k.canonical_name); o.value = k.id; s.appendChild(o); }); return loadKws(); }); }
   function loadKws() { var ko = $('rq-ko').value; var s = $('rq-kws'); s.textContent = ''; if (!ko) return Promise.resolve();
     return api('/knowledge/' + ko + '/keywords?limit=200').then(function (r) { r.items.forEach(function (k) { var o = el('option', null, k.keyword + ' — ' + k.kind.replace(/_/g, ' ')); o.value = k.id; s.appendChild(o); }); }); }
-  function showRun(d, title) {
-    var box = $('rq-run'); box.textContent = ''; box.appendChild(el('h3', null, title));
-    box.appendChild(el('p', 'aic-hint', 'Query: ' + d.query + ' — ' + d.unique_sources + ' unique source(s), ' + d.new_sources + ' new, ' + d.merged_duplicates + ' duplicate hit(s) merged.'));
+  function showRun(d, title, targs) {
+    var box = $('rq-run'); box.textContent = ''; box.appendChild(tpl('h3', null, title, targs));
+    box.appendChild(tpl('p', 'aic-hint', 'Query: {query} — {unique|unique source|unique sources}, {new} new, {merged|duplicate hit|duplicate hits} merged.',
+      { query: d.query, unique: d.unique_sources, new: d.new_sources, merged: d.merged_duplicates }));
     box.appendChild(table([['Provider', function (p) { return p.provider; }], ['Status', function (p) { return el('span', 'badge ' + (p.status === 'ok' ? 'badge--success' : p.status === 'failed' ? 'badge--danger' : 'badge--unknown'), p.status.replace('_', ' ')); }],
       ['Results', function (p) { return p.result_count; }], ['Error', function (p) { return p.error; }]], d.providers));
     if (!d.source_ids.length) return;
-    Promise.all(d.source_ids.slice(0, 30).map(function (id) { return api('/research/sources/' + id + '/detail'); })).then(function (rows) {
+    api('/research/sources/summaries?ids=' + d.source_ids.slice(0, 50).join(',')).then(function (rows) {
       box.appendChild(table([['Source', function (s) { var b = el('button', 'btn btn--quiet', s.title); b.type = 'button'; b.onclick = function () { showSource(s.id); }; return b; }],
         ['What the system holds', function (s) { return accessBadge(s.content_access); }], ['DOI', function (s) { return s.doi; }], ['PMID', function (s) { return s.pmid; }],
         ['Review', function (s) { return s.review_status.replace('_', ' '); }]], rows)); });
   }
   function showSource(id) { api('/research/sources/' + id + '/detail').then(function (s) {
-    var box = $('rq-source'); box.textContent = ''; box.appendChild(el('h3', null, 'Source: ' + s.title));
+    var box = $('rq-source'); box.textContent = ''; box.appendChild(tpl('h3', null, 'Source: {title}', { title: s.title }));
     if (s.message) box.appendChild(el('p', 'rq-warn', s.message));
     var dl = el('dl', 'kv');
     [['DOI', s.doi], ['PMID', s.pmid], ['Publisher / journal', s.publisher], ['Existence', s.existence], ['What was actually accessed', (s.what_was_accessed || []).join(', ') || 'nothing'],
@@ -12284,8 +12329,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (!s.full_text_accessed) { var ab = el('button', 'btn btn--quiet', 'Fetch full text'); ab.type = 'button';
         ab.onclick = function () { ab.disabled = true; msg('Fetching the open-access copy…');
           api('/research/sources/' + s.id + '/acquire-full-text', 'POST', { url: u }).then(function (r) {
-            msg(r.acquired ? 'Full text acquired and converted (' + r.converted_bytes + ' bytes). The system has now read this source.' : 'Not acquired: ' + r.reason + '. Nothing was claimed.');
-            showSource(s.id); }).catch(function (e) { msg('Not acquired: ' + e.message); }).then(function () { ab.disabled = false; }); };
+            if (r.acquired) msg('Full text acquired and converted ({bytes} bytes). The system has now read this source.', { bytes: r.converted_bytes });
+            else msg('Not acquired: {reason}. Nothing was claimed.', { reason: r.reason });
+            showSource(s.id); }).catch(function (e) { msg('Not acquired: {error}', { error: e.message }); }).then(function () { ab.disabled = false; }); };
         links.appendChild(ab); } }); else links.appendChild(document.createTextNode('none known'));
     box.appendChild(links);
     if (s.access_blocked_reason) box.appendChild(el('p', 'rq-warn', s.access_blocked_reason));
@@ -12309,12 +12355,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
             var docId = b.document_id, tries = 0;
             (function attach() { tries++;
               api('/research/sources/' + s.id + '/attach-full-text', 'POST', { document_id: docId }).then(function (r) {
-                if (r.attached) { msg('Full text attached (' + r.converted_bytes + ' bytes parsed). This source is now readable by the system.'); showSource(s.id); return; }
-                if (/not been parsed/.test(r.reason || '') && tries < 20) { setTimeout(attach, 3000); msg('Still processing the file… (' + tries + ')'); return; }
-                msg('Not attached: ' + r.reason + '. The source was left unchanged.'); })
-                .catch(function (err) { msg('Not attached: ' + err.message); }); })();
+                if (r.attached) { msg('Full text attached ({bytes} bytes parsed). This source is now readable by the system.', { bytes: r.converted_bytes }); showSource(s.id); return; }
+                if (/not been parsed/.test(r.reason || '') && tries < 20) { setTimeout(attach, 3000); msg('Still processing the file… ({n})', { n: tries }); return; }
+                msg('Not attached: {reason}. The source was left unchanged.', { reason: r.reason }); })
+                .catch(function (err) { msg('Not attached: {error}', { error: err.message }); }); })();
           })
-          .catch(function (err) { msg('Upload failed: ' + err.message); })
+          .catch(function (err) { msg('Upload failed: {error}', { error: err.message }); })
           .then(function () { ub.disabled = false; });
       });
       acq.appendChild(up);
@@ -12329,37 +12375,37 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var sb = el('button', 'btn', 'Record'); sb.type = 'submit'; st.appendChild(sb);
       st.addEventListener('submit', function (e) { e.preventDefault(); if (!ss.value) { msg('Choose what you found.'); return; }
         api('/research/sources/' + s.id + '/access-state', 'POST', { state: ss.value, reason: ri.value.trim() || null })
-          .then(function () { msg('Recorded.'); showSource(s.id); }).catch(function (err) { msg(err.message); }); });
+          .then(function () { msg('Recorded.'); showSource(s.id); }).catch(function (err) { msg('{error}', { error: err.message }); }); });
       acq.appendChild(st); box.appendChild(acq);
     }
-    box.appendChild(el('h4', null, 'Research history (' + s.research_history.length + ')'));
+    box.appendChild(tpl('h4', null, 'Research history ({n})', { n: s.research_history.length }));
     box.appendChild(table([['Provider', function (h) { return h.provider; }], ['Query', function (h) { return h.query; }], ['Route', function (h) { return h.route.replace(/_/g, ' '); }], ['Matched on', function (h) { return h.matched_on; }]], s.research_history));
-    box.appendChild(el('p', null, 'Reviewed evidence: ' + s.extracted_evidence.length + ' · awaiting review: ' + s.unreviewed_evidence.length));
+    box.appendChild(tpl('p', null, 'Reviewed evidence: {done} · awaiting review: {waiting}', { done: s.extracted_evidence.length, waiting: s.unreviewed_evidence.length }));
     box.scrollIntoView({ block: 'nearest' });
-  }).catch(function (e) { msg(e.message); }); }
+  }).catch(function (e) { msg('{error}', { error: e.message }); }); }
   function loadQuestions() { return api('/research/questions?limit=20').then(function (r) { var box = $('rq-questions'); box.textContent = '';
     if (!r.items.length) { box.appendChild(el('p', 'aic-empty', 'No research questions yet.')); return; }
     box.appendChild(table([['Question', function (q) { var b = el('button', 'btn btn--quiet', q.question_text); b.type = 'button'; b.onclick = function () { showMap(q.id); }; return b; }],
       ['Subject', function (q) { return q.subject; }], ['Compound', function (q) { return q.compound; }], ['Outcome', function (q) { return q.outcome; }]], r.items)); }); }
   function showMap(qid) { api('/research/questions/' + qid + '/evidence-map').then(function (m) {
-    var box = $('rq-map'); box.textContent = ''; box.appendChild(el('h3', null, 'Evidence map: ' + m.question));
+    var box = $('rq-map'); box.textContent = ''; box.appendChild(tpl('h3', null, 'Evidence map: {question}', { question: m.question }));
     var sum = el('div', 'rq-summary'); Object.keys(m.status_summary).forEach(function (k) { var d = el('div'); d.appendChild(el('strong', null, k.replace(/_/g, ' '))); d.appendChild(document.createTextNode(m.status_summary[k].replace(/_/g, ' '))); sum.appendChild(d); });
     box.appendChild(sum); box.appendChild(el('p', 'rq-warn', m.note));
     var act = el('div', 'rq-review'); var ex = el('button', 'btn', 'Extract candidates from what the system holds'); ex.type = 'button';
-    ex.onclick = function () { api('/research/questions/' + qid + '/extract-candidates', 'POST').then(function (r) { msg(r.created_candidates + ' candidate(s) created for review; ' + r.sources_without_accessible_text + ' source(s) had no readable text.'); showMap(qid); }).catch(function (e) { msg(e.message); }); };
+    ex.onclick = function () { api('/research/questions/' + qid + '/extract-candidates', 'POST').then(function (r) { msg('{created|candidate|candidates} created for review; {unreadable|source|sources} had no readable text.', { created: r.created_candidates, unreadable: r.sources_without_accessible_text }); showMap(qid); }).catch(function (e) { msg('{error}', { error: e.message }); }); };
     act.appendChild(ex); box.appendChild(act);
     [['Directly supported', m.directly_supported], ['Indirectly supported', m.indirectly_supported]].forEach(function (g) {
-      box.appendChild(el('h4', null, g[0] + ' (' + g[1].length + ')'));
+      box.appendChild(tpl('h4', null, g[0] + ' ({n})', { n: g[1].length }));
       if (g[1].length) box.appendChild(table([['Route', function (e) { return e.route.replace(/_/g, ' '); }], ['Tested', function (e) { return e.subject_tested; }], ['Basis', function (e) { return e.basis; }],
         ['Source', function (e) { var b = el('button', 'btn btn--quiet', 'Open'); b.type = 'button'; b.onclick = function () { showSource(e.source_id); }; return b; }]], g[1])); });
     var routeRows = Object.keys(m.routes || {}).filter(function (r) { return m.routes[r].sources || m.routes[r].verified || m.routes[r].awaiting_review; });
     if (routeRows.length) { box.appendChild(el('h4', null, 'Evidence routes \u2014 kept separate'));
       box.appendChild(table([['Route', function (r) { return r.replace(/_/g, ' '); }], ['Sources', function (r) { return m.routes[r].sources; }],
         ['Reviewed', function (r) { return m.routes[r].verified; }], ['Awaiting review', function (r) { return m.routes[r].awaiting_review; }],
-        ['Counts as', function (r) { return r === 'direct_subject' ? 'direct evidence for ' + m.subject : 'indirect'; }]], routeRows)); }
+        ['Counts as', function (r) { return r === 'direct_subject' ? tpl('span', null, 'direct evidence for {subject}', { subject: m.subject }) : tpl('span', null, 'indirect'); }]], routeRows)); }
     api('/research/questions/' + qid + '/dependency-graph').then(function (dg) {
       box.appendChild(el('h4', null, 'How many independent findings'));
-      box.appendChild(el('p', null, dg.sources + ' source(s) rest on ' + dg.independent_evidence_count + ' independent finding(s).'));
+      box.appendChild(tpl('p', null, '{sources|source rests|sources rest} on {findings|independent finding|independent findings}.', { sources: dg.sources, findings: dg.independent_evidence_count }));
       var grouped = (dg.groups || []).filter(function (g) { return g.size > 1; });
       if (grouped.length) box.appendChild(table([['Independent finding', function (g) { return g.independent_finding; }],
         ['Sources', function (g) { return g.size; }], ['Grouped as', function (g) { return g.members.filter(function (m) { return m.role !== 'primary'; }).map(function (m) { return m.role; }).join(', '); }]], grouped));
@@ -12369,8 +12415,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       box.appendChild(el('h4', null, 'Should the search stop?'));
       var line = el('p'); line.appendChild(el('span', 'badge ' + (sa.saturated ? 'badge--success' : 'badge--unknown'),
         sa.saturated ? 'Saturation reached' : 'Not saturated'));
-      line.appendChild(document.createTextNode(' ' + sa.reason.replace(/_/g, ' ') + ' \u2014 ' + sa.iterations_run + ' of ' + sa.max_iterations + ' rounds run'
-        + (sa.routes_not_yet_run.length ? '; still to run: ' + sa.routes_not_yet_run.map(function (r) { return r.replace(/_/g, ' '); }).join(', ') : '')));
+      line.appendChild(document.createTextNode(' '));
+      var rounds = { reason: sa.reason.replace(/_/g, ' '), run: sa.iterations_run, max: sa.max_iterations,
+        routes: sa.routes_not_yet_run.map(function (r) { return r.replace(/_/g, ' '); }).join(', ') };
+      line.appendChild(sa.routes_not_yet_run.length ? tpl('span', null, '{reason} \u2014 {run} of {max} rounds run; still to run: {routes}', rounds)
+        : tpl('span', null, '{reason} \u2014 {run} of {max} rounds run', rounds
+        ));
       box.appendChild(line);
       if (sa.new_sources_per_round.length) box.appendChild(table([['Round', function (r) { return r.iteration; }],
         ['Route', function (r) { return r.route.replace(/_/g, ' '); }], ['Seen', function (r) { return r.seen; }],
@@ -12378,14 +12428,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       box.appendChild(el('p', 'aic-hint', sa.note));
       var sb = el('button', 'btn', sa.saturated ? 'Reopen the search' : 'Stop here (budget reached)'); sb.type = 'button';
       sb.onclick = function () { api('/research/questions/' + qid + '/saturation', 'POST',
-        { reason: sa.saturated ? 'not_saturated' : 'budget_reached' }).then(function () { showMap(qid); }).catch(function (e) { msg(e.message); }); };
+        { reason: sa.saturated ? 'not_saturated' : 'budget_reached' }).then(function () { showMap(qid); }).catch(function (e) { msg('{error}', { error: e.message }); }); };
       var sact = el('div', 'rq-review'); sact.appendChild(sb); box.appendChild(sact);
     }).catch(function () {});
     var gb = el('button', 'btn', 'Show the evidence graph'); gb.type = 'button';
     gb.onclick = function () { api('/research/questions/' + qid + '/evidence-graph').then(function (g) {
       var gx = el('div', 'rq-graph'); gx.appendChild(el('h4', null, 'Subject, compounds, studies and outcome'));
       gx.appendChild(el('p', 'rq-warn', g.reading));
-      gx.appendChild(el('p', null, 'Studies that tested ' + g.subject + ' itself: ' + g.direct_paths_to_subject));
+      gx.appendChild(tpl('p', null, 'Studies that tested {subject} itself: {n}', { subject: g.subject, n: g.direct_paths_to_subject }));
       var ul = el('ul'); ul.style.paddingInlineStart = 'var(--space-5)';
       g.edges.forEach(function (e) { var li = el('li'); var b = el('bdi');
         var from = (g.nodes.filter(function (n) { return n.id === e.from; })[0] || {}).label || e.from;
@@ -12395,7 +12445,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         else b.textContent = '"' + from + '" reports ' + to + ' \u2014 ' + e.directness;
         li.appendChild(b); ul.appendChild(li); });
       gx.appendChild(ul); var prev = document.querySelector('#rq-map .rq-graph'); if (prev) prev.remove(); box.appendChild(gx);
-    }).catch(function (err) { msg(err.message); }); };
+    }).catch(function (err) { msg('{error}', { error: err.message }); }); };
     var gact = el('div', 'rq-review'); gact.appendChild(gb); box.appendChild(gact);
     box.appendChild(el('h4', null, 'Disagreements between findings'));
     (function () {
@@ -12413,10 +12463,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
             ['', function (c) { var w = el('span', 'rq-links');
               ['under_review', 'resolved', 'unresolvable'].forEach(function (st) {
                 var b2 = el('button', 'btn btn--quiet', st.replace(/_/g, ' ')); b2.type = 'button';
-                b2.onclick = function () { var why = (st === 'under_review') ? null : window.prompt('Why? A resolution needs a written reason.');
+                b2.onclick = function () { var why = (st === 'under_review') ? null : window.prompt(AIOL_I18N.format('Why? A resolution needs a written reason.', {}, AIOL_I18N.lang()));
                   if (st !== 'under_review' && !why) return;
                   api('/evidence-conflicts/' + c.id + '/review', 'POST', { status: st, note: why })
-                    .then(function () { msg('Recorded.'); draw(); }).catch(function (e) { msg(e.message); }); };
+                    .then(function () { msg('Recorded.'); draw(); }).catch(function (e) { msg('{error}', { error: e.message }); }); };
                 w.appendChild(b2); }); return w; }]], r.items));
             cbox.appendChild(el('p', 'aic-hint', r.items[0].note)); }
         }).catch(function (e) { cbox.textContent = e.message; });
@@ -12425,52 +12475,53 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       find.onclick = function () { var ids = m.conflicting_claim_ids || [];
         if (!ids.length) { msg('No claim on this question has both supporting and contradicting evidence yet.'); draw(); return; }
         Promise.all(ids.map(function (cid) { return api('/evidence-conflicts/detect/' + cid, 'POST'); }))
-          .then(function (rs) { msg(rs.reduce(function (n, x) { return n + x.created; }, 0) + ' disagreement(s) recorded.'); draw(); })
-          .catch(function (e) { msg(e.message); }); };
+          .then(function (rs) { msg('{n|disagreement|disagreements} recorded.', { n: rs.reduce(function (n, x) { return n + x.created; }, 0) }); draw(); })
+          .catch(function (e) { msg('{error}', { error: e.message }); }); };
       var row = el('div', 'rq-review'); row.appendChild(find); box.appendChild(row);
       draw();
     })();
 
-    box.appendChild(el('h4', null, 'Awaiting human review (' + m.awaiting_review.length + ')'));
+    box.appendChild(tpl('h4', null, 'Awaiting human review ({n})', { n: m.awaiting_review.length }));
     m.awaiting_review.forEach(function (c) { var row = el('div', 'rq-review'); row.appendChild(el('span', 'badge badge--info', c.route.replace(/_/g, ' ')));
       var lab = el('label', 'field'); lab.appendChild(el('span', 'field__label', 'What did the study actually test?')); var inp = el('input'); inp.placeholder = m.subject + ' / ' + (m.compound || '…'); lab.appendChild(inp); row.appendChild(lab);
       var ok = el('button', 'btn btn--primary', 'Approve'), no = el('button', 'btn', 'Reject'), op = el('button', 'btn btn--quiet', 'Source'); ok.type = no.type = op.type = 'button';
       function send(decision) { api('/research/evidence-candidates/' + c.id + '/review', 'POST', { decision: decision, subject_tested: inp.value.trim() || null })
-        .then(function (r) { msg('Reviewed: ' + r.status + ', ' + r.directness + ' (' + (r.route || '').replace(/_/g, ' ') + ')'); showMap(qid); }).catch(function (e) { msg(e.message); }); }
+        .then(function (r) { msg('Reviewed: {status}, {directness} ({route})', { status: r.status, directness: r.directness, route: (r.route || '').replace(/_/g, ' ') }); showMap(qid); }).catch(function (e) { msg('{error}', { error: e.message }); }); }
       ok.onclick = function () { send('approve'); }; no.onclick = function () { send('reject'); }; op.onclick = function () { showSource(c.source_id); };
       row.appendChild(ok); row.appendChild(no); row.appendChild(op); box.appendChild(row); });
-    box.appendChild(el('h4', null, 'Found but not read by the system (' + m.inaccessible.length + ')'));
+    box.appendChild(tpl('h4', null, 'Found but not read by the system ({n})', { n: m.inaccessible.length }));
     if (m.inaccessible.length) box.appendChild(table([['Source', function (s) { var b = el('button', 'btn btn--quiet', s.title); b.type = 'button'; b.onclick = function () { showSource(s.source_id); }; return b; }],
       ['Holds', function (s) { return accessBadge(s.content_access); }], ['Get it', function (s) { var p = el('span', 'rq-links'); var a = s.acquisition_paths || {};
         ['doi', 'pubmed', 'europepmc', 'library_search'].forEach(function (k) { if (a[k]) p.appendChild(link(a[k], k.replace('_', ' '))); }); return p; }]], m.inaccessible));
-    box.appendChild(el('h4', null, 'Missing: ' + (m.missing_routes.map(function (r) { return r.replace(/_/g, ' '); }).join(', ') || 'none')));
+    box.appendChild(m.missing_routes.length ? tpl('h4', null, 'Missing: {routes}', { routes: m.missing_routes.map(function (r) { return r.replace(/_/g, ' '); }).join(', ') })
+      : tpl('h4', null, 'Missing: none'));
     box.appendChild(el('h4', null, 'Suggested manual searches'));
     m.suggested_manual_searches.forEach(function (sg) { var row = el('div', 'rq-review'); row.appendChild(el('span', 'badge badge--unknown', sg.route.replace(/_/g, ' ')));
       var pl = el('span', 'rq-links'); pl.appendChild(link(sg.pubmed, 'PubMed')); pl.appendChild(link(sg.europepmc, 'Europe PMC')); pl.appendChild(link(sg.library, 'Library')); row.appendChild(pl);
       var fm = el('button', 'btn', 'Find more'); fm.type = 'button'; fm.onclick = function () { api('/research/questions/' + qid + '/find-more', 'POST', { route: sg.route, extra_terms: [] })
-        .then(function (d) { showRun(d, 'Find more: ' + sg.route.replace(/_/g, ' ')); showMap(qid); }).catch(function (e) { msg(e.message); }); };
+        .then(function (d) { showRun(d, 'Find more: {route}', { route: sg.route.replace(/_/g, ' ') }); showMap(qid); }).catch(function (e) { msg('{error}', { error: e.message }); }); };
       row.appendChild(fm); box.appendChild(row); });
     box.scrollIntoView({ block: 'nearest' });
-  }).catch(function (e) { msg(e.message); }); }
-  $('rq-ko').onchange = function () { loadKws().catch(function (e) { msg(e.message); }); };
+  }).catch(function (e) { msg('{error}', { error: e.message }); }); }
+  $('rq-ko').onchange = function () { loadKws().catch(function (e) { msg('{error}', { error: e.message }); }); };
   $('rq-mode').onchange = function () { $('rq-bool-wrap').hidden = $('rq-mode').value !== 'boolean'; };
   $('rq-kw-form').addEventListener('submit', function (e) { e.preventDefault(); msg('Searching Crossref, PubMed and Europe PMC…');
     var ids = Array.prototype.map.call($('rq-kws').selectedOptions, function (o) { return o.value; });
     api('/research/federated/keyword-search', 'POST', { knowledge_object_id: $('rq-ko').value, keyword_ids: ids, mode: $('rq-mode').value, boolean_query: $('rq-bool').value || null })
-      .then(function (d) { msg(''); showRun(d, 'Search results'); }).catch(function (err) { msg(err.message); }); });
+      .then(function (d) { msg(''); showRun(d, 'Search results'); }).catch(function (err) { msg('{error}', { error: err.message }); }); });
   $('rq-q-form').addEventListener('submit', function (e) { e.preventDefault(); if (!$('rq-subject').value.trim()) { msg('A subject is required.'); return; }
     msg('Running the searches…');
     api('/research/questions', 'POST', { knowledge_object_id: $('rq-ko').value || null, subject: $('rq-subject').value.trim(),
       compounds: $('rq-compound').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
       related_species: $('rq-species').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
       outcome: $('rq-outcome').value.trim() || null, population: $('rq-pop').value.trim() || null })
-      .then(function (r) { msg(''); loadQuestions(); showMap(r.research_question_id); }).catch(function (err) { msg(err.message); }); });
+      .then(function (r) { msg(''); loadQuestions(); showMap(r.research_question_id); }).catch(function (err) { msg('{error}', { error: err.message }); }); });
   function loadGaps() { return api('/knowledge-gaps?limit=20&status=open').then(function (r) { var box = $('rq-gaps'); box.textContent = '';
     if (!r.items.length) { box.appendChild(el('p', 'aic-empty', 'No open knowledge gaps.')); return; }
     box.appendChild(table([['Gap', function (g) { return g.description; }], ['Type', function (g) { return g.gap_type.replace(/_/g, ' '); }], ['Priority', function (g) { return g.priority; }],
       ['', function (g) { var b = el('button', 'btn', 'Find more'); b.type = 'button'; b.onclick = function () { msg('Searching for this gap…');
-        api('/research/knowledge-gaps/' + g.id + '/find-more', 'POST').then(function (d) { msg(''); loadQuestions(); showMap(d.research_question_id); }).catch(function (e) { msg(e.message); }); }; return b; }]], r.items)); }); }
-  document.addEventListener('aiol:live', function () { $('rq-note').hidden = true; $('rq-body').hidden = false; loadKOs().catch(function (e) { msg(e.message); }); loadQuestions().catch(function () {}); loadGaps().catch(function () {}); });
+        api('/research/knowledge-gaps/' + g.id + '/find-more', 'POST').then(function (d) { msg(''); loadQuestions(); showMap(d.research_question_id); }).catch(function (e) { msg('{error}', { error: e.message }); }); }; return b; }]], r.items)); }); }
+  document.addEventListener('aiol:live', function () { $('rq-note').hidden = true; $('rq-body').hidden = false; loadKOs().catch(function (e) { msg('{error}', { error: e.message }); }); loadQuestions().catch(function () {}); loadGaps().catch(function () {}); });
 })();
 </script>
 <script>
@@ -15415,7 +15466,137 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Users (AI Core)": "کاربران (AI Core)",
     "User (AI Core)": "کاربر (AI Core)",
     "Platform overview (AI Core)": "نمای کلی پلتفرم (AI Core)",
-    "Organizations (AI Core)": "سازمان‌ها (AI Core)"
+    "Organizations (AI Core)": "سازمان‌ها (AI Core)",
+    "Full text read": "متن کامل خوانده شد",
+    "Metadata only": "فقط فراداده",
+    "Restricted": "محدود",
+    "Unavailable": "در دسترس نیست",
+    "Query: {query} — {unique|unique source|unique sources}, {new} new, {merged|duplicate hit|duplicate hits} merged.": "پرسش: {query} — {unique} منبع یکتا، {new} تازه، {merged} یافتهٔ تکراری ادغام شد.",
+    "Results": "نتیجه‌ها",
+    "What the system holds": "آنچه سیستم در اختیار دارد",
+    "Review": "بازبینی",
+    "Source: {title}": "منبع: {title}",
+    "Publisher / journal": "ناشر / مجله",
+    "Existence": "وجود",
+    "What was actually accessed": "آنچه واقعاً دسترسی شد",
+    "nothing": "هیچ",
+    "Abstract": "چکیده",
+    "Review status": "وضعیت بازبینی",
+    "Open-access copies:": "نسخه‌های دسترسی آزاد:",
+    "Fetch full text": "دریافت متن کامل",
+    "Fetching the open-access copy…": "در حال دریافت نسخهٔ دسترسی آزاد…",
+    "Full text acquired and converted ({bytes} bytes). The system has now read this source.": "متن کامل دریافت و تبدیل شد ({bytes} بایت). سیستم اکنون این منبع را خوانده است.",
+    "Not acquired: {reason}. Nothing was claimed.": "دریافت نشد: {reason}. هیچ ادعایی ثبت نشد.",
+    "Not acquired: {error}": "دریافت نشد: {error}",
+    "none known": "هیچ موردی شناخته نیست",
+    "Where to get it:": "از کجا تهیه شود:",
+    "Library search": "جست‌وجو در کتابخانه",
+    "Scholar search": "جست‌وجوی علمی",
+    "Obtain the full text": "تهیهٔ متن کامل",
+    "Get the article legally through one of the links above, then upload the file here. Nothing is claimed as full text until the upload actually parses into an article.": "مقاله را به‌طور قانونی از یکی از پیوندهای بالا تهیه کنید، سپس پرونده را اینجا بارگذاری کنید. تا وقتی بارگذاری واقعاً به یک مقاله تجزیه نشود، چیزی به‌عنوان متن کامل ادعا نمی‌شود.",
+    "Article file (PDF, DOCX, HTML, TXT)": "پروندهٔ مقاله (\u2068PDF, DOCX, HTML, TXT\u2069)",
+    "Upload full text": "بارگذاری متن کامل",
+    "Choose the article file first.": "ابتدا پروندهٔ مقاله را انتخاب کنید.",
+    "Uploaded. Processing the file — this can take a moment for a scanned PDF.": "بارگذاری شد. پرونده در حال پردازش است — برای یک \u2068PDF\u2069 اسکن‌شده ممکن است کمی طول بکشد.",
+    "Full text attached ({bytes} bytes parsed). This source is now readable by the system.": "متن کامل پیوست شد ({bytes} بایت تجزیه شد). این منبع اکنون برای سیستم خواندنی است.",
+    "Still processing the file… ({n})": "هنوز در حال پردازش پرونده… ({n})",
+    "Not attached: {reason}. The source was left unchanged.": "پیوست نشد: {reason}. منبع بدون تغییر ماند.",
+    "Not attached: {error}": "پیوست نشد: {error}",
+    "Upload failed: {error}": "بارگذاری ناموفق بود: {error}",
+    "Or record what you found": "یا آنچه یافتید را ثبت کنید",
+    "Title only": "فقط عنوان",
+    "Landing page only": "فقط صفحهٔ ورود",
+    "Registration required": "نیاز به ثبت‌نام",
+    "Access blocked": "دسترسی مسدود",
+    "Note (optional)": "یادداشت (اختیاری)",
+    "Record": "ثبت",
+    "Choose what you found.": "آنچه یافتید را انتخاب کنید.",
+    "Recorded.": "ثبت شد.",
+    "Research history ({n})": "تاریخچهٔ پژوهش ({n})",
+    "Query": "پرسش",
+    "Route": "مسیر",
+    "Matched on": "منطبق بر",
+    "Reviewed evidence: {done} · awaiting review: {waiting}": "شواهد بازبینی‌شده: {done} · در انتظار بازبینی: {waiting}",
+    "No research questions yet.": "هنوز هیچ پرسش پژوهشی نیست.",
+    "Subject": "موضوع",
+    "Evidence map: {question}": "نقشهٔ شواهد: {question}",
+    "Extract candidates from what the system holds": "استخراج نامزدها از آنچه سیستم در اختیار دارد",
+    "{created|candidate|candidates} created for review; {unreadable|source|sources} had no readable text.": "{created} نامزد برای بازبینی ساخته شد؛ {unreadable} منبع متن خواندنی نداشت.",
+    "Directly supported": "پشتیبانی مستقیم",
+    "Indirectly supported": "پشتیبانی غیرمستقیم",
+    "Directly supported ({n})": "پشتیبانی مستقیم ({n})",
+    "Indirectly supported ({n})": "پشتیبانی غیرمستقیم ({n})",
+    "Basis": "مبنا",
+    "Evidence routes — kept separate": "مسیرهای شواهد — جدا نگه داشته می‌شوند",
+    "Reviewed": "بازبینی‌شده",
+    "Awaiting review": "در انتظار بازبینی",
+    "Counts as": "به حساب می‌آید",
+    "direct evidence for {subject}": "شاهد مستقیم برای {subject}",
+    "indirect": "غیرمستقیم",
+    "How many independent findings": "چند یافتهٔ مستقل",
+    "{sources|source rests|sources rest} on {findings|independent finding|independent findings}.": "{sources} منبع بر {findings} یافتهٔ مستقل تکیه دارد.",
+    "Independent finding": "یافتهٔ مستقل",
+    "Grouped as": "گروه‌بندی به‌عنوان",
+    "Should the search stop?": "آیا جست‌وجو باید متوقف شود؟",
+    "Saturation reached": "به اشباع رسید",
+    "Not saturated": "به اشباع نرسید",
+    "{reason} — {run} of {max} rounds run; still to run: {routes}": "{reason} — {run} از {max} دور اجرا شد؛ هنوز باید اجرا شود: {routes}",
+    "{reason} — {run} of {max} rounds run": "{reason} — {run} از {max} دور اجرا شد",
+    "Round": "دور",
+    "Seen": "دیده‌شده",
+    "Duplicates": "تکراری‌ها",
+    "Reopen the search": "بازگشایی دوبارهٔ جست‌وجو",
+    "Stop here (budget reached)": "توقف در اینجا (بودجه تمام شد)",
+    "Show the evidence graph": "نمایش گراف شواهد",
+    "Subject, compounds, studies and outcome": "موضوع، ترکیب‌ها، پژوهش‌ها و پیامد",
+    "Studies that tested {subject} itself: {n}": "پژوهش‌هایی که خود {subject} را آزموده‌اند: {n}",
+    "documented by a reviewed source": "مستند به یک منبع بازبینی‌شده",
+    "Disagreements between findings": "اختلاف میان یافته‌ها",
+    "No recorded disagreements. Use \"Find disagreements\" after linking evidence to a claim.": "هیچ اختلافی ثبت نشده است. پس از پیوند دادن شواهد به یک ادعا، «یافتن اختلاف‌ها» را به کار ببرید.",
+    "Differs on": "تفاوت در",
+    "nothing recorded": "چیزی ثبت نشده",
+    "Supporting": "پشتیبان",
+    "Contradicting": "متعارض",
+    "Why? A resolution needs a written reason.": "چرا؟ هر حل‌وفصلی به دلیلی نوشته‌شده نیاز دارد.",
+    "Find disagreements": "یافتن اختلاف‌ها",
+    "No claim on this question has both supporting and contradicting evidence yet.": "هنوز هیچ ادعایی در این پرسش هم شاهد پشتیبان و هم شاهد متعارض ندارد.",
+    "{n|disagreement|disagreements} recorded.": "{n} اختلاف ثبت شد.",
+    "Awaiting human review ({n})": "در انتظار بازبینی انسانی ({n})",
+    "What did the study actually test?": "این پژوهش واقعاً چه چیزی را آزمود؟",
+    "Approve": "تأیید",
+    "Reject": "رد",
+    "Reviewed: {status}, {directness} ({route})": "بازبینی شد: {status}، {directness} ({route})",
+    "Found but not read by the system ({n})": "یافته‌شده ولی خوانده‌نشده توسط سیستم ({n})",
+    "Holds": "در اختیار",
+    "Get it": "تهیه",
+    "Missing: {routes}": "کمبود: {routes}",
+    "Missing: none": "کمبود: هیچ",
+    "Suggested manual searches": "جست‌وجوهای دستی پیشنهادی",
+    "Library": "کتابخانه",
+    "Find more": "یافتن بیشتر",
+    "Find more: {route}": "یافتن بیشتر: {route}",
+    "Searching Crossref, PubMed and Europe PMC…": "در حال جست‌وجو در \u2068Crossref\u2069، \u2068PubMed\u2069 و \u2068Europe PMC\u2069…",
+    "Search results": "نتایج جست‌وجو",
+    "A subject is required.": "یک موضوع لازم است.",
+    "Running the searches…": "در حال اجرای جست‌وجوها…",
+    "No open knowledge gaps.": "هیچ شکاف دانشی باز نیست.",
+    "Gap": "شکاف",
+    "Priority": "اولویت",
+    "Searching for this gap…": "در حال جست‌وجو برای این شکاف…",
+    "under review": "در حال بازبینی",
+    "resolved": "حل‌شده",
+    "unresolvable": "حل‌نشدنی",
+    "Grant admin…": "اعطای مدیریت…",
+    "Grant platform admin to which user? Enter an email or a user ID.": "مدیریت پلتفرم به کدام کاربر داده شود؟ یک ایمیل یا شناسهٔ کاربر وارد کنید.",
+    "Platform admin granted to {who}.": "مدیریت پلتفرم به {who} داده شد.",
+    "No user or platform admin matches that.": "هیچ کاربر یا مدیر پلتفرمی با این منطبق نیست.",
+    "You cannot revoke your own platform-admin grant.": "نمی‌توانید مدیریت پلتفرم خودتان را باطل کنید.",
+    "Enter a valid email or user ID.": "یک ایمیل یا شناسهٔ کاربر معتبر وارد کنید.",
+    "Platform admin": "مدیر پلتفرم",
+    "Revoke": "باطل کردن",
+    "Revoke platform admin from {email}?": "مدیریت پلتفرم از {email} باطل شود؟",
+    "Platform admin revoked from {who}.": "مدیریت پلتفرم از {who} باطل شد.",
+    "Make admin": "مدیر کردن"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

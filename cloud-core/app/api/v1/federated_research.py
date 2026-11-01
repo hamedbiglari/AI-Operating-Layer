@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.enums import KNOWLEDGE_EDITOR_ROLES
 from app.models.research_federation import ResearchHit, ResearchProviderRun, ResearchQuery, ResearchQuestion
+from app.models.source import Source
 from app.models.user import User
 from app.schemas.common import Page, PaginationParams, SortDirection, SortParams, apply_sort
 from app.security.dependencies import get_current_user, require_roles
@@ -103,6 +104,25 @@ def review(evidence_id: UUID, body: ReviewIn, user: User = Editor, db: Session =
                               subject_tested=body.subject_tested, evidence_strength=body.evidence_strength, note=body.note)
     return {"id": str(ev.id), "status": ev.status.value, "directness": ev.directness.value, "route": ev.evidence_route,
             "subject_tested": ev.subject_tested, "human_reviewed": ev.human_reviewed}
+
+
+MAX_SUMMARY_IDS = 50
+
+
+@router.get("/sources/summaries")
+def source_summaries(ids: str = Query(..., max_length=2000), user: User = Reader, db: Session = Depends(get_db)) -> list[dict]:
+    """The fields a run's source table shows, for up to 50 sources in ONE read (Rule 17), in the order given.
+    Ids that are unknown or belong to another organization are left out, never reported."""
+    try:
+        wanted = list(dict.fromkeys(UUID(x.strip()) for x in ids.split(",") if x.strip()))
+    except ValueError:
+        raise HTTPException(422, "ids must be a comma-separated list of UUIDs.") from None
+    if not wanted or len(wanted) > MAX_SUMMARY_IDS:
+        raise HTTPException(422, f"Give between 1 and {MAX_SUMMARY_IDS} source ids.")
+    rows = db.execute(select(Source).where(Source.organization_id == user.organization_id, Source.id.in_(wanted))).scalars().all()
+    by_id = {s.id: s for s in rows}
+    return [{"id": str(s.id), "title": s.title, "doi": s.doi, "pmid": s.pmid, "content_access": s.content_access,
+             "review_status": s.review_status} for s in (by_id.get(i) for i in wanted) if s is not None]
 
 
 @router.get("/sources/{source_id}/detail")

@@ -78,6 +78,7 @@ jobs:
           node visual-harness/e2e/website.js
           node visual-harness/e2e/settings.js
           node visual-harness/e2e/admin.js
+          node visual-harness/e2e/research.js
           node visual-harness/e2e/theme-toggle.js
 
       - name: Set up Python

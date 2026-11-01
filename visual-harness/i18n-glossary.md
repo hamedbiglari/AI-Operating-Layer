@@ -1779,3 +1779,140 @@ Admin users, the user detail template, the platform overview and organizations, 
 | User (AI Core) | کاربر (AI Core) |
 | Platform overview (AI Core) | نمای کلی پلتفرم (AI Core) |
 | Organizations (AI Core) | سازمان‌ها (AI Core) |
+
+## Research engine and platform-admin grants (polish, phase 1)
+
+Runtime text of the Research engine card (V5-settings-research-runtime-fa) and the Grant / Revoke platform-admin controls (V5-admin-grant). Provider names (Crossref, PubMed, Europe PMC), DOI and PMID stay as written; the evidence-graph edge lines are identifiers and stay English.
+
+| English | Persian |
+|---|---|
+| Full text read | متن کامل خوانده شد |
+| Metadata only | فقط فراداده |
+| Restricted | محدود |
+| Unavailable | در دسترس نیست |
+| Query: {query} — {unique\|unique source\|unique sources}, {new} new, {merged\|duplicate hit\|duplicate hits} merged. | پرسش: {query} — {unique} منبع یکتا، {new} تازه، {merged} یافتهٔ تکراری ادغام شد. |
+| Results | نتیجه‌ها |
+| What the system holds | آنچه سیستم در اختیار دارد |
+| Review | بازبینی |
+| Source: {title} | منبع: {title} |
+| Publisher / journal | ناشر / مجله |
+| Existence | وجود |
+| What was actually accessed | آنچه واقعاً دسترسی شد |
+| nothing | هیچ |
+| Abstract | چکیده |
+| Review status | وضعیت بازبینی |
+| Open-access copies: | نسخه‌های دسترسی آزاد: |
+| Fetch full text | دریافت متن کامل |
+| Fetching the open-access copy… | در حال دریافت نسخهٔ دسترسی آزاد… |
+| Full text acquired and converted ({bytes} bytes). The system has now read this source. | متن کامل دریافت و تبدیل شد ({bytes} بایت). سیستم اکنون این منبع را خوانده است. |
+| Not acquired: {reason}. Nothing was claimed. | دریافت نشد: {reason}. هیچ ادعایی ثبت نشد. |
+| Not acquired: {error} | دریافت نشد: {error} |
+| none known | هیچ موردی شناخته نیست |
+| Where to get it: | از کجا تهیه شود: |
+| Library search | جست‌وجو در کتابخانه |
+| Scholar search | جست‌وجوی علمی |
+| Obtain the full text | تهیهٔ متن کامل |
+| Get the article legally through one of the links above, then upload the file here. Nothing is claimed as full text until the upload actually parses into an article. | مقاله را به‌طور قانونی از یکی از پیوندهای بالا تهیه کنید، سپس پرونده را اینجا بارگذاری کنید. تا وقتی بارگذاری واقعاً به یک مقاله تجزیه نشود، چیزی به‌عنوان متن کامل ادعا نمی‌شود. |
+| Article file (PDF, DOCX, HTML, TXT) | پروندهٔ مقاله (PDF, DOCX, HTML, TXT) |
+| Upload full text | بارگذاری متن کامل |
+| Choose the article file first. | ابتدا پروندهٔ مقاله را انتخاب کنید. |
+| Uploaded. Processing the file — this can take a moment for a scanned PDF. | بارگذاری شد. پرونده در حال پردازش است — برای یک PDF اسکن‌شده ممکن است کمی طول بکشد. |
+| Full text attached ({bytes} bytes parsed). This source is now readable by the system. | متن کامل پیوست شد ({bytes} بایت تجزیه شد). این منبع اکنون برای سیستم خواندنی است. |
+| Still processing the file… ({n}) | هنوز در حال پردازش پرونده… ({n}) |
+| Not attached: {reason}. The source was left unchanged. | پیوست نشد: {reason}. منبع بدون تغییر ماند. |
+| Not attached: {error} | پیوست نشد: {error} |
+| Upload failed: {error} | بارگذاری ناموفق بود: {error} |
+| Or record what you found | یا آنچه یافتید را ثبت کنید |
+| Title only | فقط عنوان |
+| Landing page only | فقط صفحهٔ ورود |
+| Registration required | نیاز به ثبت‌نام |
+| Access blocked | دسترسی مسدود |
+| Note (optional) | یادداشت (اختیاری) |
+| Record | ثبت |
+| Choose what you found. | آنچه یافتید را انتخاب کنید. |
+| Recorded. | ثبت شد. |
+| Research history ({n}) | تاریخچهٔ پژوهش ({n}) |
+| Query | پرسش |
+| Route | مسیر |
+| Matched on | منطبق بر |
+| Reviewed evidence: {done} · awaiting review: {waiting} | شواهد بازبینی‌شده: {done} · در انتظار بازبینی: {waiting} |
+| No research questions yet. | هنوز هیچ پرسش پژوهشی نیست. |
+| Subject | موضوع |
+| Evidence map: {question} | نقشهٔ شواهد: {question} |
+| Extract candidates from what the system holds | استخراج نامزدها از آنچه سیستم در اختیار دارد |
+| {created\|candidate\|candidates} created for review; {unreadable\|source\|sources} had no readable text. | {created} نامزد برای بازبینی ساخته شد؛ {unreadable} منبع متن خواندنی نداشت. |
+| Directly supported | پشتیبانی مستقیم |
+| Indirectly supported | پشتیبانی غیرمستقیم |
+| Directly supported ({n}) | پشتیبانی مستقیم ({n}) |
+| Indirectly supported ({n}) | پشتیبانی غیرمستقیم ({n}) |
+| Basis | مبنا |
+| Evidence routes — kept separate | مسیرهای شواهد — جدا نگه داشته می‌شوند |
+| Reviewed | بازبینی‌شده |
+| Awaiting review | در انتظار بازبینی |
+| Counts as | به حساب می‌آید |
+| direct evidence for {subject} | شاهد مستقیم برای {subject} |
+| indirect | غیرمستقیم |
+| How many independent findings | چند یافتهٔ مستقل |
+| {sources\|source rests\|sources rest} on {findings\|independent finding\|independent findings}. | {sources} منبع بر {findings} یافتهٔ مستقل تکیه دارد. |
+| Independent finding | یافتهٔ مستقل |
+| Grouped as | گروه‌بندی به‌عنوان |
+| Should the search stop? | آیا جست‌وجو باید متوقف شود؟ |
+| Saturation reached | به اشباع رسید |
+| Not saturated | به اشباع نرسید |
+| {reason} — {run} of {max} rounds run; still to run: {routes} | {reason} — {run} از {max} دور اجرا شد؛ هنوز باید اجرا شود: {routes} |
+| {reason} — {run} of {max} rounds run | {reason} — {run} از {max} دور اجرا شد |
+| Round | دور |
+| Seen | دیده‌شده |
+| Duplicates | تکراری‌ها |
+| Reopen the search | بازگشایی دوبارهٔ جست‌وجو |
+| Stop here (budget reached) | توقف در اینجا (بودجه تمام شد) |
+| Show the evidence graph | نمایش گراف شواهد |
+| Subject, compounds, studies and outcome | موضوع، ترکیب‌ها، پژوهش‌ها و پیامد |
+| Studies that tested {subject} itself: {n} | پژوهش‌هایی که خود {subject} را آزموده‌اند: {n} |
+| documented by a reviewed source | مستند به یک منبع بازبینی‌شده |
+| Disagreements between findings | اختلاف میان یافته‌ها |
+| No recorded disagreements. Use "Find disagreements" after linking evidence to a claim. | هیچ اختلافی ثبت نشده است. پس از پیوند دادن شواهد به یک ادعا، «یافتن اختلاف‌ها» را به کار ببرید. |
+| Differs on | تفاوت در |
+| nothing recorded | چیزی ثبت نشده |
+| Supporting | پشتیبان |
+| Contradicting | متعارض |
+| Why? A resolution needs a written reason. | چرا؟ هر حل‌وفصلی به دلیلی نوشته‌شده نیاز دارد. |
+| Find disagreements | یافتن اختلاف‌ها |
+| No claim on this question has both supporting and contradicting evidence yet. | هنوز هیچ ادعایی در این پرسش هم شاهد پشتیبان و هم شاهد متعارض ندارد. |
+| {n\|disagreement\|disagreements} recorded. | {n} اختلاف ثبت شد. |
+| Awaiting human review ({n}) | در انتظار بازبینی انسانی ({n}) |
+| What did the study actually test? | این پژوهش واقعاً چه چیزی را آزمود؟ |
+| Approve | تأیید |
+| Reject | رد |
+| Reviewed: {status}, {directness} ({route}) | بازبینی شد: {status}، {directness} ({route}) |
+| Found but not read by the system ({n}) | یافته‌شده ولی خوانده‌نشده توسط سیستم ({n}) |
+| Holds | در اختیار |
+| Get it | تهیه |
+| Missing: {routes} | کمبود: {routes} |
+| Missing: none | کمبود: هیچ |
+| Suggested manual searches | جست‌وجوهای دستی پیشنهادی |
+| Library | کتابخانه |
+| Find more | یافتن بیشتر |
+| Find more: {route} | یافتن بیشتر: {route} |
+| Searching Crossref, PubMed and Europe PMC… | در حال جست‌وجو در Crossref، PubMed و Europe PMC… |
+| Search results | نتایج جست‌وجو |
+| A subject is required. | یک موضوع لازم است. |
+| Running the searches… | در حال اجرای جست‌وجوها… |
+| No open knowledge gaps. | هیچ شکاف دانشی باز نیست. |
+| Gap | شکاف |
+| Priority | اولویت |
+| Searching for this gap… | در حال جست‌وجو برای این شکاف… |
+| under review | در حال بازبینی |
+| resolved | حل‌شده |
+| unresolvable | حل‌نشدنی |
+| Grant admin… | اعطای مدیریت… |
+| Grant platform admin to which user? Enter an email or a user ID. | مدیریت پلتفرم به کدام کاربر داده شود؟ یک ایمیل یا شناسهٔ کاربر وارد کنید. |
+| Platform admin granted to {who}. | مدیریت پلتفرم به {who} داده شد. |
+| No user or platform admin matches that. | هیچ کاربر یا مدیر پلتفرمی با این منطبق نیست. |
+| You cannot revoke your own platform-admin grant. | نمی‌توانید مدیریت پلتفرم خودتان را باطل کنید. |
+| Enter a valid email or user ID. | یک ایمیل یا شناسهٔ کاربر معتبر وارد کنید. |
+| Platform admin | مدیر پلتفرم |
+| Revoke | باطل کردن |
+| Revoke platform admin from {email}? | مدیریت پلتفرم از {email} باطل شود؟ |
+| Platform admin revoked from {who}. | مدیریت پلتفرم از {who} باطل شد. |
+| Make admin | مدیر کردن |

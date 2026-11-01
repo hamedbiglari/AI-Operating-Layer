@@ -472,3 +472,22 @@ def test_evidence_graph_is_tenant_scoped(client: TestClient, register_org, provi
     ko, _ = _ko(client, a)
     q = _multi_question(client, a, ko)
     assert client.get(f"{R}/questions/{q['research_question_id']}/evidence-graph", headers=b["headers"]).status_code == 404
+
+
+def test_source_summaries_read_a_run_in_one_call(client: TestClient, register_org, providers) -> None:
+    org, other = register_org(), register_org()
+    ko, kw = _ko(client, org)
+    d = client.post(f"{R}/federated/keyword-search", headers=org["headers"], json={
+        "knowledge_object_id": ko["id"], "keyword_ids": [kw["Taranjabin"]["id"]], "mode": "single"}).json()
+    ids = list(reversed(d["source_ids"]))
+    assert len(ids) >= 2
+    r = client.get(f"{R}/sources/summaries", headers=org["headers"], params={"ids": ",".join(ids + [ids[0], str(uuid.uuid4())])})
+    assert r.status_code == 200, r.text
+    rows = r.json()
+    assert [x["id"] for x in rows] == ids                     # requested order, duplicates and unknown ids left out
+    assert set(rows[0]) == {"id", "title", "doi", "pmid", "content_access", "review_status"}
+    assert client.get(f"{R}/sources/summaries", headers=other["headers"], params={"ids": ",".join(ids)}).json() == []
+    assert client.get(f"{R}/sources/summaries", headers=org["headers"], params={"ids": "not-a-uuid"}).status_code == 422
+    too_many = ",".join(str(uuid.uuid4()) for _ in range(51))
+    assert client.get(f"{R}/sources/summaries", headers=org["headers"], params={"ids": too_many}).status_code == 422
+    assert client.get(f"{R}/sources/summaries", headers=org["headers"], params={"ids": " , "}).status_code == 422

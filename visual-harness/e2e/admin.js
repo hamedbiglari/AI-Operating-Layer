@@ -13,7 +13,10 @@
  *           GET /admin/users (with the organization column and a
  *           server-side search), the detail from GET /admin/users/{id}, the
  *           overview and the organizations; a 403 from /admin is reported;
- *           Persian over live content.
+ *           Persian over live content. Grants (V5-admin-grant): Make admin
+ *           POSTs /admin/grant {user_id}, Revoke asks and DELETEs
+ *           /admin/grant/{id}, a platform admin's own row has no Revoke,
+ *           Grant admin... prompts for an email, an unknown one is reported.
  * Runs on file:// with AI Core mocked in the page and every request
  * recorded. Persian expectations are built from code points, so this file
  * stays ASCII and no rendering can reverse them.
@@ -48,17 +51,28 @@ function check(name, got, want) {
 
 const user = (id, name, email, role, status, org) => ({ id, name, email, role, status, organization_id: 'o-' + org,
   organization_name: org, created_at: '2026-09-01T09:00:00Z', updated_at: '2026-10-01T09:00:00Z' });
-const MINE = [user('u-1', 'Hamed B', 'owner@shop.test', 'owner', 'active', 'Alpha'), user('u-2', 'Vic', 'vic@shop.test', 'viewer', 'invited', 'Alpha')];
+const MINE = [Object.assign(user('u-1', 'Hamed B', 'owner@shop.test', 'owner', 'active', 'Alpha'), { is_platform_admin: true }),
+  user('u-2', 'Vic', 'vic@shop.test', 'viewer', 'invited', 'Alpha')];
 const ALL = MINE.concat([user('u-3', 'Bea', 'bea@beta.test', 'editor', 'suspended', 'Beta')]);
 
 function installMock(me) {
   window.__requests = []; window.__me = me; window.__denied = false;
   const reply = (body, status) => Promise.resolve(new Response(JSON.stringify(body), { status: status || 200 }));
   const page = (items, total) => reply({ items, total: total === undefined ? items.length : total, limit: 50, offset: 0 });
-  window.fetch = (u) => {
-    u = String(u); const p = u.slice(u.indexOf('/api/v1') + 7);
-    window.__requests.push('GET ' + p);
-    if (p === '/auth/me') return reply({ user: { name: 'Hamed B', email: 'owner@shop.test', role: window.__me.role },
+  window.fetch = (u, opt) => {
+    u = String(u); const p = u.slice(u.indexOf('/api/v1') + 7), method = (opt && opt.method) || 'GET';
+    window.__requests.push(method + ' ' + p + (opt && opt.body ? ' ' + opt.body : ''));
+    if (p === '/admin/grant' && method === 'POST') {
+      const body = JSON.parse(opt.body), x = window.__all.find((y) => y.id === body.user_id || y.email === body.email);
+      if (!x) return reply({ error: { message: 'User not found.' } }, 404);
+      x.is_platform_admin = true; return reply(x);
+    }
+    let g = p.match(/^\/admin\/grant\/([^/]+)$/);
+    if (g && method === 'DELETE') {
+      if (g[1] === 'u-1') return reply({ error: { message: 'own' } }, 409);
+      window.__all.find((y) => y.id === g[1]).is_platform_admin = false; return Promise.resolve(new Response(null, { status: 204 }));
+    }
+    if (p === '/auth/me') return reply({ user: { id: 'u-1', name: 'Hamed B', email: 'owner@shop.test', role: window.__me.role },
       organization: { name: 'Alpha', slug: 'alpha', status: 'active' }, is_platform_admin: window.__me.platform });
     if (p.indexOf('/admin/') === 0 && window.__denied) return reply({ error: { message: 'Platform administrators only' } }, 403);
     if (p === '/users?limit=50&offset=0') return page(window.__users || []);
@@ -80,8 +94,9 @@ function installMock(me) {
 (async () => {
   const browser = await chromium.launch(process.env.PW_EXE ? { executablePath: process.env.PW_EXE } : {});
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, timezoneId: 'UTC' });
-  const errors = [];
+  const errors = [], dialogs = []; let answer = null;
   page.on('pageerror', (e) => errors.push(String(e)));
+  page.on('dialog', async (d) => { dialogs.push(d.message()); if (answer === false) await d.dismiss(); else await d.accept(typeof answer === 'string' ? answer : undefined); });
   await page.goto(pageUrl);
   const settle = (ms) => page.waitForTimeout(ms || 300);
   const go = async (hash) => { await page.evaluate((h) => { location.hash = h; }, hash); await settle(); };
@@ -149,14 +164,29 @@ function installMock(me) {
     ['GET /admin/organizations?limit=50&offset=0', 'GET /admin/overview', 'GET /admin/users?limit=50&offset=0']);
   await go('#screen-admin-users');
   v = await view('screen-admin-users');
-  check('platform admin: every user, with the organization; search shown', [v.note, v.heads, v.rows[2], v.search],
-    ['Every user on the platform: 3 users.', ['Name', 'Email', 'Organization', 'Role', 'Status', 'Joined'],
-      ['Bea', 'bea@beta.test', 'Beta', 'Editor', 'Suspended', '1 Sept 2026'], false]);
+  check('platform admin: every user, with the organization and the admin column; search shown', [v.note, v.heads, v.rows[2], v.rows[0][6], v.search],
+    ['Every user on the platform: 3 users.', ['Name', 'Email', 'Organization', 'Role', 'Status', 'Joined', 'Platform admin'],
+      ['Bea', 'bea@beta.test', 'Beta', 'Editor', 'Suspended', '1 Sept 2026', 'Make admin'], 'Platform admin', false]);
   check('platform admin: the platform-only nav is shown', await navShown(), [true, true]);
   before = (await requests()).length;
   await page.fill('#admin-users-q', 'beta'); await page.dispatchEvent('#admin-users-q', 'change'); await settle();
   check('search: server-side, one request', [(await requests()).slice(before), (await view('screen-admin-users')).rows.map((r) => r[0])],
     [['GET /admin/users?limit=50&offset=0&q=beta'], ['Bea']]);
+  // Grants (V5-admin-grant): the list is filtered to Bea here.
+  const writes = () => page.evaluate(() => window.__requests.filter((r) => /^(POST|DELETE) /.test(r)));
+  const usersMsg = () => page.evaluate(() => document.querySelector('#screen-admin-users .vis-live > .know-status p').textContent);
+  await page.evaluate(() => Array.from(document.querySelectorAll('#screen-admin-users .vis-live tbody button')).find((b) => b.textContent === 'Make admin').click()); await settle();
+  check('Make admin: one POST with the user id; the list re-read; the message', [await writes(), (await view('screen-admin-users')).rows[0][6], await usersMsg()],
+    [['POST /admin/grant {"user_id":"u-3"}'], 'Platform adminRevoke', 'Platform admin granted to ' + iso('bea@beta.test') + '.']);
+  answer = true;
+  await page.evaluate(() => Array.from(document.querySelectorAll('#screen-admin-users .vis-live tbody button')).find((b) => b.textContent === 'Revoke').click()); await settle();
+  check('Revoke: asks, then one DELETE; the message', [dialogs.slice(-1)[0], (await writes()).slice(-1), await usersMsg()],
+    ['Revoke platform admin from ' + iso('bea@beta.test') + '?', ['DELETE /admin/grant/u-3'], 'Platform admin revoked from ' + iso('bea@beta.test') + '.']);
+  answer = 'nobody@example.test';
+  await page.evaluate(() => document.getElementById('admin-grant').click()); await settle();
+  check('Grant admin...: prompts, POSTs the email; an unknown one is reported', [(await writes()).slice(-1), await usersMsg()],
+    [['POST /admin/grant {"email":"nobody@example.test"}'], 'No user or platform admin matches that.']);
+  answer = null;
   await page.evaluate(() => document.querySelector('#screen-admin-users .vis-live tbody a').click()); await settle();
   check('platform admin: the detail from /admin/users/{id}, with the organization', (await view('screen-admin-user-detail')).facts,
     [['Name', 'Bea'], ['Email', 'bea@beta.test'], ['Organization', 'Beta'], ['Role', 'Editor'], ['Status', 'Suspended'], ['Joined', '1 Sept 2026']]);
