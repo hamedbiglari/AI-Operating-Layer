@@ -38,6 +38,12 @@ celery_app.conf.update(
             "task": "ai_center.recover_jobs",
             "schedule": float(settings.AI_JOB_RECOVERY_INTERVAL_SECONDS),
         },
+        # ADR-138: Device Intelligence retention — observations past DEVICE_OBSERVATION_RETENTION_DAYS and
+        # challenges that can no longer be used are deleted.
+        "devices-purge-expired": {
+            "task": "devices.purge_expired",
+            "schedule": float(settings.DEVICE_PURGE_INTERVAL_SECONDS),
+        },
     },
 )
 

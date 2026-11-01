@@ -214,3 +214,17 @@ def run_chat_research_request(request_id: str, organization_id: str) -> dict:
         return {"state": req.state, "sources_added": req.sources_added} if req else {"skipped": True}
     finally:
         db.close()
+
+
+@celery_app.task(name="devices.purge_expired")
+def purge_expired_device_data() -> dict:
+    """ADR-138 retention: delete Device Intelligence observations older than DEVICE_OBSERVATION_RETENTION_DAYS
+    and challenges that expired or were used more than an hour ago. Returns the counts for the worker log."""
+    from app.db.session import SessionLocal
+    from app.services import device_intelligence_service
+
+    db = SessionLocal()
+    try:
+        return device_intelligence_service.purge_expired(db)
+    finally:
+        db.close()

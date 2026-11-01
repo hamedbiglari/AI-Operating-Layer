@@ -114,7 +114,8 @@ jobs:
           AIOL_API_BASE_URL: ${{ vars.AIOL_API_BASE_URL }}
         run: |
           if [ -n "$AIOL_API_BASE_URL" ]; then
-            printf '{"apiBaseUrl": "%s", "environment": "production"}\n' "$AIOL_API_BASE_URL" > clients/app/app-config.json
+            # Writes app-config.json and narrows the CSP connect-src to that one origin (debt CLIENT-csp-connect-src).
+            node clients/scripts/configure-release.mjs "$AIOL_API_BASE_URL"
           else
             echo "::warning::AIOL_API_BASE_URL is not set; this package points at a loopback development server"
           fi
@@ -161,6 +162,13 @@ jobs:
           java-version: '17'
       # GitHub's Ubuntu images ship the Android SDK at $ANDROID_HOME; android-actions/setup-android@v3 fails
       # on the Node 24 runtime, so the preinstalled sdkmanager is used directly.
+      - name: Production API endpoint
+        shell: bash
+        env:
+          AIOL_API_BASE_URL: ${{ vars.AIOL_API_BASE_URL }}
+        run: |
+          if [ -n "$AIOL_API_BASE_URL" ]; then node clients/scripts/configure-release.mjs "$AIOL_API_BASE_URL";
+          else echo "::warning::AIOL_API_BASE_URL is not set; this build points at a loopback development server"; fi
       - name: NDK and Rust targets
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
@@ -189,6 +197,13 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
+      - name: Production API endpoint
+        shell: bash
+        env:
+          AIOL_API_BASE_URL: ${{ vars.AIOL_API_BASE_URL }}
+        run: |
+          if [ -n "$AIOL_API_BASE_URL" ]; then node clients/scripts/configure-release.mjs "$AIOL_API_BASE_URL";
+          else echo "::warning::AIOL_API_BASE_URL is not set; this build points at a loopback development server"; fi
       - name: Build
         run: |
           rustup target add aarch64-apple-ios-sim

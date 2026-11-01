@@ -524,3 +524,24 @@ def test_a_missing_machine_guid_is_not_evidence_of_anything(client, register_org
     inst.register(client, org["headers"], signals={})
     cats = client.get(f"{D}/admin/credentials/{inst.credential_id}", headers=org["headers"]).json()["assessment"]["categories"]
     assert cats == ["INSUFFICIENT_EVIDENCE"]
+
+
+def test_the_retention_purge_is_scheduled_and_registered():
+    """The purge function alone deletes nothing in production unless something calls it (debt
+    CLIENT-device-retention-scheduler)."""
+    from app.workers.celery_app import celery_app
+
+    entry = celery_app.conf.beat_schedule["devices-purge-expired"]
+    assert entry["task"] == "devices.purge_expired"
+    assert entry["schedule"] == float(settings.DEVICE_PURGE_INTERVAL_SECONDS)
+    assert "devices.purge_expired" in celery_app.tasks
+
+
+def test_the_scheduled_task_runs_the_purge(monkeypatch):
+    from app.workers import tasks
+
+    calls = []
+    monkeypatch.setattr(svc, "purge_expired", lambda db: calls.append(db) or {"observations_deleted": 0,
+                                                                              "challenges_deleted": 0})
+    assert tasks.purge_expired_device_data() == {"observations_deleted": 0, "challenges_deleted": 0}
+    assert len(calls) == 1

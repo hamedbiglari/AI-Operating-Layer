@@ -65,10 +65,16 @@ cd clients/src-tauri && cargo test --locked
 
 ## Build and release
 
-The production API endpoint is written into `app/app-config.json`
-(`{"apiBaseUrl": "https://…/api/v1", "environment": "production"}`); the client refuses a non-https
-URL in production. `.github/workflows/clients.yml` does this from the `AIOL_API_BASE_URL` repository
-variable.
+Before packaging a release, run
+
+```bash
+node scripts/configure-release.mjs https://api.example.com/api/v1
+```
+
+It writes `app/app-config.json` (`environment: production`, so the client refuses non-https) and narrows the
+shell's CSP `connect-src` to that one origin. `.github/workflows/clients.yml` runs it in every packaging job
+from the `AIOL_API_BASE_URL` repository variable; without the variable a build points at a loopback
+development server and the job says so.
 
 | Platform | Host + toolchain | Command | Output | Signing prerequisites |
 |----------|------------------|---------|--------|-----------------------|

@@ -26,10 +26,8 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `clients/README
   built.** Artifacts: aiol-Windows, aiol-macOS, aiol-android-debug, aiol-ios-simulator (kept 14 days).
 
 ## In progress
-- CI "Client suite CI" run 41209523146 on 01b4467:
-  https://github.com/hamedbiglari/AI-Operating-Layer/actions/runs/41209523146
-  Jobs: shared, e2e, shell-tests, Package Windows, Package macOS, Android debug APK, iOS simulator.
-  Next step: read its result; fix any failing job; record outcomes in CLIENT_SUITE_REPORT.md §4–7 / §17.
+- Nothing running. Latest client CI: run 41226260763 (ea47b51) green, including the Windows build of the
+  MachineGuid reader. Retention purge scheduled; release CSP narrowing in place.
 
 ## Next steps, in order
 1. CI result above → fix failures → update platform statuses (BUILD VERIFIED / PACKAGE GENERATED only

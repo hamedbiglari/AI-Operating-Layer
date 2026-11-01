@@ -220,6 +220,8 @@ class Settings(BaseSettings):
     DEVICE_INTELLIGENCE_ENABLED: bool = True
     DEVICE_CHALLENGE_TTL_SECONDS: int = 120
     DEVICE_OBSERVATION_RETENTION_DAYS: int = 90
+    # How often the retention purge runs (celery beat). Hourly keeps the window within an hour of exact.
+    DEVICE_PURGE_INTERVAL_SECONDS: int = 3600
     # Keyed pseudonyms for network observations. The version is stored with every pseudonym so the
     # key can be rotated without silently mixing two incomparable value spaces. Falls back to a key
     # derived from SECRET_KEY when unset.
