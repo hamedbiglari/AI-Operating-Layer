@@ -121,14 +121,15 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 79a19fb
+- sha (last non-docs commit): 196c733
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 79a19fb (Step 10). green @ 192c302 (9F, run
-  87); 9E (code in cf95932, run 86) green; 9D (4d4bd81, run 85) green;
-  9A-9C (runs 81, 82, 84) green.
-- last code commit: "feat(visibility): live visibility and access screens (10)" @ 79a19fb
-- last feature commit: "feat(visibility): live visibility and access screens (10)" @ 79a19fb
+- last_ci: in_progress @ 196c733 (9E-2 frontend; pushed with 9E-2
+  backend ca0ec2d without waiting, as the user authorised). Step 11
+  (e0da56f) in progress at push time; rebrand (e3709ce) green; Step 10
+  (79a19fb, run 89) green; 9F (192c302, run 87) green.
+- last code commit: "feat(ai): delete buttons and full runtime translation (9E-2)" @ 196c733
+- last feature commit: "feat(ai): delete buttons and full runtime translation (9E-2)" @ 196c733
 - last fix commit: "fix(processing): cast to text in 0047 backfill
   (PostgreSQL UnsafeNewEnumValueUsage)" @ f32a80a
 
@@ -380,6 +381,32 @@ file from scratch (do not diff). Output only the file content.
   /access-decision per agent), V5-access-policy-edit (no rule editor).
   e2e/visibility.js (25); --require adds screen-visibility,
   screen-visibility-detail, screen-access.
+- Rebrand @ e3709ce — "Cloud Core" -> "AI Core" in all text (99 files:
+  harness, glossary, e2e, docs, backend docstrings, WordPress plugin and
+  its .po/.pot). Folder cloud-core/, imports, CLOUD_CORE_* and
+  http://core.test untouched.
+- Step 11 @ e0da56f — Commerce = #screen-products only: GET /products
+  (one call, server-side status filter and pages); a product opens from
+  the loaded row and reads its offers (one call). 35 FA entries.
+  e2e/commerce.js (16); --require adds screen-products. Debt rows, all
+  OPEN: V5-products-offer-summary, V5-products-search,
+  V5-products-create-ui, V5-commerce-payments-scope (payment,
+  transactions and the 3 sample product pages stay sample-only).
+- 9E-2 @ ca0ec2d (backend) + 196c733 (frontend) — DELETE /ai-center/
+  providers|accounts|models/{id}, admin only, 409 with a count while
+  dependencies exist (provider: accounts/models; account: routing steps
+  or an active forced job; model: a routing policy naming it); the
+  existing DELETE /accounts/{id}/credential stays 200 + account (user
+  approved; no credential_version column). Errors use the
+  {"error": {"message"}} envelope. Delete / Revoke credential text
+  buttons for owner/admin only; AI Center reads the shared connection
+  role (window.AIOL_CONNECTION_ROLE, one /auth/me per connection). Job
+  panel, live progress, export, package counts and verdicts, discovery
+  rows and pager, Walrus line, import result, step names
+  (aria-labelledby), Agent Network list, session inspector and the
+  orchestration console all through AIOL_I18N.set; 86 FA entries.
+  V5-ai-center-runtime-fa and V5-ai-center-deletes CLOSED.
+  test_ai_center.py 40 passed; e2e/ai-center.js 34.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -388,18 +415,20 @@ file from scratch (do not diff). Output only the file content.
   V5-source-detail-more-actions from 7B2c-2, all OPEN.
 - Debt row V5-migration-fresh-db-local-check added @ f32a80a.
 - CI now runs i18n-coverage.js --require
-  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access
-  and 21 browser suites.
+  screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products
+  and 22 browser suites (558 checks at 196c733).
 
 ## 5. In progress — next step
 
 - Step 8 (Knowledge tools) is DONE (see §4).
 - Step 9 (AI) is 100% complete: 9A-9F done (see §4).
-- Step 10 (Visibility) is 100% complete (see §4).
-- Next up: Step 11 (Commerce). Still open from 10: the four V5-visibility/
-  V5-access debt rows. Still open from 9E/9F: V5-ai-center-runtime-fa, V5-command-workspace-runtime-fa and
-  the duplicate discovery read on connect.
-- Debt rows added in 9A, both OPEN: V5-ai-prompts, V5-ai-center-deletes.
+- Step 9 is 100% complete including 9E-2 (see §4).
+- Step 10 (Visibility) and Step 11 (Commerce) are complete (see §4).
+- Next up: Step 12 (Website + Auth). Still open: the four
+  V5-visibility/V5-access rows, the four Step 11 rows,
+  V5-command-workspace-runtime-fa and the duplicate discovery read on
+  connect.
+- Debt rows added in 9A: V5-ai-prompts OPEN; V5-ai-center-deletes CLOSED (9E-2).
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
   link is the first entry point into #screen-provenance?id=
@@ -417,10 +446,10 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → send the Step 11 (Commerce) prompt.
+State in sync → user says "go" → send the Step 12 (Website + Auth) prompt.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": send the Step 11 (Commerce) prompt.
+Case B — user says "go": send the Step 12 (Website + Auth) prompt.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -497,6 +526,8 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v22 @ 79a19fb — Step 10 shipped (AI Visibility, its full report and AI
   access live and translatable, no backend change; 4 debt rows). Step 11
   (Commerce) is next.
+- v23 @ 196c733 — rebrand (e3709ce), Step 11 Products (e0da56f) and 9E-2
+  (ca0ec2d + 196c733) shipped. Step 12 (Website + Auth) is next.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -716,8 +747,12 @@ Session / memory:
   V5-matrix-coverage-runtime-fa is OPEN.
 - Step 9 (AI) complete: 9A-9F done (V5-ai-center-runtime-fa and
   V5-command-workspace-runtime-fa open).
-- Step 10 (Visibility) complete @ 79a19fb. Step 11 (Commerce) is next.
-- Steps 11–14 (Commerce, Website+Auth, Settings, Admin)
+- Step 10 (Visibility) complete @ 79a19fb; Step 11 (Commerce: Products)
+  complete @ e0da56f; 9E-2 complete @ 196c733. Step 12 is next.
+- Branch claude/nice-fermi-du1d71 is the native-app client suite
+  (Windows/macOS/Android/iOS, Device Intelligence, auth native-session
+  routes, migrations 0049-0051). Merge only in a dedicated phase.
+- Steps 12–14 (Website+Auth, Settings, Admin)
   — not started. Admin blocked on backend design for
   platform-admin API + authorization model.
 - Design elevation across all screens — baseline Knowledge critique
