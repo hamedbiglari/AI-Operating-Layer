@@ -122,18 +122,19 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): afb9d8d
+- sha (last non-docs commit): d3d8e37
 - branch: v5-implementation
-- working_tree: clean (untracked: cloud-core/.venv-freeze-backup-20261101-191359.txt, a local pip-freeze backup)
-- last_ci: in_progress @ afb9d8d (release phases pushed without waiting, as
-  the user authorised). Green: 3bfcfb3 (Backend), 7ddb7ac (Backend + Client
-  suite); 9953211 job "Deployment stack (docker compose)" green (stack builds,
-  migrates, serves), its test job still running at write time. Locally: 28
-  browser suites green after release phase 1; apps/shared unit tests 41/41.
+- working_tree: clean
+- last_ci: in_progress @ d3d8e37 (debt priorities 1-2 pushed without
+  waiting, as the user authorised: d4fab6e, b5fdcf7, 27b166b, 5eab4ab,
+  7ab8606, d3d8e37). Locally: 28 browser suites green at each frontend
+  commit; apps/shared e2e 50/50 against a live AI Core; backend tests for
+  each change green (users/products/preferences/auth/tenant 162; visibility
+  + telemetry 77, the 6 date.today() rollup tests excepted, see §5).
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "test(e2e): add one-click real-key testing script" @ afb9d8d
-- last feature commit: "feat(admin): live admin screens and user detail (14A, 14C)" @ 26e1829
+- last code commit: "feat(visibility): aggregate stats for detail screen" @ d3d8e37
+- last feature commit: "feat(visibility): aggregate stats for detail screen" @ d3d8e37
 - last fix commit: "fix(apps): resolve native client integration issues" @ b9c9e9b
 
 ## 4. Completed steps (compact)
@@ -547,8 +548,29 @@ file from scratch (do not diff). Output only the file content.
   compose up postgres/redis/celery-worker; local backend on 8010; runs
   real-keys.js; always stops the backend). Compose passes APP_ENV and
   AI_CREDENTIAL_KEY through from the shell. Never run with real keys here.
-- Local env: cloud-core/.venv still FastAPI 0.115.0 (pin 0.136.3): pip
-  cannot resolve files.pythonhosted.org from this machine (2026-11-01).
+- Local env: cloud-core/.venv updated to the pins (FastAPI 0.136.3,
+  Starlette 1.8.0) from the Tsinghua mirror (files.pythonhosted.org does not
+  resolve here); chat streaming fixed locally.
+- Debt priority 1 @ d4fab6e — PATCH /users/me (name, email; lower-cased,
+  unique, audit-logged) + the Edit profile panel on Settings (the old
+  verification sample stays out); GET /products?search= (name or SKU) + the
+  live Search field; Reset all settings PUTs the defaults first (an empty
+  notifications and a null font now clear what was stored). Rows
+  V5-settings-self-profile, V5-products-search, V5-settings-reset-backend
+  CLOSED; new V5-self-email-verification OPEN.
+- b5fdcf7 — apps/shared e2e waits for the background device registration
+  (polling, 30 s) instead of fixed sleeps: 50/50 locally (was 38/41).
+- Debt priority 2:
+  - 27b166b New product form on #screen-products (POST /products; new
+    products start as Draft). V5-products-create-ui CLOSED.
+  - 7ab8606 AI access rules: Change (PUT with the rule's own subject and
+    purpose) and Delete, owner/admin only. V5-access-policy-edit CLOSED;
+    new V5-access-policy-create OPEN.
+  - 5eab4ab GET /visibility/aggregates?days= (counts only; unknown actors
+    and missing countries reported, not folded in); d3d8e37 the report's
+    four stats and per-day chart with range tabs. V5-visibility-detail-
+    aggregates stays OPEN (live strip, map + country table, breakdown,
+    exports pending).
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -573,9 +595,18 @@ file from scratch (do not diff). Output only the file content.
 - ALL STEPS 5–14 ARE 100% COMPLETE — the visual-harness phase is finished.
 - All Steps (5-14) and final polish (Debt, Design, Apps, E2E) are complete.
 - All development, design, native apps, deployment, and testing phases are complete. The project is ready for production release.
+- Debt priority 1 and priority 2 are 100% complete (see §4). New or partial
+  debt from them: V5-self-email-verification (email changes without
+  confirmation; needed before release), V5-access-policy-create (no form
+  to add a rule), V5-visibility-detail-aggregates (partial: stats and chart
+  done; live strip, map, breakdown, exports pending).
+- Local test note: 6 tests in test_phase13_telemetry.py use date.today()
+  (local date) against UTC rows and fail between 00:00 local and 00:00 UTC
+  on a UTC+ machine; CI (UTC) is unaffected.
 - Before a release: run scripts/start-real-e2e.ps1 with real keys (never
   run yet), update cloud-core/.venv to the pins, and close or accept
-  V5-apps-cargo-update (cargo update + Client suite CI).
+  V5-apps-cargo-update (cargo update + Client suite CI). The .venv is
+  updated (2026-11-01).
 - Next up: no phase is planned; the user decides. Still open: three Step 14
   rows (V5-admin-billing, V5-admin-trash, V5-admin-user-actions), the seven
   Step 13 rows, the three V5-signup-* rows, CLIENT-oidc, the four
@@ -700,6 +731,10 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v29 @ afb9d8d — release phases shipped: remaining-screens design
   (3bfcfb3), app dependencies (7ddb7ac), docker-compose deployment + CI
   (9953211), one-click real-key script (afb9d8d).
+- v30 @ d3d8e37 — debt priority 1 (d4fab6e), device-test polling
+  (b5fdcf7), debt priority 2: product form (27b166b), access rule edit and
+  delete (7ab8606), visibility aggregates backend (5eab4ab) and screen
+  stats (d3d8e37). Priority 2 is 100% complete.
 
 ## 10. Historical context (from two prior sessions)
 
@@ -932,8 +967,10 @@ Session / memory:
 - Step 10 (Visibility) complete @ 79a19fb; Step 11 (Commerce: Products)
   complete @ e0da56f; 9E-2 complete @ 196c733; Step 12 complete @ 622d417.
   Step 13 complete @ 889db79; Step 14 complete @ 26e1829.
-- The entire Step 5–14 phase is finished. The next phase is not yet
-  chosen.
+- The entire Step 5–14 phase is finished. Debt priorities 1 and 2 are
+  complete (v30). Next step: Priority 3 is not planned yet; all planned
+  priorities are complete. Candidates: V5-self-email-verification, the
+  rest of V5-visibility-detail-aggregates, V5-access-policy-create.
 - Design elevation across all screens — baseline Knowledge critique
   started; no fixes yet.
 - Full E2E of Memory Center, AI providers, Agent Network — not tested;
