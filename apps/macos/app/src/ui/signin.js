@@ -3,7 +3,7 @@
 import { h } from './dom.js';
 import { icon } from './icons.js';
 
-export function signInView({ t, session, links, openLink, onSignedIn, terms, toggles }) {
+export function signInView({ t, session, links, openLink, onSignedIn, terms }) {
   let mode = 'code';
   let sent = false;
   const status = h('p', { class: 'subtle', role: 'status' });
@@ -40,8 +40,7 @@ export function signInView({ t, session, links, openLink, onSignedIn, terms, tog
 
   const form = h('form', { class: 'signin__card', novalidate: true, 'aria-labelledby': 'si-title' },
     h('div', { class: 'signin__brand' }, h('img', { src: './brand/aiol-logo.svg', alt: '', width: 28, height: 28 }),
-      h('h1', { id: 'si-title', text: t('signin.title'), style: 'font-size: inherit; margin: 0; flex: 1' }),
-      toggles ?? null),
+      h('h1', { id: 'si-title', text: t('signin.title'), style: 'font-size: inherit; margin: 0; flex: 1' })),
     h('div', {}, h('label', { for: 'si-email', text: t('signin.email') }), email),
     codeRow, pwRow, termsRow, primary, status, error, toggle,
     h('nav', { class: 'signin__links' },

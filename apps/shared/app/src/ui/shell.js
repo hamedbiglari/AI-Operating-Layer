@@ -50,7 +50,7 @@ export function createShell(ctx) {
       h('button', { class: 'btn btn--ghost icon-btn topbar__menu', type: 'button', id: 'open-drawer',
                     'aria-label': t('nav.open_menu'), 'aria-controls': 'sidebar', onclick: () => setDrawer(true) },
         icon('sidebar-toggle')),
-      title, ctx.toggles ? ctx.toggles() : null),
+      title),
     banner, chat.thread, chat.form);
   const scrim = h('div', { class: 'scrim', hidden: true, onclick: () => setDrawer(false) });
   const root = h('div', { class: 'shell', id: 'shell' }, sidebar, main, scrim);
@@ -141,7 +141,6 @@ export function createShell(ctx) {
     const items = [
       { label: t('menu.settings'), icon: 'settings', run: ctx.openSettings, id: 'menu-settings' },
       { label: t('menu.usage'), icon: 'analytics', run: ctx.openUsage, id: 'menu-usage' },
-      { label: t('menu.language'), icon: 'language', run: ctx.openLanguage, id: 'menu-language' },
       links.help && { label: t('menu.help'), icon: 'help', run: () => ctx.openLink(links.help), external: true },
       'sep',
       { label: t('menu.upgrade'), icon: 'upgrade', run: ctx.openUpgrade, id: 'menu-upgrade' },

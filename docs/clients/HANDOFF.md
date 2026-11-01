@@ -32,6 +32,10 @@ Full report: `docs/clients/CLIENT_SUITE_REPORT.md`. Build guide: `apps/shared/RE
 - Visual pass: assistant surface palette, sidebar/profile/composer pattern, "+" upload (roles), dictation, feedback.
   End-to-end 53/53 live; client unit 41/41; Rust 9/9; plugin PHP checks pass.
 
+- One appearance (owner decision): English UI, light only, no switches; Persian typed in chat works RTL.
+  "+" for files/photos for all (role message), dictation by system language. E2E 50/50 live.
+- Next backend step proposed: let answers read an uploaded file directly (today only extracted knowledge).
+
 ## In progress
 - Nothing running. Latest client CI: run 41226260763 (ea47b51) green, including the Windows build of the
   MachineGuid reader. Retention purge scheduled; release CSP narrowing in place.

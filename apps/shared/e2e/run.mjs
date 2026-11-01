@@ -1,6 +1,6 @@
 // End-to-end: the real client UI in Chromium against a live Cloud Core (no mocks). Covers the master prompt's
 // §27 flow: open → sign in → new chat → send → answer rendered → history → continue → setting → usage →
-// language/RTL → device verification → sign out → sign in again → server-side continuity; plus a second account
+// Persian text in an English UI → device verification → sign out → sign in again → server-side continuity; plus a second account
 // on the same installation (account switching) and a phone-sized viewport.
 //
 // Prerequisites (see apps/shared/README.md §e2e): Cloud Core on API (default http://127.0.0.1:8010/api/v1) with
@@ -98,9 +98,11 @@ try {
         (await page.locator('.signin__terms').textContent()).includes('installation verification'));
   await page.getByRole('button', { name: 'Use an emailed code instead' }).click();
 
-  // Theme and language buttons exist before sign-in too.
-  check('theme and language buttons on the sign-in screen',
-        await page.locator('#toggle-theme').count() === 1 && await page.locator('#toggle-language').count() === 1);
+  // One appearance: English interface, light theme, no switches.
+  check('no theme or language switches; light, English, left-to-right', await page.evaluate(() =>
+    !document.getElementById('toggle-theme') && !document.getElementById('toggle-language')
+    && document.documentElement.dataset.theme === 'light' && document.documentElement.lang === 'en'
+    && document.documentElement.dir === 'ltr'));
 
   // 2. sign in
   await signIn(page, owner);
@@ -114,14 +116,12 @@ try {
   check('send is disabled while the composer is empty', await page.locator('#composer-send').isDisabled());
   check('an empty chat centres greeting and composer', await page.evaluate(() => document.getElementById('shell').dataset.empty) === 'true');
 
-  // Theme button: one click switches and saves to the account.
-  const themeBefore = await page.evaluate(() => document.documentElement.dataset.theme || 'system');
-  await page.locator('#toggle-theme').click();
-  await page.waitForTimeout(400);
-  const themeAfter = await page.evaluate(() => document.documentElement.dataset.theme);
-  check('the theme button switches light/dark and saves it to the account',
-        themeAfter && themeAfter !== themeBefore && (await api('/users/me/preferences', { token: owner.token })).data.theme === themeAfter,
-        `${themeBefore} -> ${themeAfter}`);
+  // Persian can be written in the English interface: the composer and the message take the text's own direction.
+  await page.locator('#composer-input').fill('\u062e\u0627\u0635\u06cc\u062a \u0632\u0639\u0641\u0631\u0627\u0646 \u0686\u06cc\u0633\u062a\u061f');
+  check('Persian typed into the composer runs right-to-left', await page.evaluate(() =>
+    getComputedStyle(document.getElementById('composer-input')).direction === 'rtl'
+    || document.getElementById('composer-input').matches(':dir(rtl)')));
+  await page.locator('#composer-input').fill('');
 
   // Composer tools: "+" for an owner (upload role); the dialog states the truth about processing.
   check('the owner sees "+" (add a document to knowledge)', await page.locator('#composer-attach').count() === 1);
@@ -176,18 +176,14 @@ try {
   await page.locator('#account-button').click();
   const menuLabels = (await page.locator('#account-menu [role="menuitem"]').allTextContents()).map((s) => s.trim());
   check('account menu has the reference hierarchy (configured items only)',
-        ['Settings', 'Usage', 'Language', 'Get help', 'Upgrade plan', 'Get apps', 'Log out'].every((l) => menuLabels.some((m) => m.startsWith(l)))
-        && !menuLabels.some((m) => m.startsWith('Learn more')), menuLabels.join(', '));
+        ['Settings', 'Usage', 'Get help', 'Upgrade plan', 'Get apps', 'Log out'].every((l) => menuLabels.some((m) => m.startsWith(l)))
+        && !menuLabels.some((m) => m.startsWith('Learn more') || m.startsWith('Language')), menuLabels.join(', '));
   await page.keyboard.press('Escape');
   check('Escape closes the menu and returns focus', await page.locator('#account-menu').isHidden()
         && await page.evaluate(() => document.activeElement?.id) === 'account-button');
   await page.locator('#account-button').click();
   await page.locator('#menu-settings').click();
-  await page.locator('dialog [data-theme="dark"]').click();
-  await page.waitForTimeout(400);
-  const prefs = await api('/users/me/preferences', { token: owner.token });
-  check('theme is saved to the account on the server', prefs.data.theme === 'dark' && prefs.data.persisted === true);
-  check('theme applies to the document', await page.evaluate(() => document.documentElement.dataset.theme) === 'dark');
+  check('Settings has no theme switch', await page.locator('dialog [data-theme]').count() === 0);
 
   // Device Intelligence: registered + verified in the background, visible in Settings and to the admin
   await page.waitForTimeout(500);
@@ -220,25 +216,17 @@ try {
         (await page.locator('dialog').textContent()).includes('No AIOL app downloads have been published yet.'));
   await page.keyboard.press('Escape');
 
-  // Language: Persian, RTL, saved to the account
-  await page.locator('#toggle-language').click();
-  await page.waitForFunction(() => document.documentElement.dir === 'rtl'
-    && document.getElementById('new-chat')?.textContent.includes('\u06af\u0641\u062a\u06af\u0648'), null, { timeout: 10000 })
-    .catch(() => {});
-  const newChatFa = await page.locator('#new-chat').textContent();
-  check('Persian switches the interface to RTL and translates it', newChatFa.includes('گفتگوی تازه'), newChatFa);
-  check('language saved to the account', (await api('/users/me/preferences', { token: owner.token })).data.language === 'fa');
-  const sidebarBox = await page.locator('#sidebar').boundingBox();
-  check('RTL places the sidebar on the right', sidebarBox.x > 600, `x=${sidebarBox.x}`);
-  await page.screenshot({ path: 'e2e/out/desktop-fa-rtl.png' });
-  // back to English for the rest
-  await page.locator('#account-button').click();
-  await page.locator('#menu-language').click();
-  await page.locator('dialog input[value="en"]').check();
-  await page.waitForFunction(() => document.documentElement.dir === 'ltr');
-  await page.locator('#history .history__open').first().click();
+  // A Persian conversation in the English interface.
+  await page.locator('#new-chat').click();
+  await page.locator('#composer-input').fill('\u062e\u0627\u0635\u06cc\u062a \u0632\u0639\u0641\u0631\u0627\u0646 \u0686\u06cc\u0633\u062a\u061f');
+  await page.locator('#composer-send').click();
+  await page.waitForFunction(() => document.querySelectorAll('.msg--assistant').length >= 1, null, { timeout: 30000 });
+  check('a Persian question is shown right-to-left inside the English interface', await page.evaluate(() =>
+    document.querySelector('.msg--user .msg__body').matches(':dir(rtl)') && document.documentElement.dir === 'ltr'));
+  await page.screenshot({ path: 'e2e/out/desktop-persian-message.png' });
+  await page.locator('#history .history__open', { hasText: 'Taranjabin' }).click();
   await page.locator('.msg--assistant').first().waitFor();
-  await page.screenshot({ path: 'e2e/out/desktop-en-dark.png' });
+  await page.screenshot({ path: 'e2e/out/desktop-light.png' });
 
   // 11. account switching on the same installation: a second account, same device key
   await page.locator('#account-button').click();
@@ -252,7 +240,9 @@ try {
   check('second account created in the same organization', mk.status === 201, String(mk.status));
   await signIn(page, member);
   await page.waitForTimeout(300);
-  check('a viewer does not get "+" (no upload right)', await page.locator('#composer-attach').count() === 0);
+  await page.locator('#composer-attach').click();
+  check('a viewer gets "+" but is told adding files needs an editor role', (await page.locator('dialog').textContent()).includes('needs an editor'));
+  await page.keyboard.press('Escape');
   check('the second account sees none of the first account’s conversations',
         (await page.locator('#history .history__open').count()) === 0);
   await page.waitForTimeout(800);
@@ -268,7 +258,7 @@ try {
   await page.locator('#si-email').waitFor();
   await signIn(page, owner);
   await page.locator('#history .history__open').first().waitFor();
-  await page.locator('#history .history__open').first().click();
+  await page.locator('#history .history__open', { hasText: 'Taranjabin' }).click();
   await page.waitForFunction(() => document.querySelectorAll('.msg').length >= 4, null, { timeout: 15000 });
   check('after signing in again, the conversation and its turns are still there (server continuity)', true);
 

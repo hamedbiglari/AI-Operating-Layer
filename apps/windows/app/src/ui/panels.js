@@ -61,34 +61,9 @@ export async function openUsage(ctx) {
   }
 }
 
-export function openLanguage(ctx) {
-  const { t, i18n } = ctx;
-  const { dlg, body } = dialogShell(t('language.title'), t);
-  const group = h('div', { class: 'list', role: 'radiogroup', 'aria-labelledby': 'dlg-title' });
-  for (const lang of ['en', 'fa']) {
-    group.append(h('label', { class: 'switch' },
-      h('input', { type: 'radio', name: 'lang', value: lang, checked: i18n.lang === lang,
-                   onchange: async () => { await ctx.savePreferences({ language: lang }); dlg.close(); } }),
-      h('span', { lang, text: t(`language.${lang}`) })));
-  }
-  body.append(group, h('p', { class: 'subtle', text: t('settings.account_wide') }));
-}
-
 export async function openSettings(ctx) {
   const { t, http, device, appInfo, clientConfig, i18n } = ctx;
   const { body } = dialogShell(t('settings.title'), t);
-
-  const themeSeg = h('div', { class: 'seg', role: 'group', 'aria-label': t('settings.theme') });
-  for (const th of ['system', 'light', 'dark']) {
-    themeSeg.append(h('button', { type: 'button', 'aria-pressed': String(ctx.preferences.theme === th), dataset: { theme: th },
-      onclick: async (ev) => {
-        await ctx.savePreferences({ theme: th });
-        for (const b of themeSeg.children) b.setAttribute('aria-pressed', String(b === ev.currentTarget));
-      } }, t(`settings.theme.${th}`)));
-  }
-  body.append(h('section', { class: 'section' }, h('h3', { text: t('settings.appearance') }),
-    h('div', { class: 'row' }, h('span', { text: t('settings.theme') }), themeSeg),
-    h('p', { class: 'subtle', text: t('settings.account_wide') })));
 
   const di = clientConfig.device_intelligence ?? { enabled: false, observation_retention_days: null };
   const status = h('p', { class: 'subtle', role: 'status' });
@@ -196,6 +171,10 @@ export function openUpgrade(ctx) {
 export async function openUpload(ctx) {
   const { t, http } = ctx;
   const { dlg, body } = dialogShell(t('upload.title'), t);
+  if (!['owner', 'admin', 'researcher', 'editor'].includes(ctx.session?.user?.role)) {
+    body.append(h('p', { class: 'muted', text: t('upload.no_permission') }));
+    return dlg;
+  }
   body.append(h('p', { class: 'muted', text: t('upload.explain') }), loading(t));
   let sources = [];
   try {
@@ -205,7 +184,7 @@ export async function openUpload(ctx) {
   body.append(h('p', { class: 'muted', text: t('upload.explain') }));
   if (!sources.length) { body.append(h('p', { class: 'muted', text: t('upload.no_sources') })); return; }
   const select = h('select', { id: 'upload-source' }, sources.map((src) => h('option', { value: src.id, text: src.title })));
-  const file = h('input', { type: 'file', id: 'upload-file', accept: '.pdf,.docx,.doc,.txt,.md,.html,.htm,.csv,.xlsx,.png,.jpg,.jpeg' });
+  const file = h('input', { type: 'file', id: 'upload-file', accept: '.pdf,.docx,.doc,.txt,.md,.html,.htm,.csv,.xlsx,.png,.jpg,.jpeg,.webp,.tif,.tiff,image/*' });
   const status = h('p', { class: 'subtle', role: 'status' });
   const go = h('button', { class: 'btn btn--primary', type: 'button', id: 'upload-go' }, icon('action-upload'), t('upload.go'));
   go.addEventListener('click', async () => {
@@ -216,8 +195,8 @@ export async function openUpload(ctx) {
       const form = new FormData();
       form.append('source_id', select.value);
       form.append('file', file.files[0]);
-      form.append('language', ctx.i18n.lang === 'fa' ? 'fa' : 'en');
-      form.append('ocr_languages', ctx.i18n.lang === 'fa' ? 'fas+eng' : 'eng');
+      // Text in photos and scans may be English or Persian; OCR reads both.
+      form.append('ocr_languages', 'eng+fas');
       await http.upload('/documents/upload', form);
       status.textContent = t('upload.accepted');
       file.value = '';

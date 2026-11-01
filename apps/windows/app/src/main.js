@@ -8,48 +8,22 @@ import { DeviceIntelligence } from './core/device.js';
 import { createI18n } from './core/i18n.js';
 import { detectBridge } from './core/platform.js';
 import { h, clear } from './ui/dom.js';
-import { icon } from './ui/icons.js';
 import { signInView } from './ui/signin.js';
 import { createShell } from './ui/shell.js';
 import { createChatView } from './ui/chat.js';
-import { openApps, openLanguage, openSettings, openUpgrade, openUpload, openUsage } from './ui/panels.js';
+import { openApps, openSettings, openUpgrade, openUpload, openUsage } from './ui/panels.js';
 
 const app = document.getElementById('app');
-const LOCAL_PREFS = 'aiol.local.prefs';     // last-used language/theme, so the sign-in screen matches the account
 
-function readLocal() { try { return JSON.parse(localStorage.getItem(LOCAL_PREFS) || '{}'); } catch { return {}; } }
-function writeLocal(p) { try { localStorage.setItem(LOCAL_PREFS, JSON.stringify(p)); } catch { /* private mode */ } }
 
-function applyAppearance(i18n, theme) {
+// The apps have one appearance: English interface, light theme, left-to-right chrome (owner decision,
+// 2026-11-01). People can still write and read Persian in the chat: every message and the composer use
+// dir="auto", so each paragraph takes the direction of its own text.
+function applyAppearance() {
   const root = document.documentElement;
-  root.lang = i18n.lang;
-  root.dir = i18n.dir;
-  if (theme === 'light' || theme === 'dark') root.dataset.theme = theme; else delete root.dataset.theme;
-}
-
-/** Current effective theme: an explicit choice, or what the operating system prefers. */
-function effectiveTheme(theme) {
-  if (theme === 'light' || theme === 'dark') return theme;
-  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-/**
- * The two always-visible buttons: light/dark theme and Persian/English. `save(patch)` persists the choice —
- * to the account when signed in, to this installation otherwise.
- */
-function togglesFactory({ t, i18n, getTheme, save }) {
-  return () => {
-    const dark = effectiveTheme(getTheme()) === 'dark';
-    const theme = h('button', { class: 'btn btn--ghost icon-btn', type: 'button', id: 'toggle-theme',
-      'aria-pressed': String(dark), 'aria-label': t(dark ? 'toggle.to_light' : 'toggle.to_dark'),
-      title: t(dark ? 'toggle.to_light' : 'toggle.to_dark'),
-      onclick: () => save({ theme: dark ? 'light' : 'dark' }) }, icon(dark ? 'theme' : 'theme-dark'));
-    const other = i18n.lang === 'fa' ? 'en' : 'fa';
-    const lang = h('button', { class: 'btn btn--ghost lang-btn', type: 'button', id: 'toggle-language', lang: other,
-      'aria-label': t('toggle.language'), title: t('toggle.language'), onclick: () => save({ language: other }) },
-      icon('language'), h('span', { text: other === 'fa' ? '\u0641\u0627\u0631\u0633\u06cc' : 'English' }));
-    return h('div', { class: 'toggles', role: 'group', 'aria-label': t('toggle.group') }, lang, theme);
-  };
+  root.lang = 'en';
+  root.dir = 'ltr';
+  root.dataset.theme = 'light';
 }
 
 function toast(text) {
@@ -72,9 +46,8 @@ async function boot() {
     app.textContent = `Configuration error: ${err.message}`;
     return;
   }
-  const local = readLocal();
-  const i18n = createI18n(local.language || (navigator.language?.startsWith('fa') ? 'fa' : 'en'));
-  applyAppearance(i18n, local.theme);
+  const i18n = createI18n('en');
+  applyAppearance();
   const t = i18n.t;
 
   let session;
@@ -101,20 +74,11 @@ async function boot() {
   let renewTimer = null;
   const online = () => navigator.onLine !== false;
 
-  // Signed out, a theme or language choice belongs to this installation; it moves to the account at sign-in.
-  const localToggles = togglesFactory({ t, i18n, getTheme: () => readLocal().theme, save: (patch) => {
-    const next = { ...readLocal(), ...patch };
-    writeLocal(next);
-    if (patch.language) i18n.set(patch.language);
-    applyAppearance(i18n, next.theme);
-    showSignIn();
-  } });
-
   function showSignIn(message) {
     clearInterval(renewTimer);
     store.reset();
     clear(app).append(signInView({ t, session, links: clientConfig.links, openLink, onSignedIn: showApp,
-                                   terms: clientConfig.terms, toggles: localToggles() }));
+                                   terms: clientConfig.terms }));
     if (message) toast(message);
   }
 
@@ -122,46 +86,20 @@ async function boot() {
     const ctx = {
       t, i18n, http, store, session, device, appInfo, toast, copy, openLink, online, apiBase: config.apiBaseUrl, bridge,
       get clientConfig() { return clientConfig; },
-      preferences: { language: i18n.lang, theme: readLocal().theme ?? 'system' },
+      preferences: { language: 'en', theme: 'light' },
       onConversationCreated: () => shell.renderHistory(),
       onAnswered: () => refreshLimit(),
     };
-    ctx.savePreferences = async (patch) => {
-      try {
-        const saved = await http.put('/users/me/preferences', patch);
-        ctx.preferences = { language: saved.language, theme: saved.theme };
-        writeLocal(ctx.preferences);
-        const relang = saved.language !== i18n.lang;
-        i18n.set(saved.language);
-        applyAppearance(i18n, saved.theme);
-        toast(t('settings.saved'));
-        if (relang) await showApp(); // rebuild with the new language and direction; the server keeps the chats
-      } catch (err) { toast(err.message); }
-    };
-    ctx.toggles = togglesFactory({ t, i18n, getTheme: () => ctx.preferences.theme, save: async (patch) => {
-      await ctx.savePreferences(patch);
-      if (!patch.language) shell.root.querySelector('.toggles')?.replaceWith(ctx.toggles());
-    } });
     ctx.onEmpty = (empty) => { shell.root.dataset.empty = String(empty); };
     ctx.openUpload = () => openUpload(ctx);
     ctx.openSettings = () => openSettings(ctx);
     ctx.openUsage = () => openUsage(ctx);
-    ctx.openLanguage = () => openLanguage(ctx);
     ctx.openApps = () => openApps(ctx);
     ctx.openUpgrade = () => openUpgrade(ctx);
     ctx.signOut = async () => {
       manualSignOut = true;
       await session.signOut();     // emits signed_out -> showSignIn
     };
-
-    // Account preferences win over the local copy (server-authoritative).
-    try {
-      const prefs = await http.get('/users/me/preferences');
-      ctx.preferences = { language: prefs.language, theme: prefs.theme };
-      writeLocal(ctx.preferences);
-      i18n.set(prefs.language);
-      applyAppearance(i18n, prefs.theme);
-    } catch { /* keep the local copy */ }
 
     const chat = createChatView(ctx);
     ctx.chat = chat;

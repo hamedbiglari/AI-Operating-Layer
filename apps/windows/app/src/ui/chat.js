@@ -41,11 +41,9 @@ export function createChatView(ctx) {
   // "+": add a document to the knowledge base. Shown only to roles the upload API accepts; the composer never
   // pretends a file is "attached to this question" — Cloud Core answers from knowledge, so a document becomes
   // answerable once processing has turned it into evidence, and the dialog says exactly that.
-  const UPLOAD_ROLES = ['owner', 'admin', 'researcher', 'editor'];
-  const canUpload = UPLOAD_ROLES.includes(ctx.session?.user?.role);
-  const attach = canUpload ? h('button', { class: 'composer__tool', type: 'button', id: 'composer-attach',
+  const attach = h('button', { class: 'composer__tool', type: 'button', id: 'composer-attach',
     'aria-label': t('composer.add_document'), title: t('composer.add_document'),
-    onclick: () => ctx.openUpload?.() }, icon('action-add')) : null;
+    onclick: () => ctx.openUpload?.() }, icon('action-add'));
 
   // Dictation: the platform's own speech recognition, where the WebView provides it (capability-gated, never
   // emulated). Words go into the composer; nothing is sent until the person presses send.
@@ -56,7 +54,7 @@ export function createChatView(ctx) {
       if (recognizer) { recognizer.stop(); return; }
       try {
         recognizer = new Recognition();
-        recognizer.lang = ctx.i18n.lang === 'fa' ? 'fa-IR' : 'en-US';
+        recognizer.lang = navigator.language || 'en-US';   // the system language: Persian dictation on a Persian system
         recognizer.interimResults = true;
         const base = input.value ? input.value.replace(/\s*$/, ' ') : '';
         recognizer.onresult = (ev) => {

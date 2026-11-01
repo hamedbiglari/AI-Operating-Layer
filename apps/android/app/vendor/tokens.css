@@ -241,16 +241,17 @@ bdi.identifier {
  * dashboard and the WordPress plugin are unchanged. Status hues are inherited, so a state still means the same.
  */
 [data-surface="assistant"] {
+  /* Warm off-white page, a slightly deeper sidebar and user bubble, hairline warm borders, near-black text. */
   --canvas:          #faf9f5;
   --surface:         #ffffff;
-  --surface-sunken:  #f2f0e9;
+  --surface-sunken:  #f0eee6;
   --surface-raised:  #ffffff;
-  --sidebar:         #f4f2ec;
-  --border:          #e6e3da;
-  --border-strong:   #cdc8bb;
-  --text:            #29261f;
-  --text-muted:      #66625a;
-  --text-subtle:     #8b877e;
+  --sidebar:         #f5f4ed;
+  --border:          #e8e6dc;
+  --border-strong:   #d4d1c4;
+  --text:            #141413;
+  --text-muted:      #5e5d59;
+  --text-subtle:     #87867f;
   --accent:          #6d4fd8;
   --accent-contrast: #ffffff;
   --accent-tint:     #eeeafc;
