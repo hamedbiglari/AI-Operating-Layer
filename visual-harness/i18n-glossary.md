@@ -1000,3 +1000,103 @@ Terms for the AI Center screen. Mode labels are the Create form's own options; p
 | Could not load: {error} | بارگذاری ناموفق بود: {error} |
 | Both fields are required. | هر دو فیلد الزامی‌اند. |
 | Operator | کاربر |
+
+## Command workspace (Step 9F)
+
+Terms for the Command workspace screen. State labels stand for API values; command text, titles, server messages and scope values stay as sent. Option text inside dropdowns stays English at runtime (the Persian layer skips select).
+
+| English | Persian |
+|---|---|
+| Type a research or knowledge command. It is saved to Cloud Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back. | یک فرمان پژوهشی یا دانشی بنویسید. همان‌طور که تایپ می‌کنید در Cloud Core ذخیره می‌شود، پس بستن این صفحه چیزی را از دست نمی‌دهد. پیش از اجرای هر چیز، می‌بینید چه خواهد کرد و دقیقاً روی چه چیزی کار خواهد کرد. نسخه‌ای که اجرا شده همان‌طور که بود نگه داشته می‌شود؛ ویرایش، نسخهٔ بعدی را آغاز می‌کند. کارهای طولانی پس از رفتن شما روی سرور ادامه می‌یابند و وقتی برگردید می‌توانید آن‌ها را ادامه دهید. |
+| New command | فرمان جدید |
+| Drafts | پیش‌نویس‌ها |
+| Waiting to continue | در انتظار ادامه |
+| Completed with gaps | انجام‌شده با شکاف |
+| Search your commands | جست‌وجو در فرمان‌های شما |
+| Continue | ادامه |
+| View result | دیدن نتیجه |
+| Restart as a new version | آغاز دوباره به‌عنوان نسخهٔ جدید |
+| Choose a command on the left, or start a new one. | یک فرمان را از سمت چپ انتخاب کنید، یا یک فرمان جدید آغاز کنید. |
+| Command | فرمان |
+| Scope, model and budget | دامنه، مدل و بودجه |
+| What it should do | چه کاری باید بکند |
+| Work it out from the text | از متن تشخیص بده |
+| Research the evidence (uses a model) | پژوهش در شواهد (از یک مدل استفاده می‌کند) |
+| Write a synthesis (uses a model) | نوشتن یک جمع‌بندی (از یک مدل استفاده می‌کند) |
+| Research one matrix section (uses a model) | پژوهش در یک بخش ماتریس (از یک مدل استفاده می‌کند) |
+| Find contradictions | یافتن تعارض‌ها |
+| Evidence for one claim | شواهد برای یک ادعا |
+| Claims from a document page | ادعاها از یک صفحهٔ سند |
+| Unsupported statements | گزاره‌های بدون پشتوانه |
+| Does a section apply across the category | آیا یک بخش در سراسر دسته کاربرد دارد |
+| Reprocess a document | پردازش دوبارهٔ یک سند |
+| Continue my previous task | ادامهٔ کار قبلی من |
+| Section key | کلید بخش |
+| Document id | شناسهٔ سند |
+| Page | صفحه |
+| Claim id | شناسهٔ ادعا |
+| Context per call (tokens) | زمینه در هر فراخوانی (توکن) |
+| Output per call (tokens) | خروجی در هر فراخوانی (توکن) |
+| Most model calls | بیشترین فراخوانی مدل |
+| Most it may cost | بیشترین هزینهٔ مجاز |
+| If the budget is too small, process the most important parts and leave the rest visibly pending | اگر بودجه کم باشد، مهم‌ترین بخش‌ها را پردازش کن و بقیه را آشکارا در انتظار بگذار |
+| Check the plan | بررسی برنامه |
+| Run again as a new version | اجرای دوباره به‌عنوان نسخهٔ جدید |
+| Archive | بایگانی |
+| Delete permanently | حذف همیشگی |
+| Keyboard: Ctrl+Enter checks the plan, then runs it. Ctrl+S saves now. | صفحه‌کلید: Ctrl+Enter برنامه را بررسی و سپس اجرا می‌کند. Ctrl+S همین حالا ذخیره می‌کند. |
+| Result | نتیجه |
+| Nothing has run yet. | هنوز چیزی اجرا نشده است. |
+| Your commands | فرمان‌های شما |
+| For example: Analyze all human studies on Toranjebin safety. | برای نمونه: همهٔ مطالعات انسانی دربارهٔ ایمنی ترنجبین را تحلیل کن. |
+| e.g. safety | مثلاً safety |
+| no limit | بدون محدودیت |
+| No commands here yet. | هنوز فرمانی اینجا نیست. |
+| Untitled | بی‌عنوان |
+| Untitled command | فرمان بی‌عنوان |
+| Continue your previous task? | کار قبلی خود را ادامه می‌دهید؟ |
+| Version {n} | نسخهٔ {n} |
+| Version {n} · has run, read-only — editing starts version {next} | نسخهٔ {n} · اجرا شده و فقط‌خواندنی است — ویرایش، نسخهٔ {next} را آغاز می‌کند |
+| This browser has unsaved text from an earlier visit. | این مرورگر متن ذخیره‌نشده‌ای از بازدید قبلی دارد. |
+| Use it | استفاده از آن |
+| Saved to Cloud Core · revision {rev}. | در Cloud Core ذخیره شد · بازبینی {rev}. |
+| Saved to Cloud Core · version {v}, revision {rev}. | در Cloud Core ذخیره شد · نسخهٔ {v}، بازبینی {rev}. |
+| This draft was changed in another tab or device. | این پیش‌نویس در زبانه یا دستگاه دیگری تغییر کرده است. |
+| Use the saved version | استفاده از نسخهٔ ذخیره‌شده |
+| Keep mine | نسخهٔ خودم را نگه دار |
+| Loaded the saved version. | نسخهٔ ذخیره‌شده بارگذاری شد. |
+| Not saved yet ({error}). Your text is kept in this browser until it is. | هنوز ذخیره نشده ({error}). متن شما تا آن زمان در این مرورگر نگه داشته می‌شود. |
+| Restore from archive | بازگرداندن از بایگانی |
+| It will: {what} | کاری که خواهد کرد: {what} |
+| It will: {what} (you chose this; the text suggested “{proposed}”) | کاری که خواهد کرد: {what} (شما این را انتخاب کردید؛ متن «{proposed}» را پیشنهاد می‌کرد) |
+| Before it can run, set: {fields}. | پیش از اجرا، این‌ها را تنظیم کنید: {fields}. |
+| Acts on: {scope} | روی این کار می‌کند: {scope} |
+| started {d} | آغاز {d} |
+| finished {d} | پایان {d} |
+| (empty) | (خالی) |
+| View | دیدن |
+| Restore as a new draft | بازگرداندن به‌عنوان پیش‌نویس جدید |
+| Compare with v{n} | مقایسه با v{n} |
+| Restored v{n} as the current draft; history is unchanged. | v{n} به‌عنوان پیش‌نویس کنونی بازگردانده شد؛ تاریخچه تغییری نکرد. |
+| Same text. | متن یکسان است. |
+| Set {fields} first (open “Scope, model and budget”). | ابتدا {fields} را تنظیم کنید («دامنه، مدل و بودجه» را باز کنید). |
+| Plan ready — check what it will act on, then run. | برنامه آماده است — بررسی کنید روی چه چیزی کار می‌کند، سپس اجرا کنید. |
+| Running on the server. You can close this page; it will keep going. | روی سرور در حال اجراست. می‌توانید این صفحه را ببندید؛ کار ادامه می‌یابد. |
+| Continuing from the last checkpoint; finished work is not redone. | ادامه از آخرین نقطهٔ بازبینی؛ کار انجام‌شده دوباره انجام نمی‌شود. |
+| Running again as a new version; the earlier result is kept. | اجرای دوباره به‌عنوان نسخهٔ جدید؛ نتیجهٔ قبلی نگه داشته می‌شود. |
+| Cancelled. | لغو شد. |
+| Restored from the archive. | از بایگانی بازگردانده شد. |
+| Archived. Find it with Show set to Archived. | بایگانی شد. با تنظیم «نمایش» روی «بایگانی‌شده» پیدایش کنید. |
+| Delete this command and every one of its versions permanently? Archive keeps them instead. | این فرمان و همهٔ نسخه‌هایش برای همیشه حذف شوند؟ بایگانی آن‌ها را نگه می‌دارد. |
+| Deleted permanently. | برای همیشه حذف شد. |
+| Represented | بازنمایی‌شده |
+| Merged as duplicates | ادغام‌شده به‌عنوان تکراری |
+| Contested, both sides kept | مورد مناقشه، هر دو سو نگه داشته شد |
+| Unresolved | حل‌نشده |
+| Pending (not processed) | در انتظار (پردازش‌نشده) |
+| Lost | ازدست‌رفته |
+| No claims recorded on this page. | هیچ ادعایی در این صفحه ثبت نشده است. |
+| No contradictions recorded. | هیچ تعارضی ثبت نشده است. |
+| Every statement has a source. | هر گزاره منبعی دارد. |
+| Turn into a cited publication | تبدیل به یک انتشار مستند |
+| Published — open Publications | منتشر شد — انتشارات را باز کنید |

@@ -6080,7 +6080,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   </div>
 </section>
 
-<section class="screen" id="screen-chat" aria-labelledby="h-chat">
+<section class="screen" id="screen-chat" aria-labelledby="h-chat" data-live-wired>
   <div class="page-header"><div>
     <h1 id="h-chat">Command workspace</h1>
     <div class="callout page-intro" role="note"><p>Type a research or knowledge command. It is saved to Cloud Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back.</p></div>
@@ -13074,7 +13074,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       .then(function (r) { if (r.status === 204) return {}; return r.json().catch(function () { return {}; }).then(function (b) {
         if (!r.ok) { var d = (b.error && b.error.message) || b.detail || ('HTTP ' + r.status);
           var e = new Error(typeof d === 'string' ? d : (d.message || JSON.stringify(d))); e.status = r.status; e.body = b; throw e; } return b; }); }); }
-  function say(msg) { $('ws-msg').textContent = msg || ''; }
+  // Every visible string goes through AIOL_I18N.set or is an exact FA key the Persian layer translates (9F).
+  // A server's own message is shown as sent, in the {error} slot.
+  function say(tpl, args) { AIOL_I18N.set($('ws-msg'), tpl || '', args); }
+  function failed(e) { say('{error}', { error: e.message }); }
+  function ui(text, args) { var s = el('span'); AIOL_I18N.set(s, text, args); return s; }
+  function stateWord(s) { return STATE_WORD[s] ? ui(STATE_WORD[s]) : el('bdi', null, s); }
+  // The save line: one translated sentence, then optional buttons.
+  function saveLine(tpl, args) { var n = $('ws-save'); n.textContent = ''; n.appendChild(ui(tpl, args)); return n; }
   function store(key, val) { try { if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, val); } catch (e) { /* storage may be blocked; the server copy is what counts */ } }
   function recall(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
 
@@ -13090,10 +13097,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (!r.items.length) { ul.appendChild(el('li', 'aic-empty', 'No commands here yet.')); return; }
       r.items.forEach(function (c) { var li = el('li'); var b = el('button', 'ws-item');
         b.type = 'button'; b.setAttribute('aria-current', current && current.id === c.id ? 'true' : 'false');
-        b.appendChild(el('span', 'ws-item-title', c.title || (c.current && c.current.text.slice(0, 60)) || 'Untitled'));
-        var meta = el('span', 'ws-item-meta', STATE_WORD[c.state] + ' · v' + c.current_version);
+        var ttl = c.title || (c.current && c.current.text.slice(0, 60));
+        var tn = b.appendChild(el('span', 'ws-item-title')); if (ttl) tn.textContent = ttl; else AIOL_I18N.set(tn, 'Untitled');
+        var meta = el('span', 'ws-item-meta'); meta.appendChild(stateWord(c.state)); meta.appendChild(document.createTextNode(' · v' + c.current_version));
         b.appendChild(meta); b.addEventListener('click', function () { open(c.id); }); li.appendChild(b); ul.appendChild(li); }); })
-      .catch(function (e) { say(e.message); });
+      .catch(failed);
   }
 
   function loadResumable() {
@@ -13101,8 +13109,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var first = rows.filter(function (r) { return r.offer.indexOf('continue') >= 0; })[0];
       if (!first) { box.hidden = true; return; }
       box.hidden = false; box.dataset.id = first.id;
-      $('ws-resume-text').textContent = 'Continue your previous task? “' + (first.title || 'Untitled') + '” is '
-        + (STATE_WORD[first.state] || first.state).toLowerCase() + (first.error ? ' — ' + first.error : '') + '.'; })
+      var t = $('ws-resume-text'); t.textContent = '';
+      t.appendChild(ui('Continue your previous task?')); t.appendChild(document.createTextNode(' '));
+      t.appendChild(first.title ? el('bdi', null, '“' + first.title + '”') : ui('Untitled'));
+      t.appendChild(document.createTextNode(' — ')); t.appendChild(stateWord(first.state));
+      if (first.error) { t.appendChild(document.createTextNode(' — ')); t.appendChild(el('bdi', null, first.error)); } })
       .catch(function () {});
   }
 
@@ -13127,34 +13138,35 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
 
   function render(c) { current = c; var v = c.current; revision = v.draft_revision;
     $('ws-empty').hidden = true; $('ws-editor').hidden = false;
-    $('ws-title').textContent = c.title || 'Untitled command';
-    var st = $('ws-state'); st.textContent = STATE_WORD[c.state] || c.state; st.setAttribute('data-s', c.state);
-    $('ws-ver').textContent = 'Version ' + v.version + (v.frozen ? ' · has run, read-only — editing starts version ' + (v.version + 1) : '');
+    if (c.title) $('ws-title').textContent = c.title; else AIOL_I18N.set($('ws-title'), 'Untitled command');
+    var st = $('ws-state'); st.textContent = ''; st.appendChild(stateWord(c.state)); st.setAttribute('data-s', c.state);
+    if (v.frozen) AIOL_I18N.set($('ws-ver'), 'Version {n} · has run, read-only — editing starts version {next}', { n: v.version, next: v.version + 1 });
+    else AIOL_I18N.set($('ws-ver'), 'Version {n}', { n: v.version });
     var local = recall('aiol-ws-' + c.id);
     if (document.activeElement !== $('ws-text')) $('ws-text').value = v.text;
     if (local && local !== v.text && !v.frozen) {
-      $('ws-save').textContent = 'This browser has unsaved text from an earlier visit. ';
+      saveLine('This browser has unsaved text from an earlier visit.').appendChild(document.createTextNode(' '));
       var use = el('button', 'btn', 'Use it'); use.type = 'button';
       use.addEventListener('click', function () { $('ws-text').value = local; dirty = true; saveNow(); });
       $('ws-save').appendChild(use);
-    } else { $('ws-save').textContent = 'Saved to Cloud Core · revision ' + v.draft_revision + '.'; }
+    } else { saveLine('Saved to Cloud Core · revision {rev}.', { rev: v.draft_revision }); }
     fillScope(v);
     var running = c.state === 'queued' || c.state === 'running';
     $('ws-run').disabled = v.frozen || running; $('ws-cancel').disabled = !running;
     $('ws-resume-btn').disabled = !c.resumable; $('ws-regen').disabled = !c.last_executed_version || running;
-    $('ws-archive').textContent = c.archived ? 'Restore from archive' : 'Archive';
+    AIOL_I18N.set($('ws-archive'), c.archived ? 'Restore from archive' : 'Archive');
     renderPlan(v.plan); renderResult(c);
     clearTimeout(pollTimer); if (running) pollTimer = setTimeout(function () { open(c.id, true); }, 3000);
   }
 
   function open(id, quiet) {
     return api('/workspace/commands/' + id).then(function (c) { render(c); if (!quiet) { loadVersions(); loadList(); } })
-      .catch(function (e) { say(e.message); });
+      .catch(failed);
   }
 
   /* ---------------------------------------------------------------- autosave (§48) */
   function scheduleSave() { dirty = true; store('aiol-ws-' + current.id, $('ws-text').value);
-    $('ws-save').textContent = 'Saving…'; clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 800); }
+    saveLine('Saving…'); clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 800); }
   function saveNow(force) { if (!current) return Promise.resolve();
     clearTimeout(saveTimer);
     var body = { text: $('ws-text').value, base_revision: force ? null : revision, scope: readScope(), budget: readBudget(),
@@ -13164,26 +13176,27 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       dirty = false; store('aiol-ws-' + current.id, null); revision = r.version.draft_revision;
       var newVersion = r.version.version !== current.current.version;
       current.current = r.version;
-      $('ws-save').textContent = 'Saved to Cloud Core · version ' + r.version.version + ', revision ' + r.version.draft_revision + '.';
+      saveLine('Saved to Cloud Core · version {v}, revision {rev}.', { v: r.version.version, rev: r.version.draft_revision });
       if (newVersion) open(current.id); else renderPlan(null); })
       .catch(function (e) {
         if (e.status === 409 && e.body && (e.body.detail || {}).server_text !== undefined) {
-          var d = e.body.detail; $('ws-save').textContent = 'This draft was changed in another tab or device. ';
+          var d = e.body.detail; saveLine('This draft was changed in another tab or device.').appendChild(document.createTextNode(' '));
           var keepTheirs = el('button', 'btn', 'Use the saved version'); keepTheirs.type = 'button';
-          keepTheirs.addEventListener('click', function () { $('ws-text').value = d.server_text; revision = d.server_revision; store('aiol-ws-' + current.id, null); $('ws-save').textContent = 'Loaded the saved version.'; });
+          keepTheirs.addEventListener('click', function () { $('ws-text').value = d.server_text; revision = d.server_revision; store('aiol-ws-' + current.id, null); saveLine('Loaded the saved version.'); });
           var keepMine = el('button', 'btn', 'Keep mine'); keepMine.type = 'button';
           keepMine.addEventListener('click', function () { revision = d.server_revision; saveNow(); });
           $('ws-save').appendChild(keepTheirs); $('ws-save').appendChild(document.createTextNode(' ')); $('ws-save').appendChild(keepMine);
-        } else { $('ws-save').textContent = 'Not saved yet (' + e.message + '). Your text is kept in this browser until it is.'; } });
+        } else { saveLine('Not saved yet ({error}). Your text is kept in this browser until it is.', { error: e.message }); } });
   }
 
   /* ---------------------------------------------------------------- plan, run, results */
   function renderPlan(p) { var box = $('ws-plan-out'); box.textContent = ''; if (!p) return;
     var b = el('div', 'kx-banner'); b.setAttribute('data-s', p.missing_scope && p.missing_scope.length ? 'stale' : 'current');
-    b.appendChild(el('p', null, 'It will: ' + (p.description || p.intent) + (p.intent !== p.proposed_intent ? ' (you chose this; the text suggested “' + p.proposed_intent + '”)' : '')));
-    if (p.missing_scope && p.missing_scope.length) b.appendChild(el('p', null, 'Before it can run, set: ' + p.missing_scope.join(', ').replace(/_/g, ' ') + '.'));
+    if (p.intent !== p.proposed_intent) b.appendChild(el('p')).appendChild(ui('It will: {what} (you chose this; the text suggested “{proposed}”)', { what: p.description || p.intent, proposed: p.proposed_intent }));
+    else b.appendChild(el('p')).appendChild(ui('It will: {what}', { what: p.description || p.intent }));
+    if (p.missing_scope && p.missing_scope.length) b.appendChild(el('p')).appendChild(ui('Before it can run, set: {fields}.', { fields: p.missing_scope.join(', ').replace(/_/g, ' ') }));
     var scope = Object.keys(p.scope || {}).filter(function (k) { return k !== 'terms'; }).map(function (k) { return k.replace(/_/g, ' ') + ' = ' + p.scope[k]; });
-    if (scope.length) b.appendChild(el('p', 'aic-hint', 'Acts on: ' + scope.join(' · ')));
+    if (scope.length) { var on = b.appendChild(el('p', 'aic-hint')); AIOL_I18N.set(on, 'Acts on: {scope}', { scope: scope.join(' · ') }); }
     var sp = p.synthesis_plan;
     if (sp) { b.appendChild(el('p', null, sp.units + ' knowledge unit(s) in scope, in ' + sp.packs + ' context pack(s), ' + sp.calls + ' model call(s)'
         + (sp.estimated_cost === null || sp.estimated_cost === undefined ? ', cost unknown (no price configured for the model)' : ', estimated cost ' + sp.estimated_cost) + '.'));
@@ -13206,8 +13219,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   }
 
   function showVersion(box, v) { box.textContent = '';
-    box.appendChild(el('p', 'aic-hint', 'Version ' + v.version + ' · ' + (STATE_WORD[v.execution_state] || v.execution_state)
-      + (v.executed_at ? ' · started ' + new Date(v.executed_at).toLocaleString() : '') + (v.finished_at ? ' · finished ' + new Date(v.finished_at).toLocaleString() : '')));
+    var head = box.appendChild(el('p', 'aic-hint'));
+    head.appendChild(ui('Version {n}', { n: v.version })); head.appendChild(document.createTextNode(' · ')); head.appendChild(stateWord(v.execution_state));
+    if (v.executed_at) { head.appendChild(document.createTextNode(' · ')); head.appendChild(ui('started {d}', { d: { date: v.executed_at } })); }
+    if (v.finished_at) { head.appendChild(document.createTextNode(' · ')); head.appendChild(ui('finished {d}', { d: { date: v.finished_at } })); }
     if (v.error) { var er = el('div', 'kx-banner'); er.setAttribute('data-s', 'stale'); er.textContent = v.error; box.appendChild(er); }
     if (v.cost) box.appendChild(el('p', 'aic-hint', 'Cost: ' + v.cost.estimated + ' estimated' + (v.cost.executions_with_unknown_cost ? '; ' + v.cost.executions_with_unknown_cost + ' call(s) with an unknown price (not counted as zero)' : '') + '.'));
     var r = v.result; if (!r) return;
@@ -13225,7 +13240,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (r.status === 'completed' || r.status === 'completed_with_gaps') { var pub = el('button', 'btn', r.publication_id ? 'Published — open Publications' : 'Turn into a cited publication');
         pub.type = 'button'; pub.disabled = !!r.publication_id;
         pub.addEventListener('click', function () { api('/synthesis/runs/' + r.id + '/publish', 'POST').then(function (x) {
-          say('Publication created; ' + x.resolved.references + ' reference(s) numbered from the units’ own sources' + (x.sentences_without_units ? ', ' + x.sentences_without_units + ' sentence(s) with no source are marked, not numbered' : '') + '.'); open(current.id); }).catch(function (e) { say(e.message); }); });
+          say('{text}', { text: 'Publication created; ' + x.resolved.references + ' reference(s) numbered from the units’ own sources' + (x.sentences_without_units ? ', ' + x.sentences_without_units + ' sentence(s) with no source are marked, not numbered' : '') + '.' }); open(current.id); }).catch(failed); });
         box.appendChild(pub); }
       return; }
     if (r.claims) { var ul = el('ul'); r.claims.forEach(function (c) { ul.appendChild(el('li', null, c.predicate + ' ' + (c.object_value || '') + ' — ' + c.relation + ' (' + c.status + ')')); });
@@ -13247,14 +13262,15 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     api('/workspace/commands/' + current.id + '/versions').then(function (rows) { var box = $('ws-versions'); box.textContent = '';
       var ul = el('ul', 'ws-versions');
       rows.forEach(function (v) { var li = el('li');
-        li.appendChild(el('strong', null, 'v' + v.version)); li.appendChild(document.createTextNode(' · ' + (STATE_WORD[v.execution_state] || v.execution_state) + ' · ' + (v.text.slice(0, 90) || '(empty)') + ' '));
+        li.appendChild(el('strong', null, 'v' + v.version)); li.appendChild(document.createTextNode(' · ')); li.appendChild(stateWord(v.execution_state));
+        li.appendChild(document.createTextNode(' · ')); li.appendChild(v.text ? el('bdi', null, v.text.slice(0, 90)) : ui('(empty)')); li.appendChild(document.createTextNode(' '));
         var view = el('button', 'btn', 'View'); view.type = 'button'; view.addEventListener('click', function () { showVersion($('ws-result'), v); });
         var restore = el('button', 'btn', 'Restore as a new draft'); restore.type = 'button';
-        restore.addEventListener('click', function () { api('/workspace/commands/' + current.id + '/versions/' + v.version + '/restore', 'POST').then(function () { say('Restored v' + v.version + ' as the current draft; history is unchanged.'); open(current.id); }).catch(function (e) { say(e.message); }); });
+        restore.addEventListener('click', function () { api('/workspace/commands/' + current.id + '/versions/' + v.version + '/restore', 'POST').then(function () { say('Restored v{n} as the current draft; history is unchanged.', { n: v.version }); open(current.id); }).catch(failed); });
         li.appendChild(view); li.appendChild(document.createTextNode(' ')); li.appendChild(restore);
-        if (v.version > 1) { var cmp = el('button', 'btn', 'Compare with v' + (v.version - 1)); cmp.type = 'button';
+        if (v.version > 1) { var cmp = el('button', 'btn'); AIOL_I18N.set(cmp, 'Compare with v{n}', { n: v.version - 1 }); cmp.type = 'button';
           cmp.addEventListener('click', function () { api('/workspace/commands/' + current.id + '/compare?a=' + (v.version - 1) + '&b=' + v.version).then(function (d) {
-            var pre = el('pre', 'ws-diff', d.text_diff.join('\n') || 'Same text.'); li.appendChild(pre); }).catch(function (e) { say(e.message); }); });
+            var pre = el('pre', 'ws-diff', d.text_diff.join('\n') || 'Same text.'); li.appendChild(pre); }).catch(failed); });
           li.appendChild(document.createTextNode(' ')); li.appendChild(cmp); }
         ul.appendChild(li); });
       box.appendChild(ul); }).catch(function () {});
@@ -13263,8 +13279,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   function act(path, method, ok) { return function () { if (!current) return;
     var go = function () { return api('/workspace/commands/' + current.id + path, method || 'POST').then(function (r) { if (ok) say(ok); open(current.id); loadResumable(); return r; }); };
     (dirty ? saveNow() : Promise.resolve()).then(go).catch(function (e) {
-      if (e.body && e.body.detail && e.body.detail.missing_scope) say('Set ' + e.body.detail.missing_scope.join(', ').replace(/_/g, ' ') + ' first (open “Scope, model and budget”).');
-      else say(e.message); }); }; }
+      if (e.body && e.body.detail && e.body.detail.missing_scope) say('Set {fields} first (open “Scope, model and budget”).', { fields: e.body.detail.missing_scope.join(', ').replace(/_/g, ' ') });
+      else failed(e); }); }; }
 
   $('ws-plan').addEventListener('click', act('/plan', 'POST', 'Plan ready — check what it will act on, then run.'));
   $('ws-run').addEventListener('click', act('/run', 'POST', 'Running on the server. You can close this page; it will keep going.'));
@@ -13274,12 +13290,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   $('ws-archive').addEventListener('click', function () { if (!current) return;
     act(current.archived ? '/unarchive' : '/archive', 'POST', current.archived ? 'Restored from the archive.' : 'Archived. Find it with Show set to Archived.')(); });
   $('ws-delete').addEventListener('click', function () { if (!current) return;
-    if (!window.confirm('Delete this command and every one of its versions permanently? Archive keeps them instead.')) return;
+    if (!window.confirm(AIOL_I18N.format('Delete this command and every one of its versions permanently? Archive keeps them instead.', null, AIOL_I18N.lang()))) return;
     api('/workspace/commands/' + current.id + '?permanent=true', 'DELETE').then(function () { store('aiol-ws-' + current.id, null); current = null;
-      $('ws-editor').hidden = true; $('ws-empty').hidden = false; say('Deleted permanently.'); loadList(); }).catch(function (e) { say(e.message); }); });
+      $('ws-editor').hidden = true; $('ws-empty').hidden = false; say('Deleted permanently.'); loadList(); }).catch(failed); });
   $('ws-new').addEventListener('click', function () {
     api('/workspace/commands', 'POST', { text: '', knowledge_object_id: $('ws-topic').value || null }).then(function (c) { render(c); loadList(); $('ws-text').focus(); })
-      .catch(function (e) { say(e.message); }); });
+      .catch(failed); });
   $('ws-text').addEventListener('input', scheduleSave);
   ['ws-intent', 'ws-topic', 'ws-category', 'ws-section', 'ws-document', 'ws-page', 'ws-claim', 'ws-policy', 'ws-ctx', 'ws-out', 'ws-calls', 'ws-cost', 'ws-partial']
     .forEach(function (id) { $(id).addEventListener('change', function () { if (current) { dirty = true; saveNow(); } }); });
@@ -14282,7 +14298,101 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Credential saved (encrypted; it will not be shown again).": "اعتبارنامه ذخیره شد (رمزنگاری‌شده؛ دیگر نشان داده نمی‌شود).",
     "Could not load: {error}": "بارگذاری ناموفق بود: {error}",
     "Both fields are required.": "هر دو فیلد الزامی‌اند.",
-    "Operator": "کاربر"
+    "Operator": "کاربر",
+    // Command workspace (Step 9F)
+    "Type a research or knowledge command. It is saved to Cloud Core as you type, so closing this page loses nothing. Before anything runs you see what it will do and exactly what it will act on. Once a version has run it is kept as it was; editing starts the next version. Long work keeps going on the server after you leave, and you can continue it when you come back.": "یک فرمان پژوهشی یا دانشی بنویسید. همان‌طور که تایپ می‌کنید در Cloud Core ذخیره می‌شود، پس بستن این صفحه چیزی را از دست نمی‌دهد. پیش از اجرای هر چیز، می‌بینید چه خواهد کرد و دقیقاً روی چه چیزی کار خواهد کرد. نسخه‌ای که اجرا شده همان‌طور که بود نگه داشته می‌شود؛ ویرایش، نسخهٔ بعدی را آغاز می‌کند. کارهای طولانی پس از رفتن شما روی سرور ادامه می‌یابند و وقتی برگردید می‌توانید آن‌ها را ادامه دهید.",
+    "New command": "فرمان جدید",
+    "Drafts": "پیش‌نویس‌ها",
+    "Waiting to continue": "در انتظار ادامه",
+    "Completed with gaps": "انجام‌شده با شکاف",
+    "Search your commands": "جست‌وجو در فرمان‌های شما",
+    "Continue": "ادامه",
+    "View result": "دیدن نتیجه",
+    "Restart as a new version": "آغاز دوباره به‌عنوان نسخهٔ جدید",
+    "Choose a command on the left, or start a new one.": "یک فرمان را از سمت چپ انتخاب کنید، یا یک فرمان جدید آغاز کنید.",
+    "Command": "فرمان",
+    "Scope, model and budget": "دامنه، مدل و بودجه",
+    "What it should do": "چه کاری باید بکند",
+    "Work it out from the text": "از متن تشخیص بده",
+    "Research the evidence (uses a model)": "پژوهش در شواهد (از یک مدل استفاده می‌کند)",
+    "Write a synthesis (uses a model)": "نوشتن یک جمع‌بندی (از یک مدل استفاده می‌کند)",
+    "Research one matrix section (uses a model)": "پژوهش در یک بخش ماتریس (از یک مدل استفاده می‌کند)",
+    "Find contradictions": "یافتن تعارض‌ها",
+    "Evidence for one claim": "شواهد برای یک ادعا",
+    "Claims from a document page": "ادعاها از یک صفحهٔ سند",
+    "Unsupported statements": "گزاره‌های بدون پشتوانه",
+    "Does a section apply across the category": "آیا یک بخش در سراسر دسته کاربرد دارد",
+    "Reprocess a document": "پردازش دوبارهٔ یک سند",
+    "Continue my previous task": "ادامهٔ کار قبلی من",
+    "Section key": "کلید بخش",
+    "Document id": "شناسهٔ سند",
+    "Page": "صفحه",
+    "Claim id": "شناسهٔ ادعا",
+    "Context per call (tokens)": "زمینه در هر فراخوانی (توکن)",
+    "Output per call (tokens)": "خروجی در هر فراخوانی (توکن)",
+    "Most model calls": "بیشترین فراخوانی مدل",
+    "Most it may cost": "بیشترین هزینهٔ مجاز",
+    "If the budget is too small, process the most important parts and leave the rest visibly pending": "اگر بودجه کم باشد، مهم‌ترین بخش‌ها را پردازش کن و بقیه را آشکارا در انتظار بگذار",
+    "Check the plan": "بررسی برنامه",
+    "Run again as a new version": "اجرای دوباره به‌عنوان نسخهٔ جدید",
+    "Archive": "بایگانی",
+    "Delete permanently": "حذف همیشگی",
+    "Keyboard: Ctrl+Enter checks the plan, then runs it. Ctrl+S saves now.": "صفحه‌کلید: Ctrl+Enter برنامه را بررسی و سپس اجرا می‌کند. Ctrl+S همین حالا ذخیره می‌کند.",
+    "Result": "نتیجه",
+    "Nothing has run yet.": "هنوز چیزی اجرا نشده است.",
+    "Your commands": "فرمان‌های شما",
+    "For example: Analyze all human studies on Toranjebin safety.": "برای نمونه: همهٔ مطالعات انسانی دربارهٔ ایمنی ترنجبین را تحلیل کن.",
+    "e.g. safety": "مثلاً safety",
+    "no limit": "بدون محدودیت",
+    "No commands here yet.": "هنوز فرمانی اینجا نیست.",
+    "Untitled": "بی‌عنوان",
+    "Untitled command": "فرمان بی‌عنوان",
+    "Continue your previous task?": "کار قبلی خود را ادامه می‌دهید؟",
+    "Version {n}": "نسخهٔ {n}",
+    "Version {n} · has run, read-only — editing starts version {next}": "نسخهٔ {n} · اجرا شده و فقط‌خواندنی است — ویرایش، نسخهٔ {next} را آغاز می‌کند",
+    "This browser has unsaved text from an earlier visit.": "این مرورگر متن ذخیره‌نشده‌ای از بازدید قبلی دارد.",
+    "Use it": "استفاده از آن",
+    "Saved to Cloud Core · revision {rev}.": "در Cloud Core ذخیره شد · بازبینی {rev}.",
+    "Saved to Cloud Core · version {v}, revision {rev}.": "در Cloud Core ذخیره شد · نسخهٔ {v}، بازبینی {rev}.",
+    "This draft was changed in another tab or device.": "این پیش‌نویس در زبانه یا دستگاه دیگری تغییر کرده است.",
+    "Use the saved version": "استفاده از نسخهٔ ذخیره‌شده",
+    "Keep mine": "نسخهٔ خودم را نگه دار",
+    "Loaded the saved version.": "نسخهٔ ذخیره‌شده بارگذاری شد.",
+    "Not saved yet ({error}). Your text is kept in this browser until it is.": "هنوز ذخیره نشده ({error}). متن شما تا آن زمان در این مرورگر نگه داشته می‌شود.",
+    "Restore from archive": "بازگرداندن از بایگانی",
+    "It will: {what}": "کاری که خواهد کرد: {what}",
+    "It will: {what} (you chose this; the text suggested “{proposed}”)": "کاری که خواهد کرد: {what} (شما این را انتخاب کردید؛ متن «{proposed}» را پیشنهاد می‌کرد)",
+    "Before it can run, set: {fields}.": "پیش از اجرا، این‌ها را تنظیم کنید: {fields}.",
+    "Acts on: {scope}": "روی این کار می‌کند: {scope}",
+    "started {d}": "آغاز {d}",
+    "finished {d}": "پایان {d}",
+    "(empty)": "(خالی)",
+    "View": "دیدن",
+    "Restore as a new draft": "بازگرداندن به‌عنوان پیش‌نویس جدید",
+    "Compare with v{n}": "مقایسه با v{n}",
+    "Restored v{n} as the current draft; history is unchanged.": "v{n} به‌عنوان پیش‌نویس کنونی بازگردانده شد؛ تاریخچه تغییری نکرد.",
+    "Same text.": "متن یکسان است.",
+    "Set {fields} first (open “Scope, model and budget”).": "ابتدا {fields} را تنظیم کنید («دامنه، مدل و بودجه» را باز کنید).",
+    "Plan ready — check what it will act on, then run.": "برنامه آماده است — بررسی کنید روی چه چیزی کار می‌کند، سپس اجرا کنید.",
+    "Running on the server. You can close this page; it will keep going.": "روی سرور در حال اجراست. می‌توانید این صفحه را ببندید؛ کار ادامه می‌یابد.",
+    "Continuing from the last checkpoint; finished work is not redone.": "ادامه از آخرین نقطهٔ بازبینی؛ کار انجام‌شده دوباره انجام نمی‌شود.",
+    "Running again as a new version; the earlier result is kept.": "اجرای دوباره به‌عنوان نسخهٔ جدید؛ نتیجهٔ قبلی نگه داشته می‌شود.",
+    "Cancelled.": "لغو شد.",
+    "Restored from the archive.": "از بایگانی بازگردانده شد.",
+    "Archived. Find it with Show set to Archived.": "بایگانی شد. با تنظیم «نمایش» روی «بایگانی‌شده» پیدایش کنید.",
+    "Delete this command and every one of its versions permanently? Archive keeps them instead.": "این فرمان و همهٔ نسخه‌هایش برای همیشه حذف شوند؟ بایگانی آن‌ها را نگه می‌دارد.",
+    "Deleted permanently.": "برای همیشه حذف شد.",
+    "Represented": "بازنمایی‌شده",
+    "Merged as duplicates": "ادغام‌شده به‌عنوان تکراری",
+    "Contested, both sides kept": "مورد مناقشه، هر دو سو نگه داشته شد",
+    "Unresolved": "حل‌نشده",
+    "Pending (not processed)": "در انتظار (پردازش‌نشده)",
+    "Lost": "ازدست‌رفته",
+    "No claims recorded on this page.": "هیچ ادعایی در این صفحه ثبت نشده است.",
+    "No contradictions recorded.": "هیچ تعارضی ثبت نشده است.",
+    "Every statement has a source.": "هر گزاره منبعی دارد.",
+    "Turn into a cited publication": "تبدیل به یک انتشار مستند",
+    "Published — open Publications": "منتشر شد — انتشارات را باز کنید"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [
