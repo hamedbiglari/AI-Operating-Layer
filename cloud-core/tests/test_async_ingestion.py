@@ -330,3 +330,33 @@ def test_identical_bytes_in_different_tenants_are_separate_jobs(
 
     assert a["job_id"] != b["job_id"]
     assert b["job_created"] is True
+
+
+def test_the_periodic_sweep_task_reclaims_a_stalled_job(client: TestClient, register_org, db_session, monkeypatch) -> None:
+    """V5-processing-stale-sweeper: the Celery task itself runs (it used to import a module that does not exist)."""
+    import uuid as _uuid
+    from contextlib import nullcontext
+    from datetime import datetime, timedelta, timezone
+
+    import app.db.session as session_module
+    from app.workers.tasks import reclaim_stalled_ingestions
+
+    org = register_org()
+    body = _upload(client, org["headers"], "simple.pdf", _source(client, org["headers"])).json()
+    job = ingestion_job_service.claim(db_session, job_id=_uuid.UUID(body["job_id"]))
+    job.started_at = datetime.now(timezone.utc) - timedelta(seconds=ingestion_job_service.LEASE_SECONDS + 60)
+    db_session.commit()
+
+    monkeypatch.setattr(session_module, "SessionLocal", lambda: nullcontext(db_session))
+    out = reclaim_stalled_ingestions()
+    assert str(job.id) in out["reclaimed"]
+    db_session.refresh(job)
+    assert job.status != SyncJobStatus.RUNNING
+
+
+def test_the_sweep_runs_on_the_beat_schedule() -> None:
+    from app.workers.celery_app import celery_app
+
+    entries = [e for e in celery_app.conf.beat_schedule.values() if e["task"] == "documents.reclaim_stalled"]
+    assert len(entries) == 1 and entries[0]["schedule"] > 0
+    assert "documents.reclaim_stalled" in celery_app.tasks

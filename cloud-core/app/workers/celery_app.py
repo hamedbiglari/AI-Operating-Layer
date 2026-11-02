@@ -40,6 +40,11 @@ celery_app.conf.update(
         },
         # ADR-138: Device Intelligence retention — observations past DEVICE_OBSERVATION_RETENTION_DAYS and
         # challenges that can no longer be used are deleted.
+        # V5-processing-stale-sweeper: ingestion jobs whose worker died stop looking busy.
+        "documents-reclaim-stalled": {
+            "task": "documents.reclaim_stalled",
+            "schedule": float(settings.INGESTION_RECLAIM_INTERVAL_SECONDS),
+        },
         "devices-purge-expired": {
             "task": "devices.purge_expired",
             "schedule": float(settings.DEVICE_PURGE_INTERVAL_SECONDS),

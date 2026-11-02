@@ -108,6 +108,8 @@ class Settings(BaseSettings):
     AI_JOB_MAX_AUTO_RESUMES: int = 24
     # How often Celery beat runs ai_center.recover_jobs.
     AI_JOB_RECOVERY_INTERVAL_SECONDS: int = 120
+    # How often Celery beat runs documents.reclaim_stalled (ingestion jobs past their lease).
+    INGESTION_RECLAIM_INTERVAL_SECONDS: int = 300
 
     # --- AI Center (REQ-AIC-*) ---
     # Fernet key (urlsafe base64, 32 bytes) used to encrypt provider

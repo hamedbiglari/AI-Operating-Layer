@@ -66,15 +66,15 @@ def ingest_document_job(self, job_id: str) -> dict:  # noqa: ANN001
 
 
 @celery_app.task(name="documents.reclaim_stalled")
-def reclaim_stalled_ingestions(older_than_seconds: int = 900) -> dict:
-    """Periodic sweep so a job cannot sit in RUNNING forever (P12-03)."""
+def reclaim_stalled_ingestions() -> dict:
+    """Periodic sweep so a job cannot sit in RUNNING forever (P12-03): a RUNNING ingestion job past its lease
+    (ingestion_job_service.LEASE_SECONDS) is failed as retryable, and fail() closes its active stage rows
+    (V5-processing-stale-sweeper). Runs from Celery beat."""
     from app.db.session import SessionLocal
-    from app.services import ingestion_jobs
+    from app.services import ingestion_job_service
 
     with SessionLocal() as db:
-        reclaimed = ingestion_jobs.reclaim_stalled_jobs(
-            db, older_than_seconds=older_than_seconds
-        )
+        reclaimed = ingestion_job_service.reclaim_stalled(db)
         return {"reclaimed": [str(j.id) for j in reclaimed]}
 
 
