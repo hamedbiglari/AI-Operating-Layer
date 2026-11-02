@@ -11015,7 +11015,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }
   }
   function accessScreen(panel) {
-    var role = null, names = {}, editing = null;
+    var role = null, names = {}, editing = null, rulesNow = [], NEW = {};
     // Who a rule applies to and for what purpose, as the table shows them (the editor repeats them).
     function whoNode(x) {
       if (x.agent_id) return names[x.agent_id] ? identifier(names[x.agent_id].display_name) : AIOL_I18N.set(el('span'), 'An agent not seen recently');
@@ -11025,17 +11025,27 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return visScreen(panel, 'screen-access', function (body) {
       var p = {}, rules = visCard(body, 'Rules, most specific first');
       p.ruleNote = rules.appendChild(el('p', 'vis-note'));
+      // New rule (V5-access-policy-create): the same editor with a subject and a purpose to pick. Owner and admin only.
+      p.addBar = rules.appendChild(el('div', 'page-actions')); p.addBar.hidden = true;
+      p.add = p.addBar.appendChild(el('button', 'btn btn--primary')); p.add.type = 'button'; p.add.id = 'access-new';
+      p.add.setAttribute('aria-controls', 'access-edit'); AIOL_I18N.set(p.add, 'New rule');
+      p.add.addEventListener('click', function () { openForm(NEW); });
       p.rules = visTable(rules, 'Access rules in precedence order', ['Applies to', 'Purpose', 'Decision', 'Reason given to the agent', '']);
       p.msg = rules.appendChild(el('p', 'aic-hint')); p.msg.id = 'access-msg'; p.msg.setAttribute('role', 'status');
       // Change a rule (V5-access-policy-edit): PUT /telemetry/access-policies with the rule's own subject and purpose,
       // so the same rule is rewritten, never duplicated. Owner and admin only, as on the backend.
       var f = p.form = rules.appendChild(el('form', 'add-live-form')); f.id = 'access-edit'; f.noValidate = true; f.hidden = true;
-      var fh = f.appendChild(el('h3', 'card__title')); fh.style.gridColumn = '1 / -1'; AIOL_I18N.set(fh, 'Change the rule');
+      p.formTitle = f.appendChild(el('h3', 'card__title')); p.formTitle.style.gridColumn = '1 / -1';
       p.formWho = f.appendChild(el('p', 'aic-hint')); p.formWho.style.gridColumn = '1 / -1';
       function labelled(tpl, node) { var lab = f.appendChild(el('label', 'field')), cap = lab.appendChild(el('span', 'field__label'));
         AIOL_I18N.set(cap, tpl); lab.appendChild(node); return lab; }
+      // Subject and purpose are picked only for a new rule; a changed rule keeps its own.
+      p.subject = el('select'); p.subject.id = 'access-subject'; p.subjectLab = labelled('Applies to', p.subject);
+      p.purpose = el('select'); p.purpose.id = 'access-purpose'; p.purposeLab = labelled('Purpose', p.purpose);
+      [''].concat(Object.keys(VIS_PURPOSE)).forEach(function (k) { var o = p.purpose.appendChild(el('option')); o.value = k; AIOL_I18N.set(o, k ? VIS_PURPOSE[k] : 'Any'); });
       p.tier = el('select'); p.tier.id = 'access-tier';
       Object.keys(VIS_TIER).forEach(function (k) { var o = el('option'); o.value = k; AIOL_I18N.set(o, VIS_TIER[k][0]); p.tier.appendChild(o); });
+      p.unset = p.tier.querySelector('option[value="unset"]');
       labelled('Decision', p.tier);
       p.reason = el('textarea'); p.reason.id = 'access-reason'; p.reason.maxLength = 2000; p.reason.rows = 2; p.reason.dir = 'auto';
       labelled('Reason given to the agent', p.reason).style.gridColumn = '1 / -1';
@@ -11048,17 +11058,40 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       f.addEventListener('submit', function (ev) {
         ev.preventDefault();
         if (!editing) return;
-        var terms = p.terms.value.trim(), low = terms.toLowerCase();
+        var terms = p.terms.value.trim(), low = terms.toLowerCase(), isNew = editing === NEW, who = editing;
         if (terms && low.indexOf('https://') !== 0 && low.indexOf('http://') !== 0) {
           AIOL_I18N.set(p.msg, 'The terms link must be a web address starting with https://.'); p.terms.focus(); return;
         }
-        var body = { agent_id: editing.agent_id, actor_type: editing.actor_type, purpose: editing.purpose, tier: p.tier.value,
+        if (isNew) {
+          // The PUT would quietly rewrite an existing rule with this subject and purpose, so say so instead.
+          var s = p.subject.value.split(':');
+          who = { agent_id: s[0] === 'agent' ? s[1] : null, actor_type: s[0] === 'type' ? s[1] : null, purpose: p.purpose.value || null };
+          if (rulesNow.some(function (x) { return x.agent_id === who.agent_id && x.actor_type === who.actor_type && x.purpose === who.purpose; })) {
+            AIOL_I18N.set(p.msg, 'A rule for this client and purpose already exists. Use its Change button.'); p.subject.focus(); return;
+          }
+        }
+        var body = { agent_id: who.agent_id, actor_type: who.actor_type, purpose: who.purpose, tier: p.tier.value,
           reason: p.reason.value.trim() || null, terms_url: terms || null };
         save.disabled = true; AIOL_I18N.set(p.msg, 'Saving…');
         api('/telemetry/access-policies', { method: 'PUT', body: body }).then(function () {
-          editing = null; f.hidden = true; AIOL_I18N.set(p.msg, 'Rule saved.'); panel.__visLoad();
+          editing = null; f.hidden = true; AIOL_I18N.set(p.msg, isNew ? 'Rule added.' : 'Rule saved.'); panel.__visLoad();
         }).catch(function (er) { accessFailed(p.msg, er, 'Not saved ({error}).'); }).then(function () { save.disabled = false; });
       });
+      // One editor for both: a rule (Change) or NEW (New rule).
+      function openForm(x) {
+        var isNew = x === NEW;
+        editing = x; AIOL_I18N.set(p.formTitle, isNew ? 'New rule' : 'Change the rule');
+        p.formWho.hidden = isNew; p.subjectLab.hidden = p.purposeLab.hidden = !isNew;
+        p.unset.hidden = p.unset.disabled = isNew;   // a new rule makes a decision; Not configured is no decision
+        p.tier.value = isNew ? 'forbidden' : x.tier; p.reason.value = isNew ? '' : x.reason || ''; p.terms.value = isNew ? '' : x.terms_url || '';
+        if (isNew) { p.subject.selectedIndex = 0; p.purpose.value = ''; }
+        else {
+          p.formWho.textContent = ''; p.formWho.appendChild(whoNode(x)); p.formWho.appendChild(document.createTextNode(' · '));
+          p.formWho.appendChild(purposeNode(x));
+        }
+        AIOL_I18N.set(p.msg, ''); f.hidden = false; (isNew ? p.subject : p.tier).focus();
+      }
+      p.openForm = openForm;
       var seen = visCard(body, 'Every agent seen');
       p.agNote = seen.appendChild(el('p', 'vis-note'));
       p.agents = visTable(seen, 'Automated clients observed', ['Agent', 'Type', 'Stated purpose', 'Identification', 'Requests seen']);
@@ -11067,9 +11100,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       return Promise.all([api('/telemetry/access-policies?limit=200'), api('/telemetry/agents?limit=200'), connectionRole()]);
     }, function (p, r) {
       var pol = r[0], ag = r[1], canEdit = ['owner', 'admin'].indexOf(r[2]) !== -1;
-      role = r[2]; names = {};
+      role = r[2]; names = {}; rulesNow = pol.items;
       ag.items.forEach(function (a) { names[a.id] = a; });
-      p.form.hidden = true; editing = null;
+      p.form.hidden = true; editing = null; p.addBar.hidden = !canEdit;
+      // A new rule names a whole actor type or one agent seen (never both: the backend refuses that).
+      p.subject.textContent = '';
+      Object.keys(VIS_SUBJECT).forEach(function (k) { var o = p.subject.appendChild(el('option')); o.value = 'type:' + k; AIOL_I18N.set(o, VIS_SUBJECT[k]); });
+      ag.items.forEach(function (a) { var o = p.subject.appendChild(el('option')); o.value = 'agent:' + a.id; o.textContent = a.display_name || a.signature; });
       p.rules.textContent = ''; p.agents.textContent = '';
       AIOL_I18N.set(p.ruleNote, '{n|rule|rules}. The first rule that matches wins and evaluation stops; a client no rule matches is allowed and recorded as Not configured.', { n: pol.total });
       pol.items.forEach(function (x) {
@@ -11085,12 +11122,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         if (canEdit) {
           var ch = acts.appendChild(el('button', 'btn btn--quiet')); ch.type = 'button'; AIOL_I18N.set(ch, 'Change');
           ch.setAttribute('aria-controls', 'access-edit');
-          ch.addEventListener('click', function () {
-            editing = x; p.tier.value = x.tier; p.reason.value = x.reason || ''; p.terms.value = x.terms_url || '';
-            p.formWho.textContent = ''; p.formWho.appendChild(whoNode(x)); p.formWho.appendChild(document.createTextNode(' · '));
-            p.formWho.appendChild(purposeNode(x));
-            AIOL_I18N.set(p.msg, ''); p.form.hidden = false; p.tier.focus();
-          });
+          ch.addEventListener('click', function () { p.openForm(x); });
           var del = acts.appendChild(el('button', 'btn btn--quiet btn--danger')); del.type = 'button'; AIOL_I18N.set(del, 'Delete');
           del.addEventListener('click', function () {
             if (!window.confirm(AIOL_I18N.format('Delete this rule? Clients it matched fall back to the next rule that matches, or to Not configured.', null, AIOL_I18N.lang()))) return;
@@ -16125,6 +16157,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "The terms link must be a web address starting with https://.": "پیوند شرایط باید یک نشانی وب باشد که با \u2068https://\u2069 شروع می‌شود.",
     "Delete this rule? Clients it matched fall back to the next rule that matches, or to Not configured.": "این قاعده حذف شود؟ کلاینت‌هایی که با آن منطبق بودند به قاعدهٔ منطبق بعدی برمی‌گردند، یا به «پیکربندی‌نشده».",
     "Connect to AI Core to change access rules.": "برای تغییر قاعده‌های دسترسی به AI Core وصل شوید.",
+    "New rule": "قاعدهٔ جدید",
+    "Rule added.": "قاعده افزوده شد.",
+    "A rule for this client and purpose already exists. Use its Change button.": "برای این کلاینت و این هدف از قبل قاعده‌ای وجود دارد. از دکمهٔ «تغییر» همان قاعده استفاده کنید.",
     "Platform observations": "مشاهدات پلتفرم",
     "Automated requests": "درخواست‌های خودکار",
     "Countries reached": "کشورهای دسترسی‌یافته",

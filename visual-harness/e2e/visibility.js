@@ -15,6 +15,10 @@
  *           Change = one PUT with the rule's own subject and purpose; a bad
  *           terms link is refused before sending; Delete asks first, then one
  *           DELETE; a viewer gets no actions; 403 says who may.
+ *   New rule (V5-access-policy-create): owner/admin get New rule; the same
+ *           editor with a subject (actor types, then the agents seen) and a
+ *           purpose, no Not configured; a subject and purpose that already
+ *           have a rule are refused before sending; one PUT; Rule added.
  *   Live:   AI Visibility = GET /visibility/summary + GET /telemetry/agents;
  *           the full report = GET /visibility/observations (one call), a row
  *           opens from the loaded list with no further request; AI access =
@@ -41,6 +45,7 @@ const FA = {
   anyAiCrawler: [0x647, 0x631, 0x20, 0x62E, 0x632, 0x646, 0x62F, 0x647, 0x654, 0x20, 0x647, 0x648, 0x634, 0x20, 0x645, 0x635, 0x646, 0x648, 0x639, 0x6CC],
   training: [0x622, 0x645, 0x648, 0x632, 0x634, 0x20, 0x645, 0x62F, 0x644],
   paid: [0x67E, 0x648, 0x644, 0x6CC],
+  newRule: [0x642, 0x627, 0x639, 0x62F, 0x647, 0x654, 0x20, 0x62C, 0x62F, 0x6CC, 0x62F],
   noReason: [0x62F, 0x644, 0x6CC, 0x644, 0x6CC, 0x20, 0x62F, 0x627, 0x62F, 0x647, 0x20, 0x646, 0x634, 0x62F, 0x647],
   terms: [0x634, 0x631, 0x627, 0x6CC, 0x637],
   rulesNote: [0x7B, 0x6E, 0x7D, 0x20, 0x642, 0x627, 0x639, 0x62F, 0x647, 0x2E, 0x20, 0x646, 0x62E, 0x633, 0x62A, 0x6CC, 0x646, 0x20, 0x642, 0x627, 0x639, 0x62F, 0x647, 0x200C, 0x627, 0x6CC, 0x20, 0x6A9, 0x647, 0x20, 0x645, 0x646, 0x637, 0x628, 0x642, 0x20, 0x634, 0x648, 0x62F, 0x20, 0x627, 0x639, 0x645, 0x627, 0x644, 0x20, 0x645, 0x6CC, 0x200C, 0x634, 0x648, 0x62F, 0x20, 0x648, 0x20, 0x627, 0x631, 0x632, 0x6CC, 0x627, 0x628, 0x6CC, 0x20, 0x645, 0x62A, 0x648, 0x642, 0x641, 0x20, 0x645, 0x6CC, 0x200C, 0x634, 0x648, 0x62F, 0x61B, 0x20, 0x6A9, 0x644, 0x627, 0x6CC, 0x646, 0x62A, 0x6CC, 0x20, 0x6A9, 0x647, 0x20, 0x628, 0x627, 0x20, 0x647, 0x6CC, 0x686, 0x20, 0x642, 0x627, 0x639, 0x62F, 0x647, 0x200C, 0x627, 0x6CC, 0x20, 0x645, 0x646, 0x637, 0x628, 0x642, 0x20, 0x646, 0x634, 0x648, 0x62F, 0x20, 0x627, 0x62C, 0x627, 0x632, 0x647, 0x20, 0x645, 0x6CC, 0x200C, 0x6CC, 0x627, 0x628, 0x62F, 0x20, 0x648, 0x20, 0x628, 0x647, 0x200C, 0x639, 0x646, 0x648, 0x627, 0x646, 0x20, 0xAB, 0x67E, 0x6CC, 0x6A9, 0x631, 0x628, 0x646, 0x62F, 0x6CC, 0x200C, 0x646, 0x634, 0x62F, 0x647, 0xBB, 0x20, 0x62B, 0x628, 0x62A, 0x20, 0x645, 0x6CC, 0x200C, 0x634, 0x648, 0x62F, 0x2E],
@@ -280,8 +285,51 @@ function installMock(data) {
   answer = true;
   await ruleButton(2, 'Delete'); await settle(); await settle();
   check('Delete: one DELETE for that rule; Rule deleted.', [(await writes()).slice(wb), await amsg()], [['DELETE /telemetry/access-policies/p3'], 'Rule deleted.']);
+
+  // New rule (V5-access-policy-create): the same editor, with a subject and a purpose to pick.
+  const editor = () => page.evaluate(() => {
+    const f = document.getElementById('access-edit'), opts = (id) => Array.from(document.getElementById(id).options).filter((o) => !o.hidden).map((o) => o.value);
+    return { hidden: f.hidden, title: f.querySelector('.card__title').textContent, whoShown: !f.querySelector('p.aic-hint').hidden,
+      pickShown: !document.getElementById('access-subject').closest('label').hidden, tiers: opts('access-tier'), focus: document.activeElement.id };
+  });
+  check('New rule: shown to an owner or admin', await page.evaluate(() => !document.getElementById('access-new').parentElement.hidden), true);
+  await page.click('#access-new'); await settle();
+  check('New rule: the editor opens empty with a subject and purpose to pick; no Not configured', [await editor(), await page.evaluate(() =>
+    ['access-subject', 'access-purpose'].map((id) => Array.from(document.getElementById(id).options).map((o) => [o.value, o.textContent]))),
+    await page.evaluate(() => [document.getElementById('access-tier').value, document.getElementById('access-reason').value, document.getElementById('access-terms').value])],
+    [{ hidden: false, title: 'New rule', whoShown: false, pickShown: true, tiers: ['free', 'paid', 'forbidden'], focus: 'access-subject' },
+      [[['type:human', 'Any human visitor'], ['type:search_crawler', 'Any search crawler'], ['type:ai_crawler', 'Any AI crawler'],
+        ['type:ai_user_agent', 'Any AI answering a user'], ['type:agent_tool', 'Any agent acting for a user'], ['type:unknown', 'Any unrecognised client'],
+        ['agent:a1', 'GPTBot'], ['agent:a2', 'odd-bot']],
+       [['', 'Any'], ['training', 'Training'], ['search_indexing', 'Search indexing'], ['answering', 'Answering'], ['agent_action', 'Acting for a user'],
+        ['preview', 'Link preview'], ['unknown', 'Not declared']]],
+      ['forbidden', '', '']]);
+  await page.selectOption('#access-subject', 'type:ai_crawler'); await page.selectOption('#access-purpose', 'training');
+  wb = (await writes()).length;
+  await page.evaluate(() => document.getElementById('access-edit').requestSubmit()); await settle();
+  check('New rule: a subject and purpose that already have a rule are refused before sending', [await amsg(), (await writes()).length - wb],
+    ['A rule for this client and purpose already exists. Use its Change button.', 0]);
+  await page.selectOption('#access-subject', 'agent:a2'); await page.selectOption('#access-purpose', 'answering');
+  await page.selectOption('#access-tier', 'paid'); await page.fill('#access-reason', 'Answers are licensed.');
+  before = (await requests()).length;
+  await page.evaluate(() => document.getElementById('access-edit').requestSubmit()); await settle(); await settle();
+  check('New rule: one PUT with the picked agent and purpose; Rule added.; the list reloads; the editor closes', [(await writes()).slice(wb),
+    await amsg(), (await requests()).slice(before).filter((r) => /^GET /.test(r)), await page.evaluate(() => document.getElementById('access-edit').hidden)],
+    [['PUT /telemetry/access-policies {"agent_id":"a2","actor_type":null,"purpose":"answering","tier":"paid","reason":"Answers are licensed.","terms_url":null}'],
+      'Rule added.', ['GET /telemetry/access-policies?limit=200', 'GET /telemetry/agents?limit=200'], true]);
+  await page.click('#access-new'); await settle();
+  await page.selectOption('#access-subject', 'type:search_crawler');
+  wb = (await writes()).length;
+  await page.evaluate(() => document.getElementById('access-edit').requestSubmit()); await settle(); await settle();
+  check('New rule: an actor type for any purpose (the default decision is Forbidden)', (await writes()).slice(wb),
+    ['PUT /telemetry/access-policies {"agent_id":null,"actor_type":"search_crawler","purpose":null,"tier":"forbidden","reason":null,"terms_url":null}']);
+  await ruleButton(1, 'Change'); await settle();
+  check('Change after New rule: its own title, who and purpose shown, no pickers, Not configured offered again', await editor(),
+    { hidden: false, title: 'Change the rule', whoShown: true, pickShown: false, tiers: ['free', 'paid', 'forbidden', 'unset'], focus: 'access-tier' });
+  await page.evaluate(() => Array.from(document.querySelectorAll('#access-edit button')).find((b) => b.type === 'button').click()); await settle();
   await page.evaluate(() => { window.__role = 'viewer'; }); await connect(); await go('#screen-dashboard'); await go('#screen-access'); await settle();
-  check('a viewer gets no Change or Delete', await page.evaluate(() => document.querySelectorAll('#screen-access .vis-live tbody button').length), 0);
+  check('a viewer gets no Change, Delete or New rule', await page.evaluate(() => [document.querySelectorAll('#screen-access .vis-live tbody button').length,
+    document.getElementById('access-new').parentElement.hidden]), [0, true]);
   await page.evaluate(() => { window.__role = 'admin'; }); await connect(); await go('#screen-dashboard'); await go('#screen-access'); await settle();
   v = await view('screen-access');
 
@@ -290,6 +338,7 @@ function installMock(data) {
   v = await view('screen-access');
   check('fa: access rule subject, purpose, badge, reason fallback', v.cards[0].rows[1].slice(0, 4), [F('anyAiCrawler'), F('training'), F('paid'), F('noReason') + ' ' + F('terms')]);
   check('fa: access note with Persian digits', v.cards[0].note, F('rulesNote').replace('{n}', fa(0x6F3)));
+  check('fa: the New rule button', await page.evaluate(() => document.getElementById('access-new').textContent), F('newRule'));
   await go('#screen-visibility');
   v = await view('screen-visibility');
   check('fa: visibility signal row and agent row', [v.cards[0].rows[0], v.cards[1].rows[0].slice(1, 3)],

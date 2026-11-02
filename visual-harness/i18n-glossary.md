@@ -2065,3 +2065,13 @@ The two-step sign-in email change on Settings (V5-self-email-verification): the 
 | No code is waiting any more. Ask for a new one. | دیگر کدی در انتظار نیست. کد تازه‌ای بخواهید. |
 | Too many wrong codes. Ask for a new code. | کدهای نادرست بیش از حد. کد تازه‌ای بخواهید. |
 | Not changed ({error}). | تغییر نکرد ({error}). |
+
+## New access rule (Phase A)
+
+New rule on the live AI access screen (V5-access-policy-create). Rule (قاعده), client (کلاینت) and Change (تغییر) follow the entries above.
+
+| English | Persian |
+|---|---|
+| New rule | قاعدهٔ جدید |
+| Rule added. | قاعده افزوده شد. |
+| A rule for this client and purpose already exists. Use its Change button. | برای این کلاینت و این هدف از قبل قاعده‌ای وجود دارد. از دکمهٔ «تغییر» همان قاعده استفاده کنید. |
