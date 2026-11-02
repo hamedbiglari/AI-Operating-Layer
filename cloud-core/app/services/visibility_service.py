@@ -388,6 +388,15 @@ def summarise(
     for o in observations:
         by_method[o.collection_method.value] = by_method.get(o.collection_method.value, 0) + 1
 
+    # Per platform (V5-visibility-platform-breakdown): volume and most recent, from the rows already read, so the
+    # screen gets its table without one call per platform. Observations only: a request (page view) has no platform.
+    per_platform: dict[VisibilityPlatform, tuple[int, datetime]] = {}
+    for o in observations:
+        n, last = per_platform.get(o.platform, (0, o.tested_at))
+        per_platform[o.platform] = (n + 1, max(last, o.tested_at))
+    by_platform = [{"platform": p.value, "observations": n, "last_observed_at": last}
+                   for p, (n, last) in sorted(per_platform.items(), key=lambda kv: (-kv[1][0], kv[0].value))]
+
     caveats: list[str] = []
     if total == 0:
         caveats.append("No observations recorded for this period. This is not evidence of absence.")
@@ -412,6 +421,7 @@ def summarise(
         "observation_count": total,
         "signals": signals,
         "by_collection_method": by_method,
+        "by_platform": by_platform,
         "caveats": caveats,
         "as_of": _now(),
     }

@@ -2136,3 +2136,12 @@ The Access column and the no-decision warning on #screen-access (V5-access-agent
 | {n|agent|agents} without a decision yet. | برای {n} عامل هنوز تصمیمی گرفته نشده است. |
 | 6 agents without a decision yet. | برای ۶ عامل هنوز تصمیمی گرفته نشده است. |
 | They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to. | این عامل‌ها اجازهٔ عبور دارند و به‌عنوان «پیکربندی‌نشده» ثبت می‌شوند، نه «مجاز»، چون کسی آن را انتخاب نکرده است. عاملی که بی‌صدا و بی تصمیم اجازهٔ عبور می‌گیرد، همان راهی است که یک سایت را بی‌آنکه موافقت کرده باشد به پیکرهٔ آموزش مدل می‌کشاند. |
+
+## Observations by platform (Phase B)
+
+The per-platform table on #screen-visibility (V5-visibility-platform-breakdown). Platform (سکو) and Observations (مشاهده‌ها) follow the Step 10 entries; platform names stay as written.
+
+| English | Persian |
+|---|---|
+| Most recent | آخرین مشاهده |
+| Observations by platform | مشاهده‌ها بر اساس سکو |

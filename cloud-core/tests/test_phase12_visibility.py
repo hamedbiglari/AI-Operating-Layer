@@ -389,3 +389,27 @@ def test_signal_fields_are_exactly_the_five_spec_columns() -> None:
     )
     assert "clicked" not in visibility_service.SIGNAL_FIELDS
     assert "purchased" not in visibility_service.SIGNAL_FIELDS
+
+
+# --- Per-platform breakdown on the summary (V5-visibility-platform-breakdown) ---------------------------------------
+def test_summary_breaks_observations_down_by_platform(client: TestClient, register_org) -> None:
+    org = register_org()
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    for days_ago in (3, 1, 2):
+        assert _obs(client, org["headers"], platform="chatgpt", tested_at=(now - timedelta(days=days_ago)).isoformat()).status_code == 201
+    assert _obs(client, org["headers"], platform="gemini", tested_at=(now - timedelta(days=5)).isoformat()).status_code == 201
+    body = client.get("/api/v1/visibility/summary", headers=org["headers"]).json()
+    rows = [(r["platform"], r["observations"], datetime.fromisoformat(r["last_observed_at"])) for r in body["by_platform"]]
+    assert rows == [("chatgpt", 3, now - timedelta(days=1)), ("gemini", 1, now - timedelta(days=5))]
+    assert sum(r[1] for r in rows) == body["observation_count"]
+
+
+def test_platform_breakdown_follows_the_summary_filters_and_the_tenant(client: TestClient, register_org) -> None:
+    a, b = register_org(), register_org()
+    now = datetime.now(timezone.utc)
+    _obs(client, a["headers"], platform="chatgpt", tested_at=(now - timedelta(days=10)).isoformat())
+    _obs(client, a["headers"], platform="perplexity", tested_at=now.isoformat())
+    since = (now - timedelta(days=1)).isoformat().replace("+00:00", "Z")
+    recent = client.get(f"/api/v1/visibility/summary?since={since}", headers=a["headers"]).json()
+    assert [r["platform"] for r in recent["by_platform"]] == ["perplexity"]
+    assert client.get("/api/v1/visibility/summary", headers=b["headers"]).json()["by_platform"] == []

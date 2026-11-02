@@ -80,6 +80,12 @@ class SignalCounts(BaseModel):
     checked: int
 
 
+class VisibilityPlatformCount(BaseModel):
+    platform: str
+    observations: int
+    last_observed_at: datetime
+
+
 class VisibilitySummary(BaseModel):
     """Counts and coverage. Deliberately contains no score, no percentage
     and no ranking — see ADR-064."""
@@ -87,6 +93,7 @@ class VisibilitySummary(BaseModel):
     observation_count: int
     signals: dict[str, SignalCounts]
     by_collection_method: dict[str, int]
+    by_platform: list[VisibilityPlatformCount]   # most observations first (V5-visibility-platform-breakdown)
     caveats: list[str]
     as_of: datetime
 

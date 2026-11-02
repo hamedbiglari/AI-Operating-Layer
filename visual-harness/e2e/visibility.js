@@ -17,6 +17,9 @@
  *           Change = one PUT with the rule's own subject and purpose; a bad
  *           terms link is refused before sending; Delete asks first, then one
  *           DELETE; a viewer gets no actions; 403 says who may.
+ *   Per platform (V5-visibility-platform-breakdown): the summary's by_platform
+ *           as a table (platform, observations, most recent); the sample
+ *           table shows with its dates in the page language.
  *   Agent decisions (V5-access-agent-decision): each agent's Access badge
  *           from the list row (free/paid/forbidden/unset); the warning counts
  *           agents_without_decision and hides at 0; sample column + warning show.
@@ -81,7 +84,9 @@ const sig = (present, absent, notChecked) => ({ present, absent, not_checked: no
 const DATA = {
   summary: { observation_count: 7, as_of: '2026-10-30T10:00:00Z', by_collection_method: { manual_paste: 7 },
     signals: { mentioned: sig(3, 2, 2), cited: sig(1, 4, 2), recommended: sig(0, 5, 2), product_present: sig(2, 3, 2), url_present: sig(0, 0, 7) },
-    caveats: ['Only the prompts listed were asked.'] },
+    caveats: ['Only the prompts listed were asked.'],
+    by_platform: [{ platform: 'chatgpt', observations: 5, last_observed_at: '2026-10-20T09:00:00Z' },
+      { platform: 'other', observations: 2, last_observed_at: '2026-10-21T09:00:00Z' }] },
   agents: [
     { id: 'a1', signature: 'GPTBot', display_name: 'GPTBot', vendor: 'OpenAI', actor_type: 'ai_crawler', declared_purpose: 'training',
       confidence: 'detected', observation_count: 412, decision: 'forbidden' },
@@ -182,7 +187,20 @@ function installMock(data) {
   check('sample: the stats and the over-time chart show', await page.evaluate(() => Array.from(document.querySelectorAll('#screen-visibility-detail > .stat-grid, #screen-visibility-detail > .card:not(.live-panel)'))
     .filter((e) => getComputedStyle(e).display !== 'none').map((e) => (e.querySelector('.card__title') || e.querySelector('.stat__label')).textContent.trim())),
     ['Platform observations', 'Over time']);
-  check('sample: the per-platform table is hidden as debt', await shown('#screen-visibility [data-debt-hidden="V5-visibility-platform-breakdown"]'), [false]);
+  const sampleTable = () => page.evaluate(() => {
+    const t = Array.from(document.querySelectorAll('#screen-visibility table')).find((x) => x.caption && x.caption.textContent === 'Observations by platform');
+    return t ? [getComputedStyle(t.closest('.table-wrap')).display !== 'none', Array.from(t.querySelectorAll('thead th')).map((th) => th.textContent),
+      Array.from(t.querySelectorAll('tbody tr')).map((tr) => Array.from(tr.cells).map((td) => td.textContent))] : null; });
+  check('sample: the per-platform table shows (no debt left on AI Visibility), dates in the page language',
+    [(await shown('#screen-visibility [data-debt-hidden]')).length, await sampleTable()],
+    [0, [true, ['Platform', 'Observations', 'Most recent'], [['ChatGPT', '18', '12 Sept 2026'], ['Perplexity', '14', '14 Sept 2026'],
+      ['Gemini', '9', '10 Sept 2026'], ['Google', '6', '9 Sept 2026']]]]);
+  await lang('fa');
+  check('fa (sample): the count in Persian digits, the date in the Persian calendar', await page.evaluate(() => {
+    const t = Array.from(document.querySelectorAll('#screen-visibility table')).find((x) => x.querySelector('[data-sample-date]'));
+    const r = t.querySelector('tbody tr'); return [r.cells[1].textContent, ((s) => { const w = s.split(' '); const digits = (x) => !!x && Array.from(x).every((c) => c.charCodeAt(0) >= 0x6F0 && c.charCodeAt(0) <= 0x6F9); return w.length === 3 && digits(w[0]) && digits(w[2]) && w[2].length === 4; })(r.cells[2].textContent)]; }),
+    [fa(0x6F1, 0x6F8), true]);
+  await lang('en');
   check('sample: the Access column and the no-decision warning show; no debt left on AI access; 12 Edit/Change links',
     [(await shown('#screen-access [data-debt-hidden]')).length, await page.evaluate(() => [
       Array.from(document.querySelectorAll('#screen-access table')).some((t) => Array.from(t.querySelectorAll('thead th')).some((th) => th.textContent === 'Access')),
@@ -201,7 +219,11 @@ function installMock(data) {
   let v = await view('screen-visibility');
   check('visibility: the answers card (count, signals; no score)', v.cards[0], { title: 'How AI platforms answer about you',
     note: '7 observations recorded. Each signal is counted on its own; there is no combined score.',
-    rows: [['Mentioned', '3', '2', '2'], ['Cited', '1', '4', '2'], ['Recommended', '0', '5', '2'], ['Product shown', '2', '3', '2'], ['URL present', '0', '0', '7']] });
+    rows: [['Mentioned', '3', '2', '2'], ['Cited', '1', '4', '2'], ['Recommended', '0', '5', '2'], ['Product shown', '2', '3', '2'], ['URL present', '0', '0', '7'],
+      ['ChatGPT', '5', '20 Oct 2026'], ['Other platform', '2', '21 Oct 2026']] });
+  check('visibility: the per-platform table (one more table in the same card, from the summary call)', await page.evaluate(() => {
+    const w = document.getElementById('vis-platforms'); return [!!w.closest('.vis-live'), w.querySelector('caption').textContent,
+      Array.from(w.querySelectorAll('thead th')).map((th) => th.textContent)]; }), [true, 'Observations by platform', ['Platform', 'Observations', 'Most recent']]);
   check('visibility: caveats shown as sent', v.caveats, ['Only the prompts listed were asked.']);
   check('visibility: agents (operator, type, confidence, count; unknown type as sent)', v.cards[1], { title: 'Who is actually visiting your site',
     note: '2 automated clients seen. Human visitors are never listed here.',
@@ -379,6 +401,9 @@ function installMock(data) {
   check('fa: visibility signal row and agent row', [v.cards[0].rows[0], v.cards[1].rows[0].slice(1, 3)],
     [[F('mentioned'), fa(0x6F3), fa(0x6F2), fa(0x6F2)], [F('aiCrawler'), F('detected')]]);
   check('fa: visibility card title', v.cards[0].title, F('answersTitle'));
+  check('fa: the per-platform row (name as written, Persian digits, Persian calendar)', await page.evaluate(() => {
+    const r = document.querySelector('#vis-platforms tbody tr'); return [r.cells[0].textContent, r.cells[1].textContent,
+      ((s) => { const w = s.split(' '); const digits = (x) => !!x && Array.from(x).every((c) => c.charCodeAt(0) >= 0x6F0 && c.charCodeAt(0) <= 0x6F9); return w.length === 3 && digits(w[0]) && digits(w[2]) && w[2].length === 4; })(r.cells[2].textContent)]; }), ['ChatGPT', fa(0x6F5), true]);
   // A sentence split by an identifier: the Persian layer translates each text node, so each fragment is a key.
   check('fa: the text before an identifier translates on its own', await page.evaluate(() => Array.from(document.querySelectorAll('#screen-visibility .callout p'))
     .find((p) => p.querySelector('.identifier')).firstChild.nodeValue.trim()), F('uaClaim'));

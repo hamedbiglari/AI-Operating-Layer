@@ -5194,11 +5194,11 @@ button.card { color: inherit; font: inherit; }
     <dl class="kv">
       <dt>Mentioned</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>The brand appeared in the answer.</span></span></dd><dt>Cited</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Whether a source link was attached was not examined in this batch.</span></span></dd><dt>Recommended</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Named as a suggested option, not just mentioned.</span></span></dd><dt>Product shown</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Checked for, and not present — a real negative finding, not a gap in the data.</span></span></dd><dt>URL present</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not examined in this batch.</span></span></dd>
     </dl>
-    <div data-debt-hidden="V5-visibility-platform-breakdown" class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it" style="margin-top:var(--space-4)">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it" style="margin-top:var(--space-4)">
       <table class="table sortable">
         <caption class="visually-hidden">Observations by platform</caption>
-        <thead><tr><th scope="col">Platform</th><th scope="col">Volume</th><th scope="col">Most recent</th></tr></thead>
-        <tbody><tr><td data-label="Platform">ChatGPT</td><td data-label="Volume">18 observations</td><td data-label="Most recent">Sep 12</td></tr><tr><td data-label="Platform">Gemini</td><td data-label="Volume">9 observations</td><td data-label="Most recent">Sep 10</td></tr><tr><td data-label="Platform">Perplexity</td><td data-label="Volume">14 observations</td><td data-label="Most recent">Sep 14</td></tr><tr><td data-label="Platform">Google (AI Overview)</td><td data-label="Volume">6 observations</td><td data-label="Most recent">Sep 9</td></tr></tbody>
+        <thead><tr><th scope="col">Platform</th><th scope="col">Observations</th><th scope="col">Most recent</th></tr></thead>
+        <tbody><tr><td data-label="Platform"><bdi class="identifier identifier--plain">ChatGPT</bdi></td><td data-label="Observations" class="num">18</td><td data-label="Most recent"><span data-sample-date="2026-09-12"></span></td></tr><tr><td data-label="Platform"><bdi class="identifier identifier--plain">Perplexity</bdi></td><td data-label="Observations" class="num">14</td><td data-label="Most recent"><span data-sample-date="2026-09-14"></span></td></tr><tr><td data-label="Platform"><bdi class="identifier identifier--plain">Gemini</bdi></td><td data-label="Observations" class="num">9</td><td data-label="Most recent"><span data-sample-date="2026-09-10"></span></td></tr><tr><td data-label="Platform"><bdi class="identifier identifier--plain">Google</bdi></td><td data-label="Observations" class="num">6</td><td data-label="Most recent"><span data-sample-date="2026-09-09"></span></td></tr></tbody>
       </table>
     </div>
     <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-block-end:0">Click, and purchase that followed a click, have no columns here on purpose — a click happens in the platform's own interface, out of reach; a purchase belongs to commerce data, not to this observation (see the model's own documentation, ADR-062). Guessing either would be a fabricated number wearing a real one's clothes.</p>
@@ -10903,6 +10903,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       var p = {}, ans = visCard(body, 'How AI platforms answer about you');
       p.ansNote = ans.appendChild(el('p', 'vis-note'));
       p.signals = visTable(ans, 'Observations by signal', ['Signal', 'Present', 'Absent', 'Not checked']);
+      // Per platform (V5-visibility-platform-breakdown): by_platform comes with the summary (no call per platform).
+      var ph = ans.appendChild(el('h3', 'vis-answer__title')); ph.style.marginBlockStart = 'var(--space-4)'; AIOL_I18N.set(ph, 'Observations by platform');
+      p.platforms = visTable(ans, 'Observations by platform', ['Platform', 'Observations', 'Most recent']);
+      p.platforms.closest('.table-wrap').id = 'vis-platforms';
       p.caveats = ans.appendChild(el('ul', 'vis-caveats'));
       var more = ans.appendChild(el('p')).appendChild(el('a')); more.href = '#screen-visibility-detail';
       AIOL_I18N.set(more, 'Open the full report');
@@ -10914,12 +10918,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       return Promise.all([api('/visibility/summary'), api('/telemetry/agents?limit=200')]);
     }, function (p, r) {
       var s = r[0], ag = r[1];
-      p.signals.textContent = ''; p.caveats.textContent = ''; p.agents.textContent = '';
+      p.signals.textContent = ''; p.caveats.textContent = ''; p.agents.textContent = ''; p.platforms.textContent = '';
       AIOL_I18N.set(p.ansNote, '{n|observation|observations} recorded. Each signal is counted on its own; there is no combined score.', { n: s.observation_count });
       Object.keys(VIS_SIGNAL).forEach(function (k) {
         var c = s.signals[k]; if (!c) return;
         visRow(p.signals, [AIOL_I18N.set(el('span'), VIS_SIGNAL[k]), visNum(c.present), visNum(c.absent), visNum(c.not_checked)]);
       });
+      (s.by_platform || []).forEach(function (r) {
+        visRow(p.platforms, [visPlatform(r.platform), visNum(r.observations), AIOL_I18N.set(el('span'), '{d}', { d: { date: r.last_observed_at, style: 'date' } })]);
+      });
+      if (!(s.by_platform || []).length) visRow(p.platforms, [AIOL_I18N.set(visNA(), 'No observations recorded yet.')]);
       (s.caveats || []).forEach(function (c) { p.caveats.appendChild(el('li')).appendChild(el('bdi', null, c)).dir = 'auto'; });
       AIOL_I18N.set(p.agNote, '{n|automated client|automated clients} seen. Human visitors are never listed here.', { n: ag.total });
       ag.items.forEach(function (a) {
@@ -11194,6 +11202,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     else if (er.status === 422) AIOL_I18N.set(msg, 'AI Core did not accept these values. Check the fields and try again.');
     else AIOL_I18N.set(msg, other, { error: er.message });
   }
+  // Sample mode: the per-platform table's dates follow the page language, like live dates.
+  document.querySelectorAll('#screen-visibility [data-sample-date]').forEach(function (s) {
+    AIOL_I18N.set(s, '{d}', { d: { date: s.getAttribute('data-sample-date'), style: 'date' } });
+  });
   // Sample mode: the sample Change links say what is needed instead of doing nothing.
   document.querySelectorAll('#screen-access [data-access-change]').forEach(function (a) {
     a.addEventListener('click', function (e) {
@@ -16334,7 +16346,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "No offer yet": "هنوز پیشنهاد فروشی نیست",
     "{n|agent|agents} without a decision yet.": "برای {n} عامل هنوز تصمیمی گرفته نشده است.",
     "6 agents without a decision yet.": "برای ۶ عامل هنوز تصمیمی گرفته نشده است.",
-    "They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to.": "این عامل‌ها اجازهٔ عبور دارند و به‌عنوان «پیکربندی‌نشده» ثبت می‌شوند، نه «مجاز»، چون کسی آن را انتخاب نکرده است. عاملی که بی‌صدا و بی تصمیم اجازهٔ عبور می‌گیرد، همان راهی است که یک سایت را بی‌آنکه موافقت کرده باشد به پیکرهٔ آموزش مدل می‌کشاند."
+    "They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to.": "این عامل‌ها اجازهٔ عبور دارند و به‌عنوان «پیکربندی‌نشده» ثبت می‌شوند، نه «مجاز»، چون کسی آن را انتخاب نکرده است. عاملی که بی‌صدا و بی تصمیم اجازهٔ عبور می‌گیرد، همان راهی است که یک سایت را بی‌آنکه موافقت کرده باشد به پیکرهٔ آموزش مدل می‌کشاند.",
+    "Most recent": "آخرین مشاهده",
+    "Observations by platform": "مشاهده‌ها بر اساس سکو"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [
