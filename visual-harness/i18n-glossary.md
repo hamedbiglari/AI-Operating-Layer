@@ -2161,3 +2161,15 @@ The Evidence, Claims and Knowledge tabs on #screen-detail (V5-source-detail-tab-
 | No knowledge object is backed by this source yet. | هنوز هیچ موجودیت دانشی به این منبع تکیه ندارد. |
 | Could not load this list ({error}). | این فهرست بارگیری نشد ({error}). |
 | Connect to AI Core to open this section. | برای باز کردن این بخش به AI Core وصل شوید. |
+
+## Delete a source (Phase B-3)
+
+Delete on #screen-detail (V5-source-detail-delete). Source (منبع), document (سند), evidence (شواهد) and the role names follow the glossary.
+
+| English | Persian |
+|---|---|
+| Delete this source and its documents? This cannot be undone. | این منبع و اسنادش حذف شوند؟ این کار برگشت‌پذیر نیست. |
+| Source deleted. | منبع حذف شد. |
+| This source is still used by evidence, publication citations or research. Remove those first. | شواهد، استنادهای انتشار یا پژوهش هنوز از این منبع استفاده می‌کنند. ابتدا آن‌ها را حذف کنید. |
+| Only an owner or admin can delete a source. | فقط مالک یا مدیر می‌تواند منبع را حذف کند. |
+| Connect to AI Core to delete a source. | برای حذف منبع به AI Core وصل شوید. |

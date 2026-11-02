@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models.enums import KNOWLEDGE_EDITOR_ROLES
+from app.models.enums import KNOWLEDGE_EDITOR_ROLES, UserRole
 from app.models.source import Source
 from app.models.user import User
 from app.schemas.common import Page, PaginationParams, SortParams
@@ -189,6 +189,19 @@ def update_source(
         actor_user_id=current_user.id,
         **payload.model_dump(exclude_unset=True),
     )
+
+
+@router.delete("/{source_id}", status_code=204)
+def delete_source(
+    source_id: UUID,
+    current_user: User = Depends(require_roles(UserRole.OWNER, UserRole.ADMIN)),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Delete a source and its documents; owner or admin only. 409 while evidence, publication citations or research
+    dependencies use it (V5-source-detail-delete)."""
+    source = source_service.get_source_or_404(db, source_id=source_id, organization_id=current_user.organization_id)
+    source_service.delete_source(db, source=source, actor_user_id=current_user.id)
+    return Response(status_code=204)
 
 
 @router.get("/{source_id}/documents", response_model=Page[DocumentWithConversion])

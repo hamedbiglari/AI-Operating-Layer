@@ -4144,7 +4144,7 @@ button.card { color: inherit; font: inherit; }
     <div class="page-actions">
       <button class="btn"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 0 1-14.6 5.9M3.5 12a8.5 8.5 0 0 1 14.6-5.9M18.1 2.5v4h-4M5.9 21.5v-4h4"/></svg>Reprocess</button>
       <a class="btn" href="#screen-states" data-debt-hidden="V5-source-detail-archive"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17v4h-17zM5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M9.5 12.5h5"/></svg>Archive</a>
-      <a class="btn btn--danger" href="#screen-states" data-debt-hidden="V5-source-detail-delete"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5 7.4 20a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-13.5M10.3 10.5v6.5M13.7 10.5v6.5"/></svg>Delete</a>
+      <button type="button" class="btn btn--danger" data-source-delete><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5 7.4 20a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-13.5M10.3 10.5v6.5M13.7 10.5v6.5"/></svg>Delete</button>
       <button type="button" class="icon-button" aria-label="More actions" title="More actions" data-debt-hidden="V5-source-detail-more-actions"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg></button>
     </div>
   </div>
@@ -10180,6 +10180,21 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var head = top.appendChild(el('div', 'page-header')), titles = head.appendChild(el('div'));
     var h1 = titles.appendChild(el('h1')); h1.id = 'h-detail-live';
     var badgeLine = titles.appendChild(el('p')); badgeLine.style.marginTop = 'var(--space-2)';
+    // Delete (V5-source-detail-delete): owner or admin; the server refuses while evidence, citations or research use it.
+    var delBtn = head.appendChild(el('div', 'page-actions')).appendChild(el('button', 'btn btn--danger'));
+    delBtn.type = 'button'; delBtn.id = 'src-delete'; delBtn.hidden = true; AIOL_I18N.set(delBtn, 'Delete');
+    delBtn.addEventListener('click', function () {
+      var id = dst.id, say = function (tpl, args) { if (window.aiolToast) window.aiolToast(AIOL_I18N.format(tpl, args || null, AIOL_I18N.lang())); };
+      if (!id || !window.confirm(AIOL_I18N.format('Delete this source and its documents? This cannot be undone.', null, AIOL_I18N.lang()))) return;
+      delBtn.disabled = true;
+      api('/sources/' + encodeURIComponent(id), { method: 'DELETE' }).then(function () {
+        say('Source deleted.'); location.hash = '#screen-sources';
+      }).catch(function (e) {
+        if (e.status === 409) say('This source is still used by evidence, publication citations or research. Remove those first.');
+        else if (e.denied === 403) say('Only an owner or admin can delete a source.');
+        else say('Not deleted ({error}).', { error: e.message });
+      }).then(function () { delBtn.disabled = false; });
+    });
     screen.insertBefore(top, screen.firstChild);
     screen.setAttribute('aria-labelledby', 'h-detail-live');
     var body = el('div'); body.setAttribute('data-live-keep', '');
@@ -10290,6 +10305,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     function shown(on) {
       facts.style.display = tabBar.style.display = on ? '' : 'none';
       if (on) selectTab('documents'); else related.forEach(function (t) { t.panel.style.display = 'none'; });
+      if (!on) delBtn.hidden = true;
       if (!on) { crumbTitle.textContent = ''; badgeLine.textContent = ''; h1.textContent = ''; h1.appendChild(AIOL_I18N.set(el('span'), 'Source detail')); }
     }
     function text(v) { var t = el('bdi', null, v); t.dir = 'auto'; return t; }
@@ -10310,6 +10326,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (it.publisher) fact(about, 'Publisher', text(it.publisher));
       if (it.publication_date) fact(about, 'Publication date', day(it.publication_date));
       fact(about, 'Last activity', day(it.last_activity_at));
+      delBtn.hidden = ['owner', 'admin'].indexOf(st.role) === -1;
       shown(true);
     }
     function reconnect() {
@@ -10471,6 +10488,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__detailLoad = function () { return role().then(load); };
     return panel.__detailLoad();
   }
+  // Sample mode: the Source detail Delete link says what is needed.
+  document.querySelectorAll('[data-source-delete]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (window.aiolToast) window.aiolToast(AIOL_I18N.format('Connect to AI Core to delete a source.', null, AIOL_I18N.lang()));
+    });
+  });
   // Sample mode: Export CSV needs AI Core (the sources are on the server).
   (function () {
     var b = document.getElementById('src-export');
@@ -16467,7 +16491,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "No claim is backed by this source yet.": "هنوز هیچ ادعایی به این منبع تکیه ندارد.",
     "No knowledge object is backed by this source yet.": "هنوز هیچ موجودیت دانشی به این منبع تکیه ندارد.",
     "Could not load this list ({error}).": "این فهرست بارگیری نشد ({error}).",
-    "Connect to AI Core to open this section.": "برای باز کردن این بخش به AI Core وصل شوید."
+    "Connect to AI Core to open this section.": "برای باز کردن این بخش به AI Core وصل شوید.",
+    "Delete this source and its documents? This cannot be undone.": "این منبع و اسنادش حذف شوند؟ این کار برگشت‌پذیر نیست.",
+    "Source deleted.": "منبع حذف شد.",
+    "This source is still used by evidence, publication citations or research. Remove those first.": "شواهد، استنادهای انتشار یا پژوهش هنوز از این منبع استفاده می‌کنند. ابتدا آن‌ها را حذف کنید.",
+    "Only an owner or admin can delete a source.": "فقط مالک یا مدیر می‌تواند منبع را حذف کند.",
+    "Connect to AI Core to delete a source.": "برای حذف منبع به AI Core وصل شوید."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

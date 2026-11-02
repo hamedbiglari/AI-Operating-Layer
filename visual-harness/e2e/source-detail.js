@@ -10,6 +10,9 @@
  *           Evidence, Claims and Knowledge each read their list once, on first
  *           open (?source_id=, limit 100), with an empty message, a "showing n
  *           of total" note, links to the knowledge object, arrow keys and Retry.
+ *   Delete (V5-source-detail-delete): owner/admin only; asks first; one
+ *           DELETE; 204 = back to Sources with "Source deleted."; 409 and 403 say
+ *           why; the sample link says to connect first.
  *   States: no id, 404 (no server text shown), 500 with Retry, 403 with
  *           Reconnect; English and Persian.
  * Runs on file:// with AI Core mocked in the page and every request
@@ -70,7 +73,7 @@ const ITEM = { id: 'a', title: 'Toranjebin review', source_type: 'scientific_pap
 function installMock(item) {
   window.__requests = [];
   const reply = (body, status) => Promise.resolve(new Response(JSON.stringify(body), { status: status || 200 }));
-  window.fetch = (u) => {
+  window.fetch = (u, opt) => {
     u = String(u); const p = u.slice(u.indexOf('/api/v1') + 7); window.__requests.push(p);
     if (p.indexOf('/sources/overview?') === 0) {
       const id = new URLSearchParams(p.slice(p.indexOf('?') + 1)).get('id');
@@ -79,7 +82,9 @@ function installMock(item) {
       if (id === 'deny') return reply({}, 403);
       return reply({}, 500);
     }
-    if (p === '/auth/me') return reply({ user: { role: 'editor' }, organization: {} });
+    if (p === '/auth/me') return reply({ user: { role: window.__role || 'editor' }, organization: {} });
+    if (opt && opt.method === 'DELETE') { window.__deletes = (window.__deletes || []).concat([p]);
+      return window.__delStatus === 409 ? reply({ error: { message: 'Cannot delete source' } }, 409) : Promise.resolve(new Response(null, { status: 204 })); }
     if (window.__tabFail && p.indexOf(window.__tabFail) === 0) return reply({}, 500);
     if (p === '/evidence?source_id=a&limit=100') return reply({ items: [{ id: 'e1', summary: 'Laxative in adults.', study_type: 'RCT', status: 'verified' },
       { id: 'e2', summary: 'Mannitol content.', study_type: null, status: 'odd' }], total: 2, limit: 100, offset: 0 });
@@ -117,6 +122,10 @@ function installMock(item) {
   }, shown.toString());
 
   // Sample mode
+  await page.click('#screen-detail [data-source-delete]'); await page.waitForTimeout(150);
+  check('sample: Delete shows and says to connect first', await page.evaluate(() => [document.getElementById('save-toast').open,
+    document.getElementById('save-toast-text').textContent]), [true, 'Connect to AI Core to delete a source.']);
+  await page.evaluate(() => document.getElementById('save-toast-close').click()); await page.waitForTimeout(150);
   let v = await view();
   check('sample: the designed header shows, no live header', [v.sampleHeader, v.liveTitle], [true, null]);
   check('sample: nothing is requested', await requests(), []);
@@ -201,6 +210,28 @@ function installMock(item) {
   check('403: the read-sources sentence and Reconnect', [v.state, v.message, v.action],
     ['denied', 'This access token is not allowed to read sources (HTTP 403).', 'Reconnect']);
   check('GET /auth/me read once for the connection', (await requests()).filter((r) => r === '/auth/me').length, 1);
+  await go('#screen-detail?id=a');
+  // Delete (V5-source-detail-delete)
+  const delShown = () => page.evaluate(() => { const b = document.getElementById('src-delete'); return !!b && !b.hidden && b.getClientRects().length > 0; });
+  check('Delete: an editor does not see it', await delShown(), false);
+  await page.evaluate(() => { window.__role = 'admin'; window.AIOL_LIVE_CONNECT('http://core.test', 'tok'); }); await settle(); await settle();
+  check('Delete: an admin sees it', await delShown(), true);
+  const dialogs = []; let answer = false;
+  page.on('dialog', (d) => { dialogs.push(d.message()); if (answer) d.accept(); else d.dismiss(); });
+  await page.click('#src-delete'); await settle();
+  check('Delete asks first; cancelled = nothing sent', [dialogs, await page.evaluate(() => window.__deletes || [])],
+    [['Delete this source and its documents? This cannot be undone.'], []]);
+  answer = true; await page.evaluate(() => { window.__delStatus = 409; });
+  await page.click('#src-delete'); await settle();
+  check('409: says what still uses it; stays on the source', [await page.evaluate(() => [window.__deletes, document.getElementById('save-toast-text').textContent,
+    location.hash])], [[['/sources/a'], 'This source is still used by evidence, publication citations or research. Remove those first.', '#screen-detail?id=a']]);
+  await page.evaluate(() => { document.getElementById('save-toast-close').click(); window.__delStatus = 204; }); await settle();
+  await page.click('#src-delete'); await settle();
+  check('204: back to Sources, "Source deleted."', await page.evaluate(() => [location.hash, document.getElementById('save-toast-text').textContent]),
+    ['#screen-sources', 'Source deleted.']);
+  await page.evaluate(() => { document.getElementById('save-toast-close').click(); window.__role = 'editor'; window.AIOL_LIVE_CONNECT('http://core.test', 'tok'); });
+  await settle(); await settle();
+
 
   // Persian
   await lang('fa');
