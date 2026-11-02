@@ -93,10 +93,21 @@ def list_knowledge_objects(
     object_type: str | None = None,
     status: KnowledgeObjectStatus | None = None,
     sort: SortParams | None = None,
+    source_id: UUID | None = None,
 ) -> tuple[list[KnowledgeObject], int]:
     base = filtered_knowledge_objects(
         organization_id=organization_id, search=search, object_type=object_type, status=status
     )
+    if source_id:
+        # Objects with a claim backed by evidence from this source (V5-source-detail-tab-knowledge).
+        from app.models.claim import Claim
+        from app.models.claim_evidence import ClaimEvidence
+        from app.models.evidence import Evidence
+
+        base = base.where(select(Claim.id).join(ClaimEvidence, ClaimEvidence.claim_id == Claim.id)
+                          .join(Evidence, Evidence.id == ClaimEvidence.evidence_id)
+                          .where(Claim.knowledge_object_id == KnowledgeObject.id, Evidence.source_id == source_id,
+                                 Evidence.organization_id == organization_id).exists())
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
     rows = (

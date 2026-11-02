@@ -25,6 +25,8 @@ def list_claims(
     # real weight on both sides (claim_evidence_service.recompute_claim_aggregate).
     # The Dashboard's "claims in conflict" count is this list's `total`.
     evidence_strength: ClaimEvidenceStrength | None = Query(default=None),
+    # Claims with evidence from this source (Source detail, V5-source-detail-tab-claims).
+    source_id: UUID | None = Query(default=None),
     pagination: PaginationParams = Depends(),
     sort: SortParams = Depends(),
     current_user: User = Depends(get_current_user),
@@ -39,6 +41,7 @@ def list_claims(
         sort=sort,
         limit=pagination.limit,
         offset=pagination.offset,
+        source_id=source_id,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
 

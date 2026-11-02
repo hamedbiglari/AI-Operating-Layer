@@ -2145,3 +2145,19 @@ The per-platform table on #screen-visibility (V5-visibility-platform-breakdown).
 |---|---|
 | Most recent | آخرین مشاهده |
 | Observations by platform | مشاهده‌ها بر اساس سکو |
+
+## Source detail tabs (Phase B-3)
+
+The Evidence, Claims and Knowledge tabs on #screen-detail (V5-source-detail-tab-evidence, -claims, -knowledge). Evidence (شواهد), claim (ادعا), source (منبع) and knowledge object (موجودیت دانش) follow the glossary.
+
+| English | Persian |
+|---|---|
+| Study type | نوع مطالعه |
+| Evidence from this source | شواهد این منبع |
+| Claims backed by this source | ادعاهای با پشتوانهٔ این منبع |
+| Knowledge objects backed by this source | موجودیت‌های دانش با پشتوانهٔ این منبع |
+| No evidence from this source yet. | هنوز شاهدی از این منبع نیست. |
+| No claim is backed by this source yet. | هنوز هیچ ادعایی به این منبع تکیه ندارد. |
+| No knowledge object is backed by this source yet. | هنوز هیچ موجودیت دانشی به این منبع تکیه ندارد. |
+| Could not load this list ({error}). | این فهرست بارگیری نشد ({error}). |
+| Connect to AI Core to open this section. | برای باز کردن این بخش به AI Core وصل شوید. |

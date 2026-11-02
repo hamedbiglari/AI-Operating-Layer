@@ -54,6 +54,8 @@ def list_knowledge_objects(
     search: str | None = Query(default=None, max_length=500),
     object_type: str | None = Query(default=None, max_length=100),
     status_filter: KnowledgeObjectStatus | None = Query(default=None, alias="status"),
+    # Objects with claims backed by this source's evidence (Source detail, V5-source-detail-tab-knowledge).
+    source_id: UUID | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Page[KnowledgeObjectRead]:
@@ -66,6 +68,7 @@ def list_knowledge_objects(
         search=search,
         object_type=object_type,
         status=status_filter,
+        source_id=source_id,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
 

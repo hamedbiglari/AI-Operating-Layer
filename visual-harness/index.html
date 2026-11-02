@@ -4153,9 +4153,9 @@ button.card { color: inherit; font: inherit; }
   <div class="tabs" role="tablist" aria-label="Source detail sections">
     <button role="tab" aria-selected="true">Overview</button>
     <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-artifacts">Artifacts</button>
-    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-knowledge">Knowledge</button>
-    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-claims">Claims</button>
-    <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-evidence">Evidence</button>
+    <button role="tab" aria-selected="false">Knowledge</button>
+    <button role="tab" aria-selected="false">Claims</button>
+    <button role="tab" aria-selected="false">Evidence</button>
     <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-provenance">Provenance</button>
     <button role="tab" aria-selected="false" data-debt-hidden="V5-source-detail-tab-history">History</button>
   </div>
@@ -10170,6 +10170,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     // Documents (7B2b-3b): one GET /sources/{id}/documents per page, each row with its
     // current conversion, paged like the Sources list.
     var dst = { id: null, limit: 50, offset: 0, seq: 0 };
+    // Sections (V5-source-detail-tab-evidence, -claims, -knowledge): Documents first; each other tab reads its list
+    // once per visit to a source, when it is first opened (one call each).
+    var tabBar = body.appendChild(el('div', 'tabs src-tabs')), tabName = tabBar.appendChild(el('span', 'visually-hidden'));
+    tabBar.setAttribute('role', 'tablist'); tabName.id = 'src-tabs-name'; AIOL_I18N.set(tabName, 'Source detail sections');
+    tabBar.setAttribute('aria-labelledby', 'src-tabs-name');
     var docs = body.appendChild(el('section', 'card src-detail-docs')), docsTitle = docs.appendChild(el('h2', 'card__title'));
     AIOL_I18N.set(docsTitle, 'Documents');
     var docsSay = messageBox(docs), actionSay = messageBox(docs);   // the list's state; what Reprocess did
@@ -10189,12 +10194,82 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     prevBtn.addEventListener('click', function () { if (!pagerOn) return; dst.offset = Math.max(0, dst.offset - dst.limit); loadDocs(); });
     nextBtn.addEventListener('click', function () { if (!pagerOn) return; dst.offset += dst.limit; loadDocs(); });
     sizeSel.addEventListener('change', function () { dst.limit = Number(sizeSel.value); dst.offset = 0; loadDocs(); });
+    function relatedTab(key, label, caption, heads, path, row, emptyText) {
+      var t = { key: key, label: label, loadedFor: null }, card = t.panel = body.appendChild(el('section', 'card src-related'));
+      card.id = 'src-tab-' + key; card.style.display = 'none';
+      var ttl = card.appendChild(el('h2', 'card__title')); AIOL_I18N.set(ttl, label);
+      var say = messageBox(card), note = card.appendChild(el('p', 'aic-hint'));
+      var wrap = card.appendChild(el('div', 'table-wrap')), table = wrap.appendChild(el('table', 'table'));
+      var cap = table.appendChild(el('caption', 'visually-hidden')); AIOL_I18N.set(cap, caption);
+      var hr = table.appendChild(el('thead')).appendChild(el('tr')), rows = table.appendChild(el('tbody'));
+      heads.forEach(function (x) { var th = hr.appendChild(el('th')); th.scope = 'col'; if (x) AIOL_I18N.set(th, x); });
+      t.load = function (id) {
+        t.loadedFor = id; rows.textContent = ''; note.textContent = ''; wrap.style.display = 'none'; say('loading', 'Loading…');
+        return api(path(encodeURIComponent(id))).then(function (page) {
+          if (t.loadedFor !== id) return;
+          if (!page.items.length) { say('empty', emptyText); return; }
+          say(''); wrap.style.display = '';
+          page.items.forEach(function (x) { var tr = rows.appendChild(el('tr')); row(x).forEach(function (c) { tr.appendChild(el('td')).appendChild(c); }); });
+          if (page.total > page.items.length) AIOL_I18N.set(note, 'Showing {from} to {to} of {total}', { from: 1, to: page.items.length, total: page.total });
+        }).catch(function (e) {
+          if (t.loadedFor !== id) return;
+          t.loadedFor = null;
+          say('error', 'Could not load this list ({error}).', { error: e.message }, 'Retry', function () { t.load(id); });
+        });
+      };
+      return t;
+    }
+    function word(map, v) { var s = el('span'); if (map[v]) AIOL_I18N.set(s, map[v]); else s.appendChild(el('bdi', null, v)); return s; }
+    function notSet() { var s = el('span', 'not-available'); return AIOL_I18N.set(s, 'Not set'); }
+    var related = [
+      { key: 'documents', label: 'Documents', panel: docs },
+      relatedTab('evidence', 'Evidence', 'Evidence from this source', ['Summary', 'Study type', 'Status'],
+        function (id) { return '/evidence?source_id=' + id + '&limit=100'; },
+        function (x) { return [text(x.summary), x.study_type ? text(x.study_type) : notSet(), word(EVIDENCE_STATUS, x.status)]; },
+        'No evidence from this source yet.'),
+      relatedTab('claims', 'Claims', 'Claims backed by this source', ['Claim', 'Status', ''],
+        function (id) { return '/claims?source_id=' + id + '&limit=100'; },
+        function (x) {
+          var open = el('a', 'btn btn--quiet'); open.href = '#screen-knowledge-detail?id=' + encodeURIComponent(x.knowledge_object_id);
+          AIOL_I18N.set(open, 'Open');
+          return [text(x.predicate + (x.object_value ? ' ' + x.object_value : '')), word(CLAIM_STATUS, x.status), open];
+        }, 'No claim is backed by this source yet.'),
+      relatedTab('knowledge', 'Knowledge', 'Knowledge objects backed by this source', ['Knowledge object', 'Status'],
+        function (id) { return '/knowledge?source_id=' + id + '&limit=100'; },
+        function (x) {
+          var a = el('a'); a.href = '#screen-knowledge-detail?id=' + encodeURIComponent(x.id); a.appendChild(text(x.canonical_name));
+          return [a, badge(x.status, KO_STATUS)];
+        }, 'No knowledge object is backed by this source yet.'),
+    ];
+    docs.setAttribute('role', 'tabpanel'); docs.id = 'src-tab-documents';
+    related.forEach(function (t, i) {
+      var b = t.btn = tabBar.appendChild(el('button')); b.type = 'button'; b.id = 'src-tabbtn-' + t.key;
+      b.setAttribute('role', 'tab'); b.setAttribute('aria-controls', t.panel.id); AIOL_I18N.set(b, t.label);
+      t.panel.setAttribute('role', 'tabpanel'); t.panel.setAttribute('aria-labelledby', b.id);
+      b.addEventListener('click', function () { selectTab(t.key); });
+      b.addEventListener('keydown', function (e) {   // arrow keys move along the tabs (WAI-ARIA tabs pattern)
+        var d = { ArrowRight: 1, ArrowLeft: -1, Home: -i, End: related.length - 1 - i }[e.key];
+        if (d === undefined) return;
+        if (document.documentElement.dir === 'rtl' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) d = -d;
+        e.preventDefault();
+        var next = related[(i + d + related.length) % related.length]; selectTab(next.key); next.btn.focus();
+      });
+    });
+    function selectTab(key) {
+      related.forEach(function (t) {
+        var on = t.key === key;
+        t.btn.setAttribute('aria-selected', String(on)); t.btn.tabIndex = on ? 0 : -1;
+        t.panel.style.display = on ? '' : 'none';
+        if (on && t.load && t.loadedFor !== dst.id) t.load(dst.id);
+      });
+    }
     panel.insertAdjacentElement('afterend', body);
 
     // .page-header, the facts grid and the cards set display, so [hidden] would not hide them.
     // With no source the header stays, holding the generic heading, so the section keeps a name.
     function shown(on) {
-      facts.style.display = docs.style.display = on ? '' : 'none';
+      facts.style.display = tabBar.style.display = on ? '' : 'none';
+      if (on) selectTab('documents'); else related.forEach(function (t) { t.panel.style.display = 'none'; });
       if (!on) { crumbTitle.textContent = ''; badgeLine.textContent = ''; h1.textContent = ''; h1.appendChild(AIOL_I18N.set(el('span'), 'Source detail')); }
     }
     function text(v) { var t = el('bdi', null, v); t.dir = 'auto'; return t; }
@@ -10348,6 +10423,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     function load() {
       var seq = ++st.seq, id = hashId();
       dst.seq++;                                // the documents of the last source are no longer wanted
+      related.forEach(function (t) { t.loadedFor = null; });   // each visit reads the open tab's list again
       shown(false);
       if (!id) { status('empty', 'No source selected. Open one from Sources & Documents.'); return Promise.resolve(null); }
       status('loading', 'Loading…');
@@ -10375,6 +10451,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__detailLoad = function () { return role().then(load); };
     return panel.__detailLoad();
   }
+  // Sample mode: the Source detail section tabs are a design sample; connected, the live tabs replace them.
+  document.querySelectorAll('#screen-detail > .tabs [role=tab][aria-selected="false"]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (window.aiolToast) window.aiolToast(AIOL_I18N.format('Connect to AI Core to open this section.', null, AIOL_I18N.lang()));
+    });
+  });
   // Document processing (7C-6c): one GET /documents/{id}/processing per document. The backend
   // already prefers stage rows over derived stages (7C-5); this only renders what it says.
   var JOB_STATUS = { queued: ['Queued', 'badge--processing', 'processing'], running: ['Running', 'badge--processing', 'processing'],
@@ -16348,7 +16430,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "6 agents without a decision yet.": "برای ۶ عامل هنوز تصمیمی گرفته نشده است.",
     "They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to.": "این عامل‌ها اجازهٔ عبور دارند و به‌عنوان «پیکربندی‌نشده» ثبت می‌شوند، نه «مجاز»، چون کسی آن را انتخاب نکرده است. عاملی که بی‌صدا و بی تصمیم اجازهٔ عبور می‌گیرد، همان راهی است که یک سایت را بی‌آنکه موافقت کرده باشد به پیکرهٔ آموزش مدل می‌کشاند.",
     "Most recent": "آخرین مشاهده",
-    "Observations by platform": "مشاهده‌ها بر اساس سکو"
+    "Observations by platform": "مشاهده‌ها بر اساس سکو",
+    "Study type": "نوع مطالعه",
+    "Evidence from this source": "شواهد این منبع",
+    "Claims backed by this source": "ادعاهای با پشتوانهٔ این منبع",
+    "Knowledge objects backed by this source": "موجودیت‌های دانش با پشتوانهٔ این منبع",
+    "No evidence from this source yet.": "هنوز شاهدی از این منبع نیست.",
+    "No claim is backed by this source yet.": "هنوز هیچ ادعایی به این منبع تکیه ندارد.",
+    "No knowledge object is backed by this source yet.": "هنوز هیچ موجودیت دانشی به این منبع تکیه ندارد.",
+    "Could not load this list ({error}).": "این فهرست بارگیری نشد ({error}).",
+    "Connect to AI Core to open this section.": "برای باز کردن این بخش به AI Core وصل شوید."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

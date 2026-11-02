@@ -6,6 +6,10 @@
  *           with no list filters; the sample breadcrumbs and header give way
  *           to the source's title, status badge, the four counts and its
  *           metadata. GET /auth/me is read once per connection.
+ *   Tabs (V5-source-detail-tab-evidence/-claims/-knowledge): Documents first;
+ *           Evidence, Claims and Knowledge each read their list once, on first
+ *           open (?source_id=, limit 100), with an empty message, a "showing n
+ *           of total" note, links to the knowledge object, arrow keys and Retry.
  *   States: no id, 404 (no server text shown), 500 with Retry, 403 with
  *           Reconnect; English and Persian.
  * Runs on file:// with AI Core mocked in the page and every request
@@ -25,6 +29,12 @@ const fa = (...codes) => String.fromCharCode(...codes);
 const FSI = String.fromCharCode(0x2068), PDI = String.fromCharCode(0x2069);
 const FA = {
   notSelected: fa(0x647, 0x6CC, 0x686, 0x20, 0x645, 0x646, 0x628, 0x639, 0x6CC, 0x20, 0x627, 0x646, 0x62A, 0x62E, 0x627, 0x628, 0x20, 0x646, 0x634, 0x62F, 0x647, 0x20, 0x627, 0x633, 0x62A, 0x2E, 0x20, 0x6CC, 0x6A9, 0x6CC, 0x20, 0x631, 0x627, 0x20, 0x627, 0x632, 0x20, 0xAB, 0x645, 0x646, 0x627, 0x628, 0x639, 0x20, 0x648, 0x20, 0x627, 0x633, 0x646, 0x627, 0x62F, 0xBB, 0x20, 0x628, 0x627, 0x632, 0x20, 0x6A9, 0x646, 0x6CC, 0x62F, 0x2E),
+  documents: fa(0x627, 0x633, 0x646, 0x627, 0x62F),
+  evidence: fa(0x634, 0x648, 0x627, 0x647, 0x62F),
+  claims: fa(0x627, 0x62F, 0x639, 0x627, 0x647, 0x627),
+  knowledge: fa(0x62F, 0x627, 0x646, 0x634),
+  noKnowledge: fa(0x647, 0x646, 0x648, 0x632, 0x20, 0x647, 0x6CC, 0x686, 0x20, 0x645, 0x648, 0x62C, 0x648, 0x62F, 0x6CC, 0x62A, 0x20, 0x62F, 0x627, 0x646, 0x634, 0x6CC,
+    0x20, 0x628, 0x647, 0x20, 0x627, 0x6CC, 0x646, 0x20, 0x645, 0x646, 0x628, 0x639, 0x20, 0x62A, 0x6A9, 0x6CC, 0x647, 0x20, 0x646, 0x62F, 0x627, 0x631, 0x62F, 0x2E),
   notFound: fa(0x627, 0x6CC, 0x646, 0x20, 0x645, 0x646, 0x628, 0x639, 0x20, 0x67E, 0x6CC, 0x62F, 0x627, 0x20, 0x646, 0x634, 0x62F, 0x2E),
   couldNotLoadBefore: fa(0x628, 0x627, 0x631, 0x6AF, 0x630, 0x627, 0x631, 0x6CC, 0x20, 0x627, 0x6CC, 0x646, 0x20, 0x645, 0x646, 0x628, 0x639, 0x20, 0x646, 0x627, 0x645, 0x648, 0x641, 0x642, 0x20, 0x628, 0x648, 0x62F, 0x20, 0x28),
   couldNotLoadAfter: fa(0x29, 0x2E),
@@ -70,6 +80,12 @@ function installMock(item) {
       return reply({}, 500);
     }
     if (p === '/auth/me') return reply({ user: { role: 'editor' }, organization: {} });
+    if (window.__tabFail && p.indexOf(window.__tabFail) === 0) return reply({}, 500);
+    if (p === '/evidence?source_id=a&limit=100') return reply({ items: [{ id: 'e1', summary: 'Laxative in adults.', study_type: 'RCT', status: 'verified' },
+      { id: 'e2', summary: 'Mannitol content.', study_type: null, status: 'odd' }], total: 2, limit: 100, offset: 0 });
+    if (p === '/claims?source_id=a&limit=100') return reply({ items: [{ id: 'c1', knowledge_object_id: 'k1', predicate: 'contains', object_value: 'mannitol',
+      status: 'approved' }], total: 130, limit: 100, offset: 0 });
+    if (p === '/knowledge?source_id=a&limit=100') return reply({ items: [], total: 0, limit: 100, offset: 0 });
     return reply({}, 404);
   };
 }
@@ -119,6 +135,48 @@ function installMock(item) {
   // The Sources list loads on connect too; the detail's requests are the ones with an id.
   check('live: one overview request, the id only (no list filters)', (await requests()).filter((r) => r.startsWith('/sources/overview?id=')),
     ['/sources/overview?id=a']);
+
+  // Tabs (V5-source-detail-tab-evidence, -claims, -knowledge)
+  const tabs = () => page.evaluate(() => {
+    const bar = document.querySelector('#screen-detail .src-tabs');
+    return { names: Array.from(bar.querySelectorAll('[role=tab]')).map((b) => [b.textContent, b.getAttribute('aria-selected')]),
+      label: document.getElementById(bar.getAttribute('aria-labelledby')).textContent,
+      shown: ['documents', 'evidence', 'claims', 'knowledge'].filter((k) => getComputedStyle(document.getElementById('src-tab-' + k)).display !== 'none') };
+  });
+  const panel = (k) => page.evaluate((k) => { const c = document.getElementById('src-tab-' + k), box = c.querySelector('.know-status');
+    return { message: box.querySelector('p').textContent, note: c.querySelector('.aic-hint').textContent,
+      rows: Array.from(c.querySelectorAll('tbody tr')).map((tr) => Array.from(tr.cells).map((td) => td.textContent)),
+      links: Array.from(c.querySelectorAll('tbody a')).map((a) => a.getAttribute('href')) }; }, k);
+  const tabReqs = () => page.evaluate(() => window.__requests.filter((r) => /^\/(evidence|claims|knowledge)\?source_id=/.test(r)));
+  check('tabs: Documents open first; nothing else read yet', [await tabs(), await tabReqs()],
+    [{ names: [['Documents', 'true'], ['Evidence', 'false'], ['Claims', 'false'], ['Knowledge', 'false']], label: 'Source detail sections', shown: ['documents'] }, []]);
+  await page.click('#src-tabbtn-evidence'); await settle();
+  check('Evidence: one request; summary, study type (Not set), status (unknown as sent)', [await tabReqs(), (await tabs()).shown, (await panel('evidence')).rows],
+    [['/evidence?source_id=a&limit=100'], ['evidence'], [['Laxative in adults.', 'RCT', 'Verified'], ['Mannitol content.', 'Not set', 'odd']]]);
+  await page.focus('#src-tabbtn-evidence'); await page.keyboard.press('ArrowRight'); await settle();
+  const cl = await panel('claims');
+  check('Claims (arrow key): one request; the claim, its status, an Open link; 100 of 130 shown', [await tabReqs(), cl.rows, cl.links, cl.note,
+    await page.evaluate(() => document.activeElement.id)],
+    [['/evidence?source_id=a&limit=100', '/claims?source_id=a&limit=100'], [['contains mannitol', 'Approved', 'Open']],
+      ['#screen-knowledge-detail?id=k1'], 'Showing 1 to 1 of 130', 'src-tabbtn-claims']);
+  await page.click('#src-tabbtn-knowledge'); await settle();
+  check('Knowledge: an empty list says so', [(await panel('knowledge')).message, (await panel('knowledge')).rows], ['No knowledge object is backed by this source yet.', []]);
+  await page.click('#src-tabbtn-evidence'); await settle();
+  check('a tab already read is not read again on this visit', (await tabReqs()).length, 3);
+  await page.evaluate(() => { window.__tabFail = '/claims'; });
+  await go('#screen-dashboard'); await go('#screen-detail?id=a');
+  check('a new visit starts on Documents', (await tabs()).shown, ['documents']);
+  await page.click('#src-tabbtn-claims'); await settle();
+  check('a failed list: the error and Retry', await page.evaluate(() => { const b = document.querySelector('#src-tab-claims .know-status');
+    return [b.dataset.state, b.querySelector('p').textContent, b.querySelector('button').textContent]; }),
+    ['error', 'Could not load this list (' + FSI + 'HTTP 500' + PDI + ').', 'Retry']);
+  await page.evaluate(() => { window.__tabFail = null; document.querySelector('#src-tab-claims .know-status button').click(); }); await settle();
+  check('Retry reads it again', (await panel('claims')).rows, [['contains mannitol', 'Approved', 'Open']]);
+  await page.click('#src-tabbtn-knowledge'); await settle();
+  await lang('fa');
+  check('fa: tab names and the empty message', [(await tabs()).names.map((n) => n[0]), (await panel('knowledge')).message],
+    [[FA.documents, FA.evidence, FA.claims, FA.knowledge], FA.noKnowledge]);
+  await lang('en');
 
   // States
   await go('#screen-detail');

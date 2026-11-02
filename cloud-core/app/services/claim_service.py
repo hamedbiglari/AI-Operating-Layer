@@ -40,8 +40,17 @@ def list_claims(
     sort: SortParams | None = None,
     limit: int,
     offset: int,
+    source_id: UUID | None = None,
 ) -> tuple[list[Claim], int]:
     base = select(Claim).where(Claim.organization_id == organization_id)
+    if source_id:
+        # Claims with at least one evidence link to this source (V5-source-detail-tab-claims).
+        from app.models.claim_evidence import ClaimEvidence
+        from app.models.evidence import Evidence
+
+        base = base.where(select(ClaimEvidence.id).join(Evidence, Evidence.id == ClaimEvidence.evidence_id)
+                          .where(ClaimEvidence.claim_id == Claim.id, Evidence.source_id == source_id,
+                                 Evidence.organization_id == organization_id).exists())
     if knowledge_object_id:
         base = base.where(Claim.knowledge_object_id == knowledge_object_id)
     if status:
