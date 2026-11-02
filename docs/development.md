@@ -87,6 +87,20 @@ rather than a pytest test on purpose — see the script's header comment
 for why cycling DDL is incompatible with the transactional per-test
 isolation the rest of the suite relies on.
 
+Before pushing a migration from Windows, run the fresh-database check:
+
+```powershell
+.\scripts\check-migrations-fresh.ps1        # upgrade head, downgrade -1, upgrade head
+.\scripts\check-migrations-fresh.ps1 -Full  # downgrade base instead, then checks no table is left
+```
+
+It creates a throwaway database in the `aiol_postgres` container and drops
+it afterwards; your dev database is never touched. Running every migration
+from nothing is what catches a migration that only works on an
+already-migrated database, such as one that uses an enum value added in the
+same transaction (PostgreSQL `UnsafeNewEnumValueUsage`): cast to `::text`
+or use `autocommit_block()`. Exit 0 = clean, 1 = a step failed, 2 = setup.
+
 ## Coding rules carried across every phase
 
 - New tenant-owned tables always include `organization_id` and use
