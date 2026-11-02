@@ -260,6 +260,19 @@ class EvidenceDirectness(str, enum.Enum):
     INDIRECT = "indirect"
 
 
+class EvidenceKind(str, enum.Enum):
+    """What sort of evidence a row is (migration 0057, V5-knowledge-detail-evidence-kind). Traditional use and
+    clinical evidence are different claims about different things; the interface shows them per kind and never lets
+    one stand in for another. NULL on the row = not classified yet (V5-evidence-kind-autoclassify)."""
+
+    TRADITIONAL_USE = "traditional_use"
+    COMPOSITIONAL = "compositional"
+    MECHANISTIC = "mechanistic"
+    ANIMAL = "animal"
+    HUMAN_CLINICAL = "human_clinical"
+    OTHER = "other"
+
+
 class EvidenceStrength(str, enum.Enum):
     """GRADE-style certainty rating of ONE piece of evidence (a property
     of the study itself, e.g. a meta-analysis of 20 RCTs vs. a single

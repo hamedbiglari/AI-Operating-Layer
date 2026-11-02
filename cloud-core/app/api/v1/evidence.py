@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models.enums import KNOWLEDGE_EDITOR_ROLES, EvidenceStatus
+from app.models.enums import KNOWLEDGE_EDITOR_ROLES, EvidenceKind, EvidenceStatus
 from app.models.evidence import Evidence
 from app.models.user import User
 from app.schemas.common import Page, PaginationParams, SortParams
@@ -25,6 +25,7 @@ def list_evidence(
     document_id: UUID | None = Query(default=None),
     study_type: str | None = Query(default=None),
     status_filter: EvidenceStatus | None = Query(default=None, alias="status"),
+    kind: EvidenceKind | None = Query(default=None),
     pagination: PaginationParams = Depends(),
     sort: SortParams = Depends(),
     current_user: User = Depends(get_current_user),
@@ -40,6 +41,7 @@ def list_evidence(
         sort=sort,
         limit=pagination.limit,
         offset=pagination.offset,
+        kind=kind,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
 
@@ -64,6 +66,7 @@ def create_evidence(
         population=payload.population,
         actor_user_id=current_user.id,
         document_element_id=payload.document_element_id,
+        kind=payload.kind,
     )
 
 

@@ -33,7 +33,7 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from app.models.enums import EvidenceDirectness, EvidenceStatus, EvidenceStrength
+from app.models.enums import EvidenceDirectness, EvidenceKind, EvidenceStatus, EvidenceStrength
 
 
 class Evidence(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -89,6 +89,10 @@ class Evidence(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     page_number: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     location: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     study_type: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    # Migration 0057: NULL = not classified yet.
+    kind: Mapped[EvidenceKind | None] = mapped_column(
+        SAEnum(EvidenceKind, name="evidence_kind", values_callable=lambda e: [m.value for m in e]), nullable=True
+    )
 
     directness: Mapped[EvidenceDirectness] = mapped_column(
         SAEnum(EvidenceDirectness, name="evidence_directness", values_callable=lambda e: [m.value for m in e]),

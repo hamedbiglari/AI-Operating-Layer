@@ -4464,20 +4464,18 @@ button.card { color: inherit; font: inherit; }
     <p style="color:var(--text-subtle);font-size:var(--text-sm);margin-top:var(--space-3);margin-block-end:0">Fixture numbers, deterministic per keyword id — not a claim about real Toranjebin traffic. In production this is one filtered query against the same <code>page_views</code>/<code>search_demand_events</code> tables the site-wide report reads, not a separate per-keyword pipeline.</p>
   </div>
 
-  <div class="card" data-debt-hidden>
+  <div class="card" id="kd-kinds-sample">
     <h2 class="card__title">Evidence by kind</h2>
     <p style="color:var(--text-muted);margin-top:0">Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.</p>
     <dl class="kv">
-      <dt>Traditional use</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Well attested</span></span> 41 sources</dd>
-      <dt>Compositional</dt><dd><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Established</span></span> 12 verified studies</dd>
-      <dt>Mechanistic</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Indirect only</span></span> 3 studies, none on this species</dd>
-      <dt>Animal</dt><dd><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Insufficient</span></span> 2 studies</dd>
-      <dt>Human clinical</dt><dd><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>None found</span></span> searched 4 databases, 0 trials</dd>
+      <dt>Traditional use</dt><dd class="num">41</dd>
+      <dt>Compositional</dt><dd class="num">12</dd>
+      <dt>Mechanistic</dt><dd class="num">3</dd>
+      <dt>Animal</dt><dd class="num">2</dd>
+      <dt>Human clinical</dt><dd class="num">0</dd>
+      <dt>Other</dt><dd class="num">1</dd>
+      <dt>Not classified yet</dt><dd class="num">5</dd>
     </dl>
-    <div class="callout" style="margin-top:var(--space-4)"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 0-18M12 3a9 9 0 0 0 0 18M8 12h8"/><path d="M12 3a9 9 0 0 0 0 18" stroke-dasharray="3 3"/></svg></span>
-      <div><p><strong>Knowledge gap:</strong> no direct human clinical trial has been found. "None found" is recorded as a search outcome, not as evidence of absence.</p>
-      <p><a href="#screen-gap">Open this gap</a></p></div>
-    </div>
   </div>
 </section>
 
@@ -11765,6 +11763,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   var KO_STATUS = { draft: ['Draft', 'badge--unknown'], in_review: ['In review', 'badge--info'],
     published: ['Published', 'badge--success'], archived: ['Archived', 'badge--unknown'] };
   var DETAIL_STRENGTH = Object.assign({ strong: 'Aggregate strength: strong', conflicting: 'Aggregate strength: conflicting' }, CLAIM_STRENGTH);
+  var EVIDENCE_KIND = { traditional_use: 'Traditional use', compositional: 'Compositional', mechanistic: 'Mechanistic', animal: 'Animal',
+    human_clinical: 'Human clinical', other: 'Other', unclassified: 'Not classified yet' };
+  var KINDS_INTRO = 'Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.';
   function knowledgeDetailScreen(panel) {
     // Wired once; a later connect only reloads.
     if (panel.__kdLoad) return panel.__kdLoad();
@@ -11787,6 +11788,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var card = body.appendChild(el('div', 'card')), cardTitle = card.appendChild(el('h2', 'card__title'));
     AIOL_I18N.set(cardTitle, 'Claims');
     var count = card.appendChild(el('p', 'kd-count')), list = card.appendChild(el('ul', 'kd-claims'));
+    // Evidence by kind (V5-knowledge-detail-evidence-kind): counts per kind from one grouped read; no rating words.
+    var kinds = body.appendChild(el('div', 'card')); kinds.id = 'kd-kinds';
+    var kindsTitle = kinds.appendChild(el('h2', 'card__title')); AIOL_I18N.set(kindsTitle, 'Evidence by kind');
+    var kindsIntro = kinds.appendChild(el('p', 'vis-note')); AIOL_I18N.set(kindsIntro, KINDS_INTRO);
+    var kindsList = kinds.appendChild(el('dl', 'kv'));
     panel.insertAdjacentElement('afterend', body);
 
     function word(parent, map, v) {
@@ -11800,9 +11806,17 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }
     function shown(on) {
       stats.textContent = ''; actions.textContent = ''; list.textContent = ''; desc.textContent = '';
-      stats.hidden = card.hidden = !on;
+      stats.hidden = card.hidden = !on; kinds.hidden = true; kindsList.textContent = '';
       h1.textContent = ''; here.textContent = '';
       if (!on) h1.appendChild(AIOL_I18N.set(el('span'), 'Knowledge detail'));
+    }
+    function renderKinds(k) {
+      kindsList.textContent = ''; kinds.hidden = !k;
+      if (!k) return;
+      Object.keys(EVIDENCE_KIND).forEach(function (key) {
+        AIOL_I18N.set(kindsList.appendChild(el('dt')), EVIDENCE_KIND[key]);
+        var dd = kindsList.appendChild(el('dd', 'num')); AIOL_I18N.set(dd, '{n}', { n: k.by_kind[key] || 0 });
+      });
     }
     function render(ko, claims) {
       var c = ko.counts;
@@ -11839,10 +11853,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       if (!id) { status('empty', 'No knowledge object selected. Open one from Knowledge.'); return Promise.resolve(null); }
       status('loading', 'Loading…');
       // 200 is the backend's page limit; the count line says when an object has more claims.
+      // The per-kind counts are a third, independent read: if it fails, only its card stays away.
       return Promise.all([api('/knowledge/overview?id=' + encodeURIComponent(id)),
-        api('/knowledge/' + encodeURIComponent(id) + '/claims?limit=200')]).then(function (r) {
+        api('/knowledge/' + encodeURIComponent(id) + '/claims?limit=200'),
+        api('/knowledge/' + encodeURIComponent(id) + '/evidence-by-kind').catch(function () { return null; })]).then(function (r) {
         if (seq !== st.seq) return null;        // a newer request owns the screen
-        state(panel, 'ready'); status(''); render(r[0].items[0], r[1]); return r[0].items[0];
+        state(panel, 'ready'); status(''); render(r[0].items[0], r[1]); renderKinds(r[2]); return r[0].items[0];
       }).catch(function (e) {
         if (seq !== st.seq) return null;
         state(panel, 'ready');
@@ -16563,7 +16579,16 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Source archived.": "منبع بایگانی شد.",
     "Source unarchived.": "منبع از بایگانی بازگردانده شد.",
     "Only an owner or admin can archive a source.": "فقط مالک یا مدیر می‌تواند منبع را بایگانی کند.",
-    "Connect to AI Core to archive a source.": "برای بایگانی منبع به AI Core وصل شوید."
+    "Connect to AI Core to archive a source.": "برای بایگانی منبع به AI Core وصل شوید.",
+    "Evidence by kind": "شواهد بر اساس نوع",
+    "Traditional use": "کاربرد سنتی",
+    "Compositional": "ترکیب‌شناختی",
+    "Mechanistic": "سازوکاری",
+    "Animal": "حیوانی",
+    "Human clinical": "بالینی انسانی",
+    "Other": "سایر",
+    "Not classified yet": "هنوز دسته‌بندی نشده",
+    "Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.": "کاربرد سنتی و شواهد بالینی دو ادعای متفاوت دربارهٔ دو چیز متفاوت‌اند. این رابط هرگز اجازه نمی‌دهد یکی جای دیگری را بگیرد."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

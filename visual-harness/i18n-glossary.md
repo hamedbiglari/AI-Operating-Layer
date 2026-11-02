@@ -2189,3 +2189,19 @@ Archive and Unarchive on #screen-sources and #screen-detail (V5-source-archive-s
 | Source unarchived. | منبع از بایگانی بازگردانده شد. |
 | Only an owner or admin can archive a source. | فقط مالک یا مدیر می‌تواند منبع را بایگانی کند. |
 | Connect to AI Core to archive a source. | برای بایگانی منبع به AI Core وصل شوید. |
+
+## Evidence by kind (Phase B-4)
+
+The Evidence by kind card on #screen-knowledge-detail (V5-knowledge-detail-evidence-kind). Evidence (شواهد) follows the glossary; counts only, no rating words.
+
+| English | Persian |
+|---|---|
+| Evidence by kind | شواهد بر اساس نوع |
+| Traditional use | کاربرد سنتی |
+| Compositional | ترکیب‌شناختی |
+| Mechanistic | سازوکاری |
+| Animal | حیوانی |
+| Human clinical | بالینی انسانی |
+| Other | سایر |
+| Not classified yet | هنوز دسته‌بندی نشده |
+| Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other. | کاربرد سنتی و شواهد بالینی دو ادعای متفاوت دربارهٔ دو چیز متفاوت‌اند. این رابط هرگز اجازه نمی‌دهد یکی جای دیگری را بگیرد. |

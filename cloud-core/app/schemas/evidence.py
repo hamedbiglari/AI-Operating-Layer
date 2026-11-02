@@ -5,7 +5,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.enums import EvidenceDirectness, EvidenceStatus, EvidenceStrength
+from app.models.enums import EvidenceDirectness, EvidenceKind, EvidenceStatus, EvidenceStrength
 
 
 class EvidenceRead(BaseModel):
@@ -20,6 +20,7 @@ class EvidenceRead(BaseModel):
     page_number: int | None = None
     location: dict | None = None
     study_type: str | None
+    kind: EvidenceKind | None = None
     directness: EvidenceDirectness
     evidence_strength: EvidenceStrength
     status: EvidenceStatus
@@ -39,6 +40,7 @@ class EvidenceCreate(BaseModel):
     # v4 §9: the canonical-representation element this evidence was read from (page + box follow it)
     document_element_id: uuid.UUID | None = None
     study_type: str | None = Field(default=None, max_length=100)
+    kind: EvidenceKind | None = None
     directness: EvidenceDirectness = EvidenceDirectness.DIRECT
     evidence_strength: EvidenceStrength = EvidenceStrength.VERY_LOW
     summary: str = Field(min_length=1)
@@ -55,6 +57,7 @@ class EvidenceUpdate(BaseModel):
     document_id: uuid.UUID | None = None
     document_chunk_id: uuid.UUID | None = None
     study_type: str | None = Field(default=None, max_length=100)
+    kind: EvidenceKind | None = None
     directness: EvidenceDirectness | None = None
     evidence_strength: EvidenceStrength | None = None
     summary: str | None = Field(default=None, min_length=1)

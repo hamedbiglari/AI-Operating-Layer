@@ -73,6 +73,37 @@ def list_knowledge_objects(
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
 
 
+@router.get("/{knowledge_object_id}/evidence-by-kind")
+def evidence_by_kind(
+    knowledge_object_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """The object's evidence counted per kind (V5-knowledge-detail-evidence-kind): each evidence row linked to one of
+    its claims counts once, in its own kind; `unclassified` counts rows with no kind yet. One grouped query; counts
+    only, no rating (ADR-024)."""
+    from sqlalchemy import distinct, func, select
+
+    from app.models.claim import Claim
+    from app.models.claim_evidence import ClaimEvidence
+    from app.models.enums import EvidenceKind
+    from app.models.evidence import Evidence
+
+    org = current_user.organization_id
+    knowledge_service.get_knowledge_object_or_404(db, object_id=knowledge_object_id, organization_id=org)
+    rows = db.execute(
+        select(Evidence.kind, func.count(distinct(Evidence.id)))
+        .join(ClaimEvidence, ClaimEvidence.evidence_id == Evidence.id)
+        .join(Claim, Claim.id == ClaimEvidence.claim_id)
+        .where(Claim.knowledge_object_id == knowledge_object_id, Claim.organization_id == org, Evidence.organization_id == org)
+        .group_by(Evidence.kind)
+    ).all()
+    found = {(k.value if k else "unclassified"): n for k, n in rows}
+    by_kind = {k.value: found.get(k.value, 0) for k in EvidenceKind}
+    by_kind["unclassified"] = found.get("unclassified", 0)
+    return {"knowledge_object_id": str(knowledge_object_id), "total": sum(by_kind.values()), "by_kind": by_kind}
+
+
 @router.get("/search", response_model=Page[KnowledgeObjectRead])
 def search_knowledge_objects(
     q: str = Query(min_length=1, max_length=500),

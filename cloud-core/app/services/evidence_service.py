@@ -101,6 +101,7 @@ def list_evidence(
     sort: SortParams | None = None,
     limit: int,
     offset: int,
+    kind=None,
 ) -> tuple[list[Evidence], int]:
     base = select(Evidence).where(Evidence.organization_id == organization_id)
     if source_id:
@@ -111,6 +112,8 @@ def list_evidence(
         base = base.where(Evidence.study_type == study_type)
     if status_filter:
         base = base.where(Evidence.status == status_filter)
+    if kind:
+        base = base.where(Evidence.kind == kind)
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
     rows = (
@@ -142,6 +145,7 @@ def create_evidence(
     population: str | None,
     actor_user_id: UUID,
     document_element_id: UUID | None = None,
+    kind=None,
 ) -> Evidence:
     _validate_provenance_chain(
         db,
@@ -159,6 +163,7 @@ def create_evidence(
         document_id=document_id,
         document_chunk_id=document_chunk_id,
         study_type=study_type,
+        kind=kind,
         directness=directness,
         evidence_strength=evidence_strength,
         status=EvidenceStatus.DRAFT,

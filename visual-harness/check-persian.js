@@ -242,6 +242,8 @@ const KNOWN = [
   '0627063306460627062f0634 06270633062a06460627062f0647062706cc',
   // Added 2026-11-02 (Phase B-4): archive a source.
   '0646064506cc200c062206cc062f',
+  // Added 2026-11-02 (Phase B-4): evidence by kind.
+  '06330646062a06cc 062a063106a906cc0628200c063406460627062e062a06cc 063306270632064806a90627063106cc 062d06cc06480627064606cc 06280627064406cc064606cc 0633062706cc0631 062f0633062a0647200c06280646062f06cc 0645062a064106270648062a200c06270646062f',
 ].join(' ').split(' ').map((h) => String.fromCodePoint(...h.match(/.{4}/g).map((x) => parseInt(x, 16))));
 
 // Persian comma, semicolon and question mark separate words; they are not part of one.

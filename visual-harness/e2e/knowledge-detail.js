@@ -73,6 +73,13 @@ function installMock(objects) {
       if (id === 'bad') return reply({ detail: 'invalid' }, 422);
       return o ? reply({ items: [o[0]], total: 1, limit: 50, offset: 0, finished_visible: false }) : reply({ detail: 'Not found' }, 404);
     }
+    m = p.match(/^\/knowledge\/([^/]+)\/evidence-by-kind$/);
+    if (m) {
+      const id = decodeURIComponent(m[1]), o = window.__objects[id];
+      if (!o || window.__kindsFail) return reply({}, o ? 500 : 404);
+      return reply({ knowledge_object_id: id, total: 9, by_kind: Object.assign({ traditional_use: 4, compositional: 2, mechanistic: 0, animal: 0,
+        human_clinical: 0, other: 1, unclassified: 2 }, o[3] || {}) });
+    }
     m = p.match(/^\/knowledge\/([^/]+)\/claims\?limit=200$/);
     if (m) {
       const id = decodeURIComponent(m[1]), o = window.__objects[id];
@@ -92,7 +99,7 @@ function installMock(objects) {
   const go = async (hash) => { await page.evaluate((h) => { location.hash = h; }, hash); await settle(); };
   const lang = async (l) => { await page.selectOption('#pick-lang', l); await settle(); };
   const connect = async () => { await page.evaluate(() => window.AIOL_LIVE_CONNECT('http://core.test', 'tok')); await settle(); };
-  const requests = () => page.evaluate(() => (window.__requests || []).filter((r) => /\/knowledge\/(overview\?id=|[^/]+\/claims)/.test(r)));
+  const requests = () => page.evaluate(() => (window.__requests || []).filter((r) => /\/knowledge\/(overview\?id=|[^/]+\/claims|[^/]+\/evidence-by-kind)/.test(r)));
   const sample = () => page.evaluate(() => {
     const s = document.getElementById('screen-knowledge-detail'), shown = (e) => getComputedStyle(e).display !== 'none';
     return {
@@ -133,8 +140,10 @@ function installMock(objects) {
 
   // Sample mode (before any connection).
   const s0 = await sample();
-  check('sample: the two unbacked cards are hidden as debt', s0.cards,
-    [['AI visibility for ' + fa(0x62A, 0x631, 0x646, 0x62C, 0x628, 0x6CC, 0x646), false, true], ['Evidence by kind', false, true]]);
+  check('sample: AI visibility stays hidden as debt; Evidence by kind shows counts (no rating words)', [s0.cards, await page.evaluate(() =>
+    Array.from(document.querySelectorAll('#kd-kinds-sample dt')).map((dt) => [dt.textContent, dt.nextElementSibling.textContent]))],
+    [[['AI visibility for ' + fa(0x62A, 0x631, 0x646, 0x62C, 0x628, 0x6CC, 0x646), false, true], ['Evidence by kind', true, false]],
+      [['Traditional use', '41'], ['Compositional', '12'], ['Mechanistic', '3'], ['Animal', '2'], ['Human clinical', '0'], ['Other', '1'], ['Not classified yet', '5']]]);
   check('sample: the stat cards and the Trace button stay', [s0.stats, s0.trace], [['Sources', 'Claims', 'Evidence', 'Conflicts'], 'Trace a statement']);
   check('the four old pages, their links and picker entries are gone; one new entry', [s0.oldIds, s0.oldLinks, s0.oldOptions, s0.picker],
     [0, 0, 0, ['Knowledge detail']]);
@@ -149,7 +158,12 @@ function installMock(objects) {
   await go('#screen-knowledge-detail?id=k1');
   await connect();
   let v = await view();
-  check('two requests: the overview row and the claims', await requests(), ['GET /knowledge/overview?id=k1', 'GET /knowledge/k1/claims?limit=200']);
+  check('three requests: the overview row, the claims and the evidence per kind', await requests(),
+    ['GET /knowledge/overview?id=k1', 'GET /knowledge/k1/claims?limit=200', 'GET /knowledge/k1/evidence-by-kind']);
+  const kinds = () => page.evaluate(() => { const k = document.getElementById('kd-kinds');
+    return k.hidden ? null : [k.querySelector('.card__title').textContent, Array.from(k.querySelectorAll('dt')).map((dt) => [dt.textContent, dt.nextElementSibling.textContent])]; });
+  check('Evidence by kind: every kind with its count, not classified last', await kinds(), ['Evidence by kind', [['Traditional use', '4'], ['Compositional', '2'],
+    ['Mechanistic', '0'], ['Animal', '0'], ['Human clinical', '0'], ['Other', '1'], ['Not classified yet', '2']]]);
   check('header: breadcrumb, name, description, status, Trace link', [v.crumb, v.title, v.description, v.badge, v.trace],
     [['#screen-knowledge', 'Knowledge', 'Taranjabin'], 'Taranjabin', 'Manna of Alhagi.', ['badge badge--success', 'Published'],
       ['#screen-provenance?id=k1', 'Trace a statement']]);
@@ -181,7 +195,8 @@ function installMock(objects) {
     ['error', 'Could not load the knowledge object (' + iso('HTTP 500') + ').', 'Retry']);
   let before = (await requests()).length;
   await page.click('#screen-knowledge-detail [data-live-keep] .know-status button'); await settle();
-  check('Retry sends both requests again', (await requests()).slice(before), ['GET /knowledge/overview?id=boom', 'GET /knowledge/boom/claims?limit=200']);
+  check('Retry sends the three requests again', (await requests()).slice(before), ['GET /knowledge/overview?id=boom', 'GET /knowledge/boom/claims?limit=200',
+    'GET /knowledge/boom/evidence-by-kind']);
 
   // Persian over live content (an identity entry would hang here).
   await go('#screen-knowledge-detail?id=k1');
