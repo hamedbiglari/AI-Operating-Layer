@@ -2075,3 +2075,20 @@ New rule on the live AI access screen (V5-access-policy-create). Rule (قاعد�
 | New rule | قاعدهٔ جدید |
 | Rule added. | قاعده افزوده شد. |
 | A rule for this client and purpose already exists. Use its Change button. | برای این کلاینت و این هدف از قبل قاعده‌ای وجود دارد. از دکمهٔ «تغییر» همان قاعده استفاده کنید. |
+
+## Visibility report breakdown (Phase A)
+
+The Top countries, Actor types and Top pages cards on #screen-visibility-detail (V5-visibility-detail-aggregates). Country names are not in this table: they come from the browser (Intl.DisplayNames) in the page’s language. Actor type (نوع کنشگر) and the actor labels follow Step 10.
+
+| English | Persian |
+|---|---|
+| Top countries | کشورهای پردرخواست |
+| Actor types | انواع کنشگر |
+| Top pages | صفحه‌های پردرخواست |
+| Automated requests by country | درخواست‌های خودکار بر اساس کشور |
+| Automated requests by actor type | درخواست‌های خودکار بر اساس نوع کنشگر |
+| Automated requests by page | درخواست‌های خودکار بر اساس صفحه |
+| Country | کشور |
+| Requests | درخواست‌ها |
+| None in this range. | در این بازه موردی نیست. |
+| Without a country: {n|request|requests} | بدون کشور: {n} درخواست |

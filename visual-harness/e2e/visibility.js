@@ -7,6 +7,8 @@
  *   Report stats: one GET /visibility/aggregates per range (28 days on
  *           visit; a range tab asks again); the four stats with their notes;
  *           one chart column per day; Not measured when no time was recorded;
+ *           the breakdown cards (top countries by name in the page's language,
+ *           actor types, top pages; at most 10 rows; None in this range.);
  *           the per-platform table (V5-visibility-platform-breakdown); on
  *           AI access the per-agent Access column and its warning
  *           (V5-access-agent-decision). The sample Edit/Change links say to
@@ -45,6 +47,8 @@ const FA = {
   anyAiCrawler: [0x647, 0x631, 0x20, 0x62E, 0x632, 0x646, 0x62F, 0x647, 0x654, 0x20, 0x647, 0x648, 0x634, 0x20, 0x645, 0x635, 0x646, 0x648, 0x639, 0x6CC],
   training: [0x622, 0x645, 0x648, 0x632, 0x634, 0x20, 0x645, 0x62F, 0x644],
   paid: [0x67E, 0x648, 0x644, 0x6CC],
+  topCountries: [0x6A9, 0x634, 0x648, 0x631, 0x647, 0x627, 0x6CC, 0x20, 0x67E, 0x631, 0x62F, 0x631, 0x62E, 0x648, 0x627, 0x633, 0x62A],
+  iran: [0x627, 0x6CC, 0x631, 0x627, 0x646],
   newRule: [0x642, 0x627, 0x639, 0x62F, 0x647, 0x654, 0x20, 0x62C, 0x62F, 0x6CC, 0x62F],
   noReason: [0x62F, 0x644, 0x6CC, 0x644, 0x6CC, 0x20, 0x62F, 0x627, 0x62F, 0x647, 0x20, 0x646, 0x634, 0x62F, 0x647],
   terms: [0x634, 0x631, 0x627, 0x6CC, 0x637],
@@ -88,7 +92,11 @@ const DATA = {
     automated_requests: 120, unclassified_requests: 3, countries_reached: 2, top_country: { country: 'IR', requests: 80 },
     requests_without_country: 5, mean_dwell_ms: 161000, dwell_samples: 704,
     by_day: [{ day: '2026-10-21', observations: 2, requests: 40 }, { day: '2026-10-22', observations: 0, requests: 80 },
-      { day: '2026-10-23', observations: 7, requests: 0 }], by_country: [], by_actor_type: [], top_pages: [] },
+      { day: '2026-10-23', observations: 7, requests: 0 }],
+    by_country: [['IR', 80], ['DE', 30], ['US', 5], ['FR', 4], ['CA', 3], ['IQ', 2], ['AF', 2], ['JP', 1], ['IT', 1], ['ES', 1], ['XX', 1]]
+      .map(([country, requests]) => ({ country, requests })),
+    by_actor_type: [{ key: 'ai_crawler', requests: 70 }, { key: 'search_crawler', requests: 40 }, { key: 'robot_x', requests: 10 }],
+    top_pages: [{ key: '/products/taranjabin', requests: 60 }, { key: '/', requests: 20 }] },
   observations: [
     { id: 'o1', platform: 'chatgpt', test_type: 'brand_query', prompt: 'What is taranjabin?', response: 'A manna from Iran.',
       mentioned: 'present', cited: 'absent', recommended: 'not_checked', product_present: 'present', url_present: 'not_checked',
@@ -211,14 +219,26 @@ function installMock(data) {
       ['Countries reached', '2', 'Most requests: ' + iso('IR')], ['Mean time on page', '2m 41s', 'from 704 measured views']]]);
   check('report: one chart column per day, each series scaled to its own highest day', sv.bars,
     [['29%', '50%'], ['0%', '100%'], ['100%', '0%']]);
+  v = await view('screen-visibility-detail');
+  check('report: breakdown cards after the chart: top countries (name and code, first 10), actor types, top pages', v.cards.slice(1, 5).map((c) => [c.title, c.note, c.rows]),
+    [['Over time', 'Two different sources on one timeline, each scaled to its own highest day; they are never added together.', []],
+      ['Top countries', 'Without a country: 5 requests', [['Iran (' + iso('IR') + ')', '80'], ['Germany (' + iso('DE') + ')', '30'], ['United States (' + iso('US') + ')', '5'],
+        ['France (' + iso('FR') + ')', '4'], ['Canada (' + iso('CA') + ')', '3'], ['Iraq (' + iso('IQ') + ')', '2'], ['Afghanistan (' + iso('AF') + ')', '2'],
+        ['Japan (' + iso('JP') + ')', '1'], ['Italy (' + iso('IT') + ')', '1'], ['Spain (' + iso('ES') + ')', '1']]],
+      ['Actor types', '', [['AI crawler (indexing)', '70'], ['Search crawler', '40'], ['robot_x', '10']]],
+      ['Top pages', '', [['/products/taranjabin', '60'], ['/', '20']]]]);
+  check('report: the three breakdown cards share one row on a wide screen', await page.evaluate(() =>
+    new Set(Array.from(document.querySelectorAll('#screen-visibility-detail .vis-break')).map((c) => Math.round(c.getBoundingClientRect().top))).size), 1);
   before = (await requests()).length;
   await page.evaluate(() => { window.__data.aggregates.mean_dwell_ms = null; window.__data.aggregates.dwell_samples = 0; window.__data.aggregates.top_country = null;
+    window.__data.aggregates.by_actor_type = []; window.__data.aggregates.requests_without_country = 0;
     Array.from(document.querySelectorAll('#vis-report [role=tab]')).find((t) => t.textContent === '7 days').click(); }); await settle(); await settle();
   sv = await stats();
   check('report: a range tab asks for that range; no time recorded = Not measured; no country = says so', [(await requests()).slice(before).filter((x) => /aggregates/.test(x)),
     sv.tab, sv.stats[3], sv.stats[2][2]], [['GET /visibility/aggregates?days=7'], '7 days', ['Mean time on page', 'Not measured', ''], 'No country was reported']);
   v = await view('screen-visibility-detail');
-  check('report: rows (platform, question, signals, date)', [v.cards[2].note, v.cards[2].rows],
+  check('report: an empty breakdown says so; no country note when every request has one', [v.cards[3].rows, v.cards[2].note], [[['None in this range.']], '']);
+  check('report: rows (platform, question, signals, date)', [v.cards[5].note, v.cards[5].rows],
     ['The latest 2 of 9 observations. Open one to read the question and the answer as recorded.',
       [['ChatGPT', 'What is taranjabin?', 'Present', 'Absent', 'Not checked', '20 Oct 2026', 'Open'],
         ['Other platform', 'Best saffron?', 'Absent', 'Absent', 'Absent', '21 Oct 2026', 'Open']]]);
@@ -351,6 +371,9 @@ function installMock(data) {
   await page.click('#screen-visibility-detail tbody tr:first-child button'); await settle();
   d = await detail();
   check('fa: observation facts', [d.title, d.facts[1], d.facts[5][0]], [F('observation'), [F('test'), F('brandQuestion')], F('mentioned')]);
+  v = await view('screen-visibility-detail');
+  check('fa: the country card in Persian (title, country name, Persian digits)', [v.cards[2].title, v.cards[2].rows[0]],
+    [F('topCountries'), [F('iran') + ' (' + iso('IR') + ')', fa(0x6F8, 0x6F0)]]);
   await lang('en');
   check('back to English', (await detail()).title, 'Observation');
 

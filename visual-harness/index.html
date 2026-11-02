@@ -2933,6 +2933,11 @@ body[data-live="on"] #screen-knowledge-detail > .breadcrumbs, body[data-live="on
 .vis-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-block: 0 var(--space-2); color: var(--text-muted); }
 .vis-legend__o, .vis-legend__r { display: inline-block; inline-size: 10px; block-size: 10px; border-radius: 2px; }
 .vis-question, .vis-answer { white-space: pre-wrap; }
+/* Report breakdown (V5-visibility-detail-aggregates): countries, actor types and pages side by side. */
+#screen-visibility-detail > .vis-live { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--space-4); }
+#screen-visibility-detail > .vis-live > * { grid-column: 1 / -1; }
+#screen-visibility-detail > .vis-live > .vis-break { grid-column: auto; }
+@media (max-width: 960px) { #screen-visibility-detail > .vis-live > .vis-break { grid-column: 1 / -1; } }
 .prod-bar { margin-block-end: var(--space-4); }
 .prod-bar .field { max-width: 16rem; }
 .live-panel--compact > .live-note { margin: 0; flex: 1 1 18rem; color: var(--text-muted); font-size: var(--text-sm); }
@@ -7114,7 +7119,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
    layer at the end of the page registers its catalogue here (one dictionary
    for static strings and templates, keyed by the English text).
    Placeholders: {n} formats a number, {d} with { date: iso, style } formats
-   a date, any other value is direction-isolated text. {c|one|other} adds
+   a date, { region: 'IR' } a country name, any other value is
+   direction-isolated text. {c|one|other} adds
    the English plural word; Persian templates use plain {c}, since a counted
    noun stays singular. Numbers and dates use Intl for the current language:
    fa-IR gives Persian digits, the Persian separators and the Solar Hijri
@@ -7129,10 +7135,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     var d = new Date(iso);
     return iso && !isNaN(d) ? new Intl.DateTimeFormat(locale(l || lang()), DATE_STYLES[style || 'datetime']).format(d) : '—';
   }
+  // A country code (ISO 3166-1 alpha-2) as its name in the given language; a code Intl does not know stays as sent.
+  function region(code, l) {
+    try { return new Intl.DisplayNames([locale(l)], { type: 'region' }).of(code) || code; } catch (e) { return code; }
+  }
   function arg(v, l) {
     if (v === null || v === undefined || v === '') return '—';
     if (typeof v === 'number') return isFinite(v) ? num(v, l) : '—';
-    if (typeof v === 'object') return date(v.date, v.style, l);
+    if (typeof v === 'object') return v.region ? region(v.region, l) : date(v.date, v.style, l);
     return '\u2068' + String(v) + '\u2069';
   }
   function format(tpl, args, l) {
@@ -10913,7 +10923,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     }, 'Could not load AI visibility ({error}).');
   }
   // Report stats (V5-visibility-detail-aggregates): one GET /visibility/aggregates per time range gives the headline
-  // stats and the per-day chart. The map, country table, breakdown and exports are not built yet (still debt).
+  // stats, the per-day chart and the breakdown by country, actor type and page (top 10 each). The map, the queries
+  // breakdown, the live strip and the exports are not built yet (still debt).
+  var VIS_BREAK_ROWS = 10;
   var VIS_RANGES = [[1, '24 hours'], [7, '7 days'], [28, '28 days'], [90, '3 months'], [180, '6 months'], [365, '12 months'], [490, '16 months']];
   function visibilityDetailScreen(panel) {
     var st = { days: 28 }, rp = {};
@@ -10939,6 +10951,13 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         if (m) AIOL_I18N.set(rp.dwell.v, '{m}m {s}s', { m: m, s: s }); else AIOL_I18N.set(rp.dwell.v, '{s}s', { s: s });
         AIOL_I18N.set(rp.dwell.n, 'from {n|measured view|measured views}', { n: a.dwell_samples });
       }
+      // Breakdown: the first rows of each list as sent (the server orders them by count).
+      fillBreak(rp.byCountry, a.by_country, function (x) {
+        return AIOL_I18N.set(el('span'), '{name} ({code})', { name: { region: x.country }, code: x.country }); });
+      if (a.requests_without_country) AIOL_I18N.set(rp.byCountry.note, 'Without a country: {n|request|requests}', { n: a.requests_without_country });
+      else rp.byCountry.note.textContent = '';
+      fillBreak(rp.byActor, a.by_actor_type, function (x) { return visWord(el('span'), VIS_ACTOR, x.key); });
+      fillBreak(rp.byPage, a.top_pages, function (x) { return identifier(x.key); });
       // Per day: each series scaled to its own highest day (two different sources, never added together).
       rp.chart.textContent = '';
       var maxO = 0, maxR = 0;
@@ -10950,6 +10969,15 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         col.appendChild(el('div', 'vis-chart__o')).style.blockSize = (maxO ? Math.round(100 * d.observations / maxO) : 0) + '%';
         col.appendChild(el('div', 'vis-chart__r')).style.blockSize = (maxR ? Math.round(100 * d.requests / maxR) : 0) + '%';
       });
+    }
+    function breakdown(body, title, caption, head) {
+      var c = visCard(body, title); c.classList.add('vis-break');
+      return { note: c.appendChild(el('p', 'vis-note')), rows: visTable(c, caption, [head, 'Requests']) };
+    }
+    function fillBreak(b, list, label) {
+      b.rows.textContent = '';
+      list.slice(0, VIS_BREAK_ROWS).forEach(function (x) { visRow(b.rows, [label(x), visNum(x.requests)]); });
+      if (!list.length) visRow(b.rows, [AIOL_I18N.set(visNA(), 'None in this range.')]);
     }
     return visScreen(panel, 'screen-visibility-detail', function (body) {
       var sum = visCard(body, 'Summary'); sum.classList.add('vis-report'); sum.id = 'vis-report';
@@ -10973,6 +11001,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       rp.chart.setAttribute('aria-label', 'Platform observations and automated requests per day');
       var cn = ot.appendChild(el('p', 'vis-note'));
       AIOL_I18N.set(cn, 'Two different sources on one timeline, each scaled to its own highest day; they are never added together.');
+      rp.byCountry = breakdown(body, 'Top countries', 'Automated requests by country', 'Country');
+      rp.byActor = breakdown(body, 'Actor types', 'Automated requests by actor type', 'Actor type');
+      rp.byPage = breakdown(body, 'Top pages', 'Automated requests by page', 'Page');
       var p = {}, card = visCard(body, 'Observations');
       p.note = card.appendChild(el('p', 'vis-note'));
       p.rows = visTable(card, 'Platform observations, newest first', ['Platform', 'Question', 'Mentioned', 'Cited', 'Recommended', 'Tested', '']);
@@ -16236,7 +16267,17 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "That code is not correct.": "این کد درست نیست.",
     "No code is waiting any more. Ask for a new one.": "دیگر کدی در انتظار نیست. کد تازه‌ای بخواهید.",
     "Too many wrong codes. Ask for a new code.": "کدهای نادرست بیش از حد. کد تازه‌ای بخواهید.",
-    "Not changed ({error}).": "تغییر نکرد ({error})."
+    "Not changed ({error}).": "تغییر نکرد ({error}).",
+    "Top countries": "کشورهای پردرخواست",
+    "Actor types": "انواع کنشگر",
+    "Top pages": "صفحه‌های پردرخواست",
+    "Automated requests by country": "درخواست‌های خودکار بر اساس کشور",
+    "Automated requests by actor type": "درخواست‌های خودکار بر اساس نوع کنشگر",
+    "Automated requests by page": "درخواست‌های خودکار بر اساس صفحه",
+    "Country": "کشور",
+    "Requests": "درخواست‌ها",
+    "None in this range.": "در این بازه موردی نیست.",
+    "Without a country: {n|request|requests}": "بدون کشور: {n} درخواست"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

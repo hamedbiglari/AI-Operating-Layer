@@ -230,6 +230,8 @@ const KNOWN = [
   '06f206f6 06f106f606f1 06f206f7 06f106f406f4 06f106f506f6',
   // Added 2026-11-01 (pre-release): confirmed email change.
   '0634064506270633062a 06280647200c062a0627063206af06cc 062f064206cc064206470654 063106270647200c06270646062f0627063206cc 062f06310633062a 0628062e06480627064706cc062f',
+  // Added 2026-11-02 (Phase A): visibility report breakdown.
+  '067e0631062f0631062e064806270633062a 06a9063406480631 0628062706320647',
 ].join(' ').split(' ').map((h) => String.fromCodePoint(...h.match(/.{4}/g).map((x) => parseInt(x, 16))));
 
 // Persian comma, semicolon and question mark separate words; they are not part of one.
