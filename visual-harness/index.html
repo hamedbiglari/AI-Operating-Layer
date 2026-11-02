@@ -3878,6 +3878,7 @@ button.card { color: inherit; font: inherit; }
       </div>
       <button class="btn" id="src-filter"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h17l-6.5 7.4V20l-4-2.2v-4.9z"/></svg>Filter</button>
       <button class="btn" id="src-sort" aria-label="Sort by name, ascending" title="Sort by name (A–Z)"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg><span id="src-sort-label">Sort</span></button>
+      <button class="btn" type="button" id="src-export"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Export CSV</button>
       <a class="btn btn--primary" href="#screen-add"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add source</a>
     </div>
   </div>
@@ -10140,6 +10141,25 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         .then(function (page) { if (seq === st.seq) table.removeAttribute('aria-busy'); return page; });
     }
     wire();
+    // Export (V5-source-export): the list's own filters and order, every matching row, as CSV (one request).
+    var exportBtn = document.getElementById('src-export');
+    if (exportBtn) exportBtn.addEventListener('click', function () {
+      if (!LIVE) return;                      // not connected: the sample handler says so
+      var type = st.type === OTHER ? st.other : st.type, q = ['sort=' + st.sort];
+      if (st.search) q.push('search=' + encodeURIComponent(st.search));
+      if (type) q.push('source_type=' + encodeURIComponent(type));
+      if (st.status) q.push('status=' + st.status);
+      var say = function (tpl, args) { if (window.aiolToast) window.aiolToast(AIOL_I18N.format(tpl, args || null, AIOL_I18N.lang())); };
+      exportBtn.disabled = true;
+      fetch(LIVE.base + '/api/v1/sources/export.csv?' + q.join('&'), { headers: { Authorization: 'Bearer ' + LIVE.token } })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+        .then(function (b) {
+          var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'sources.csv';
+          document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+          say('Exported.');
+        }).catch(function (e) { say('Export failed: {error}', { error: e.message }); })
+        .then(function () { exportBtn.disabled = false; });
+    });
     panel.__sourcesLoad = load;
     return load();
   }
@@ -10451,6 +10471,14 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     panel.__detailLoad = function () { return role().then(load); };
     return panel.__detailLoad();
   }
+  // Sample mode: Export CSV needs AI Core (the sources are on the server).
+  (function () {
+    var b = document.getElementById('src-export');
+    if (b) b.addEventListener('click', function () {
+      if (LIVE || !window.aiolToast) return;
+      window.aiolToast(AIOL_I18N.format('Connect to AI Core first.', null, AIOL_I18N.lang()));
+    });
+  })();
   // Sample mode: the Source detail section tabs are a design sample; connected, the live tabs replace them.
   document.querySelectorAll('#screen-detail > .tabs [role=tab][aria-selected="false"]').forEach(function (b) {
     b.addEventListener('click', function () {

@@ -4,7 +4,7 @@ Source endpoints — tenant-scoped, writes require KNOWLEDGE_EDITOR_ROLES.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -91,6 +91,49 @@ def sources_overview(
     return SourceOverviewPage(
         items=items, total=total, limit=limit, offset=offset, counts_by_status=counts_by_status
     )
+
+
+# The export holds every matching row; past this the list should be filtered first (V5-source-export).
+EXPORT_MAX_ROWS = 10000
+EXPORT_COLUMNS = ["id", "title", "source_type", "status", "documents", "knowledge_objects", "claims", "evidence",
+                  "author", "publisher", "publication_date", "url", "doi", "last_activity_at"]
+
+
+def _csv_cell(value) -> str:
+    """A spreadsheet must not run a title as a formula (CSV injection): a cell starting with = + - @ or a control
+    character is prefixed with an apostrophe."""
+    text = "" if value is None else str(value)
+    return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
+
+
+@router.get("/export.csv")
+def export_sources(
+    search: str | None = Query(default=None, max_length=500),
+    source_type: str | None = Query(default=None, max_length=100),
+    status_filter: SourceDerivedStatus | None = Query(default=None, alias="status"),
+    sort: SourceOverviewSort = Query(default=SourceOverviewSort.UPDATED),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Response:
+    """The Sources list as CSV (V5-source-export): the same filters and order as /sources/overview, every matching
+    row in one response (up to EXPORT_MAX_ROWS), UTF-8 with a BOM so spreadsheet programs read Persian titles."""
+    import csv
+    import io
+
+    rows, total, _ = source_overview_service.get_overview(
+        db, organization_id=current_user.organization_id, limit=EXPORT_MAX_ROWS, offset=0,
+        search=search, source_type=source_type, status=status_filter, sort=sort,
+    )
+    out = io.StringIO()
+    writer = csv.writer(out, lineterminator="\r\n")
+    writer.writerow(EXPORT_COLUMNS)
+    for r in rows:
+        s, c = r["source"], r["counts"]
+        writer.writerow([_csv_cell(v) for v in (
+            s.id, s.title, s.source_type, SourceDerivedStatus(r["derived_status"]).value, c["documents"], c["knowledge_objects"], c["claims"],
+            c["evidence"], s.author, s.publisher, s.publication_date, s.url, s.doi, r["last_activity_at"].isoformat())])
+    headers = {"Content-Disposition": 'attachment; filename="sources.csv"', "X-Total-Count": str(total)}
+    return Response(content="\ufeff" + out.getvalue(), media_type="text/csv; charset=utf-8", headers=headers)
 
 
 @router.post("", response_model=SourceRead, status_code=201)

@@ -87,6 +87,10 @@ function installMock(items) {
   const respond = (body, status, delay) => new Promise((ok) => setTimeout(() => ok(new Response(JSON.stringify(body), { status: status || 200 })), delay || 0));
   window.fetch = (u) => {
     u = String(u);
+    if (u.includes('/sources/export.csv?')) {
+      window.__exports = (window.__exports || []).concat([u.slice(u.indexOf('?') + 1)]);
+      return Promise.resolve(new Response(window.__exportFail ? '' : 'id,title\r\n', { status: window.__exportFail || 200 }));
+    }
     if (u.includes('/sources/overview?')) {
       const q = new URLSearchParams(u.slice(u.indexOf('?') + 1)); window.__requests.push(q.toString());
       const limit = Number(q.get('limit')), offset = Number(q.get('offset'));
@@ -128,10 +132,14 @@ function installMock(items) {
   check('sample: 7 designed rows, the five real statuses', await badges(), [
     ['Completed', 'badge--success'], ['Processing', 'badge--processing'], ['Abstract only', 'badge--warning'], ['Completed', 'badge--success'],
     ['Completed', 'badge--success'], ['Failed', 'badge--danger'], ['Reference only', 'badge--unknown']]);
-  check('sample: no Export, no More actions; Filter and Sort shown', await page.evaluate(() => [
-    [...document.querySelectorAll('#screen-sources .page-actions .btn')].some((b) => b.textContent.trim() === 'Export'),
+  check('sample: Export CSV shown (V5-source-export), no More actions; Filter and Sort shown', await page.evaluate(() => [
+    [...document.querySelectorAll('#screen-sources .page-actions .btn')].some((b) => b.textContent.trim() === 'Export CSV'),
     document.querySelectorAll('#screen-sources [aria-label="More actions for this source"]').length]).then(async (r) => r.concat(
-    [await shown('#src-filter'), await shown('#src-sort')])), [false, 0, true, true]);
+    [await shown('#src-filter'), await shown('#src-sort')])), [true, 0, true, true]);
+  await page.click('#src-export'); await settle();
+  check('sample: Export says to connect first', await page.evaluate(() => [document.getElementById('save-toast').open,
+    document.getElementById('save-toast-text').textContent]), [true, 'Connect to AI Core first.']);
+  await page.evaluate(() => document.getElementById('save-toast-close').click()); await settle();
   await lang('fa');
   check('fa sample: the same 7 rows, statuses in Persian', (await badges()).map((b) => b[0]),
     [FA.completed, FA.processing, FA.abstractOnly, FA.completed, FA.completed, FA.failed, FA.referenceOnly]);
@@ -357,6 +365,18 @@ function installMock(items) {
   before = await count();
   await page.evaluate(() => { location.hash = '#screen-sources'; }); await settle();
   check('the screen shown without a link keeps the filter and sends nothing', await count(), before);
+
+  // Export (V5-source-export): the list's filters and order, one request, a file named sources.csv.
+  await page.evaluate(() => { window.__downloads = []; const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () { if (this.download) window.__downloads.push(this.download); else click.call(this); }; });
+  await page.click('#src-export'); await settle();
+  check('export: one request with the list filters (no paging); sources.csv; Exported.', await page.evaluate(() => [window.__exports,
+    window.__downloads, document.getElementById('save-toast-text').textContent]),
+    [['sort=' + param(await last(), 'sort') + '&status=completed'], ['sources.csv'], 'Exported.']);
+  await page.evaluate(() => { document.getElementById('save-toast-close').click(); window.__exportFail = 500; }); await settle();
+  await page.click('#src-export'); await settle();
+  check('export: a failure says so', await page.evaluate(() => document.getElementById('save-toast-text').textContent), 'Export failed: ' + String.fromCharCode(0x2068) + 'HTTP 500' + String.fromCharCode(0x2069));
+  await page.evaluate(() => { document.getElementById('save-toast-close').click(); window.__exportFail = 0; }); await settle();
 
   await lang('fa');
   check('fa: placeholder, Sort label and status counts', [await page.$eval('#src-search', (i) => i.placeholder),
