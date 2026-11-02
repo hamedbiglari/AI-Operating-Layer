@@ -47,6 +47,13 @@ class ProductRead(BaseModel):
     updated_at: datetime
 
 
+class ProductListRead(ProductRead):
+    """A row of GET /products: the product plus its offer summary (V5-products-offer-summary)."""
+
+    offer_count: int = 0
+    best_availability: OfferAvailability | None = None   # in_stock > preorder > backorder > out_of_stock > discontinued
+
+
 class ProductCreate(BaseModel):
     name: str = Field(min_length=1, max_length=500)
     slug: str = Field(min_length=1, max_length=500)

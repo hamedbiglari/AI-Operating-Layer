@@ -204,3 +204,57 @@ def test_products_search_by_name_or_sku(client: TestClient, register_org) -> Non
     assert r["total"] == 1
     assert len(names("")) == 3                                 # empty search = no filter
     assert client.get("/api/v1/products", params={"search": "x" * 201}, headers=h).status_code == 422
+
+
+# --- Offer summary on the list (V5-products-offer-summary) ---------------------------------------------------------
+def _offer(client: TestClient, headers: dict, product_id: str, availability: str) -> None:
+    r = client.post(f"/api/v1/products/{product_id}/offers", headers=headers,
+                    json={"price": 250000, "currency": "IRR", "availability": availability})
+    assert r.status_code == 201, r.text
+
+
+def _listed(client: TestClient, headers: dict) -> dict:
+    body = client.get("/api/v1/products?limit=50", headers=headers).json()
+    return {it["slug"]: (it["offer_count"], it["best_availability"]) for it in body["items"]}
+
+
+def test_the_list_carries_each_products_offer_count_and_best_availability(client: TestClient, register_org) -> None:
+    org = register_org()
+    three = _create_product(client, org["headers"]).json()
+    for availability in ("out_of_stock", "in_stock", "preorder"):
+        _offer(client, org["headers"], three["id"], availability)
+    later = _create_product(client, org["headers"], name="Saffron", slug="saffron").json()
+    for availability in ("discontinued", "backorder"):
+        _offer(client, org["headers"], later["id"], availability)
+    _create_product(client, org["headers"], name="Garlic oil", slug="garlic-oil")
+    assert _listed(client, org["headers"]) == {"taranjabin-500g": (3, "in_stock"), "saffron": (2, "backorder"),
+                                                "garlic-oil": (0, None)}
+
+
+def test_offer_summary_counts_only_this_organizations_offers(client: TestClient, register_org) -> None:
+    a, b = register_org(), register_org()
+    pa = _create_product(client, a["headers"]).json()
+    _offer(client, a["headers"], pa["id"], "in_stock")
+    _create_product(client, b["headers"])
+    assert _listed(client, b["headers"]) == {"taranjabin-500g": (0, None)}
+
+
+def test_offer_summary_is_read_with_the_page_not_per_product(client: TestClient, register_org, db_engine) -> None:
+    from sqlalchemy import event
+
+    org = register_org()
+    for i in range(4):
+        p = _create_product(client, org["headers"], name=f"P{i}", slug=f"p{i}").json()
+        _offer(client, org["headers"], p["id"], "in_stock")
+    seen = []
+
+    def count(conn, cursor, statement, *args):
+        if "offers" in statement:
+            seen.append(statement)
+
+    event.listen(db_engine, "before_cursor_execute", count)
+    try:
+        assert len(client.get("/api/v1/products", headers=org["headers"]).json()["items"]) == 4
+    finally:
+        event.remove(db_engine, "before_cursor_execute", count)
+    assert len(seen) == 1  # one page query joins the grouped offers; no read per product

@@ -2,7 +2,7 @@
 /*
  * Browser checks for the Products screen (Step 11).
  *   Sample: the Offers and Availability columns (V5-products-offer-summary)
- *           are hidden as debt; the search toolbar shows and filters the
+ *           show; the search toolbar shows and filters the
  *           sample rows; New product opens a card that says to connect first.
  *   New product (V5-products-create-ui): connected, the slug follows the
  *           name; one POST /products with only the filled fields; the list
@@ -54,11 +54,11 @@ function check(name, got, want) {
 const product = (id, name, sku, status, extra) => Object.assign({ id, organization_id: 'org', site_id: null, external_id: null, sku, name,
   slug: id, description: null, brand: null, category: null, origin: null, ingredients: {}, specifications: {}, certifications: {},
   images: {}, shipping: {}, returns_policy: null, status, provenance: 'merchant', knowledge_object_id: null,
-  created_at: '2026-10-01T10:00:00Z', updated_at: '2026-10-25T10:00:00Z' }, extra || {});
+  created_at: '2026-10-01T10:00:00Z', updated_at: '2026-10-25T10:00:00Z', offer_count: 0, best_availability: null }, extra || {});
 const DATA = {
   products: [
     product('p1', 'Saffron Negin 5g', 'SAF-5', 'published', { brand: 'Toranj', category: 'Spices', origin: 'Qaenat', knowledge_object_id: 'ko1',
-      description: 'Hand-picked threads.', provenance: 'woocommerce' }),
+      description: 'Hand-picked threads.', provenance: 'woocommerce', offer_count: 2, best_availability: 'in_stock' }),
     product('p2', 'Garlic oil', null, 'odd_status'),
   ],
   total: 120,
@@ -132,10 +132,10 @@ function installMock(data) {
   });
 
   // Sample mode.
-  check('sample: Offers + Availability (3 rows + header) and New product hidden as debt; no search debt left',
-    [(await shown('#screen-products [data-debt-hidden="V5-products-offer-summary"]')).filter((x) => !x).length,
-      await shown('#screen-products [data-debt-hidden="V5-products-search"]'), await shown('#screen-products [data-debt-hidden="V5-products-create-ui"]')],
-    [8, [], []]);
+  check('sample: Offers + Availability show (no offer-summary, search or create debt left)',
+    [await page.evaluate(() => Array.from(document.querySelectorAll('#screen-products .table-wrap thead th')).map((th) => th.textContent)),
+      (await shown('#screen-products [data-debt-hidden]')).length],
+    [['Product', 'Category', 'Origin', 'Knowledge', 'Offers', 'Availability', 'Status'], 0]);
   const sampleRows = () => page.evaluate(() => Array.from(document.querySelectorAll('#screen-products .table-wrap tbody tr'))
     .filter((tr) => !tr.hidden).map((tr) => tr.cells[0].textContent.trim()));
   const allSample = await sampleRows();
@@ -185,10 +185,24 @@ function installMock(data) {
   await page.evaluate(() => { window.__role = 'admin'; Array.from(document.querySelectorAll('#prod-new-form button')).find((x) => x.type === 'button').click(); }); await settle();
   check('Cancel closes the card', await page.evaluate(() => document.getElementById('prod-new-card').hidden), true);
   let v = await view();
-  check('list: note, rows (name + SKU, category, origin, knowledge, status), unknown status as sent', [v.title, v.note, v.rows],
+  check('list: note, rows (name + SKU, category, origin, knowledge, offers, best availability, status), unknown status as sent', [v.title, v.note, v.rows],
     ['Products', '1' + EN + '2 of 120 products.', [
-      ['Saffron Negin 5gSAF-5', 'Spices', 'Qaenat', 'Linked', 'Published', 'Open'],
-      ['Garlic oil', 'Not set', 'Not set', 'Not linked', 'odd_status', 'Open']]]);
+      ['Saffron Negin 5gSAF-5', 'Spices', 'Qaenat', 'Linked', '2', 'In stock', 'Published', 'Open'],
+      ['Garlic oil', 'Not set', 'Not set', 'Not linked', '0', 'No offer yet', 'odd_status', 'Open']]]);
+  check('list: availability badges (in stock = success, no offer = unknown)', await page.evaluate(() =>
+    Array.from(document.querySelectorAll('#screen-products .vis-live tbody tr')).map((tr) => tr.cells[5].querySelector('.badge').className)),
+    ['badge badge--success', 'badge badge--unknown']);
+  check('pre-order and backorder share the warning badge; out of stock is danger', await page.evaluate(() => {
+    window.__data.products = [Object.assign({}, window.__data.products[0], { best_availability: 'preorder' }),
+      Object.assign({}, window.__data.products[1], { offer_count: 1, best_availability: 'out_of_stock' })]; return true; }), true);
+  await page.selectOption('#prod-status', 'archived'); await page.selectOption('#prod-status', ''); await settle(300);
+  check('  ...the two badges', await page.evaluate(() => Array.from(document.querySelectorAll('#screen-products .vis-live tbody tr'))
+    .map((tr) => [tr.cells[5].textContent, tr.cells[5].querySelector('.badge').className])),
+    [['Pre-order', 'badge badge--warning'], ['Out of stock', 'badge badge--danger']]);
+  await page.evaluate(() => { window.__data.products[0].best_availability = 'in_stock'; window.__data.products[1].offer_count = 0;
+    window.__data.products[1].best_availability = null; });
+  await page.selectOption('#prod-status', 'archived'); await page.selectOption('#prod-status', ''); await settle(300);
+  v = await view();
   check('list: the knowledge link; sample hidden; pager', [v.links, v.sampleShown, v.pager],
     [['#screen-knowledge-detail?id=ko1'], false, [['Previous', true], ['Next', false]]]);
 
@@ -231,8 +245,8 @@ function installMock(data) {
   // Persian.
   await lang('fa');
   v = await view();
-  check('fa: title, status badge, note with Persian digits', [v.title, v.rows[0][4], v.note],
-    [F('products'), F('published'), F('note').replace('{from}', D(1)).replace('{to}', D(1)).replace('{total}', D(1))]);
+  check('fa: title, offer count, availability and status badges, note with Persian digits', [v.title, v.rows[0][4], v.rows[0][5], v.rows[0][6], v.note],
+    [F('products'), D(2), F('inStock'), F('published'), F('note').replace('{from}', D(1)).replace('{to}', D(1)).replace('{total}', D(1))]);
   await page.click('#screen-products tbody tr:first-child button'); await settle();
   d = await detail();
   check('fa: detail facts and offer row', [d.facts[3][0], d.offers[0][1], d.offers[0][3]], [F('origin'), F('inStock'), F('condNew')]);

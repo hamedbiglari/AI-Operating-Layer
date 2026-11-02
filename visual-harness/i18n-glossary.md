@@ -2118,3 +2118,11 @@ The opt-in box on #screen-signup (V5-signup-marketing-optin). (optional) = (اخ
 | English | Persian |
 |---|---|
 | Send me occasional product updates (optional). | گاهی خبرهای تازهٔ محصول را برایم بفرستید (اختیاری). |
+
+## Products offer summary (Phase B)
+
+The Offers and Availability columns on #screen-products (V5-products-offer-summary). Offer (پیشنهاد فروش) follows the existing entries.
+
+| English | Persian |
+|---|---|
+| No offer yet | هنوز پیشنهاد فروشی نیست |

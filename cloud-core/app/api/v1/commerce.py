@@ -56,6 +56,7 @@ from app.schemas.product import (
     ProductEvidenceCreate,
     ProductEvidenceRead,
     ProductEvidenceVerifyRequest,
+    ProductListRead,
     ProductRead,
     ProductRelationCreate,
     ProductRelationRead,
@@ -74,7 +75,7 @@ router = APIRouter(tags=["commerce"])
 # --- Products ------------------------------------------------------------
 
 
-@router.get("/products", response_model=Page[ProductRead])
+@router.get("/products", response_model=Page[ProductListRead])
 def list_products(
     status_filter: ProductStatus | None = Query(default=None, alias="status"),
     category: str | None = Query(default=None),
@@ -85,8 +86,8 @@ def list_products(
     sort: SortParams = Depends(),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> Page[ProductRead]:
-    items, total = product_service.list_products(
+) -> Page[ProductListRead]:
+    rows, total = product_service.list_products(
         db,
         organization_id=current_user.organization_id,
         status_filter=status_filter,
@@ -98,6 +99,8 @@ def list_products(
         limit=pagination.limit,
         offset=pagination.offset,
     )
+    items = [ProductListRead.model_validate(p).model_copy(update={"offer_count": n, "best_availability": best})
+             for p, n, best in rows]
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
 
 

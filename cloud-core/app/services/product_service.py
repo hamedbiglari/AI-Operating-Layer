@@ -21,13 +21,14 @@ to PUBLISHED without passing through a review state.
 from uuid import UUID
 
 from fastapi import HTTPException, status as http_status
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.schemas.common import SortDirection, SortParams, apply_sort
 
-from app.models.enums import ProductStatus
+from app.models.enums import OfferAvailability, ProductStatus
+from app.models.offer import Offer
 from app.models.product import Product
 from app.security.tenant import get_tenant_scoped_or_404
 from app.services.audit import record_audit_log
@@ -67,6 +68,11 @@ def _validate_references(
         get_knowledge_object_or_404(db, object_id=knowledge_object_id, organization_id=organization_id)
 
 
+# A product's best availability across its offers, most buyable first (V5-products-offer-summary).
+AVAILABILITY_ORDER = [OfferAvailability.IN_STOCK, OfferAvailability.PREORDER, OfferAvailability.BACKORDER,
+                      OfferAvailability.OUT_OF_STOCK, OfferAvailability.DISCONTINUED]
+
+
 def list_products(
     db: Session,
     *,
@@ -79,7 +85,9 @@ def list_products(
     sort: SortParams | None = None,
     limit: int,
     offset: int,
-) -> tuple[list[Product], int]:
+) -> tuple[list[tuple[Product, int, OfferAvailability | None]], int]:
+    """One page of products, each with its offer count and best availability (None when it has no offer).
+    The offer summary is a grouped subquery joined into the page query: no per-product read (Rule 17)."""
     base = select(Product).where(Product.organization_id == organization_id)
     if status_filter:
         base = base.where(Product.status == status_filter)
@@ -96,8 +104,13 @@ def list_products(
         base = base.where(or_(Product.name.ilike(like, escape="!"), Product.sku.ilike(like, escape="!")))
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
-    rows = db.execute(apply_sort(base, Product, sort, "created_at", SortDirection.DESC).limit(limit).offset(offset)).scalars().all()
-    return list(rows), total
+    rank = case({a: i for i, a in enumerate(AVAILABILITY_ORDER)}, value=Offer.availability)
+    offers = (select(Offer.product_id, func.count(Offer.id).label("offer_count"), func.min(rank).label("best_rank"))
+              .where(Offer.organization_id == organization_id).group_by(Offer.product_id).subquery())
+    page = (apply_sort(base, Product, sort, "created_at", SortDirection.DESC).limit(limit).offset(offset)
+            .add_columns(offers.c.offer_count, offers.c.best_rank).outerjoin(offers, offers.c.product_id == Product.id))
+    rows = db.execute(page).all()
+    return [(p, n or 0, AVAILABILITY_ORDER[r] if r is not None else None) for p, n, r in rows], total
 
 
 def get_product_or_404(db: Session, *, product_id: UUID, organization_id: UUID) -> Product:
