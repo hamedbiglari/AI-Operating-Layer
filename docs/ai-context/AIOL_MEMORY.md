@@ -122,18 +122,20 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 19e5fc4
+- sha (last non-docs commit): f26fe15
 - branch: v5-implementation
 - working_tree: clean
-- last_ci: in_progress @ 19e5fc4 (pre-release fixes pushed without waiting,
-  as the user authorised: ee50657, 19e5fc4). Locally: 28 browser suites
-  green at ee50657; users/auth/login-code/signup/tenant/platform-admin 54
-  pass; test_phase13_telemetry.py 28/28 run inside the former failing
-  window; migration 0053 upgrade/downgrade/upgrade clean on a fresh DB.
+- last_ci: green @ ee50657, 19e5fc4 (confirmed by the user). Phase A
+  (9500bcd, f43c7a9, fe7f65a, f3f8f5a, f26fe15) pushed without waiting for
+  CI, as the user authorised (Rule 21); its CI run is not yet confirmed.
+  Locally, at every Phase A commit: check-persian, i18n-coverage --require,
+  source chars and the 28 browser suites green; test_passwordless_signup.py
+  25 pass; the wider auth/users/tenant/sorting suites after the users column were left to CI (Rule 21); migrations 0054 and 0055 upgrade/downgrade/upgrade
+  clean on a fresh database.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "test(telemetry): fix timezone-dependent date assertions" @ 19e5fc4
-- last feature commit: "feat(visibility): aggregate stats for detail screen" @ d3d8e37
+- last code commit: "feat(auth): store marketing opt-in on signup" @ f26fe15
+- last feature commit: "feat(auth): store marketing opt-in on signup" @ f26fe15
 - last fix commit: "fix(auth): secure email verification flow for profile changes" @ ee50657
 
 ## 4. Completed steps (compact)
@@ -582,6 +584,42 @@ file from scratch (do not diff). Output only the file content.
   - 19e5fc4 test_phase13_telemetry.py: six date.today() calls became the
     UTC date, so the content-stats tests no longer fail between 00:00
     local and 00:00 UTC.
+- Phase A (final polish: 5 debts; the user authorised running it
+  autonomously, pushing without waiting for CI, and the schema + auth
+  changes of the last two):
+  - 9500bcd New rule on #screen-access (owner/admin): the rule editor with
+    Applies to (an actor type or an agent seen) and Purpose (Any or an
+    AccessPurpose: training, search_indexing, answering, agent_action,
+    preview, unknown); Free/Paid/Forbidden (no Not configured); a subject +
+    purpose that already has a rule is refused before the PUT (it would
+    overwrite that rule). V5-access-policy-create CLOSED. visibility.js 45.
+  - f43c7a9 Top countries / Actor types / Top pages cards on the live report,
+    from the same /visibility/aggregates reply (fields by_country,
+    by_actor_type, top_pages); first 10 rows each; country names from
+    Intl.DisplayNames through a new {region} argument in the i18n core;
+    three in a row, stacked below 960px. V5-visibility-detail-aggregates
+    stays OPEN (map, Queries breakdown, live strip, exports).
+    visibility.js 50.
+  - fe7f65a font picker on Settings: System default (null = IBM Plex Sans +
+    Vazirmatn), Vazirmatn, Noto Sans Arabic (added to the Google Fonts
+    link); applied through <html data-font>; IRANSans not offered (a
+    commercial face the page never loads). V5-settings-font-picker CLOSED.
+    settings.js 40.
+  - f3f8f5a sign-up website: SignupRequest (it lives in api/v1/auth.py)
+    .website, an http(s) address with a dotted host or 422;
+    signup_codes.website -> organizations.website when the code is
+    verified; migration 0054. V5-signup-website-field CLOSED.
+  - f26fe15 sign-up opt-in: SignupRequest.marketing_optin (default false);
+    signup_codes.marketing_optin -> users.marketing_optin_at (dated at the
+    request; null = no consent); migration 0055. Stored only: nothing sends
+    updates and Settings cannot withdraw it. V5-signup-marketing-optin
+    CLOSED. auth.js 24.
+  - Local runs: the global playwright-core (1.64 alpha) wants chromium
+    build 1247, which is not installed; the browser suites run with PW_EXE
+    = %LOCALAPPDATA%\ms-playwright\chromium_headless_shell-1194\chrome-win\headless_shell.exe.
+    Backend tests for 0054/0055 ran on a throwaway database (dropped
+    afterwards); the dev database `aiol` stays at 0053 until `alembic
+    upgrade head` (the compose migrate service runs it).
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -610,20 +648,31 @@ file from scratch (do not diff). Output only the file content.
 - All critical pre-release issues are resolved (v31): the sign-in email
   changes only after confirmation (V5-self-email-verification CLOSED) and
   the telemetry tests no longer depend on the local time zone.
-- Remaining debt is non-blocking: V5-access-policy-create (no form to add
-  a rule), V5-visibility-detail-aggregates (partial: live strip, map,
-  breakdown, exports), V5-apps-cargo-update, and the older OPEN rows.
+- Phase A is complete (v32): V5-access-policy-create,
+  V5-settings-font-picker, V5-signup-website-field and
+  V5-signup-marketing-optin CLOSED; V5-visibility-detail-aggregates now has
+  stats + chart + breakdowns, still OPEN for the map, the Queries
+  breakdown, the live strip and the exports.
+- Remaining debt is non-blocking: V5-visibility-detail-aggregates
+  (partial), V5-apps-cargo-update (Rust 1.99.1 installed 2026-11-02, but
+  the MSVC Build Tools and Windows SDK are missing, so cargo cannot link
+  yet), and the older OPEN rows.
 - Before a release: run scripts/start-real-e2e.ps1 with real keys (never
   run yet), update cloud-core/.venv to the pins, and close or accept
   V5-apps-cargo-update (cargo update + Client suite CI). The .venv is
   updated (2026-11-01).
-- Next up: no phase is planned; the user decides. Still open: three Step 14
-  rows (V5-admin-billing, V5-admin-trash, V5-admin-user-actions), the seven
-  Step 13 rows, the three V5-signup-* rows, CLIENT-oidc, the four
-  V5-visibility/V5-access rows, the four Step 11 rows,
+- Next up: Phase B, the real-key test (scripts/start-real-e2e.ps1), then
+  Phase C, the Windows installer (blocked until the MSVC Build Tools and
+  Windows SDK are installed: cargo cannot link without them). Phase B is
+  missing, on 2026-11-02: the four variables (ANTHROPIC_API_KEY, AI_CREDENTIAL_KEY,
+  AIOL_TOKEN, AIOL_TOPIC_ID), and a topic: the dev database has no
+  knowledge object or evidence yet. Still open: V5-admin-billing,
+  V5-admin-trash, V5-admin-user-actions, V5-settings-billing-card,
+  V5-settings-factory-reset, V5-signup-terms-record, CLIENT-oidc,
+  V5-visibility-platform-breakdown, V5-access-agent-decision,
+  V5-products-offer-summary, V5-commerce-payments-scope,
   V5-command-workspace-runtime-fa and the duplicate discovery read on
-  connect. Local env note: cloud-core/.venv has FastAPI 0.115.0; run
-  pip install -r requirements.txt when online.
+  connect.
 - Debt rows added in 9A: V5-ai-prompts OPEN; V5-ai-center-deletes CLOSED (9E-2).
 - Debt rows added in 8B-2, both OPEN: V5-knowledge-detail-visibility,
   V5-knowledge-detail-evidence-kind. The detail's Trace a statement
@@ -748,6 +797,10 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v31 @ 19e5fc4 — pre-release fixes: confirmed sign-in email change
   (ee50657, migration 0053; V5-self-email-verification CLOSED) and
   UTC-safe telemetry test dates (19e5fc4). No critical issue open.
+- v32 @ f26fe15 — Phase A: access rule create (9500bcd), report breakdowns
+  (f43c7a9), font picker (fe7f65a), sign-up website (f3f8f5a, migration
+  0054), sign-up opt-in (f26fe15, migration 0055). Four debts CLOSED;
+  V5-visibility-detail-aggregates still partial. Phase B (real keys) next.
 
 ## 10. Historical context (from two prior sessions)
 
