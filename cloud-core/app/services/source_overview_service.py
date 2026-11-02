@@ -48,6 +48,7 @@ def get_overview(
     source_type: str | None = None,
     status: SourceDerivedStatus | None = None,
     sort: SourceOverviewSort = SourceOverviewSort.UPDATED,
+    include_archived: bool = False,
 ) -> tuple[list[dict], int, dict[SourceDerivedStatus, int]]:
     # At most one current conversion per document (uq_document_conversions_one_current),
     # so the outer join cannot duplicate documents.
@@ -119,7 +120,9 @@ def get_overview(
         )
     )
     if source_id:
-        query = query.where(Source.id == source_id)
+        query = query.where(Source.id == source_id)      # one source, archived or not (its detail page)
+    elif not include_archived:
+        query = query.where(Source.archived_at.is_(None))
     if search:
         pattern = f"%{search}%"
         query = query.where(

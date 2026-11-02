@@ -85,8 +85,13 @@ const ITEMS = [
 function installMock(items) {
   window.__requests = []; window.__total = 0; window.__delay = 0; window.__fail = 0; window.__empty = false;
   const respond = (body, status, delay) => new Promise((ok) => setTimeout(() => ok(new Response(JSON.stringify(body), { status: status || 200 })), delay || 0));
-  window.fetch = (u) => {
+  window.fetch = (u, opt) => {
     u = String(u);
+    if (opt && opt.method === 'POST' && /\/sources\/[^/]+\/(archive|unarchive)$/.test(u)) {
+      window.__posts = (window.__posts || []).concat([u.slice(u.indexOf('/api/v1') + 7)]);
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }
+    if (u.includes('/auth/me')) return Promise.resolve(new Response(JSON.stringify({ user: { role: window.__role || 'viewer' }, organization: {} }), { status: 200 }));
     if (u.includes('/sources/export.csv?')) {
       window.__exports = (window.__exports || []).concat([u.slice(u.indexOf('?') + 1)]);
       return Promise.resolve(new Response(window.__exportFail ? '' : 'id,title\r\n', { status: window.__exportFail || 200 }));
@@ -104,6 +109,7 @@ function installMock(items) {
       }
       // A search returns one "<search>-result" row; search=slow answers late.
       if (search && !window.__empty) { list = [Object.assign({}, items[0], { id: 's-' + search, title: search + '-result' })]; total = 1; }
+      if (q.get('include_archived') === 'true') list = list.map((x, i) => (i === 0 ? Object.assign({}, x, { is_archived: true }) : x));
       const byStatus = { failed: 1, processing: 1, completed: 1, abstract_only: 1, reference_only: 1 };
       return respond({ items: list, total, limit, offset, counts_by_status: byStatus }, 200, search === 'slow' ? 600 : window.__delay);
     }
@@ -377,6 +383,32 @@ function installMock(items) {
   await page.click('#src-export'); await settle();
   check('export: a failure says so', await page.evaluate(() => document.getElementById('save-toast-text').textContent), 'Export failed: ' + String.fromCharCode(0x2068) + 'HTTP 500' + String.fromCharCode(0x2069));
   await page.evaluate(() => { document.getElementById('save-toast-close').click(); window.__exportFail = 0; }); await settle();
+
+  // Archive (V5-source-archive-state): owner/admin rows offer Archive; Show archived asks with include_archived=true.
+  const rowButtons = () => page.evaluate(() => Array.from(document.querySelectorAll('#screen-sources tbody tr')).map((tr) =>
+    Array.from(tr.cells[6].querySelectorAll('button span[aria-hidden]')).map((s) => s.textContent).join('|')));
+  const toast = () => page.evaluate(() => document.getElementById('save-toast-text').textContent);
+  const closeToast = async () => { await page.evaluate(() => document.getElementById('save-toast-close').click()); await settle(); };
+  check('archive: a role that cannot archive sees no Archive', (await rowButtons()).every((x) => x === ''), true);
+  await page.evaluate(() => { window.__role = 'admin'; window.AIOL_LIVE_CONNECT('http://core.test', 'tok'); }); await settle(); await settle();
+  check('archive: an admin gets Archive on each row', (await rowButtons())[0], 'Archive');
+  const archDialogs = []; page.on('dialog', (d) => { archDialogs.push(d.message()); d.accept(); });
+  let archBefore = await count();
+  await page.evaluate(() => document.querySelector('#screen-sources tbody tr').cells[6].querySelector('button').click()); await settle(); await settle();
+  check('archive: asks first, one POST, "Source archived.", the list reloads', [archDialogs, await page.evaluate(() => window.__posts), await toast(),
+    (await count()) - archBefore], [['Archive this source? It leaves the lists until it is unarchived; nothing is deleted.'], ['/sources/a/archive'], 'Source archived.', 1]);
+  await closeToast();
+  await page.click('#src-filter'); await settle(); await page.check('#src-show-archived'); await settle();
+  check('Show archived: include_archived=true; the archived row has its badge and Unarchive', [param(await last(), 'include_archived'),
+    await page.evaluate(() => { const tr = document.querySelector('#screen-sources tbody tr');
+      return [tr.cells[1].textContent, tr.cells[6].querySelector('button span[aria-hidden]').textContent]; })], ['true', ['CompletedArchived', 'Unarchive']]);
+  await page.evaluate(() => document.querySelector('#screen-sources tbody tr').cells[6].querySelector('button').click()); await settle(); await settle();
+  check('Unarchive: no question, one POST, "Source unarchived."', [archDialogs.length, (await page.evaluate(() => window.__posts)).slice(-1)[0], await toast()],
+    [1, '/sources/a/unarchive', 'Source unarchived.']);
+  await closeToast();
+  if (!(await page.isVisible('#src-show-archived'))) { await page.click('#src-filter'); await settle(); }
+  await page.uncheck('#src-show-archived'); await settle(); await page.keyboard.press('Escape'); await settle();
+  check('Show archived off: include_archived is no longer sent', param(await last(), 'include_archived'), null);
 
   await lang('fa');
   check('fa: placeholder, Sort label and status counts', [await page.$eval('#src-search', (i) => i.placeholder),

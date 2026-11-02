@@ -77,12 +77,18 @@ function installMock(item) {
     u = String(u); const p = u.slice(u.indexOf('/api/v1') + 7); window.__requests.push(p);
     if (p.indexOf('/sources/overview?') === 0) {
       const id = new URLSearchParams(p.slice(p.indexOf('?') + 1)).get('id');
-      if (id === 'a') return reply({ items: [item], total: 1, limit: 50, offset: 0, counts_by_status: {} });
+      if (id === 'a') return reply({ items: [Object.assign({}, item, { is_archived: !!window.__archived })], total: 1, limit: 50, offset: 0, counts_by_status: {} });
       if (id === 'missing') return reply({ error: { message: 'Source not found' } }, 404);
       if (id === 'deny') return reply({}, 403);
       return reply({}, 500);
     }
     if (p === '/auth/me') return reply({ user: { role: window.__role || 'editor' }, organization: {} });
+    if (opt && opt.method === 'POST' && /^\/sources\/a\/(archive|unarchive)$/.test(p)) {
+      window.__posts = (window.__posts || []).concat([p]); window.__archived = p.endsWith('/archive');
+      return reply(Object.assign({}, item, { is_archived: window.__archived }));
+    }
+    if (p === '/sources/a/documents?limit=50&offset=0') return reply({ items: [{ id: 'd1', title: 'review.pdf', extraction_status: 'completed',
+      current_conversion: null, file_size: 1024, updated_at: '2026-10-23T10:00:00Z' }], total: 1, limit: 50, offset: 0 });
     if (opt && opt.method === 'DELETE') { window.__deletes = (window.__deletes || []).concat([p]);
       return window.__delStatus === 409 ? reply({ error: { message: 'Cannot delete source' } }, 409) : Promise.resolve(new Response(null, { status: 204 })); }
     if (window.__tabFail && p.indexOf(window.__tabFail) === 0) return reply({}, 500);
@@ -122,6 +128,10 @@ function installMock(item) {
   }, shown.toString());
 
   // Sample mode
+  await page.click('#screen-detail [data-source-archive]'); await page.waitForTimeout(150);
+  check('sample: Archive shows and says to connect first', await page.evaluate(() => document.getElementById('save-toast-text').textContent),
+    'Connect to AI Core to archive a source.');
+  await page.evaluate(() => document.getElementById('save-toast-close').click()); await page.waitForTimeout(150);
   await page.click('#screen-detail [data-source-delete]'); await page.waitForTimeout(150);
   check('sample: Delete shows and says to connect first', await page.evaluate(() => [document.getElementById('save-toast').open,
     document.getElementById('save-toast-text').textContent]), [true, 'Connect to AI Core to delete a source.']);
@@ -216,6 +226,21 @@ function installMock(item) {
   check('Delete: an editor does not see it', await delShown(), false);
   await page.evaluate(() => { window.__role = 'admin'; window.AIOL_LIVE_CONNECT('http://core.test', 'tok'); }); await settle(); await settle();
   check('Delete: an admin sees it', await delShown(), true);
+  // Archive (V5-source-detail-archive): owner/admin; asks first; archived = badge, Unarchive, no Reprocess.
+  const arch = () => page.evaluate(() => { const b = document.getElementById('src-archive');
+    return { label: b.hidden ? null : b.textContent, badge: !!document.getElementById('src-archived-badge'),
+      reprocess: Array.from(document.querySelectorAll('#screen-detail .src-doc-actions button')).filter((x) => x.textContent.indexOf('Reprocess') === 0).length }; });
+  check('Archive: an admin sees Archive; the document offers Reprocess', await arch(), { label: 'Archive', badge: false, reprocess: 1 });
+  page.once('dialog', (d) => d.accept());
+  await page.click('#src-archive'); await settle(); await settle();
+  check('Archive: one POST; the source shows Archived, offers Unarchive, and no Reprocess', [await page.evaluate(() => window.__posts), await arch(),
+    await page.evaluate(() => document.getElementById('save-toast-text').textContent)],
+    [['/sources/a/archive'], { label: 'Unarchive', badge: true, reprocess: 0 }, 'Source archived.']);
+  await page.evaluate(() => document.getElementById('save-toast-close').click()); await settle();
+  await page.click('#src-archive'); await settle(); await settle();
+  check('Unarchive: no question, one POST; back to Archive and Reprocess', [await page.evaluate(() => window.__posts), await arch()],
+    [['/sources/a/archive', '/sources/a/unarchive'], { label: 'Archive', badge: false, reprocess: 1 }]);
+  await page.evaluate(() => document.getElementById('save-toast-close').click()); await settle();
   const dialogs = []; let answer = false;
   page.on('dialog', (d) => { dialogs.push(d.message()); if (answer) d.accept(); else d.dismiss(); });
   await page.click('#src-delete'); await settle();

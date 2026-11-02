@@ -13,7 +13,7 @@ from app.models.source import Source
 from app.models.user import User
 from app.schemas.common import Page, PaginationParams, SortParams
 from app.schemas.document import DocumentWithConversion
-from app.schemas.source import SourceCreate, SourceRead, SourceUpdate
+from app.schemas.source import SourceArchive, SourceCreate, SourceRead, SourceUpdate
 from app.schemas.source_overview import (
     SourceDerivedStatus,
     SourceOverviewItem,
@@ -29,6 +29,7 @@ router = APIRouter(prefix="/sources", tags=["sources"])
 @router.get("", response_model=Page[SourceRead])
 def list_sources(
     source_type: str | None = Query(default=None),
+    include_archived: bool = Query(default=False),
     pagination: PaginationParams = Depends(),
     sort: SortParams = Depends(),
     current_user: User = Depends(get_current_user),
@@ -41,6 +42,7 @@ def list_sources(
         sort=sort,
         limit=pagination.limit,
         offset=pagination.offset,
+        include_archived=include_archived,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
 
@@ -55,6 +57,8 @@ def sources_overview(
     sort: SourceOverviewSort = Query(default=SourceOverviewSort.UPDATED),
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    # Archived sources are hidden unless asked for (V5-source-archive-state); ?id= returns one either way.
+    include_archived: bool = Query(default=False),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> SourceOverviewPage:
@@ -76,6 +80,7 @@ def sources_overview(
         source_type=source_type,
         status=status_filter,
         sort=sort,
+        include_archived=include_archived,
     )
     items = [
         SourceOverviewItem(
@@ -112,6 +117,7 @@ def export_sources(
     source_type: str | None = Query(default=None, max_length=100),
     status_filter: SourceDerivedStatus | None = Query(default=None, alias="status"),
     sort: SourceOverviewSort = Query(default=SourceOverviewSort.UPDATED),
+    include_archived: bool = Query(default=False),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Response:
@@ -122,7 +128,7 @@ def export_sources(
 
     rows, total, _ = source_overview_service.get_overview(
         db, organization_id=current_user.organization_id, limit=EXPORT_MAX_ROWS, offset=0,
-        search=search, source_type=source_type, status=status_filter, sort=sort,
+        search=search, source_type=source_type, status=status_filter, sort=sort, include_archived=include_archived,
     )
     out = io.StringIO()
     writer = csv.writer(out, lineterminator="\r\n")
@@ -189,6 +195,30 @@ def update_source(
         actor_user_id=current_user.id,
         **payload.model_dump(exclude_unset=True),
     )
+
+
+@router.post("/{source_id}/archive", response_model=SourceRead)
+def archive_source(
+    source_id: UUID,
+    payload: SourceArchive | None = None,
+    current_user: User = Depends(require_roles(UserRole.OWNER, UserRole.ADMIN)),
+    db: Session = Depends(get_db),
+) -> Source:
+    """Archive a source (owner or admin): it leaves the lists; nothing is deleted. Audit-logged."""
+    source = source_service.get_source_or_404(db, source_id=source_id, organization_id=current_user.organization_id)
+    return source_service.set_archived(db, source=source, actor_user_id=current_user.id, archived=True,
+                                       reason=payload.reason if payload else None)
+
+
+@router.post("/{source_id}/unarchive", response_model=SourceRead)
+def unarchive_source(
+    source_id: UUID,
+    current_user: User = Depends(require_roles(UserRole.OWNER, UserRole.ADMIN)),
+    db: Session = Depends(get_db),
+) -> Source:
+    """Bring an archived source back into the lists (owner or admin). Audit-logged."""
+    source = source_service.get_source_or_404(db, source_id=source_id, organization_id=current_user.organization_id)
+    return source_service.set_archived(db, source=source, actor_user_id=current_user.id, archived=False)
 
 
 @router.delete("/{source_id}", status_code=204)

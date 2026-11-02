@@ -20,8 +20,11 @@ def list_sources(
     sort: SortParams | None = None,
     limit: int,
     offset: int,
+    include_archived: bool = False,
 ) -> tuple[list[Source], int]:
     base = select(Source).where(Source.organization_id == organization_id)
+    if not include_archived:
+        base = base.where(Source.archived_at.is_(None))
     if source_type:
         base = base.where(Source.source_type == source_type)
 
@@ -119,6 +122,34 @@ def update_source(
         resource_id=source.id,
         old_value=old_value,
         new_value={"title": source.title, "access_status": source.access_status.value},
+    )
+    db.commit()
+    db.refresh(source)
+    return source
+
+
+def set_archived(db: Session, *, source: Source, actor_user_id: UUID, archived: bool, reason: str | None = None) -> Source:
+    """Archive or unarchive a source (V5-source-detail-archive). Archiving keeps everything (documents, evidence,
+    claims); the source only leaves the lists until it is unarchived. Archiving an archived source keeps its date."""
+    from datetime import datetime, timezone
+
+    old = {"archived_at": source.archived_at.isoformat() if source.archived_at else None, "archive_reason": source.archive_reason}
+    if archived:
+        source.archived_at = source.archived_at or datetime.now(timezone.utc)
+        source.archive_reason = (reason or "").strip() or None
+    else:
+        source.archived_at = None
+        source.archive_reason = None
+    record_audit_log(
+        db,
+        organization_id=source.organization_id,
+        user_id=actor_user_id,
+        action="source.archived" if archived else "source.unarchived",
+        resource_type="source",
+        resource_id=source.id,
+        old_value=old,
+        new_value={"archived_at": source.archived_at.isoformat() if source.archived_at else None,
+                   "archive_reason": source.archive_reason},
     )
     db.commit()
     db.refresh(source)

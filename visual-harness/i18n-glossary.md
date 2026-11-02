@@ -2173,3 +2173,19 @@ Delete on #screen-detail (V5-source-detail-delete). Source (منبع), document 
 | This source is still used by evidence, publication citations or research. Remove those first. | شواهد، استنادهای انتشار یا پژوهش هنوز از این منبع استفاده می‌کنند. ابتدا آن‌ها را حذف کنید. |
 | Only an owner or admin can delete a source. | فقط مالک یا مدیر می‌تواند منبع را حذف کند. |
 | Connect to AI Core to delete a source. | برای حذف منبع به AI Core وصل شوید. |
+
+## Archive a source (Phase B-4)
+
+Archive and Unarchive on #screen-sources and #screen-detail (V5-source-archive-state, V5-source-detail-archive). Archive (بایگانی) and Archived (بایگانی‌شده) are existing entries.
+
+| English | Persian |
+|---|---|
+| Unarchive | بازگرداندن از بایگانی |
+| Archive {name} | بایگانی {name} |
+| Unarchive {name} | بازگرداندن {name} از بایگانی |
+| Show archived sources | نمایش منابع بایگانی‌شده |
+| Archive this source? It leaves the lists until it is unarchived; nothing is deleted. | این منبع بایگانی شود؟ تا وقتی بازگردانده نشود در فهرست‌ها نمی‌آید؛ چیزی حذف نمی‌شود. |
+| Source archived. | منبع بایگانی شد. |
+| Source unarchived. | منبع از بایگانی بازگردانده شد. |
+| Only an owner or admin can archive a source. | فقط مالک یا مدیر می‌تواند منبع را بایگانی کند. |
+| Connect to AI Core to archive a source. | برای بایگانی منبع به AI Core وصل شوید. |

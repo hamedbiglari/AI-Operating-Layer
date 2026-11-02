@@ -3,7 +3,7 @@
 import uuid
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.models.enums import SourceAccessStatus, SourceRightsStatus
 
@@ -39,8 +39,19 @@ class SourceRead(BaseModel):
     review_status: str = "not_reviewed"
     full_text_origin: str | None = None
     access_blocked_reason: str | None = None
+    archived_at: datetime | None = None
+    archive_reason: str | None = None
     created_at: datetime
     updated_at: datetime
+
+    @computed_field
+    @property
+    def is_archived(self) -> bool:
+        return self.archived_at is not None
+
+
+class SourceArchive(BaseModel):
+    reason: str | None = Field(default=None, max_length=2000)
 
 
 class SourceCreate(BaseModel):

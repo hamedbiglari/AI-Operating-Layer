@@ -15,7 +15,7 @@ source, not the source as a whole — a generally reliable source
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Date, Enum as SAEnum, ForeignKey, JSON, Numeric, String, Text
+from sqlalchemy import TIMESTAMP, Boolean, Date, Enum as SAEnum, ForeignKey, JSON, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -76,6 +76,9 @@ class Source(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     full_text_origin: Mapped[str | None] = mapped_column(String(20), nullable=True)
     full_text_document_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     access_checked_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    # Archive (migration 0056): NULL = not archived. Archived sources leave the lists unless asked for.
+    archived_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True, index=True)
+    archive_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     access_blocked_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     reliability_score: Mapped[float | None] = mapped_column(Numeric(4, 3), nullable=True)
 
