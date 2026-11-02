@@ -2092,3 +2092,12 @@ The Top countries, Actor types and Top pages cards on #screen-visibility-detail 
 | Requests | درخواست‌ها |
 | None in this range. | در این بازه موردی نیست. |
 | Without a country: {n|request|requests} | بدون کشور: {n} درخواست |
+
+## Font picker (Phase A)
+
+The font picker on #screen-settings (V5-settings-font-picker). Font (قلم) and System default (پیش‌فرض سیستم) are existing entries; the font names Vazirmatn and Noto Sans Arabic stay as written.
+
+| English | Persian |
+|---|---|
+| Font saved. | قلم ذخیره شد. |
+| Connect to AI Core to change the font. | برای تغییر قلم به AI Core وصل شوید. |

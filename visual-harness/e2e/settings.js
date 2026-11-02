@@ -2,10 +2,14 @@
 /*
  * Browser checks for the Settings screen (Step 13).
  *   Sample: Edit profile opens a panel that says to connect first (no
- *           verification sample); the font picker (V5-settings-font-picker), Plan & billing
+ *           verification sample); Plan & billing
  *           (V5-settings-billing-card) and the factory reset row
  *           (V5-settings-factory-reset) are hidden as debt; static text in
- *           Persian.
+ *           Persian. Font Change says to connect first.
+ *   Font (V5-settings-font-picker): the saved font is shown and applied
+ *           (<html data-font>); Change opens a picker (System default,
+ *           Vazirmatn, Noto Sans Arabic); a pick sends one PUT {font} and
+ *           says Font saved.; System default sends font null.
  *   Live:   the Settings cards stay visible (data-live-keep) and the generic
  *           panel steps aside; Appearance shows the saved theme and
  *           language; the preference status names the last change; one
@@ -46,6 +50,8 @@ const FA = {
   changeEmail: [0x62A, 0x63A, 0x6CC, 0x6CC, 0x631, 0x20, 0x627, 0x6CC, 0x645, 0x6CC, 0x644],
   editMine: [0x648, 0x6CC, 0x631, 0x627, 0x6CC, 0x634, 0x20, 0x646, 0x645, 0x627, 0x6CC, 0x647, 0x654, 0x20, 0x645, 0x646],
   resetDone: [0x628, 0x627, 0x632, 0x646, 0x634, 0x627, 0x646, 0x6CC, 0x20, 0x634, 0x62F, 0x2E, 0x20, 0x62A, 0x631, 0x62C, 0x6CC, 0x62D, 0x627, 0x62A, 0x20, 0x630, 0x62E, 0x6CC, 0x631, 0x647, 0x200C, 0x634, 0x62F, 0x647, 0x654, 0x20, 0x634, 0x645, 0x627, 0x20, 0x628, 0x647, 0x20, 0x67E, 0x6CC, 0x634, 0x200C, 0x641, 0x631, 0x636, 0x20, 0x628, 0x631, 0x6AF, 0x634, 0x62A, 0x2E],
+  fontSaved: [0x642, 0x644, 0x645, 0x20, 0x630, 0x62E, 0x6CC, 0x631, 0x647, 0x20, 0x634, 0x62F, 0x2E],
+  systemDefault: [0x67E, 0x6CC, 0x634, 0x200C, 0x641, 0x631, 0x636, 0x20, 0x633, 0x6CC, 0x633, 0x62A, 0x645],
   savedAt: [0x62F, 0x631, 0x20, 0x62D, 0x633, 0x627, 0x628, 0x20, 0x634, 0x645, 0x627, 0x20, 0x630, 0x62E, 0x6CC, 0x631, 0x647, 0x20, 0x634, 0x62F, 0x20, 0x28, 0x7B, 0x64, 0x7D, 0x29, 0x2E],
 };
 const F = (k) => String.fromCharCode(...FA[k]);
@@ -65,7 +71,7 @@ function installMock(role) {
     window.__requests.push(method + ' ' + p + (opt && opt.body && typeof opt.body === 'string' ? ' ' + opt.body : ''));
     if (p === '/auth/me') return reply({ user: { name: 'Hamed B', email: 'owner@shop.test', role: window.__role },
       organization: { name: 'Toranj', slug: 'toranj', status: 'active' } });
-    if (p === '/users/me/preferences' && method === 'GET') return reply({ language: 'en', theme: 'dark', font: null,
+    if (p === '/users/me/preferences' && method === 'GET') return reply({ language: 'en', theme: 'dark', font: window.__font || null,
       notifications: { processing_failures: true, weekly_summary: false, ai_budget_warnings: true, security_alerts: true },
       usage_alert_threshold: 80, persisted: true, updated_at: '2026-10-30T10:00:00Z' });
     if (p === '/users/me/preferences' && method === 'PUT') return reply(Object.assign({ theme: 'dark', notifications: {}, persisted: true,
@@ -107,9 +113,12 @@ function installMock(role) {
   const facts = (sel) => page.evaluate((s) => Array.from(document.querySelectorAll(s + ' dt')).map((d) => [d.textContent, d.nextElementSibling.textContent]), sel);
 
   // Sample mode.
-  check('sample: font picker, billing card, factory reset (dt + dd) hidden as debt', await page.evaluate(() =>
-    Array.from(document.querySelectorAll('#screen-settings [data-debt-hidden]')).map((e) => [e.getAttribute('data-debt-hidden'), getComputedStyle(e).display === 'none'])), [
-    ['V5-settings-font-picker', true], ['V5-settings-billing-card', true], ['V5-settings-factory-reset', true], ['V5-settings-factory-reset', true]]);
+  check('sample: billing card, factory reset (dt + dd) hidden as debt; the font Change button shows', [await page.evaluate(() =>
+    Array.from(document.querySelectorAll('#screen-settings [data-debt-hidden]')).map((e) => [e.getAttribute('data-debt-hidden'), getComputedStyle(e).display === 'none'])),
+    (await shown('#font-change'))[0]], [[['V5-settings-billing-card', true], ['V5-settings-factory-reset', true], ['V5-settings-factory-reset', true]], true]);
+  await page.click('#font-change'); await settle();
+  check('sample: font Change says to connect first; no picker', [await text('font-msg'), await page.evaluate(() => document.getElementById('font-picker').hidden)],
+    ['Connect to AI Core to change the font.', true]);
   await page.evaluate(() => document.querySelector('[data-toggle-edit="me"]').click()); await settle();
   check('sample: Edit profile shows; its panel says to connect first and holds no verification sample', await page.evaluate(() => {
     const b = document.querySelector('[data-toggle-edit="me"]'), pnl = document.getElementById('edit-panel-me');
@@ -131,9 +140,45 @@ function installMock(role) {
     await shown('#live-screen-settings')], [[true, true, true], [false]]);
   check('Appearance: the saved theme and language', [await text('appearance-theme'), await text('appearance-lang')], ['Dark', 'English']);
   check('preferences: the last change', await text('pref-status'), 'Saved to your account (last change 30 Oct 2026, 10:00).');
+
   check('one GET /auth/me; the Account card', [await requests('^GET /auth/me$'), await facts('#account-kv')],
     [['GET /auth/me'], [['Name', 'Hamed B'], ['Email', 'owner@shop.test'], ['Role', 'Admin']]]);
   check('the Organization card', await facts('#settings-org'), [['Name', 'Toranj'], ['Slug', 'toranj'], ['Status', 'Active']]);
+
+  // Font (V5-settings-font-picker).
+  const fontState = () => page.evaluate(() => ({ label: document.getElementById('appearance-font').textContent, applied: document.documentElement.getAttribute('data-font'),
+    open: !document.getElementById('font-picker').hidden, expanded: document.getElementById('font-change').getAttribute('aria-expanded'),
+    msg: document.getElementById('font-msg').textContent, body: getComputedStyle(document.body).fontFamily.split(',')[0] }));
+  check('font: none saved = System default, the page\'s own font', await fontState(),
+    { label: 'System default', applied: null, open: false, expanded: 'false', msg: '', body: '"IBM Plex Sans"' });
+  await page.click('#font-change'); await settle();
+  check('font: Change opens the picker on the saved choice, focused', [await fontState(), await page.evaluate(() => {
+    const s = document.getElementById('pick-font'); return [Array.from(s.options).map((o) => [o.value, o.textContent]), s.value, document.activeElement === s,
+      document.getElementById(s.getAttribute('aria-labelledby')).textContent]; })],
+    [{ label: 'System default', applied: null, open: true, expanded: 'true', msg: '', body: '"IBM Plex Sans"' },
+      [[['', 'System default'], ['vazirmatn', 'Vazirmatn'], ['noto-sans-arabic', 'Noto Sans Arabic']], '', true, 'Font']]);
+  let fb = (await requests('^PUT')).length;
+  await page.selectOption('#pick-font', 'vazirmatn'); await settle();
+  check('font: a pick sends one PUT; Font saved.; the label follows; the font applies; the picker closes', [(await requests('^PUT')).slice(fb), await fontState()],
+    [['PUT /users/me/preferences {"font":"vazirmatn"}'], { label: 'Vazirmatn', applied: 'vazirmatn', open: false, expanded: 'false', msg: 'Font saved.', body: 'Vazirmatn' }]);
+  await page.click('#font-change'); await settle();
+  fb = (await requests('^PUT')).length;
+  await page.selectOption('#pick-font', ''); await settle();
+  check('font: System default sends font null and restores the page font', [(await requests('^PUT')).slice(fb), await fontState()],
+    [['PUT /users/me/preferences {"font":null}'], { label: 'System default', applied: null, open: false, expanded: 'false', msg: 'Font saved.', body: '"IBM Plex Sans"' }]);
+  await page.evaluate(() => { window.__font = 'noto-sans-arabic'; }); await connect();
+  check('font: a saved font is shown and applied on connect (Persian text uses it)', [await fontState(), await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--font-fa').trim().split(',')[0])],
+    [{ label: 'Noto Sans Arabic', applied: 'noto-sans-arabic', open: false, expanded: 'false', msg: '', body: '"IBM Plex Sans"' }, '"Noto Sans Arabic"']);
+  await page.evaluate(() => { window.__font = 'IRANSans'; }); await connect();
+  check('font: a font this page does not know is shown as sent, not applied', [(await fontState()).label, (await fontState()).applied], ['IRANSans', null]);
+  await page.evaluate(() => { window.__font = null; }); await connect();
+  await lang('fa');
+  check('fa: System default', await text('appearance-font'), F('systemDefault'));
+  await page.click('#font-change'); await settle(); await page.selectOption('#pick-font', 'vazirmatn'); await settle();
+  check('fa: Font saved.; the font name stays as written', [await text('font-msg'), await text('appearance-font')], [F('fontSaved'), 'Vazirmatn']);
+  await page.click('#font-change'); await settle(); await page.selectOption('#pick-font', ''); await settle();
+  await lang('en');
   // Edit profile (V5-settings-self-profile): the name only.
   await page.evaluate(() => document.querySelector('[data-toggle-edit="me"]').click()); await settle();
   check('Edit profile: the panel opens with the name; the email is read-only, with Change email beside it', await page.evaluate(() => [
