@@ -122,20 +122,22 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): f26fe15
+- sha (last non-docs commit): 7829c9b
 - branch: v5-implementation
 - working_tree: clean
 - last_ci: green @ ee50657, 19e5fc4 (confirmed by the user). Phase A
-  (9500bcd, f43c7a9, fe7f65a, f3f8f5a, f26fe15) pushed without waiting for
-  CI, as the user authorised (Rule 21); its CI run is not yet confirmed.
-  Locally, at every Phase A commit: check-persian, i18n-coverage --require,
-  source chars and the 28 browser suites green; test_passwordless_signup.py
-  25 pass; the wider auth/users/tenant/sorting suites after the users column were left to CI (Rule 21); migrations 0054 and 0055 upgrade/downgrade/upgrade
-  clean on a fresh database.
+  (9500bcd, f43c7a9, fe7f65a, f3f8f5a, f26fe15) and Phase B (3b2a2c1,
+  25dfc02, 7829c9b) pushed without waiting for CI, as the user authorised
+  (Rule 21); their CI runs are not yet confirmed. Locally, at every commit:
+  check-persian, i18n-coverage --require, source chars and the 28 browser
+  suites green. Phase A backend: auth/users/tenant/sorting suites 311 pass
+  after the users column; migrations 0054 and 0055 upgrade/downgrade/upgrade
+  clean on a fresh database. Phase B backend: products/offers/patch/sorting
+  146, access/telemetry 60, visibility 57 pass.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(auth): store marketing opt-in on signup" @ f26fe15
-- last feature commit: "feat(auth): store marketing opt-in on signup" @ f26fe15
+- last code commit: "feat(visibility): per-platform observation breakdown" @ 7829c9b
+- last feature commit: "feat(visibility): per-platform observation breakdown" @ 7829c9b
 - last fix commit: "fix(auth): secure email verification flow for profile changes" @ ee50657
 
 ## 4. Completed steps (compact)
@@ -620,6 +622,26 @@ file from scratch (do not diff). Output only the file content.
     Backend tests for 0054/0055 ran on a throwaway database (dropped
     afterwards); the dev database `aiol` stays at 0053 until `alembic
     upgrade head` (the compose migrate service runs it).
+- Phase B (debt, no schema change; user-authorised to run autonomously and
+  push without waiting for CI):
+  - 3b2a2c1 GET /products rows (ProductListRead) carry offer_count and
+    best_availability (in_stock > preorder > backorder > out_of_stock >
+    discontinued; null = no offer) from a grouped offers subquery joined into
+    the page query. Offers + Availability columns back, sample and live;
+    pre-order now shares the warning badge. V5-products-offer-summary CLOSED.
+  - 25dfc02 GET /telemetry/agents rows (AiAgentListRead) carry `decision`
+    (the tier for the agent's declared purpose) and the page (AiAgentPage)
+    agents_without_decision over every agent. Rules read once and resolved
+    in memory with evaluate()'s four levels (tiers_for_agents; a test
+    compares it with evaluate() on every level). No rule = unset (Not
+    configured), not free (ADR-077; the user's brief said free, the service
+    and the warning need unset). Access column + warning on #screen-access.
+    V5-access-agent-decision CLOSED.
+  - 7829c9b GET /visibility/summary carries by_platform (platform,
+    observations, last_observed_at) from the rows it already reads, so
+    #screen-visibility stays at two calls (the brief said aggregates; the
+    screen reads the summary). No request count per platform: page views
+    have no platform. V5-visibility-platform-breakdown CLOSED.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -653,6 +675,8 @@ file from scratch (do not diff). Output only the file content.
   V5-signup-marketing-optin CLOSED; V5-visibility-detail-aggregates now has
   stats + chart + breakdowns, still OPEN for the map, the Queries
   breakdown, the live strip and the exports.
+- Phase B is complete (v33): V5-products-offer-summary,
+  V5-access-agent-decision and V5-visibility-platform-breakdown CLOSED.
 - Remaining debt is non-blocking: V5-visibility-detail-aggregates
   (partial), V5-apps-cargo-update (Rust 1.99.1 installed 2026-11-02, but
   the MSVC Build Tools and Windows SDK are missing, so cargo cannot link
@@ -661,16 +685,16 @@ file from scratch (do not diff). Output only the file content.
   run yet), update cloud-core/.venv to the pins, and close or accept
   V5-apps-cargo-update (cargo update + Client suite CI). The .venv is
   updated (2026-11-01).
-- Next up: Phase B, the real-key test (scripts/start-real-e2e.ps1), then
+- Next up: Phase B-2 (debts that need a schema change, each approved by the
+  user first). Deferred: the real-key test (scripts/start-real-e2e.ps1) and
   Phase C, the Windows installer (blocked until the MSVC Build Tools and
-  Windows SDK are installed: cargo cannot link without them). Phase B is
-  missing, on 2026-11-02: the four variables (ANTHROPIC_API_KEY, AI_CREDENTIAL_KEY,
+  Windows SDK are installed: cargo cannot link without them). The real-key
+  test is missing, on 2026-11-02: the four variables (ANTHROPIC_API_KEY, AI_CREDENTIAL_KEY,
   AIOL_TOKEN, AIOL_TOPIC_ID), and a topic: the dev database has no
   knowledge object or evidence yet. Still open: V5-admin-billing,
   V5-admin-trash, V5-admin-user-actions, V5-settings-billing-card,
   V5-settings-factory-reset, V5-signup-terms-record, CLIENT-oidc,
-  V5-visibility-platform-breakdown, V5-access-agent-decision,
-  V5-products-offer-summary, V5-commerce-payments-scope,
+  V5-commerce-payments-scope,
   V5-command-workspace-runtime-fa and the duplicate discovery read on
   connect.
 - Debt rows added in 9A: V5-ai-prompts OPEN; V5-ai-center-deletes CLOSED (9E-2).
@@ -801,6 +825,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   (f43c7a9), font picker (fe7f65a), sign-up website (f3f8f5a, migration
   0054), sign-up opt-in (f26fe15, migration 0055). Four debts CLOSED;
   V5-visibility-detail-aggregates still partial. Phase B (real keys) next.
+- v33 @ 7829c9b — Phase B (debt, no schema change): products offer summary
+  (3b2a2c1), agent decisions (25dfc02), observations by platform (7829c9b).
+  Three debts CLOSED. Next: Phase B-2 (schema changes, approved per item).
 
 ## 10. Historical context (from two prior sessions)
 
