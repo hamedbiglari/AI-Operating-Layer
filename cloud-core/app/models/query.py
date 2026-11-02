@@ -49,6 +49,8 @@ class Query(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "queries"
     __table_args__ = (
         UniqueConstraint("organization_id", "normalized_query", name="uq_queries_organization_normalized_query"),
+        # Migrations create it; composite tenant FKs reference (id, organization_id), so create_all() needs it too.
+        UniqueConstraint("id", "organization_id", name="uq_queries_id_organization_id"),
         CheckConstraint(
             "search_volume IS NULL OR search_volume >= 0", name="ck_queries_search_volume_non_negative"
         ),

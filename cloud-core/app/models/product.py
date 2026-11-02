@@ -62,6 +62,8 @@ class Product(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         # has one, and NULLs must not collide.
         UniqueConstraint("organization_id", "sku", name="uq_products_organization_sku"),
         UniqueConstraint("organization_id", "slug", name="uq_products_organization_slug"),
+        # Migrations create it; composite tenant FKs reference (id, organization_id), so create_all() needs it too.
+        UniqueConstraint("id", "organization_id", name="uq_products_id_organization_id"),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(

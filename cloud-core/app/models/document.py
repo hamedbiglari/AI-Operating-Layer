@@ -7,7 +7,7 @@ this is a separate table rather than a `content` column on Source.
 
 import uuid
 
-from sqlalchemy import BigInteger, Enum as SAEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Enum as SAEnum, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,6 +17,10 @@ from app.models.enums import DocumentExtractionStatus
 
 class Document(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "documents"
+    __table_args__ = (
+        # Migrations create it; composite tenant FKs reference (id, organization_id), so create_all() needs it too.
+        UniqueConstraint("id", "organization_id", name="uq_documents_id_organization_id"),
+    )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

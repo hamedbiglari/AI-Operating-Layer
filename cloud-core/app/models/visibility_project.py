@@ -68,6 +68,8 @@ class VisibilityProject(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "visibility_projects"
     __table_args__ = (
         UniqueConstraint("organization_id", "name", name="uq_visibility_projects_org_name"),
+        # Migrations create it; composite tenant FKs reference (id, organization_id), so create_all() needs it too.
+        UniqueConstraint("id", "organization_id", name="uq_visibility_projects_id_organization_id"),
         ForeignKeyConstraint(
             ["site_id", "organization_id"], ["sites.id", "sites.organization_id"],
             name="fk_visibility_projects_site_organization", ondelete="SET NULL",

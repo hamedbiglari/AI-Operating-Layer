@@ -77,6 +77,9 @@ class AiAgent(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         UniqueConstraint(
             "organization_id", "signature", name="uq_ai_agents_organization_signature"
         ),
+        # Migration 0016 creates it; the tenant-composite FKs of access_policies, page_views and
+        # search_demand_events reference (id, organization_id), so create_all() needs it too (V5-aiagent-model-drift).
+        UniqueConstraint("id", "organization_id", name="uq_ai_agents_id_organization_id"),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(

@@ -18,6 +18,8 @@ class Site(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "sites"
     __table_args__ = (
         UniqueConstraint("organization_id", "domain", name="uq_sites_organization_domain"),
+        # Migrations create it; composite tenant FKs reference (id, organization_id), so create_all() needs it too.
+        UniqueConstraint("id", "organization_id", name="uq_sites_id_organization_id"),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(
