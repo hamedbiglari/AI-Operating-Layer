@@ -131,7 +131,7 @@ not on preference.
 | **P3-async-ingest** | Upload is synchronous; §40 wants 202 + job_id via Celery | **OPEN** — Celery exists (Phase 5) | Phase 3 follow-up |
 | **P3-benchmark** | No 50/200/1000-document benchmark | **OPEN** — §19 | Phase 3 follow-up |
 | **P9-plugin-canonical-md** | Plugin still renders `post_content`, not the canonical Knowledge representation (ADR-067) | **OPEN** | Phase 9 adapter |
-| **P12-budget-race** | Budget is read→decide→write; §38 wants atomic reservation | **OPEN** — must be fixed before paid provider adapters | Phase 12 follow-up |
+| **P12-budget-race** | Budget is read→decide→write; §38 wants atomic reservation | **CLOSED — was already done** (register-accuracy correction, Phase B-3): `visibility_service.reserve_budget()` is a single conditional UPDATE (P12-16, ADR-069), with `release_reservation()` and settlement; `tests/test_budget_concurrency.py` (10 tests: concurrent reservations never exceed the limit, exact budget, release, double release, settlement both ways, tenant isolation) passes. The row was stale. | Phase 12 follow-up |
 
 ## v5 implementation
 
