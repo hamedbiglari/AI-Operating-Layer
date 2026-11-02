@@ -122,13 +122,14 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): 7829c9b
+- sha (last non-docs commit): a82ea59
 - branch: v5-implementation
 - working_tree: clean
 - last_ci: green @ ee50657, 19e5fc4 (confirmed by the user). Phase A
   (9500bcd, f43c7a9, fe7f65a, f3f8f5a, f26fe15) and Phase B (3b2a2c1,
   25dfc02, 7829c9b) pushed without waiting for CI, as the user authorised
-  (Rule 21); their CI runs are not yet confirmed. Locally, at every commit:
+  (Rule 21); their CI runs are not yet confirmed, nor Phase B-3's (b48df8a ..
+  a82ea59, also pushed without waiting). Locally, at every commit:
   check-persian, i18n-coverage --require, source chars and the 28 browser
   suites green. Phase A backend: auth/users/tenant/sorting suites 311 pass
   after the users column; migrations 0054 and 0055 upgrade/downgrade/upgrade
@@ -136,8 +137,8 @@ file from scratch (do not diff). Output only the file content.
   146, access/telemetry 60, visibility 57 pass.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(visibility): per-platform observation breakdown" @ 7829c9b
-- last feature commit: "feat(visibility): per-platform observation breakdown" @ 7829c9b
+- last code commit: "feat(debts): delete a source that nothing depends on" @ a82ea59
+- last feature commit: "feat(debts): delete a source that nothing depends on" @ a82ea59
 - last fix commit: "fix(auth): secure email verification flow for profile changes" @ ee50657
 
 ## 4. Completed steps (compact)
@@ -642,6 +643,39 @@ file from scratch (do not diff). Output only the file content.
     #screen-visibility stays at two calls (the brief said aggregates; the
     screen reads the summary). No request count per platform: page views
     have no platform. V5-visibility-platform-breakdown CLOSED.
+- Phase B-3 (debts with no schema change; autonomous, pushed without
+  waiting for CI). 9 commits, 13 rows CLOSED:
+  - b48df8a V5-users-view-aria-label (Users toggle group named Display mode).
+  - 44796d1 V5-aiagent-model-drift: AiAgent and five more composite-FK
+    targets (documents, products, queries, sites, visibility_projects)
+    declare uq_<table>_id_organization_id (names from their migrations; no
+    migration). test_models_create_all.py builds every table with
+    create_all() on a new empty database.
+  - 997e43a V5-migration-fresh-db-local-check:
+    scripts/check-migrations-fresh.ps1 (throwaway database in
+    aiol_postgres; upgrade head, downgrade -1, upgrade head; -Full =
+    downgrade base). The bash verify_migration_cycle.sh cycles whatever
+    DATABASE_URL points at: never aim it at the dev database.
+  - 43d959e V5-processing-stale-sweeper: documents.reclaim_stalled calls
+    ingestion_job_service.reclaim_stalled() and runs from beat every
+    INGESTION_RECLAIM_INTERVAL_SECONDS (300).
+  - a664f8b V5-source-detail-tab-evidence / -claims / -knowledge: live tabs
+    on Source detail (Documents first; each list read once per visit);
+    GET /claims?source_id= and GET /knowledge?source_id= (EXISTS through
+    claim_evidence).
+  - 6f25ae4 V5-source-export: GET /sources/export.csv (list filters, up to
+    10,000 rows, BOM, formula-safe cells) + Export CSV on Sources.
+  - a82ea59 V5-source-detail-delete: DELETE /sources/{id} (owner/admin;
+    409 with counts while evidence, publication citations or research
+    dependencies use it; audit-logged) + Delete on Source detail.
+  - b330404, 9343221 (docs): P12-budget-race, P3-original-retention,
+    P3-async-ingest and MARKITDOWN were already done (stale rows; checked
+    against code and passing tests).
+  - Gotcha: i18n-coverage.js reads the first string literal inside
+    AIOL_I18N.set(...) as the template, so never nest el('x', 'class') in
+    the call; create the node first.
+  - Gotcha: a sample <a href="#screen-..."> is followed by the router even
+    with preventDefault; an action in sample mode must be a <button>.
 - Theme toggle: V5-theme-toggle-ui CLOSED @ fdc7cd7 (toolbar toggle
   repaired, WAI-ARIA toggle-button pattern, e2e/theme-toggle.js).
 - Debt state: V5-topbar-lang-save-bug OPEN (#topbar-lang never fires
@@ -685,8 +719,15 @@ file from scratch (do not diff). Output only the file content.
   run yet), update cloud-core/.venv to the pins, and close or accept
   V5-apps-cargo-update (cargo update + Client suite CI). The .venv is
   updated (2026-11-01).
-- Next up: Phase B-2 (debts that need a schema change, each approved by the
-  user first). Deferred: the real-key test (scripts/start-real-e2e.ps1) and
+- Phase B-3 is complete (v34): 13 rows CLOSED (see §4); 54 rows OPEN.
+  Left from B-3 on purpose: V5-matrix-coverage-runtime-fa and
+  V5-command-workspace-runtime-fa (each ~50-100 new runtime strings, some
+  built from server keys: do them as their own step with an English->FA
+  table for owner review first), and V5-source-detail-tab-history (needs a
+  decision on who may read audit logs) and -tab-artifacts (needs a
+  source-level artifacts endpoint).
+- Next up: Phase B-4 (debts that need a schema change, each approved by the
+  user first) or the two runtime-Persian steps above. Deferred: the real-key test (scripts/start-real-e2e.ps1) and
   Phase C, the Windows installer (blocked until the MSVC Build Tools and
   Windows SDK are installed: cargo cannot link without them). The real-key
   test is missing, on 2026-11-02: the four variables (ANTHROPIC_API_KEY, AI_CREDENTIAL_KEY,
@@ -828,6 +869,10 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v33 @ 7829c9b — Phase B (debt, no schema change): products offer summary
   (3b2a2c1), agent decisions (25dfc02), observations by platform (7829c9b).
   Three debts CLOSED. Next: Phase B-2 (schema changes, approved per item).
+- v34 @ a82ea59 — Phase B-3 (debts, no schema change): 7 code commits
+  (b48df8a, 44796d1, 997e43a, 43d959e, a664f8b, 6f25ae4, a82ea59) and 2
+  register corrections (b330404, 9343221); 13 rows CLOSED, 54 OPEN. Next:
+  Phase B-4 (schema) or the runtime-Persian steps.
 
 ## 10. Historical context (from two prior sessions)
 
