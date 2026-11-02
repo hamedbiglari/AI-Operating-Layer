@@ -59,8 +59,12 @@ Four components:
 ## 3. Multi-tenancy and auth
 
 **Tenancy.** Every tenant-owned row carries `organization_id`, and every query that reads or writes tenant data
-filters by the caller's organization. Child rows reference their parents through composite foreign keys on
-`(id, organization_id)`, so the database itself refuses a row that points into another organization. A test checks
+filters by the caller's organization. Foreign keys are mixed. Many tables reference their parent through a
+composite foreign key on `(id, organization_id)`, so the database itself refuses a row that points into another
+organization; this is how most references to sites, products, installations, users, agents and documents are
+built. The original knowledge chain (documents → sources, chunks, evidence, claims, entities, conversations) uses
+single-column foreign keys, so for those tables the organization boundary is enforced in the query layer, not by
+the database. A test checks
 that every table has `organization_id` (or is explicitly exempt).
 
 **Cross-organization access is a 404, never a 403.** `security/tenant.py::get_tenant_scoped_or_404` loads a row by id
