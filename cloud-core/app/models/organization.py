@@ -20,6 +20,7 @@ class Organization(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    website: Mapped[str | None] = mapped_column(String(255))   # given at sign-up, optional (V5-signup-website-field)
     status: Mapped[OrganizationStatus] = mapped_column(
         SAEnum(OrganizationStatus, name="organization_status", values_callable=lambda e: [m.value for m in e]),
         nullable=False,

@@ -3310,6 +3310,8 @@ button.card { color: inherit; font: inherit; }
 .auth-optional { color: var(--text-subtle); font-weight: 400; }
 .auth-check { display: flex !important; align-items: flex-start; gap: var(--space-2); font-weight: 400 !important; font-size: var(--text-sm) !important; line-height: 1.45; cursor: pointer; }
 .auth-check input { inline-size: 1.5rem; block-size: 1.5rem; flex: none; margin-block-start: 1px; accent-color: var(--logo-a); }
+/* A field wrapped for markup only (its label and input lay out like the form's other fields). */
+.auth-field { display: contents; }
 .auth-hp { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .auth-back { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-muted); text-decoration: none; font-size: var(--text-sm); align-self: flex-start; min-block-size: 32px; }
 .auth-back:hover { color: var(--text); }
@@ -3684,7 +3686,7 @@ button.card { color: inherit; font: inherit; }
       <input type="email" id="signup-email" name="email" class="auth-input" placeholder="you@company.com" autocomplete="email" autocapitalize="off" spellcheck="false" inputmode="email" required>
       <label for="signup-company">Company or workspace name</label>
       <input type="text" id="signup-company" name="company" class="auth-input" autocomplete="organization" maxlength="200" required>
-      <div class="auth-hidden-field" data-debt-hidden="V5-signup-website-field">
+      <div class="auth-field">
         <label for="signup-site">Company website <span class="auth-optional">(optional)</span></label>
         <input type="url" id="signup-site" name="website" class="auth-input" placeholder="https://" autocomplete="url" inputmode="url" dir="ltr">
       </div>
@@ -13235,7 +13237,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     btn.disabled = true; AIOL_I18N.set(err, 'Sending your code…');
     fetch(L.base + '/api/v1/auth/signup/request', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ organization_name: (document.getElementById('signup-company') || {}).value || name.value.trim(),
-                             owner_email: email.value.trim(), owner_name: name.value.trim() }) })
+                             owner_email: email.value.trim(), owner_name: name.value.trim(), website: site.value.trim() || null }) })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) {
         if (!r.ok) throw new Error((b.error && b.error.message) || b.detail || ('HTTP ' + r.status));
         AIOL_I18N.set(err, ''); window.AIOL_SIGNUP_EMAIL = email.value.trim(); goToCode(); }); })
@@ -16312,7 +16314,9 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "None in this range.": "در این بازه موردی نیست.",
     "Without a country: {n|request|requests}": "بدون کشور: {n} درخواست",
     "Font saved.": "قلم ذخیره شد.",
-    "Connect to AI Core to change the font.": "برای تغییر قلم به AI Core وصل شوید."
+    "Connect to AI Core to change the font.": "برای تغییر قلم به AI Core وصل شوید.",
+    "Company website": "وب‌سایت شرکت",
+    "(optional)": "(اختیاری)"
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

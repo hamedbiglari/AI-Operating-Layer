@@ -24,6 +24,7 @@ class SignupCode(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     email: Mapped[str] = mapped_column(String(320), nullable=False, index=True)
     organization_name: Mapped[str] = mapped_column(String(200), nullable=False)
     owner_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    website: Mapped[str | None] = mapped_column(String(255))   # copied to the organization when the code is verified
     code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     consumed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))

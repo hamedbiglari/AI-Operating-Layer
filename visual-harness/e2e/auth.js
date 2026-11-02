@@ -2,7 +2,7 @@
 /*
  * Browser checks for the auth screens (Step 12A).
  *   Sample: Google buttons and their dividers hidden as debt (CLIENT-oidc);
- *           the sign-up website field (V5-signup-website-field) and the
+ *           the sign-up website field shows (V5-signup-website-field); the
  *           product-updates opt-in (V5-signup-marketing-optin) hidden; with no
  *           AI Core set, the login is the fixture (no request; 123456 works;
  *           a wrong code counts down to the lock).
@@ -14,6 +14,8 @@
  *           connects AI Core with the returned token and opens the
  *           Dashboard; a cooldown (429) goes to the code step; 503 stays on
  *           the login page with its own message; Resend is one more request.
+ *           Sign-up: one POST /auth/signup/request with the website (null
+ *           when empty); a website not starting with https:// is refused first.
  *           Persian: static text, live messages and the split "we sent to"
  *           sentence; a sign-up validation message.
  * Runs on file:// with AI Core mocked in the page and every request
@@ -36,6 +38,8 @@ const FA = {
   delivery: [0x627, 0x631, 0x633, 0x627, 0x644, 0x20, 0x627, 0x6CC, 0x645, 0x6CC, 0x644, 0x20, 0x62F, 0x631, 0x20, 0x62F, 0x633, 0x62A, 0x631, 0x633, 0x20, 0x646, 0x6CC, 0x633, 0x62A, 0x61B, 0x20, 0x647, 0x6CC, 0x686, 0x20, 0x6A9, 0x62F, 0x6CC, 0x20, 0x641, 0x631, 0x633, 0x62A, 0x627, 0x62F, 0x647, 0x20, 0x646, 0x634, 0x62F, 0x2E],
   sentTo: [0x6A9, 0x62F, 0x20, 0x6F6, 0x20, 0x631, 0x642, 0x645, 0x6CC, 0x20, 0x641, 0x631, 0x633, 0x62A, 0x627, 0x62F, 0x647, 0x200C, 0x634, 0x62F, 0x647, 0x20, 0x628, 0x647, 0x20, 0x627, 0x6CC, 0x646, 0x20, 0x646, 0x634, 0x627, 0x646, 0x6CC, 0x20, 0x631, 0x627, 0x20, 0x648, 0x627, 0x631, 0x62F, 0x20, 0x6A9, 0x646, 0x6CC, 0x62F, 0x3A],
   wrongCode: [0x627, 0x6CC, 0x646, 0x20, 0x6A9, 0x62F, 0x20, 0x646, 0x627, 0x62F, 0x631, 0x633, 0x62A, 0x20, 0x627, 0x633, 0x62A, 0x20, 0x6CC, 0x627, 0x20, 0x645, 0x646, 0x642, 0x636, 0x6CC, 0x20, 0x634, 0x62F, 0x647, 0x20, 0x627, 0x633, 0x62A, 0x2E, 0x20, 0x622, 0x62E, 0x631, 0x6CC, 0x646, 0x20, 0x627, 0x6CC, 0x645, 0x6CC, 0x644, 0x20, 0x631, 0x627, 0x20, 0x628, 0x631, 0x631, 0x633, 0x6CC, 0x20, 0x6A9, 0x646, 0x6CC, 0x62F, 0x20, 0x648, 0x20, 0x62F, 0x648, 0x628, 0x627, 0x631, 0x647, 0x20, 0x62A, 0x644, 0x627, 0x634, 0x20, 0x6A9, 0x646, 0x6CC, 0x62F, 0x2E],
+  companySite: [0x648, 0x628, 0x200C, 0x633, 0x627, 0x6CC, 0x62A, 0x20, 0x634, 0x631, 0x6A9, 0x62A],
+  optional: [0x28, 0x627, 0x62E, 0x62A, 0x6CC, 0x627, 0x631, 0x6CC, 0x29],
   fullName: [0x646, 0x627, 0x645, 0x20, 0x6A9, 0x627, 0x645, 0x644, 0x20, 0x62E, 0x648, 0x62F, 0x20, 0x631, 0x627, 0x20, 0x648, 0x627, 0x631, 0x62F, 0x20, 0x6A9, 0x646, 0x6CC, 0x62F, 0x2E],
 };
 const F = (k) => String.fromCharCode(...FA[k]);
@@ -64,6 +68,7 @@ function installMock() {
       if (code === '222222') return reply({ error: { message: 'Too many wrong codes. Sign-in is locked for 1 hour.' } }, 423, { 'Retry-After': '3600' });
       return reply({ error: { message: 'Invalid or expired code.' } }, 401);
     }
+    if (p === '/auth/signup/request') return reply({ status: 'code_sent', resend_available_in_seconds: 60, expires_in_seconds: 300 }, 202);
     return reply({ detail: 'Not found' }, 404);
   };
 }
@@ -91,8 +96,9 @@ function installMock() {
 
   // Sample mode.
   check('sample: both Google buttons and both dividers hidden as CLIENT-oidc', await hidden('[data-debt-hidden="CLIENT-oidc"]'), [true, true, true, true]);
-  check('sample: website field and product-updates opt-in hidden', [await hidden('[data-debt-hidden="V5-signup-website-field"]'),
-    await hidden('[data-debt-hidden="V5-signup-marketing-optin"]')], [[true], [true]]);
+  check('sample: the website field shows; the product-updates opt-in is hidden', [await page.evaluate(() => {
+    const i = document.getElementById('signup-site'); return [!i.closest('[data-debt-hidden]'), document.querySelector('label[for="signup-site"]').textContent]; }),
+    await hidden('[data-debt-hidden="V5-signup-marketing-optin"]')], [[true, 'Company website (optional)'], [true]]);
   await page.evaluate(() => { window.__sampleRequests = []; const f = window.fetch; window.fetch = (u, o) => { window.__sampleRequests.push(String(u)); return f(u, o); }; });
   await login('sample@shop.test');
   let v = await view();
@@ -140,6 +146,7 @@ function installMock() {
   v = await view();
   check('503: stays on the login page with its own message', [v.hash, v.loginError], ['#screen-login', 'Email delivery is not available; no code was sent.']);
 
+
   // Persian.
   await lang('fa');
   check('fa: login title and the delivery message', await page.evaluate(() => [document.getElementById('h-login').textContent,
@@ -153,8 +160,26 @@ function installMock() {
   await go('#screen-signup');
   await page.evaluate(() => document.querySelector('#screen-signup .auth-form').requestSubmit()); await settle();
   check('fa: a sign-up validation message', await page.evaluate(() => document.getElementById('signup-error').textContent), F('fullName'));
+  check('fa: the website label', await page.evaluate(() => { const l = document.querySelector('label[for="signup-site"]');
+    return [l.firstChild.nodeValue.trim(), l.querySelector('.auth-optional').textContent]; }), [F('companySite'), F('optional')]);
   await lang('en');
   check('back to English', await page.evaluate(() => document.getElementById('h-login').textContent), 'Welcome back');
+
+  // Sign-up (V5-signup-website-field): the website goes with the request.
+  const signups = () => page.evaluate(() => (window.__requests || []).filter((r) => r[1] === '/auth/signup/request').map((r) => r[2]));
+  const signup = async (site) => { await go('#screen-signup'); await page.fill('#signup-name', 'Marzieh'); await page.fill('#signup-email', 'new@shop.test');
+    await page.fill('#signup-company', 'Toranj'); await page.fill('#signup-site', site); await page.check('#signup-terms');
+    await page.evaluate(() => document.querySelector('#screen-signup .auth-form').requestSubmit()); await settle(250); };
+  await page.evaluate(() => { window.__reqMode = 'ok'; });
+  await signup('http://toranj.test');
+  check('sign-up: a website not starting with https:// is refused before sending', [await page.evaluate(() => document.getElementById('signup-error').textContent),
+    (await signups()).length], ['The website must start with https://', 0]);
+  await signup('  https://toranj.test  ');
+  check('sign-up: one POST with the website (trimmed); the code step follows', [await signups(), (await view()).hash],
+    [[{ organization_name: 'Toranj', owner_email: 'new@shop.test', owner_name: 'Marzieh', website: 'https://toranj.test' }], '#screen-login-code']);
+  await signup('');
+  check('sign-up: no website is sent as null', (await signups()).slice(-1)[0].website, null);
+  await page.evaluate(() => { window.AIOL_SIGNUP_EMAIL = null; document.querySelector('#screen-signup .auth-form').reset(); });   // back to the login flow
   check('no page errors', errors, []);
 
   await browser.close();

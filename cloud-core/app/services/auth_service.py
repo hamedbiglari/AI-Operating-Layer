@@ -37,6 +37,7 @@ def register_organization(
     owner_email: str,
     owner_name: str,
     owner_password: str | None,
+    website: str | None = None,
 ) -> tuple[Organization, User]:
     """owner_password=None creates a passwordless owner who signs in with an emailed code (ADR-106)."""
     base_slug = slugify(organization_name)
@@ -50,6 +51,7 @@ def register_organization(
         name=organization_name,
         slug=slug,
         status=OrganizationStatus.ACTIVE,
+        website=website,
     )
     db.add(organization)
     db.flush()  # assigns organization.id without committing yet

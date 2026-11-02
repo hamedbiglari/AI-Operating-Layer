@@ -159,3 +159,39 @@ def test_two_signups_are_separate_tenants(client: TestClient, mailbox) -> None:
     ko = client.post("/api/v1/knowledge", headers=ha, json={"canonical_name": "Private KO", "object_type": "ingredient"}).json()
     assert client.get(f"/api/v1/knowledge/{ko['id']}", headers=hb).status_code == 404
     assert client.get("/api/v1/knowledge", headers=hb).json()["total"] == 0
+
+
+# ---------------------------------------------------------------- website (V5-signup-website-field)
+def _signup(client, mailbox, email, **extra):
+    r = client.post(REQ, json={"organization_name": "Toranjebin Co", "owner_email": email, "owner_name": "Marzieh", **extra})
+    assert r.status_code == 202, r.text
+    v = client.post(VER, json={"owner_email": email, "code": _code(mailbox)})
+    assert v.status_code == 201, v.text
+    return v.json()
+
+
+def test_the_website_given_at_sign_up_is_kept_on_the_organization(client: TestClient, mailbox, db_session) -> None:
+    email = _email()
+    r = client.post(REQ, json={"organization_name": "Toranjebin Co", "owner_email": email, "owner_name": "Marzieh",
+                               "website": "  https://toranjebin.ir/shop  "})
+    assert r.status_code == 202, r.text
+    pending = db_session.execute(select(SignupCode).where(SignupCode.email == email)).scalar_one()
+    assert pending.website == "https://toranjebin.ir/shop"               # kept while the code is pending, trimmed
+    body = client.post(VER, json={"owner_email": email, "code": _code(mailbox)}).json()
+    assert db_session.execute(text("SELECT website FROM organizations WHERE id = :o"),
+                              {"o": body["organization"]["id"]}).scalar_one() == "https://toranjebin.ir/shop"
+
+
+@pytest.mark.parametrize("extra", [{}, {"website": None}, {"website": "   "}])
+def test_no_website_stores_none(client: TestClient, mailbox, db_session, extra) -> None:
+    body = _signup(client, mailbox, _email(), **extra)
+    assert db_session.execute(text("SELECT website FROM organizations WHERE id = :o"),
+                              {"o": body["organization"]["id"]}).scalar_one() is None
+
+
+@pytest.mark.parametrize("bad", ["toranjebin.ir", "javascript:alert(document.cookie)", "ftp://toranjebin.ir",
+                                 "https://localhost", "https://toranj ebin.ir", "https://" + "a" * 250 + ".ir"])
+def test_a_website_that_is_not_a_web_address_is_refused_before_anything_is_sent(client: TestClient, mailbox, bad) -> None:
+    r = client.post(REQ, json={"organization_name": "Toranjebin Co", "owner_email": _email(), "owner_name": "Marzieh", "website": bad})
+    assert r.status_code == 422, r.text
+    assert mailbox == []

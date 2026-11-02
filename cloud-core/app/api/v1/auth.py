@@ -14,11 +14,12 @@ POST /auth/native/session/refresh — rotate it (same reuse detection as the coo
 POST /auth/native/session/end     — sign out a native client
 """
 
+import re
 from datetime import datetime, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -81,10 +82,25 @@ def register_organization(
     )
 
 
+# An http(s) address with a dotted host: nothing that could run as a link (javascript:, data:) is stored.
+_WEBSITE = re.compile(r"^https?://[^\s/:@?#]+\.[^\s/:@?#]+(:\d{1,5})?([/?#]\S*)?$", re.IGNORECASE)
+
+
 class SignupRequest(BaseModel):
     organization_name: str = Field(min_length=2, max_length=200)
     owner_email: EmailStr
     owner_name: str = Field(min_length=1, max_length=200)
+    website: str | None = Field(default=None, max_length=255)   # optional company website (V5-signup-website-field)
+
+    @field_validator("website")
+    @classmethod
+    def _website(cls, v: str | None) -> str | None:
+        v = (v or "").strip()
+        if not v:
+            return None
+        if not _WEBSITE.match(v):
+            raise ValueError("Enter the website as a web address starting with https://")
+        return v
 
 
 class SignupVerifyRequest(BaseModel):
@@ -98,7 +114,7 @@ def signup_request(payload: SignupRequest, request: Request, db: Session = Depen
     address already has an account."""
     ip = client_ip(request)
     out = signup_code_service.request_signup(db, email=payload.owner_email, organization_name=payload.organization_name,
-                                             owner_name=payload.owner_name, ip=ip)
+                                             owner_name=payload.owner_name, ip=ip, website=payload.website)
     if out.kind == "cooldown":
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "A code was just sent. Wait before asking for another.",
                             headers={"Retry-After": str(out.retry_after_seconds or 60)})

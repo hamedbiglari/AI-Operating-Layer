@@ -54,7 +54,8 @@ def _email_taken(db: Session, email: str) -> bool:
     return db.execute(select(User).where(func.lower(User.email) == email)).scalar_one_or_none() is not None
 
 
-def request_signup(db: Session, *, email: str, organization_name: str, owner_name: str, ip: str | None) -> Outcome:
+def request_signup(db: Session, *, email: str, organization_name: str, owner_name: str, ip: str | None,
+                   website: str | None = None) -> Outcome:
     email = email.strip().lower()
     now = _now()
     hour_ago = now - timedelta(hours=1)
@@ -72,7 +73,7 @@ def request_signup(db: Session, *, email: str, organization_name: str, owner_nam
     if not email_delivery.is_configured():
         return Outcome("delivery_unavailable")
     row = SignupCode(email=email, organization_name=organization_name.strip(), owner_name=owner_name.strip(),
-                     code_hash="", expires_at=now + timedelta(seconds=TTL_SECONDS), request_ip=ip)
+                     website=website, code_hash="", expires_at=now + timedelta(seconds=TTL_SECONDS), request_ip=ip)
     db.add(row)
     db.flush()
     # An address that already has an account gets the same answer, but no code and no pending row.
@@ -112,7 +113,8 @@ def verify_signup(db: Session, *, email: str, code: str) -> Outcome:
         db.commit()
         return Outcome("conflict")
     organization, owner = auth_service.register_organization(
-        db, organization_name=row.organization_name, owner_email=email, owner_name=row.owner_name, owner_password=None)
+        db, organization_name=row.organization_name, owner_email=email, owner_name=row.owner_name, owner_password=None,
+        website=row.website)
     row.organization_id = organization.id
     db.commit()
     db.refresh(owner)

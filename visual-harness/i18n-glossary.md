@@ -2101,3 +2101,12 @@ The font picker on #screen-settings (V5-settings-font-picker). Font (قلم) and
 |---|---|
 | Font saved. | قلم ذخیره شد. |
 | Connect to AI Core to change the font. | برای تغییر قلم به AI Core وصل شوید. |
+
+## Sign-up website (Phase A)
+
+The Company website field on #screen-signup (V5-signup-website-field). Website (وب‌سایت) follows the existing entry.
+
+| English | Persian |
+|---|---|
+| Company website | وب‌سایت شرکت |
+| (optional) | (اختیاری) |
