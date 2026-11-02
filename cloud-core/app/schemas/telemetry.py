@@ -18,6 +18,7 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.common import Page
 from app.models.enums import (
     AccessDecision,
     AccessPurpose,
@@ -139,6 +140,18 @@ class AiAgentRead(BaseModel):
     observation_count: int
     created_at: datetime
     updated_at: datetime
+
+
+class AiAgentListRead(AiAgentRead):
+    """A row of GET /telemetry/agents: the agent plus the tier its own rules give it today, for its declared
+    purpose (V5-access-agent-decision). `unset` = no rule decides it: allowed, and reported as Not configured."""
+
+    decision: AccessTier
+
+
+class AiAgentPage(Page[AiAgentListRead]):
+    # Agents of this organization (all of them, not only this page) that no rule decides.
+    agents_without_decision: int
 
 
 class AiAgentRename(BaseModel):

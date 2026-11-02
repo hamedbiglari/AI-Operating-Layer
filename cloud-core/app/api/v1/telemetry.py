@@ -47,6 +47,8 @@ from app.schemas.telemetry import (
     AccessDecisionRead,
     AccessPolicyRead,
     AccessPolicyWrite,
+    AiAgentListRead,
+    AiAgentPage,
     AiAgentRead,
     AiAgentRename,
     ContentViewStatRead,
@@ -360,7 +362,7 @@ def recompute_rollup(
     return {"view_date": view_date.isoformat(), "rows_written": written}
 
 
-@router.get("/agents", response_model=Page[AiAgentRead])
+@router.get("/agents", response_model=AiAgentPage)
 def list_agents(
     actor_type: ActorType | None = None,
     origin: AgentRegistrationOrigin | None = None,
@@ -370,7 +372,7 @@ def list_agents(
     sort: SortParams = Depends(),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> Page[AiAgentRead]:
+) -> AiAgentPage:
     """Every automated client this organization has seen.
 
     There is no `known_only` filter and there never will be: filtering
@@ -387,11 +389,17 @@ def list_agents(
         offset=offset,
         sort=sort,
     )
-    return Page(
-        items=[AiAgentRead.model_validate(r) for r in rows],
+    # Each agent's decision (V5-access-agent-decision): the rule table is read once and every agent of the
+    # organization is resolved against it, so the page and the "no decision yet" count need no per-agent read.
+    subjects = db.execute(select(AiAgent.id, AiAgent.actor_type, AiAgent.declared_purpose)
+                          .where(AiAgent.organization_id == current_user.organization_id)).all()
+    tiers = access_policy_service.tiers_for_agents(db, organization_id=current_user.organization_id, agents=subjects)
+    return AiAgentPage(
+        items=[AiAgentListRead(**AiAgentRead.model_validate(r).model_dump(), decision=tiers[r.id]) for r in rows],
         total=total,
         limit=limit,
         offset=offset,
+        agents_without_decision=sum(1 for t in tiers.values() if t == AccessTier.UNSET),
     )
 
 

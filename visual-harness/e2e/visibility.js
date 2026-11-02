@@ -17,6 +17,9 @@
  *           Change = one PUT with the rule's own subject and purpose; a bad
  *           terms link is refused before sending; Delete asks first, then one
  *           DELETE; a viewer gets no actions; 403 says who may.
+ *   Agent decisions (V5-access-agent-decision): each agent's Access badge
+ *           from the list row (free/paid/forbidden/unset); the warning counts
+ *           agents_without_decision and hides at 0; sample column + warning show.
  *   New rule (V5-access-policy-create): owner/admin get New rule; the same
  *           editor with a subject (actor types, then the agents seen) and a
  *           purpose, no Not configured; a subject and purpose that already
@@ -49,6 +52,9 @@ const FA = {
   paid: [0x67E, 0x648, 0x644, 0x6CC],
   topCountries: [0x6A9, 0x634, 0x648, 0x631, 0x647, 0x627, 0x6CC, 0x20, 0x67E, 0x631, 0x62F, 0x631, 0x62E, 0x648, 0x627, 0x633, 0x62A],
   iran: [0x627, 0x6CC, 0x631, 0x627, 0x646],
+  undecidedOne: [0x628, 0x631, 0x627, 0x6CC, 0x20, 0x6F1, 0x20, 0x639, 0x627, 0x645, 0x644, 0x20, 0x647, 0x646, 0x648, 0x632, 0x20, 0x62A, 0x635, 0x645, 0x6CC, 0x645,
+    0x6CC, 0x20, 0x6AF, 0x631, 0x641, 0x62A, 0x647, 0x20, 0x646, 0x634, 0x62F, 0x647, 0x20, 0x627, 0x633, 0x62A, 0x2E],
+  forbidden: [0x645, 0x645, 0x646, 0x648, 0x639],
   newRule: [0x642, 0x627, 0x639, 0x62F, 0x647, 0x654, 0x20, 0x62C, 0x62F, 0x6CC, 0x62F],
   noReason: [0x62F, 0x644, 0x6CC, 0x644, 0x6CC, 0x20, 0x62F, 0x627, 0x62F, 0x647, 0x20, 0x646, 0x634, 0x62F, 0x647],
   terms: [0x634, 0x631, 0x627, 0x6CC, 0x637],
@@ -78,9 +84,9 @@ const DATA = {
     caveats: ['Only the prompts listed were asked.'] },
   agents: [
     { id: 'a1', signature: 'GPTBot', display_name: 'GPTBot', vendor: 'OpenAI', actor_type: 'ai_crawler', declared_purpose: 'training',
-      confidence: 'detected', observation_count: 412 },
+      confidence: 'detected', observation_count: 412, decision: 'forbidden' },
     { id: 'a2', signature: 'odd-bot', display_name: 'odd-bot', vendor: null, actor_type: 'robot_x', declared_purpose: 'unknown',
-      confidence: 'probable', observation_count: 3 },
+      confidence: 'probable', observation_count: 3, decision: 'unset' },
   ],
   policies: [
     { id: 'p1', agent_id: 'a1', actor_type: null, purpose: null, tier: 'forbidden', specificity: 3, reason: 'No corpus collection.', terms_url: null },
@@ -125,7 +131,8 @@ function installMock(data) {
     if (p === '/visibility/summary') return reply(d.summary);
     const agg = p.match(/^\/visibility\/aggregates\?days=(\d+)$/);
     if (agg) return reply(Object.assign({}, d.aggregates, { days: Number(agg[1]) }));
-    if (p === '/telemetry/agents?limit=200') return page(d.agents);
+    if (p === '/telemetry/agents?limit=200') return reply({ items: d.agents, total: d.agents.length, limit: 200, offset: 0,
+      agents_without_decision: d.agents.filter((a) => a.decision === 'unset').length });
     if (p === '/telemetry/access-policies?limit=200') return page(d.policies);
     if (p === '/visibility/observations?limit=50&sort_by=tested_at&sort_dir=desc') return reply({ items: d.observations, total: 9, limit: 50, offset: 0 });
     return reply({ detail: 'Not found' }, 404);
@@ -176,10 +183,11 @@ function installMock(data) {
     .filter((e) => getComputedStyle(e).display !== 'none').map((e) => (e.querySelector('.card__title') || e.querySelector('.stat__label')).textContent.trim())),
     ['Platform observations', 'Over time']);
   check('sample: the per-platform table is hidden as debt', await shown('#screen-visibility [data-debt-hidden="V5-visibility-platform-breakdown"]'), [false]);
-  check('sample: Access column (8 rows + header) and its warning hidden; no Edit/Change debt left',
-    [(await shown('#screen-access [data-debt-hidden="V5-access-agent-decision"]')).filter((x) => !x).length,
-      (await shown('#screen-access [data-debt-hidden="V5-access-policy-edit"]')).length,
-      await page.evaluate(() => document.querySelectorAll('#screen-access [data-access-change]').length)], [10, 0, 12]);
+  check('sample: the Access column and the no-decision warning show; no debt left on AI access; 12 Edit/Change links',
+    [(await shown('#screen-access [data-debt-hidden]')).length, await page.evaluate(() => [
+      Array.from(document.querySelectorAll('#screen-access table')).some((t) => Array.from(t.querySelectorAll('thead th')).some((th) => th.textContent === 'Access')),
+      document.querySelector('#screen-access .callout--warning strong').textContent,
+      document.querySelectorAll('#screen-access [data-access-change]').length])], [0, [true, '6 agents without a decision yet.', 12]]);
   await page.evaluate(() => document.querySelector('#screen-access [data-access-change]').click()); await settle();
   check('sample: Change says to connect first', await page.evaluate(() => [document.getElementById('save-toast').open,
     document.getElementById('save-toast-text').textContent]), [true, 'Connect to AI Core to change access rules.']);
@@ -265,8 +273,13 @@ function installMock(data) {
     rows: [['GPTBot', 'Any', 'Forbidden', 'No corpus collection.', 'ChangeDelete'], ['Any AI crawler', 'Training', 'Paid', 'No reason given Terms', 'ChangeDelete'],
       ['Any automated client', 'Any', 'Free', 'No reason given', 'ChangeDelete']] });
   check('access: the terms link', await page.evaluate(() => document.querySelector('#screen-access .vis-live a[target="_blank"]').href), 'https://shop.test/terms');
-  check('access: every agent seen', v.cards[1], { title: 'Every agent seen', note: '2 distinct clients. There is no filter that hides unrecognised ones.',
-    rows: [['GPTBotOpenAI', 'AI crawler (indexing)', 'Training', 'Detected', '412'], ['odd-botOperator unknown', 'robot_x', 'Not declared', 'Probable', '3']] });
+  check('access: every agent seen, with the decision its rules give it', v.cards[1], { title: 'Every agent seen', note: '2 distinct clients. There is no filter that hides unrecognised ones.',
+    rows: [['GPTBotOpenAI', 'AI crawler (indexing)', 'Training', 'Detected', '412', 'Forbidden'], ['odd-botOperator unknown', 'robot_x', 'Not declared', 'Probable', '3', 'Not configured']] });
+  const warn = () => page.evaluate(() => { const w = document.getElementById('access-undecided');
+    return [w.hidden, w.querySelector('strong').textContent, Array.from(document.querySelectorAll('#screen-access .vis-live tbody'))[1].rows[0].cells[5].querySelector('.badge').className,
+      Array.from(document.querySelectorAll('#screen-access .vis-live tbody'))[1].rows[1].cells[5].querySelector('.badge').className]; });
+  check('access: the warning counts agents with no decision; badges forbidden = danger, unset = unknown', await warn(),
+    [false, '1 agent without a decision yet.', 'badge badge--danger', 'badge badge--unknown']);
 
   // Change and delete rules (V5-access-policy-edit).
   const writes = () => page.evaluate(() => window.__requests.filter((r) => /^(PUT|DELETE) /.test(r)));
@@ -359,6 +372,8 @@ function installMock(data) {
   check('fa: access rule subject, purpose, badge, reason fallback', v.cards[0].rows[1].slice(0, 4), [F('anyAiCrawler'), F('training'), F('paid'), F('noReason') + ' ' + F('terms')]);
   check('fa: access note with Persian digits', v.cards[0].note, F('rulesNote').replace('{n}', fa(0x6F3)));
   check('fa: the New rule button', await page.evaluate(() => document.getElementById('access-new').textContent), F('newRule'));
+  check('fa: the no-decision warning and an agent\'s decision', await page.evaluate(() => [document.querySelector('#access-undecided strong').textContent,
+    Array.from(document.querySelectorAll('#screen-access .vis-live tbody'))[1].rows[0].cells[5].textContent]), [F('undecidedOne'), F('forbidden')]);
   await go('#screen-visibility');
   v = await view('screen-visibility');
   check('fa: visibility signal row and agent row', [v.cards[0].rows[0], v.cards[1].rows[0].slice(1, 3)],
@@ -387,6 +402,7 @@ function installMock(data) {
   await page.click('#screen-access .vis-live > .know-status button'); await settle();
   v = await view('screen-access');
   check('Retry reloads; empty lists say so', [v.state, v.cards.map((c) => c.rows)], ['', [[['No rules yet.']], [['No automated clients seen yet.']]]]);
+  check('no agent without a decision: the warning hides', await page.evaluate(() => document.getElementById('access-undecided').hidden), true);
   check('no page errors', errors, []);
 
   await browser.close();

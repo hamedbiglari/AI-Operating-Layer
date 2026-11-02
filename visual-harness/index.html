@@ -5795,8 +5795,8 @@ button.card { color: inherit; font: inherit; }
     </div>
   </div>
 
-  <div data-debt-hidden="V5-access-agent-decision" class="callout callout--warning"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
-    <div><p><strong>6 agents have no decision yet.</strong> They are being allowed through, and the report records that as <em>Not configured</em> rather than as <em>Allowed</em> — because nobody chose it. An unmade decision that quietly behaves like a permission is how a site ends up in a training corpus it never agreed to.</p></div>
+  <div class="callout callout--warning"><span class="callout__icon"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9.5v4.2M12 17.4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+    <div><p><strong>6 agents without a decision yet.</strong> <span>They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to.</span></p></div>
   </div>
 
   <div class="card" style="margin-top:var(--space-4)">
@@ -5826,7 +5826,7 @@ button.card { color: inherit; font: inherit; }
     <div class="table-wrap" tabindex="0" role="region" aria-label="Table — scroll sideways to see all of it">
       <table class="table sortable">
         <caption class="visually-hidden">Automated clients observed, with their current access decision</caption>
-        <thead><tr><th scope="col">Agent</th><th scope="col">Type</th><th scope="col">Stated purpose</th><th scope="col">Identification</th><th scope="col">Requests (30d)</th><th scope="col" data-debt-hidden="V5-access-agent-decision">Access</th><th scope="col"></th></tr></thead>
+        <thead><tr><th scope="col">Agent</th><th scope="col">Type</th><th scope="col">Stated purpose</th><th scope="col">Identification</th><th scope="col">Requests (30d)</th><th scope="col">Access</th><th scope="col"></th></tr></thead>
         <tbody>
     <tr>
       <td data-label="Agent">
@@ -5842,7 +5842,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Training</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">412</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
+      <td data-label="Access"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr>
     <tr>
@@ -5859,7 +5859,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Training</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">288</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
+      <td data-label="Access"><span class="badge badge--danger"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5zM8.5 10.5V7.5a3.5 3.5 0 1 1 7 0v3"/></svg><span>Forbidden</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr>
     <tr>
@@ -5876,7 +5876,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Training</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">156</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.5 9.2A2.8 2.8 0 0 0 12 8c-1.5 0-2.6.9-2.6 2s1.1 2 2.6 2 2.6.9 2.6 2-1.1 2-2.6 2a2.8 2.8 0 0 1-2.5-1.2M12 6.2v1.8M12 16v1.8"/></svg><span>Paid</span></span></td>
+      <td data-label="Access"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.5 9.2A2.8 2.8 0 0 0 12 8c-1.5 0-2.6.9-2.6 2s1.1 2 2.6 2 2.6.9 2.6 2-1.1 2-2.6 2a2.8 2.8 0 0 1-2.5-1.2M12 6.2v1.8M12 16v1.8"/></svg><span>Paid</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr>
     <tr>
@@ -5893,7 +5893,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Answering</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">97</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
+      <td data-label="Access"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr>
     <tr>
@@ -5910,7 +5910,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Answering</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">54</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
+      <td data-label="Access"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr>
     <tr>
@@ -5927,7 +5927,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose">Search indexing</td>
       <td data-label="Identification"><span class="badge badge--info"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Detected</span></span></td>
       <td data-label="Requests (30d)" class="num">1,204</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
+      <td data-label="Access"><span class="badge badge--success"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.2 12.2l2.6 2.6 5-5.4"/></svg><span>Free</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr>
     <tr>
@@ -5944,7 +5944,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose"><span class="not-available">Not declared</span></td>
       <td data-label="Identification"><span class="badge badge--warning"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Probable</span></span></td>
       <td data-label="Requests (30d)" class="num">23</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not decided</span></span></td>
+      <td data-label="Access"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not configured</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr>
     <tr>
@@ -5961,7 +5961,7 @@ button.card { color: inherit; font: inherit; }
       <td data-label="Stated purpose"><span class="not-available">Not declared</span></td>
       <td data-label="Identification"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Unknown</span></span></td>
       <td data-label="Requests (30d)" class="num">4</td>
-      <td data-label="Access" data-debt-hidden="V5-access-agent-decision"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not decided</span></span></td>
+      <td data-label="Access"><span class="badge badge--unknown"><svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" data-icon-size="default" fill="none" stroke="currentColor" stroke-width="var(--icon-stroke,1.75)" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 17.2h.01"/></svg><span>Not configured</span></span></td>
       <td data-label="Actions"><a class="btn btn--quiet" href="#screen-access" data-access-change>Change</a></td>
     </tr></tbody>
       </table>
@@ -11131,7 +11131,12 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       p.openForm = openForm;
       var seen = visCard(body, 'Every agent seen');
       p.agNote = seen.appendChild(el('p', 'vis-note'));
-      p.agents = visTable(seen, 'Automated clients observed', ['Agent', 'Type', 'Stated purpose', 'Identification', 'Requests seen']);
+      // Agents no rule decides (V5-access-agent-decision): agents_without_decision from the same list call.
+      p.warn = seen.appendChild(el('div', 'callout callout--warning')); p.warn.id = 'access-undecided'; p.warn.hidden = true;
+      var wp = p.warn.appendChild(el('div')).appendChild(el('p'));
+      p.warnN = wp.appendChild(el('strong')); wp.appendChild(document.createTextNode(' '));
+      AIOL_I18N.set(wp.appendChild(el('span')), 'They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to.');
+      p.agents = visTable(seen, 'Automated clients observed', ['Agent', 'Type', 'Stated purpose', 'Identification', 'Requests seen', 'Access']);
       return p;
     }, function () {
       return Promise.all([api('/telemetry/access-policies?limit=200'), api('/telemetry/agents?limit=200'), connectionRole()]);
@@ -11173,9 +11178,11 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       });
       if (!pol.items.length) visRow(p.rules, [AIOL_I18N.set(visNA(), 'No rules yet.')]);
       AIOL_I18N.set(p.agNote, '{n|distinct client|distinct clients}. There is no filter that hides unrecognised ones.', { n: ag.total });
+      p.warn.hidden = !ag.agents_without_decision;
+      AIOL_I18N.set(p.warnN, '{n|agent|agents} without a decision yet.', { n: ag.agents_without_decision || 0 });
       ag.items.forEach(function (a) {
         visRow(p.agents, [visAgent(a), visWord(el('span'), VIS_ACTOR, a.actor_type), visWord(el('span'), VIS_PURPOSE, a.declared_purpose),
-          visBadge(VIS_CONFIDENCE, a.confidence), visNum(a.observation_count)]);
+          visBadge(VIS_CONFIDENCE, a.confidence), visNum(a.observation_count), visBadge(VIS_TIER, a.decision)]);
       });
       if (!ag.items.length) visRow(p.agents, [AIOL_I18N.set(visNA(), 'No automated clients seen yet.')]);
     }, 'Could not load AI access ({error}).');
@@ -16324,7 +16331,10 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Company website": "وب‌سایت شرکت",
     "(optional)": "(اختیاری)",
     "Send me occasional product updates (optional).": "گاهی خبرهای تازهٔ محصول را برایم بفرستید (اختیاری).",
-    "No offer yet": "هنوز پیشنهاد فروشی نیست"
+    "No offer yet": "هنوز پیشنهاد فروشی نیست",
+    "{n|agent|agents} without a decision yet.": "برای {n} عامل هنوز تصمیمی گرفته نشده است.",
+    "6 agents without a decision yet.": "برای ۶ عامل هنوز تصمیمی گرفته نشده است.",
+    "They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to.": "این عامل‌ها اجازهٔ عبور دارند و به‌عنوان «پیکربندی‌نشده» ثبت می‌شوند، نه «مجاز»، چون کسی آن را انتخاب نکرده است. عاملی که بی‌صدا و بی تصمیم اجازهٔ عبور می‌گیرد، همان راهی است که یک سایت را بی‌آنکه موافقت کرده باشد به پیکرهٔ آموزش مدل می‌کشاند."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

@@ -246,6 +246,32 @@ def evaluate(
     )
 
 
+def tiers_for_agents(db: Session, *, organization_id: UUID, agents) -> dict:
+    """The tier `evaluate()` would give each agent for its declared purpose, from ONE read of the rule table
+    (V5-access-agent-decision): the agents list shows every agent's decision without one evaluation per agent.
+    `agents` are rows with `id`, `actor_type` and `declared_purpose`. The four levels and their order are
+    `evaluate()`'s; a test compares the two on every level so they cannot drift. No match is UNSET
+    (Not configured), never FREE."""
+    policies = list(db.execute(select(AccessPolicy).where(AccessPolicy.organization_id == organization_id)).scalars())
+    return {a.id: _first_tier(policies, a.id, a.actor_type, a.declared_purpose) for a in agents}
+
+
+def _first_tier(policies: list, agent_id: UUID, actor_type: ActorType, purpose: AccessPurpose) -> AccessTier:
+    if actor_type == ActorType.HUMAN:
+        return AccessTier.FREE
+    levels = (
+        lambda p: p.agent_id == agent_id and p.actor_type is None and p.purpose == purpose,
+        lambda p: p.agent_id == agent_id and p.actor_type is None and p.purpose is None,
+        lambda p: p.agent_id is None and p.actor_type == actor_type and p.purpose == purpose,
+        lambda p: p.agent_id is None and p.actor_type == actor_type and p.purpose is None,
+    )
+    for matches in levels:
+        for p in policies:
+            if matches(p):
+                return p.tier
+    return AccessTier.UNSET
+
+
 def list_policies(
     db: Session,
     *,

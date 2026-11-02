@@ -2126,3 +2126,13 @@ The Offers and Availability columns on #screen-products (V5-products-offer-summa
 | English | Persian |
 |---|---|
 | No offer yet | هنوز پیشنهاد فروشی نیست |
+
+## Agent decisions (Phase B)
+
+The Access column and the no-decision warning on #screen-access (V5-access-agent-decision). Agent (عامل), Not configured (پیکربندی‌نشده) and corpus (پیکره) follow the entries above; the sample label Not decided became Not configured, the live label.
+
+| English | Persian |
+|---|---|
+| {n|agent|agents} without a decision yet. | برای {n} عامل هنوز تصمیمی گرفته نشده است. |
+| 6 agents without a decision yet. | برای ۶ عامل هنوز تصمیمی گرفته نشده است. |
+| They are allowed through and recorded as Not configured, not as Allowed, because nobody chose it. An undecided agent that is quietly let through is how a site ends up in a training corpus it never agreed to. | این عامل‌ها اجازهٔ عبور دارند و به‌عنوان «پیکربندی‌نشده» ثبت می‌شوند، نه «مجاز»، چون کسی آن را انتخاب نکرده است. عاملی که بی‌صدا و بی تصمیم اجازهٔ عبور می‌گیرد، همان راهی است که یک سایت را بی‌آنکه موافقت کرده باشد به پیکرهٔ آموزش مدل می‌کشاند. |
