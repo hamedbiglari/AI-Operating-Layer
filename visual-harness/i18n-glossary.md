@@ -2110,3 +2110,11 @@ The Company website field on #screen-signup (V5-signup-website-field). Website (
 |---|---|
 | Company website | وب‌سایت شرکت |
 | (optional) | (اختیاری) |
+
+## Sign-up product-updates opt-in (Phase A)
+
+The opt-in box on #screen-signup (V5-signup-marketing-optin). (optional) = (اختیاری) as for the website field.
+
+| English | Persian |
+|---|---|
+| Send me occasional product updates (optional). | گاهی خبرهای تازهٔ محصول را برایم بفرستید (اختیاری). |

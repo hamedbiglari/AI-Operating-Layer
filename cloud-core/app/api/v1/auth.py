@@ -91,6 +91,7 @@ class SignupRequest(BaseModel):
     owner_email: EmailStr
     owner_name: str = Field(min_length=1, max_length=200)
     website: str | None = Field(default=None, max_length=255)   # optional company website (V5-signup-website-field)
+    marketing_optin: bool = False   # "Send me occasional product updates" (V5-signup-marketing-optin); stored with its date
 
     @field_validator("website")
     @classmethod
@@ -114,7 +115,8 @@ def signup_request(payload: SignupRequest, request: Request, db: Session = Depen
     address already has an account."""
     ip = client_ip(request)
     out = signup_code_service.request_signup(db, email=payload.owner_email, organization_name=payload.organization_name,
-                                             owner_name=payload.owner_name, ip=ip, website=payload.website)
+                                             owner_name=payload.owner_name, ip=ip, website=payload.website,
+                                             marketing_optin=payload.marketing_optin)
     if out.kind == "cooldown":
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "A code was just sent. Wait before asking for another.",
                             headers={"Retry-After": str(out.retry_after_seconds or 60)})

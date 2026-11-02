@@ -11,7 +11,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import TIMESTAMP, Integer, String
+from sqlalchemy import TIMESTAMP, Boolean, Integer, String, false
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -25,6 +25,7 @@ class SignupCode(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     organization_name: Mapped[str] = mapped_column(String(200), nullable=False)
     owner_name: Mapped[str] = mapped_column(String(200), nullable=False)
     website: Mapped[str | None] = mapped_column(String(255))   # copied to the organization when the code is verified
+    marketing_optin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
     code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     consumed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))

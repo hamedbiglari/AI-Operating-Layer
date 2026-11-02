@@ -3692,7 +3692,7 @@ button.card { color: inherit; font: inherit; }
       </div>
       <div class="auth-hp" aria-hidden="true"><label for="signup-fax">Leave this empty</label><input type="text" id="signup-fax" name="company_fax" tabindex="-1" autocomplete="off"></div>
       <label class="auth-check"><input type="checkbox" id="signup-terms" name="terms" required> <span>I agree to the <a href="#screen-signup" rel="noopener">Terms of Service</a> and <a href="#screen-signup" rel="noopener">Privacy Policy</a>.</span></label>
-      <div class="auth-hidden-field" data-debt-hidden="V5-signup-marketing-optin">
+      <div class="auth-field">
         <label class="auth-check"><input type="checkbox" id="signup-updates" name="updates"> <span>Send me occasional product updates (optional).</span></label>
       </div>
       <button type="submit" class="btn btn--primary auth-btn auth-btn--glow"><span>Create account</span></button>
@@ -13220,7 +13220,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
   if (signup) signup.addEventListener('submit', function (e) {
     e.preventDefault();
     var err = document.getElementById('signup-error'), name = document.getElementById('signup-name'), email = document.getElementById('signup-email'),
-        site = document.getElementById('signup-site'), terms = document.getElementById('signup-terms'), hp = document.getElementById('signup-fax');
+        site = document.getElementById('signup-site'), terms = document.getElementById('signup-terms'), hp = document.getElementById('signup-fax'),
+        updates = document.getElementById('signup-updates');
     AIOL_I18N.set(err, '');
     if (hp && hp.value) return;                                   // bot filled the honeypot: silently stop
     if (!name.value.trim()) { AIOL_I18N.set(err, 'Enter your full name.'); name.focus(); return; }
@@ -13237,7 +13238,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     btn.disabled = true; AIOL_I18N.set(err, 'Sending your code…');
     fetch(L.base + '/api/v1/auth/signup/request', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ organization_name: (document.getElementById('signup-company') || {}).value || name.value.trim(),
-                             owner_email: email.value.trim(), owner_name: name.value.trim(), website: site.value.trim() || null }) })
+                             owner_email: email.value.trim(), owner_name: name.value.trim(), website: site.value.trim() || null,
+                             marketing_optin: !!(updates && updates.checked) }) })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) {
         if (!r.ok) throw new Error((b.error && b.error.message) || b.detail || ('HTTP ' + r.status));
         AIOL_I18N.set(err, ''); window.AIOL_SIGNUP_EMAIL = email.value.trim(); goToCode(); }); })
@@ -16316,7 +16318,8 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Font saved.": "قلم ذخیره شد.",
     "Connect to AI Core to change the font.": "برای تغییر قلم به AI Core وصل شوید.",
     "Company website": "وب‌سایت شرکت",
-    "(optional)": "(اختیاری)"
+    "(optional)": "(اختیاری)",
+    "Send me occasional product updates (optional).": "گاهی خبرهای تازهٔ محصول را برایم بفرستید (اختیاری)."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

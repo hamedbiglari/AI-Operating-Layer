@@ -6,9 +6,10 @@ than deleting the row, preserving audit/history integrity.
 """
 
 import uuid
+from datetime import datetime
 
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import TIMESTAMP, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -44,6 +45,8 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     # NULL for a passwordless owner created by email-code sign-up (ADR-106); such a user signs in with a code.
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # When the user agreed to occasional product updates at sign-up; null = no consent (V5-signup-marketing-optin).
+    marketing_optin_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
 
     organization: Mapped["Organization"] = relationship(back_populates="users")  # noqa: F821
 

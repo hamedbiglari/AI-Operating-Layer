@@ -195,3 +195,21 @@ def test_a_website_that_is_not_a_web_address_is_refused_before_anything_is_sent(
     r = client.post(REQ, json={"organization_name": "Toranjebin Co", "owner_email": _email(), "owner_name": "Marzieh", "website": bad})
     assert r.status_code == 422, r.text
     assert mailbox == []
+
+
+# ---------------------------------------------------------------- product-updates consent (V5-signup-marketing-optin)
+def test_product_updates_consent_is_stored_with_the_date_it_was_given(client: TestClient, mailbox, db_session) -> None:
+    email = _email()
+    r = client.post(REQ, json={"organization_name": "Toranjebin Co", "owner_email": email, "owner_name": "Marzieh", "marketing_optin": True})
+    assert r.status_code == 202, r.text
+    pending = db_session.execute(select(SignupCode).where(SignupCode.email == email)).scalar_one()
+    assert pending.marketing_optin is True
+    body = client.post(VER, json={"owner_email": email, "code": _code(mailbox)}).json()
+    given = db_session.execute(text("SELECT marketing_optin_at FROM users WHERE id = :u"), {"u": body["user"]["id"]}).scalar_one()
+    assert given == pending.created_at          # dated when the person ticked the box, not when the code arrived
+
+
+@pytest.mark.parametrize("extra", [{}, {"marketing_optin": False}])
+def test_no_product_updates_consent_stores_none(client: TestClient, mailbox, db_session, extra) -> None:
+    body = _signup(client, mailbox, _email(), **extra)
+    assert db_session.execute(text("SELECT marketing_optin_at FROM users WHERE id = :u"), {"u": body["user"]["id"]}).scalar_one() is None

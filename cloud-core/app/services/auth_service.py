@@ -10,6 +10,8 @@ Kept out of the API layer so it's independently testable and reusable
 (e.g. by a future CLI/admin tool) without going through HTTP.
 """
 
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -38,6 +40,7 @@ def register_organization(
     owner_name: str,
     owner_password: str | None,
     website: str | None = None,
+    marketing_optin_at: datetime | None = None,
 ) -> tuple[Organization, User]:
     """owner_password=None creates a passwordless owner who signs in with an emailed code (ADR-106)."""
     base_slug = slugify(organization_name)
@@ -63,6 +66,7 @@ def register_organization(
         role=UserRole.OWNER,
         status=UserStatus.ACTIVE,
         password_hash=hash_password(owner_password) if owner_password else None,
+        marketing_optin_at=marketing_optin_at,
     )
     db.add(owner)
 
