@@ -110,7 +110,7 @@ not on preference.
 | **P11-mcp** | No MCP server; capability manifest only | **DEFERRED** by §63 (MCP = future/secondary). ADR-058 |
 | **P11-ask-context** | `/ai/ask` does not accept a `customer_context_id`; it always evaluates context-free | **OPEN** — deliberate for v1 (no external party should attach to a stored customer context without a consent story) |
 | **P11-cursor-pagination** | Offset pagination can still skip/repeat rows over a mutating dataset; the tiebreak fixes ordering determinism, not snapshot isolation | **OPEN** — cursor pagination not implemented |
-| **MARKITDOWN** | Document normalization absent; `Document.content` accepts plain text only | **OPEN — deferred Phase 3 work.** Audit: `docs/audits/MARKITDOWN_AUDIT.md`. Not in Master Spec; needs an ADR before adoption |
+| **MARKITDOWN** | Document normalization absent; `Document.content` accepts plain text only | **CLOSED — was already done** (register-accuracy correction, Phase B-3): MarkItDown is the normalization engine behind `app/ingestion/converter.py` (`default_converter()`), adopted in ADR-065 (docs/DECISIONS.md); conversions produce Markdown (`GET /documents/{id}/markdown`).
 
 ## Phase 12
 
@@ -127,8 +127,8 @@ not on preference.
 |----|------|--------|-------|
 | **P3-vision** | Level 4 vision interpretation of figures/charts not built; `vision_model` always NULL | **DEFERRED** — needs a provider + cost policy | Phase 3 follow-up |
 | **P3-scanned-ocr** | Full-page OCR for scanned PDFs not built; no scanned fixture | **DEFERRED** | Phase 3 follow-up |
-| **P3-original-retention** | Uploaded bytes are discarded after conversion; `storage_path` is NULL. §10 asks for the original to be preserved | **OPEN** — needs an object-store decision | Phase 3 follow-up |
-| **P3-async-ingest** | Upload is synchronous; §40 wants 202 + job_id via Celery | **OPEN** — Celery exists (Phase 5) | Phase 3 follow-up |
+| **P3-original-retention** | Uploaded bytes are discarded after conversion; `storage_path` is NULL. §10 asks for the original to be preserved | **CLOSED — was already done** (register-accuracy correction, Phase B-3): originals are kept in the source store (`AIOL_SOURCE_STORE`) and `document_conversions.storage_path` is set at upload (P12-01, ADR-070); `tests/test_original_retention.py` (11) and `test_original_is_retained_before_any_conversion` pass. | Phase 3 follow-up |
+| **P3-async-ingest** | Upload is synchronous; §40 wants 202 + job_id via Celery | **CLOSED — was already done** (register-accuracy correction, Phase B-3): `POST /documents/upload` answers 202 with `job_id`, `document_id` and `conversion_id` and queues `ingest_document_job` on Celery; `tests/test_async_ingestion.py` covers it (and now the stalled-job sweep). | Phase 3 follow-up |
 | **P3-benchmark** | No 50/200/1000-document benchmark | **OPEN** — §19 | Phase 3 follow-up |
 | **P9-plugin-canonical-md** | Plugin still renders `post_content`, not the canonical Knowledge representation (ADR-067) | **OPEN** | Phase 9 adapter |
 | **P12-budget-race** | Budget is read→decide→write; §38 wants atomic reservation | **CLOSED — was already done** (register-accuracy correction, Phase B-3): `visibility_service.reserve_budget()` is a single conditional UPDATE (P12-16, ADR-069), with `release_reservation()` and settlement; `tests/test_budget_concurrency.py` (10 tests: concurrent reservations never exceed the limit, exact budget, release, double release, settlement both ways, tenant isolation) passes. The row was stale. | Phase 12 follow-up |
