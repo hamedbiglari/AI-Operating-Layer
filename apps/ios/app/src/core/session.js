@@ -10,6 +10,9 @@
 //   rotated secret as theft and revokes the session.
 // * Sign-out revokes on the server first (best effort), then always clears local state. It never deletes
 //   server-side conversations.
+// * The emailed code's challenge (SEC-login-code-lockout): returned by /auth/login-code/request, held in memory
+//   only (never the vault, never storage) and sent with the code; a code works only with its own challenge.
+//   Each new request replaces it; a sign-in or sign-out clears it.
 
 const VAULT_KEY = 'aiol.refresh';
 
@@ -26,6 +29,8 @@ export class Session {
     this.listeners = new Set();
     this.inflight = null;
   }
+
+  #challenge = null;
 
   on(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
   #emit() { for (const fn of this.listeners) fn(this); }
@@ -47,15 +52,18 @@ export class Session {
   }
 
   async requestCode(email) {
-    return this.http.post('/auth/login-code/request', { email }, { auth: false });
+    const data = await this.http.post('/auth/login-code/request', { email }, { auth: false });
+    this.#challenge = data?.challenge ?? null;
+    return data;
   }
 
   async signIn({ email, code, password, acceptTerms = false, termsVersion = null }) {
-    const body = code ? { grant: 'login_code', email, code } : { grant: 'password', email, password };
+    const body = code ? { grant: 'login_code', email, challenge: this.#challenge, code } : { grant: 'password', email, password };
     // ADR-139: the sign-in checkbox. AI Core refuses without it and records it as consent.
     Object.assign(body, { accept_terms: acceptTerms, terms_version: termsVersion,
                           client_platform: this.bridge.kind === 'unknown' ? null : this.bridge.kind });
     const data = await this.http.post('/auth/native/session', body, { auth: false });
+    this.#challenge = null;
     await this.#accept(data);
     await this.#loadMe();
     this.state = 'signed_in';
@@ -101,6 +109,7 @@ export class Session {
   }
 
   async #clearLocal() {
+    this.#challenge = null;
     this.accessToken = null;
     this.expiresAt = 0;
     this.user = null;

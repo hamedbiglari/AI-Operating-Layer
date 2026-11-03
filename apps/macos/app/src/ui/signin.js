@@ -1,4 +1,4 @@
-// Sign-in screen. Two methods, both already used by AIOL: an emailed six-digit code (default) and a password.
+// Sign-in screen. Two methods, both already used by AIOL: an emailed eight-digit code (default) and a password.
 // Nothing about the session is decided here; the server's answer is shown as it is written.
 import { h } from './dom.js';
 import { icon } from './icons.js';
@@ -10,7 +10,7 @@ export function signInView({ t, session, links, openLink, onSignedIn, terms }) {
   const error = h('p', { class: 'error-text', role: 'alert' });
   const email = h('input', { type: 'email', id: 'si-email', autocomplete: 'username', required: true, inputmode: 'email' });
   const code = h('input', { type: 'text', id: 'si-code', autocomplete: 'one-time-code', inputmode: 'numeric',
-                            pattern: '[0-9]{6}', maxlength: '6' });
+                            pattern: '[0-9]{8}', maxlength: '8' });
   const password = h('input', { type: 'password', id: 'si-password', autocomplete: 'current-password' });
   const codeRow = h('div', { hidden: true }, h('label', { for: 'si-code', text: t('signin.code') }), code);
   const pwRow = h('div', { hidden: true }, h('label', { for: 'si-password', text: t('signin.password') }), password);

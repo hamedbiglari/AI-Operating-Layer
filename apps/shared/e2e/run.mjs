@@ -20,6 +20,7 @@ function loadPlaywright() {
 const { chromium } = loadPlaywright();
 mkdirSync(new URL('./out/', import.meta.url), { recursive: true });
 import { start } from '../scripts/serve.mjs';
+import { startCatcher } from './smtp-catcher.mjs';
 
 const API = process.env.AIOL_API ?? 'http://127.0.0.1:8010/api/v1';
 const PORT = Number(process.env.PORT || 5174);
@@ -74,6 +75,11 @@ async function signIn(page, who) {
 }
 
 const server = await start(PORT);
+// SEC-login-code-lockout: AI Core's real SMTP sender delivers sign-in codes to this local catcher (E2E_SMTP_PORT; AI Core
+// must run with SMTP_HOST=127.0.0.1, SMTP_PORT=<the same port>, SMTP_STARTTLS=false). Without it the code sign-in
+// below fails loudly rather than being skipped.
+const SMTP_PORT = Number(process.env.E2E_SMTP_PORT || 0);
+const catcher = SMTP_PORT ? await startCatcher(SMTP_PORT) : null;
 // PW_EXE: an installed Chromium to use instead of the one matching playwright-core (as in visual-harness/e2e).
 const browser = await chromium.launch(process.env.PW_EXE ? { executablePath: process.env.PW_EXE } : {});
 try {
@@ -311,6 +317,39 @@ try {
   await p2.screenshot({ path: 'e2e/out/phone-menu.png' });
   await phone.close();
 
+  // Sign in with an emailed code through the real UI: AI Core emails it, the catcher receives it, the code and the
+  // challenge of that request go to /auth/native/session.
+  if (!catcher) check('emailed-code sign-in: E2E_SMTP_PORT is set (an SMTP catcher receives the code)', false,
+                      'set E2E_SMTP_PORT and start AI Core with SMTP_HOST=127.0.0.1 SMTP_PORT=<port> SMTP_STARTTLS=false');
+  else {
+    const codeCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const cp = await codeCtx.newPage();
+    const bodies = [];
+    cp.on('request', (r) => { if (r.url().endsWith('/auth/native/session')) bodies.push(r.postDataJSON()); });
+    await cp.goto(url);
+    await cp.locator('#si-email').fill(owner.email);
+    const already = catcher.messages.length;
+    await cp.getByRole('button', { name: 'Email me a code' }).click();
+    const got = await waitUntil(() => catcher.messages.length > already, 15000);
+    const mail = catcher.messages.at(-1);
+    const emailed = got && /\b(\d{8})\b/.exec(mail.raw);
+    check('emailed-code sign-in: the catcher received one message for this address, with an 8-digit code',
+          !!(got && emailed && mail.to.some((t) => t.includes(owner.email))),
+          got ? `to=${mail.to.join(',')} code=${emailed ? 'found' : 'missing'}` : 'no email captured within 15 s');
+    if (emailed) {
+      await cp.locator('#si-code').fill(emailed[1]);
+      await cp.locator('#si-terms').check();
+      await cp.getByRole('button', { name: 'Sign in', exact: true }).click();
+      const inShell = await cp.locator('#shell').waitFor({ timeout: 15000 }).then(() => true, () => false);
+      check('emailed-code sign-in: the code and its challenge open the shell', inShell
+            && bodies.length === 1 && bodies[0].grant === 'login_code' && /^[0-9a-f-]{36}$/.test(bodies[0].challenge ?? ''),
+            JSON.stringify(bodies.map((b) => ({ grant: b.grant, challenge: !!b.challenge }))));
+      const kept = await cp.evaluate(() => JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }));
+      check('emailed-code sign-in: the challenge is not kept in storage', !kept.includes(bodies[0]?.challenge ?? '\u0000'));
+    }
+    await codeCtx.close();
+  }
+
   check('no console errors during the run', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '));
   await ctx.close();
 } catch (err) {
@@ -318,6 +357,7 @@ try {
 } finally {
   await browser.close();
   server.close();
+  catcher?.close();
 }
 console.log(`\n${results.length - failed}/${results.length} checks passed`);
 process.exit(failed ? 1 : 0);

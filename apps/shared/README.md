@@ -55,6 +55,8 @@ cd cloud-core && APP_ENV=development CORS_ALLOWED_ORIGINS=http://127.0.0.1:5174 
 
 ```bash
 cd apps/shared && node e2e/run.mjs   # PLAYWRIGHT_CORE=<path to playwright-core> as in visual-harness/e2e
+# The emailed-code sign-in needs E2E_SMTP_PORT=2525 here and AI Core started with
+# SMTP_HOST=127.0.0.1 SMTP_PORT=2525 SMTP_STARTTLS=false (e2e/smtp-catcher.mjs receives the code).
 ```
 
 ### Native shell tests (any host with Rust; Linux also needs libwebkit2gtk-4.1-dev)

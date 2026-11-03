@@ -19,15 +19,33 @@ function setup(handler) {
   return { bridge, http, session, f };
 }
 
+const CODE_REQUEST = (req) => req.url.endsWith('/auth/login-code/request');
+
 test('sign-in keeps the access token in memory and the refresh secret only in the vault', async () => {
-  const { bridge, session, f } = setup((req) => (req.url.endsWith('/auth/native/session') ? { body: TOKENS(1) } : { body: ME }));
-  await session.signIn({ email: 'a@b.dev', code: '123456' });
+  const { bridge, session, f } = setup((req) => (CODE_REQUEST(req) ? { body: { challenge: 'ch-1' } }
+    : req.url.endsWith('/auth/native/session') ? { body: TOKENS(1) } : { body: ME }));
+  await session.requestCode('a@b.dev');
+  await session.signIn({ email: 'a@b.dev', code: '12345678' });
   assert.equal(session.state, 'signed_in');
   assert.equal(session.token(), 'a1');
   assert.equal(await bridge.vaultGet('aiol.refresh'), 'sid.secret1');
-  assert.deepEqual(f.calls[0].body, { grant: 'login_code', email: 'a@b.dev', code: '123456', accept_terms: false,
-                                      terms_version: null, client_platform: 'web' });
-  assert.ok(!f.calls[0].url.includes('secret'), 'no secret in a URL');
+  assert.deepEqual(f.calls[1].body, { grant: 'login_code', email: 'a@b.dev', challenge: 'ch-1', code: '12345678',
+                                      accept_terms: false, terms_version: null, client_platform: 'web' });
+  assert.ok(!f.calls[1].url.includes('secret'), 'no secret in a URL');
+});
+
+test('the code is sent with the challenge of the latest request, which is never stored (SEC-login-code-lockout)', async () => {
+  let n = 0;
+  const { bridge, session, f } = setup((req) => (CODE_REQUEST(req) ? { body: { challenge: `ch-${++n}` } }
+    : req.url.endsWith('/auth/native/session') ? { body: TOKENS(1) } : { body: ME }));
+  await session.requestCode('a@b.dev');
+  await session.requestCode('a@b.dev');                       // "send again": the newer challenge replaces the first
+  await session.signIn({ email: 'a@b.dev', code: '12345678' });
+  assert.equal(f.calls[2].body.challenge, 'ch-2');
+  assert.deepEqual([...bridge.vault.values()].filter((v) => String(v).startsWith('ch-')), []);   // vault: the refresh secret only
+  await session.signOut();
+  await session.signIn({ email: 'a@b.dev', code: '12345678' }).catch(() => {});
+  assert.equal(f.calls.filter((c) => c.url.endsWith('/auth/native/session')).at(-1).body.challenge, null);
 });
 
 test('concurrent refreshes share one rotation (a second rotation would look like theft)', async () => {
