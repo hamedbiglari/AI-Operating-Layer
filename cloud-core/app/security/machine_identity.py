@@ -41,9 +41,11 @@ from app.models.enums import (
     CredentialStatus,
     InstallationStatus,
     OrganizationStatus,
+    SiteStatus,
 )
 from app.models.installation import Installation, InstallationCredential
 from app.models.organization import Organization
+from app.models.site import Site
 from app.security.passwords import hash_password, verify_password
 
 _PREFIX = "aiol"
@@ -143,6 +145,12 @@ def resolve_machine_identity(request: Request, db: Session) -> MachineIdentity:
     installation = db.get(Installation, credential.installation_id)
     if installation is None or installation.status != InstallationStatus.ACTIVE:
         raise _AUTH_EXCEPTION
+    # An installation bound to a site works only while that site is ACTIVE: archiving a site disconnects its
+    # plugin, and setting it active again reconnects it with no data change (security audit run-1).
+    if installation.site_id is not None:
+        site = db.get(Site, installation.site_id)
+        if site is None or site.status != SiteStatus.ACTIVE:
+            raise _AUTH_EXCEPTION
 
     organization = db.get(Organization, installation.organization_id)
     if organization is None or organization.status != OrganizationStatus.ACTIVE:

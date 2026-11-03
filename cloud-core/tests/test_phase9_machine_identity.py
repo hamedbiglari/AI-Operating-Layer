@@ -116,6 +116,49 @@ def test_suspended_installation_blocks_its_credentials(client: TestClient, regis
     assert client.get("/api/v1/adapter/identity", headers=_machine(token)).status_code == 401
 
 
+def test_archiving_a_site_disconnects_its_installation_and_unarchiving_restores_it(
+    client: TestClient, register_org
+) -> None:
+    # Security audit run-1 (deferred unit, Medium [AUTH]): archiving a site used to leave its WordPress
+    # credentials working; archiving means "set this aside", so the plugin must be disconnected.
+    org = register_org()
+    site = _site(client, org["headers"], "archive.example")
+    inst = _installation(client, org["headers"], site["id"])
+    _, token = _credential(client, org["headers"], inst["id"])
+    other = _installation(client, org["headers"], _site(client, org["headers"], "other.example")["id"])
+    _, other_token = _credential(client, org["headers"], other["id"])
+    assert client.get("/api/v1/adapter/identity", headers=_machine(token)).status_code == 200
+
+    assert client.delete(f"/api/v1/sites/{site['id']}", headers=org["headers"]).status_code == 200
+    assert client.get("/api/v1/adapter/identity", headers=_machine(token)).status_code == 401       # was: 200
+    assert client.get("/api/v1/adapter/identity", headers=_machine(other_token)).status_code == 200  # only that site
+
+    r = client.patch(f"/api/v1/sites/{site['id']}", json={"status": "active"}, headers=org["headers"])
+    assert r.status_code == 200 and r.json()["status"] == "active"
+    assert client.get("/api/v1/adapter/identity", headers=_machine(token)).status_code == 200       # no data change
+
+
+def test_inactive_site_disconnects_its_installation(client: TestClient, register_org, db_session) -> None:
+    # Default-deny: any site status other than ACTIVE refuses (no route sets INACTIVE today, so it is set here).
+    from sqlalchemy import text
+
+    org = register_org()
+    site = _site(client, org["headers"], "inactive.example")
+    inst = _installation(client, org["headers"], site["id"])
+    _, token = _credential(client, org["headers"], inst["id"])
+    db_session.execute(text("UPDATE sites SET status = 'inactive' WHERE id = :s"), {"s": site["id"]})
+    db_session.flush()
+    assert client.get("/api/v1/adapter/identity", headers=_machine(token)).status_code == 401
+
+
+def test_installation_without_a_site_still_authenticates(client: TestClient, register_org) -> None:
+    org = register_org()
+    inst = _installation(client, org["headers"])                     # site_id is NULL
+    assert inst.get("site_id") is None
+    _, token = _credential(client, org["headers"], inst["id"])
+    assert client.get("/api/v1/adapter/identity", headers=_machine(token)).status_code == 200
+
+
 def test_revoked_installation_cannot_be_reactivated(client: TestClient, register_org) -> None:
     org = register_org()
     inst = _installation(client, org["headers"])
