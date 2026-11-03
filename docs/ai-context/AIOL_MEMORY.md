@@ -122,18 +122,19 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): d89f64b
+- sha (last non-docs commit): cfa93a7
 - branch: v5-implementation
-- working_tree: DIRTY — 16 uncommitted Phase B-4 Task 3 files (see §5)
-- last_ci: in progress @ d89f64b. Earlier: green @ ee50657, 19e5fc4
+- working_tree: clean
+- last_ci: not yet confirmed for d89f64b .. cfa93a7 (pushed without waiting,
+  Rule 21). Earlier: green @ ee50657, 19e5fc4
   (confirmed by the user); Phase A, B, B-3 and B-4 Task 1/2 were pushed
   without waiting for CI (Rule 21). Locally, at every commit: check-persian,
   i18n-coverage --require, source chars and the 28 browser suites green.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(knowledge): evidence kind column and per-kind card (migration 0057)" @ d89f64b
-- last feature commit: "feat(knowledge): evidence kind column and per-kind card (migration 0057)" @ d89f64b
-- last docs commit (before v35): "docs(debt): correct A3 scope and add the knowledge-chain gap" @ aef4be6
+- last code commit: "feat(admin): user soft delete, restore, and purge (migration 0058)" @ cfa93a7
+- last feature commit: "feat(admin): user soft delete, restore, and purge (migration 0058)" @ cfa93a7
+- last docs commit (before v36): "docs(debt): log the security audit's confirmed findings" @ 0f4012f
 - last fix commit: "fix(auth): secure email verification flow for profile changes" @ ee50657
 
 ## 4. Completed steps (compact)
@@ -690,7 +691,21 @@ file from scratch (do not diff). Output only the file content.
   - Task 2 @ d89f64b — evidence kind (migration 0057: evidence.kind enum);
     GET /knowledge/{id}/evidence-by-kind (one grouped query, counts only);
     new row V5-evidence-kind-autoclassify OPEN. test_evidence_kind.py (3).
-  - Task 3 — admin trash (migration 0058): built, NOT committed (see §5).
+  - Task 3 @ cfa93a7 — admin trash (migration 0058: users.deleted_at,
+    deleted_by_id). DELETE /admin/users/{id} (409 self / last active owner),
+    POST .../restore, DELETE .../purge (only from the trash); a deleted user
+    cannot sign in (password, email code, token, session refresh);
+    ?deleted_only / ?include_deleted. V5-admin-trash CLOSED,
+    V5-admin-trash-sample OPEN. test_admin_trash.py (5), auth suites 155.
+    Held for the security audit, committed after it found no Critical/High.
+- Security audit run-1 (HEAD 624aa78, standard profile, source-only, 33 of
+  35 agent runs; report ~/security-audit-skill/02-core-tool-full-repo/run-1/
+  REPORT.md): no Critical, no High. Confirmed and logged @ 0f4012f:
+  Medium [AUTH] SEC-login-code-lockout, Medium [AUTH] SEC-chat-memory-org-read,
+  Low [AUTH] SEC-job-key-precreate, Low SEC-subscriber-csv-injection,
+  Low SEC-memory-export-csv-injection. Knowledge chain: no route writes a
+  cross-org reference that is later read (V5-tenant-isolation-composite-fk
+  stays "no current bug").
 - Architecture doc: docs/ARCHITECTURE.md @ 8d28ce9 (replaces the stub in
   place; Windows is case-insensitive), §3 tenancy correction @ 49b02af.
 - Register correction @ aef4be6: A3 narrowed (migration 0010 only converted
@@ -700,69 +715,32 @@ file from scratch (do not diff). Output only the file content.
 
 ## 5. In progress — next step
 
-### CURRENT (v35) — Phase B-4 Task 3 held for the security audit
+### CURRENT (v36) — Phase B-4 complete; audit findings to triage
 
-Phase B-4 Task 3 (Admin Trash, migration 0058) is BUILT and TESTED but NOT
-COMMITTED. 16 uncommitted files:
-- cloud-core/app/api/v1/admin.py, users.py
-- cloud-core/app/models/user.py, schemas/user.py
-- cloud-core/app/security/dependencies.py
-- cloud-core/app/services/auth_service.py, auth_session_service.py,
-  login_code_service.py, user_service.py
-- docs/ai-context/DEBT_REGISTER.md (Task 3 changes only: V5-admin-trash
-  CLOSED, V5-admin-trash-sample added OPEN)
-- visual-harness/check-persian.js, e2e/admin.js, i18n-glossary.md, index.html
-- cloud-core/migrations/versions/0058_user_soft_delete.py (new)
-- cloud-core/tests/test_admin_trash.py (new)
-Commit subject when cleared: "feat(admin): user soft delete, restore, and
-purge (migration 0058)".
-
-Task 3 status:
-- test_admin_trash.py 5/5 pass (all 5 fail before the fix).
-- auth/users/sessions/login-code/signup/platform-admin/tenant-isolation:
-  155 pass.
-- Migration 0058 upgrade/downgrade/upgrade clean on a fresh DB.
-- Harness gate green (check-persian, i18n-coverage, source chars, 28
-  browser suites).
-- NOT committed because the security audit (of HEAD 624aa78, read-only,
-  source-only; output in ~/security-audit-skill/02-core-tool-full-repo/run-1)
-  has 14 UNVALIDATED candidate findings, 3 touching auth or identity:
-  * login-code-unauthenticated-account-lockout
-  * admin-created-user-unverified-email-prehijack (in users.py / admin.py /
-    user_service.py — the files Task 3 changes)
-  * cloud-core/app/security/machine_identity.py:resolve_machine_identity:pre-auth-bcrypt-unthrottled
-- Task 3 waits until these are validated and either dismissed or fixed.
-  User rule: a confirmed Critical/High [AUTH] finding pauses Phase B-4 (do
-  NOT commit Task 3); Low/Medium becomes a new debt row and B-4 continues.
-
-Security audit status at handoff (from a coverage-critic sub-agent):
-- 14 candidates, unvalidated, no severity yet; validation phase running
-  (coordinator agent a4d1aa01392e92f0a; after a rate limit resume it with
-  SendMessage, never relaunch).
-- 4 new areas proposed for follow-up: WordPress post-mapping authority,
-  shared-provider spend, Mathpix spend on editor-triggered reprocessing,
-  archiving a site does not revoke its WordPress machine credentials.
-- Composite-FK gap: no current bug in the knowledge chain; the "No current
-  bug" wording on V5-tenant-isolation-composite-fk stands. If the audit
-  reports the gap, reference the finding in that row.
-
-Next action (new chat):
-1. Ask Claude Code: "Is the security audit finished? For each of the 3
-   auth-touching candidates (login-code-unauthenticated-account-lockout,
-   admin-created-user-unverified-email-prehijack,
-   pre-auth-bcrypt-unthrottled), what is the validation status? Dismissed,
-   confirmed (with severity), or still pending?"
-2. Any auth candidate CONFIRMED Critical or High: fix first, do NOT commit
-   Task 3.
-3. All 3 DISMISSED or Low/Medium: commit Task 3, write memory v36, then fix
-   the Low/Medium issues or continue to Phase B-5.
-4. Audit still running: wait or check progress.
-
-Remaining OPEN debts: 54 rows in DEBT_REGISTER.md at aef4be6 (counted as
-rows whose status contains OPEN; includes V5-tenant-isolation-composite-fk).
-Task 3 keeps it at 54 (closes V5-admin-trash, adds V5-admin-trash-sample).
-Next planned after Task 3: Phase B-5 (schema changes, each approved first:
-V5-gap-history, V5-signup-terms-record, V5-admin-user-actions, V5-ai-prompts).
+- Phase B-4 is complete: Tasks 1-3 committed (624aa78, d89f64b, cfa93a7);
+  migrations 0056-0058 each upgrade/downgrade/upgrade clean on a fresh DB.
+- Security audit run-1 is complete (see §4). Next work, in order of risk:
+  1. SEC-login-code-lockout (Medium [AUTH]) — login_code_service.py:116.
+  2. SEC-chat-memory-org-read (Medium [AUTH]) — chat_service.py:593 and the
+     memory/job reads.
+  3. The three Low SEC-* rows.
+  4. needs_validation leads in REPORT.md (no severity; NOT in the register):
+     admin-created user with unverified email (user_service.py:59),
+     pre-auth bcrypt on bogus machine tokens (machine_identity.py:133),
+     WordPress access gate fails open on policy refresh
+     (class-aiol-client.php:148), release signing secrets on any-branch
+     builds (clients.yml:134), updater downgrade check (updates.rs:41),
+     JSON-LD script breakout (class-aiol-schema.php:78), query import with
+     no cap (queries.py:91), URL fetch with no total deadline
+     (url_source.py:256), blank-page PDF OCR cost (local_pdf.py:244).
+  5. Deferred audit units (never hunted): WordPress post-mapping authority,
+     shared-provider spend, Mathpix spend on editor reprocessing, archiving
+     a site does not revoke its machine credentials.
+- Then: Phase B-5 (schema changes, each approved first: V5-gap-history,
+  V5-signup-terms-record, V5-admin-user-actions, V5-ai-prompts).
+- Remaining OPEN debts: 58 (status cell OPEN, at 0f4012f). v35 said 54 at
+  aef4be6; the correct count there was 53 (a loose grep also matched two
+  rows that only mention OPEN).
 
 ### Earlier notes
 
@@ -833,11 +811,11 @@ V5-gap-history, V5-signup-terms-record, V5-admin-user-actions, V5-ai-prompts).
 
 ## 6. Next action
 
-State in sync → follow §5 CURRENT "Next action": get the validation status of the 3
-auth-touching audit candidates before committing Phase B-4 Task 3.
+State in sync → ask the user which comes next: the SEC-* fixes (§5 CURRENT,
+Medium [AUTH] first) or Phase B-5.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": §5 CURRENT step 1 (audit status), then steps 2-4.
+Case B — user says "go": ask which comes next (SEC-* fixes or Phase B-5).
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -956,6 +934,9 @@ Case C — anything CI-red: paste log, fix before any new work.
   has 14 unvalidated candidates, 3 touching auth. Architecture doc added and
   corrected (8d28ce9, 49b02af). A3 corrected + V5-tenant-isolation-composite-fk
   added (aef4be6). Handoff to new chat.
+- v36 @ cfa93a7 — Phase B-4 complete: Task 3 admin trash (cfa93a7,
+  migration 0058). Security audit run-1 complete: no Critical/High; 2 Medium
+  [AUTH] + 3 Low logged as SEC-* rows (0f4012f). 58 OPEN.
 
 ## 10. Historical context (from two prior sessions)
 
