@@ -107,5 +107,8 @@ T::is(strpos($tag, '<script>alert'), false, 'no second <script> element appears 
 $inner = substr($tag, strlen('<script type="application/ld+json">'), -strlen("</script>\n"));
 T::is(json_decode($inner, true)['name'] ?? null, '</script><script>alert(1)</script>', 'the hostile name still decodes to the same text');
 T::is(strpos(AIOL_Schema::script_tag(['name' => 'A & B']), '&'), false, '& is escaped too (no entity tricks)');
+$amp = AIOL_Schema::script_tag(['name' => 'A & B']);
+$amp_inner = substr($amp, strlen('<script type="application/ld+json">'), -strlen("</script>\n"));
+T::is(json_decode($amp_inner, true)['name'] ?? null, 'A & B', 'a legitimate & round-trips (A & B, not A &amp; B)');
 
 exit(T::report('schema'));
