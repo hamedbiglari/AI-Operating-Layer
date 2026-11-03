@@ -1,0 +1,27 @@
+name: WordPress plugin CI
+
+on:
+  push:
+    branches: [ main, v5-implementation ]
+  pull_request:
+    branches: [ main, v5-implementation ]
+
+jobs:
+  plugin-tests:
+    name: WordPress plugin tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      # wordpress-plugin/tests/run.sh: every PHP test that needs no WordPress, then `php -l` on every file; it exits
+      # non-zero on any failure. The whole repository is mounted because the two parity tests read canonical files
+      # outside the plugin folder; without them they print SKIP and exit 0, so a SKIP here fails the job.
+      # (No path filter yet: it runs on every push; limiting it to wordpress-plugin/** changes is a later option.)
+      - name: run.sh (php:8.3-cli)
+        shell: bash
+        run: |
+          set -o pipefail
+          docker run --rm -v "$GITHUB_WORKSPACE:/repo" -w /repo/wordpress-plugin/tests php:8.3-cli bash run.sh \
+            | tee "$RUNNER_TEMP/plugin-tests.txt"
+          if grep -q '^SKIP:' "$RUNNER_TEMP/plugin-tests.txt"; then
+            echo "::error::a plugin test was skipped (canonical file not found)"; exit 1
+          fi
