@@ -140,20 +140,23 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): cfa93a7
+- sha (last non-docs commit): 0b90da1
 - branch: v5-implementation
-- working_tree: clean
-- last_ci: not yet confirmed for d89f64b .. cfa93a7 (pushed without waiting,
-  Rule 21). Earlier: green @ ee50657, 19e5fc4
-  (confirmed by the user); Phase A, B, B-3 and B-4 Task 1/2 were pushed
-  without waiting for CI (Rule 21). Locally, at every commit: check-persian,
-  i18n-coverage --require, source chars and the 28 browser suites green.
+- working_tree: clean except cloud-core/tests/test_chat_privacy.py (untracked; Phase 4 tests, kept out of
+  every commit until Phase 4)
+- last_ci (GitHub API, actual):
+  - 4226539 green: Backend CI (test, Deployment stack) and Client suite CI (7 jobs, incl. the live
+    emailed-code sign-in). 11cbde0 and 2160dc9 have no runs; ancestors of 4226539, covered by its run.
+  - 8e99e67 green: Backend CI only ran (no other workflow triggered; the PHP tests had no CI job yet).
+  - 78d2d11 green: WordPress plugin CI (first CI run of the plugin tests) and Backend CI.
+  - d4e8970 .. 0b90da1: see the v37 report (polled after the push).
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(admin): user soft delete, restore, and purge (migration 0058)" @ cfa93a7
-- last feature commit: "feat(admin): user soft delete, restore, and purge (migration 0058)" @ cfa93a7
-- last docs commit (before v36): "docs(debt): log the security audit's confirmed findings" @ 0f4012f
-- last fix commit: "fix(auth): secure email verification flow for profile changes" @ ee50657
+- last code commit: "test(wordpress): & in a product name round-trips through the JSON-LD block" @ 0b90da1
+- last fix commit: "fix(auth): archiving a site disconnects its WordPress installation" @ d4e8970
+- last docs commit (before v37): "docs(memory): Rule 22, feature review questions" @ 731ff73
+- OPEN count rule: a row is OPEN when its Status cell starts with OPEN (bold-insensitive; whatever follows
+  is commentary). Do not re-litigate. Count at 0b90da1: 59.
 
 ## 4. Completed steps (compact)
 
@@ -733,34 +736,43 @@ file from scratch (do not diff). Output only the file content.
 
 ## 5. In progress — next step
 
-### CURRENT (v36) — Phase B-4 complete; audit findings to triage
+### CURRENT (v37) — audit remediation in progress
 
-- Rule 22 (feature review questions) applies to every feature from now on: answer the four
-  questions before each commit (see §2).
-- Phase B-4 is complete: Tasks 1-3 committed (624aa78, d89f64b, cfa93a7);
-  migrations 0056-0058 each upgrade/downgrade/upgrade clean on a fresh DB.
-- Security audit run-1 is complete (see §4). Next work, in order of risk:
-  1. SEC-login-code-lockout (Medium [AUTH]) — login_code_service.py:116.
-  2. SEC-chat-memory-org-read (Medium [AUTH]) — chat_service.py:593 and the
-     memory/job reads.
-  3. The three Low SEC-* rows.
-  4. needs_validation leads in REPORT.md (no severity; NOT in the register):
-     admin-created user with unverified email (user_service.py:59),
-     pre-auth bcrypt on bogus machine tokens (machine_identity.py:133),
-     WordPress access gate fails open on policy refresh
-     (class-aiol-client.php:148), release signing secrets on any-branch
-     builds (clients.yml:134), updater downgrade check (updates.rs:41),
-     JSON-LD script breakout (class-aiol-schema.php:78), query import with
-     no cap (queries.py:91), URL fetch with no total deadline
-     (url_source.py:256), blank-page PDF OCR cost (local_pdf.py:244).
-  5. Deferred audit units (never hunted): WordPress post-mapping authority,
-     shared-provider spend, Mathpix spend on editor reprocessing, archiving
-     a site does not revoke its machine credentials.
-- Then: Phase B-5 (schema changes, each approved first: V5-gap-history,
-  V5-signup-terms-record, V5-admin-user-actions, V5-ai-prompts).
-- Remaining OPEN debts: 58 (status cell OPEN, at 0f4012f). v35 said 54 at
-  aef4be6; the correct count there was 53 (a loose grep also matched two
-  rows that only mention OPEN).
+- Rule 22 (feature review questions) applies to every feature: answer the four questions before each
+  commit (see §2).
+- Done since v36 (all pushed):
+  - 6c4ea90 SEC row line refs; 49b02af/aef4be6 tenancy FK doc + A3 correction (earlier).
+  - SEC-login-code-lockout, option B: d6c5a20 (migration 0059), 11cbde0 backend, 2160dc9 harness,
+    4226539 native + CI emailed-code e2e. "B implemented at 11cbde0; residual bounded DoS per SEC row."
+    The row stays OPEN (partial) until the email sign-in link lands; then CLOSED with the criterion-2
+    exception written in (GPU ~2 ms per request; Argon2id is the future improvement; criterion 3 passes).
+  - cc1d1c7 Persian review records (docs/phase3-fa-review.md, docs/captcha-pow-fa-review.md).
+  - 8e99e67 JSON-LD break-out fix (audit High, WordPress public pages); 78d2d11 CI job for the plugin
+    tests; 0b90da1 & round-trip test.
+  - d4e8970 archived (any non-ACTIVE) site disconnects its WordPress installation (Medium [AUTH]).
+- Audited at 624aa78; fixes landed at 11cbde0 .. d4e8970 (and 8e99e67 for the plugin).
+- Retroactive four-question answers for 8e99e67 and 78d2d11 are in the session report, not in commit
+  bodies (pushed history not rewritten).
+- SEC-chat-memory-org-read: severity reviewed, kept Medium — do not re-rate without new evidence. The
+  row still needs that clause (with the audit's rationale quoted) when Phase 4 closes it.
+- Next, in order:
+  1. Phase 4: SEC-chat-memory-org-read (tests drafted in the untracked test_chat_privacy.py; plan: owner-
+     only reads of chat-* jobs/memory, no question in job.goal, rows deleted with the conversation).
+  2. Phase 5: SEC-job-key-precreate + the two CSV injection rows (SEC-subscriber-csv-injection,
+     SEC-memory-export-csv-injection).
+  3. Phase 6 (as briefed by the owner).
+  4. CAPTCHA/PoW/email work, email sign-in link FIRST (it closes SEC-login-code-lockout), then PoW
+     (single-use seeds in Postgres: used_pow_seeds, owner-approved schema), then Turnstile behind the
+     provider interface (TurnstileVerifier / NullVerifier; kill switch CAPTCHA_PROVIDER, restart-only).
+     Tier 0 = fewer than 2 requests from this IP in the last minute AND fewer than 2 for this address in
+     the last hour; Tier 1 = CAPTCHA token or PoW D=25; 428 on missing proof; per-IP 5/min (2/min in
+     fallback); per-user 5/hour (not tightened in fallback). Persian strings: docs/captcha-pow-fa-review.md
+     (owner review pending).
+- Debt row to add after the current fixes: V5-native-i18n-gate-gap (native i18n.js not covered by
+  check-persian.js; pre-existing; OPEN, Apps / i18n).
+- Audit areas still open as findings (not rows yet): uncapped query import (queries.py:82, Medium), URL
+  fetch with no total deadline (url_source.py:216, Low/Medium), blank-page PDF OCR (local_pdf.py, Low,
+  only with tesseract).
 
 ### Earlier notes
 
@@ -957,6 +969,10 @@ Case C — anything CI-red: paste log, fix before any new work.
 - v36 @ cfa93a7 — Phase B-4 complete: Task 3 admin trash (cfa93a7,
   migration 0058). Security audit run-1 complete: no Critical/High; 2 Medium
   [AUTH] + 3 Low logged as SEC-* rows (0f4012f). 58 OPEN.
+- v37 @ 0b90da1 — Rule 22 added. SEC-login-code-lockout option B shipped (d6c5a20 .. 4226539; OPEN
+  partial until the email link). JSON-LD High fixed (8e99e67) with a plugin CI job (78d2d11) and a
+  round-trip test (0b90da1). Archived sites disconnect their WordPress installation (d4e8970). OPEN count
+  rule recorded; 59 OPEN (v36's 58 was a pattern miss: P9-woo-ambiguity). Next: Phase 4.
 
 ## 10. Historical context (from two prior sessions)
 
