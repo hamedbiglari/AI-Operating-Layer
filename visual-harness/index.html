@@ -7029,7 +7029,7 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     </div>
   </nav>
 
-<section class="card" style="margin-block-start:var(--space-5)" id="admin-trash" data-debt-hidden="V5-admin-trash">
+<section class="card" style="margin-block-start:var(--space-5)" id="admin-trash" data-debt-hidden="V5-admin-trash-sample">
     <h2 style="margin-top:0" id="h-admin-trash">Deleted users</h2>
     <p style="color:var(--text-muted);font-size:var(--text-sm);margin-top:0">Deleting a user moves them here rather than erasing them immediately. A wrongly deleted account can be restored; a permanently deleted one cannot, so the irreversible step is kept separate and explicit.</p>
     <div class="trash-bar">
@@ -11616,7 +11616,32 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     return bar;
   }
   function adminUsersScreen(panel) {
-    var LIMIT = 50, st = { offset: 0, q: '' };
+    var LIMIT = 50, st = { offset: 0, q: '', view: 'active', showDeleted: false };
+    // Trash (V5-admin-trash): move to the trash, restore, delete permanently; the list is re-read and the result said.
+    function trashAction(p, call, done, args) {
+      call.then(function () { return panel.__visLoad(); }).then(function () { p.say('done', done, args); }).catch(function (e) {
+        p.say('error', 'Not done: {error}', { error: e.message });
+      });
+    }
+    function trashCell(p, u, me) {
+      var w = el('span', 'aic-actions');
+      function btn(label, danger) { var b = w.appendChild(el('button', 'btn btn--quiet' + (danger ? ' btn--danger' : ''))); b.type = 'button'; AIOL_I18N.set(b, label); return b; }
+      if (u.deleted_at) {
+        btn('Restore').addEventListener('click', function () {
+          trashAction(p, api('/admin/users/' + encodeURIComponent(u.id) + '/restore', { method: 'POST' }), '{who} restored.', { who: u.email });
+        });
+        btn('Delete permanently', true).addEventListener('click', function () {
+          if (!window.confirm(AIOL_I18N.format('Delete {email} permanently? This cannot be undone.', { email: u.email }, AIOL_I18N.lang()))) return;
+          trashAction(p, api('/admin/users/' + encodeURIComponent(u.id) + '/purge', { method: 'DELETE' }), '{who} deleted permanently.', { who: u.email });
+        });
+      } else if (!me || !me.user || me.user.id !== u.id) {
+        btn('Delete', true).addEventListener('click', function () {
+          if (!window.confirm(AIOL_I18N.format('Move {email} to the trash? They cannot sign in until restored.', { email: u.email }, AIOL_I18N.lang()))) return;
+          trashAction(p, api('/admin/users/' + encodeURIComponent(u.id), { method: 'DELETE' }), '{who} moved to the trash.', { who: u.email });
+        });
+      }
+      return w;
+    }
     // Grant or revoke, then re-read the list and say what happened; the server's refusals get their own sentence.
     function changeGrant(p, call, done, args) {
       call.then(function () { return panel.__visLoad(); }).then(function () { p.say('done', done, args); }).catch(function (e) {
@@ -11659,6 +11684,19 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
         changeGrant(p, api('/admin/grant', { method: 'POST', body: /^[0-9a-f-]{36}$/i.test(who) ? { user_id: who } : { email: who } }),
           'Platform admin granted to {who}.', { who: who });
       });
+      // Active / Deleted (platform admins) and Show deleted users (organization owners and admins).
+      p.views = body.appendChild(el('div', 'page-actions admin-trash-views')); p.views.setAttribute('role', 'group');
+      var viewsName = p.views.appendChild(el('span', 'visually-hidden')); viewsName.id = 'admin-views-name'; AIOL_I18N.set(viewsName, 'Users to show');
+      p.views.setAttribute('aria-labelledby', 'admin-views-name');
+      p.viewBtns = [['active', 'Active users'], ['deleted', 'Deleted users']].map(function (v) {
+        var b = p.views.appendChild(el('button', 'btn')); b.type = 'button'; b.id = 'admin-view-' + v[0]; AIOL_I18N.set(b, v[1]);
+        b.addEventListener('click', function () { if (st.view === v[0]) return; st.view = v[0]; st.offset = 0; panel.__visLoad(); });
+        return b;
+      });
+      p.showDel = body.appendChild(el('label', 'field admin-show-deleted'));
+      var sd = p.showDel.appendChild(el('input')); sd.type = 'checkbox'; sd.id = 'admin-show-deleted';
+      var sdt = p.showDel.appendChild(el('span')); AIOL_I18N.set(sdt, 'Show deleted users');
+      sd.addEventListener('change', function () { st.showDeleted = sd.checked; st.offset = 0; panel.__visLoad(); });
       p.card = visCard(body, 'Users'); p.note = p.card.appendChild(el('p', 'vis-note')); p.table = p.card.appendChild(el('div'));
       p.pager = adminPager(p.card, st, LIMIT, function () { panel.__visLoad(); });
       return p;
@@ -11666,21 +11704,29 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
       return connectionMe().then(function (me) {
         var platform = !!(me && me.is_platform_admin);
         var path = platform ? '/admin/users?limit=' + LIMIT + '&offset=' + st.offset + (st.q ? '&q=' + encodeURIComponent(st.q) : '')
-          : '/users?limit=' + LIMIT + '&offset=' + st.offset;
+            + (st.view === 'deleted' ? '&deleted_only=true' : '')
+          : '/users?limit=' + LIMIT + '&offset=' + st.offset + (st.showDeleted ? '&include_deleted=true' : '');
         return api(path).then(function (page) { return { page: page, platform: platform, me: me }; });
       });
     }, function (p, r, status) {
       p.say = status;
-      var page = r.page; p.bar.hidden = !r.platform; p.table.textContent = '';
-      AIOL_I18N.set(p.note, r.platform ? 'Every user on the platform: {n|user|users}.' : 'Users of your organization: {n|user|users}.', { n: page.total });
-      var heads = r.platform ? ['Name', 'Email', 'Organization', 'Role', 'Status', 'Joined', 'Platform admin'] : ['Name', 'Email', 'Role', 'Status', 'Joined'];
+      var page = r.page, trash = r.platform && st.view === 'deleted'; p.bar.hidden = !r.platform; p.table.textContent = '';
+      var role = r.me && r.me.user ? r.me.user.role : null;
+      p.views.hidden = !r.platform; p.showDel.hidden = r.platform || ['owner', 'admin'].indexOf(role) === -1;
+      p.viewBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.id === 'admin-view-' + st.view)); });
+      if (trash) AIOL_I18N.set(p.note, 'Deleted users: {n|user|users}. They cannot sign in; restore one, or delete it permanently.', { n: page.total });
+      else AIOL_I18N.set(p.note, r.platform ? 'Every user on the platform: {n|user|users}.' : 'Users of your organization: {n|user|users}.', { n: page.total });
+      var heads = r.platform ? ['Name', 'Email', 'Organization', 'Role', 'Status', trash ? 'Deleted' : 'Joined', trash ? '' : 'Platform admin', '']
+        : ['Name', 'Email', 'Role', 'Status', 'Joined'];
       var rows = visTable(p.table, r.platform ? 'Every user on the platform' : 'Users of your organization', heads);
       page.items.forEach(function (u) {
         var a = el('a'); a.href = '#screen-admin-user-detail?id=' + encodeURIComponent(u.id); a.appendChild(adminText(u.name));
         var cells = [a, identifier(u.email)];
         if (r.platform) cells.push(adminText(u.organization_name));
-        cells.push(visWord(el('span'), ADMIN_ROLE, u.role), visBadge(ADMIN_USER_STATUS, u.status), adminDay(u.created_at));
-        if (r.platform) cells.push(grantCell(p, u, r.me));
+        var stat = el('span'); stat.appendChild(visBadge(ADMIN_USER_STATUS, u.status));
+        if (u.deleted_at) { var db = stat.appendChild(el('span', 'badge badge--danger')); db.style.marginInlineStart = 'var(--space-1)'; AIOL_I18N.set(db, 'Deleted'); }
+        cells.push(visWord(el('span'), ADMIN_ROLE, u.role), stat, adminDay(trash ? u.deleted_at : u.created_at));
+        if (r.platform) cells.push(trash ? el('span') : grantCell(p, u, r.me), trashCell(p, u, r.me));
         visRow(rows, cells);
       });
       if (!page.items.length) visRow(rows, [AIOL_I18N.set(visNA(), 'No users match.')]);
@@ -16588,7 +16634,20 @@ Amir</p><p class="inbox-thread__timestamp">2026-09-02 10:11</p></div><div class=
     "Human clinical": "بالینی انسانی",
     "Other": "سایر",
     "Not classified yet": "هنوز دسته‌بندی نشده",
-    "Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.": "کاربرد سنتی و شواهد بالینی دو ادعای متفاوت دربارهٔ دو چیز متفاوت‌اند. این رابط هرگز اجازه نمی‌دهد یکی جای دیگری را بگیرد."
+    "Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other.": "کاربرد سنتی و شواهد بالینی دو ادعای متفاوت دربارهٔ دو چیز متفاوت‌اند. این رابط هرگز اجازه نمی‌دهد یکی جای دیگری را بگیرد.",
+    "Users to show": "کاربران برای نمایش",
+    "Active users": "کاربران فعال",
+    "Deleted users": "کاربران حذف‌شده",
+    "Show deleted users": "نمایش کاربران حذف‌شده",
+    "Deleted": "حذف‌شده",
+    "Restore": "بازگردانی",
+    "Delete {email} permanently? This cannot be undone.": "{email} برای همیشه حذف شود؟ این کار برگشت‌پذیر نیست.",
+    "Move {email} to the trash? They cannot sign in until restored.": "{email} به سطل زباله منتقل شود؟ تا بازگردانده نشود نمی‌تواند وارد شود.",
+    "{who} moved to the trash.": "{who} به سطل زباله منتقل شد.",
+    "{who} restored.": "{who} بازگردانده شد.",
+    "{who} deleted permanently.": "{who} برای همیشه حذف شد.",
+    "Not done: {error}": "انجام نشد: {error}",
+    "Deleted users: {n|user|users}. They cannot sign in; restore one, or delete it permanently.": "کاربران حذف‌شده: {n}. نمی‌توانند وارد شوند؛ یکی را بازگردانید یا برای همیشه حذفش کنید."
   };
   window.AIOL_I18N.register(FA);
   var PATTERNS = [

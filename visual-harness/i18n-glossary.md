@@ -2205,3 +2205,23 @@ The Evidence by kind card on #screen-knowledge-detail (V5-knowledge-detail-evide
 | Other | سایر |
 | Not classified yet | هنوز دسته‌بندی نشده |
 | Traditional use and clinical evidence are different claims about different things. The interface never lets one stand in for the other. | کاربرد سنتی و شواهد بالینی دو ادعای متفاوت دربارهٔ دو چیز متفاوت‌اند. این رابط هرگز اجازه نمی‌دهد یکی جای دیگری را بگیرد. |
+
+## Admin trash (Phase B-4)
+
+Active users / Deleted users and the trash actions on #screen-admin-users (V5-admin-trash). Trash (سطل زباله), restore (بازگردانی) and Delete permanently follow the existing entries.
+
+| English | Persian |
+|---|---|
+| Users to show | کاربران برای نمایش |
+| Active users | کاربران فعال |
+| Deleted users | کاربران حذف‌شده |
+| Show deleted users | نمایش کاربران حذف‌شده |
+| Deleted | حذف‌شده |
+| Restore | بازگردانی |
+| Delete {email} permanently? This cannot be undone. | {email} برای همیشه حذف شود؟ این کار برگشت‌پذیر نیست. |
+| Move {email} to the trash? They cannot sign in until restored. | {email} به سطل زباله منتقل شود؟ تا بازگردانده نشود نمی‌تواند وارد شود. |
+| {who} moved to the trash. | {who} به سطل زباله منتقل شد. |
+| {who} restored. | {who} بازگردانده شد. |
+| {who} deleted permanently. | {who} برای همیشه حذف شد. |
+| Not done: {error} | انجام نشد: {error} |
+| Deleted users: {n|user|users}. They cannot sign in; restore one, or delete it permanently. | کاربران حذف‌شده: {n}. نمی‌توانند وارد شوند؛ یکی را بازگردانید یا برای همیشه حذفش کنید. |

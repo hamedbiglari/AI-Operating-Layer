@@ -47,6 +47,12 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # When the user agreed to occasional product updates at sign-up; null = no consent (V5-signup-marketing-optin).
     marketing_optin_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    # Soft delete for the admin trash (migration 0058, V5-admin-trash): a deleted user cannot sign in and leaves the
+    # lists until a platform admin restores or purges them. deleted_by_id = the platform admin who deleted them.
+    deleted_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True, index=True)
+    deleted_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL", name="fk_users_deleted_by_id_users"), nullable=True
+    )
 
     organization: Mapped["Organization"] = relationship(back_populates="users")  # noqa: F821
 

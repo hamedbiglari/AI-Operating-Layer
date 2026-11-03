@@ -14,6 +14,10 @@
  *           server-side search), the detail from GET /admin/users/{id}, the
  *           overview and the organizations; a 403 from /admin is reported;
  *           Persian over live content. Grants (V5-admin-grant): Make admin
+ *           Trash (V5-admin-trash): Delete asks and DELETEs /admin/users/{id}
+ *           (not on your own row); Deleted users lists ?deleted_only=true with
+ *           Restore (POST .../restore) and Delete permanently (asks, DELETE
+ *           .../purge); an org owner gets Show deleted users (?include_deleted).
  *           POSTs /admin/grant {user_id}, Revoke asks and DELETEs
  *           /admin/grant/{id}, a platform admin's own row has no Revoke,
  *           Grant admin... prompts for an email, an unknown one is reported.
@@ -34,6 +38,7 @@ const fa = (...codes) => String.fromCharCode(...codes);
 const iso = (s) => fa(0x2068) + s + fa(0x2069);
 const D = (n) => String(n).replace(/[0-9]/g, (c) => fa(0x6F0 + Number(c)));
 const FA = {
+  deletedUsers: [0x6A9, 0x627, 0x631, 0x628, 0x631, 0x627, 0x646, 0x20, 0x62D, 0x630, 0x641, 0x200C, 0x634, 0x62F, 0x647],
   displayMode: [0x62D, 0x627, 0x644, 0x62A, 0x20, 0x646, 0x645, 0x627, 0x6CC, 0x634],
   onlyPlatform: [0x641, 0x642, 0x637, 0x20, 0x645, 0x62F, 0x6CC, 0x631, 0x627, 0x646, 0x20, 0x67E, 0x644, 0x62A, 0x641, 0x631, 0x645, 0x20, 0x645, 0x6CC, 0x200C, 0x62A, 0x648, 0x627, 0x646, 0x646, 0x62F, 0x20, 0x627, 0x6CC, 0x646, 0x20, 0x635, 0x641, 0x62D, 0x647, 0x20, 0x631, 0x627, 0x20, 0x628, 0x628, 0x6CC, 0x646, 0x646, 0x62F, 0x2E],
   yourUsers: [0x6A9, 0x627, 0x631, 0x628, 0x631, 0x627, 0x646, 0x20, 0x633, 0x627, 0x632, 0x645, 0x627, 0x646, 0x20, 0x634, 0x645, 0x627, 0x3A, 0x20, 0x7B, 0x6E, 0x7D, 0x20, 0x6A9, 0x627, 0x631, 0x628, 0x631, 0x2E],
@@ -76,11 +81,22 @@ function installMock(me) {
     if (p === '/auth/me') return reply({ user: { id: 'u-1', name: 'Hamed B', email: 'owner@shop.test', role: window.__me.role },
       organization: { name: 'Alpha', slug: 'alpha', status: 'active' }, is_platform_admin: window.__me.platform });
     if (p.indexOf('/admin/') === 0 && window.__denied) return reply({ error: { message: 'Platform administrators only' } }, 403);
+    let t = p.match(/^\/admin\/users\/([^/?]+)(\/restore|\/purge)?$/);
+    if (t && (method === 'DELETE' || method === 'POST')) {
+      const x = window.__all.find((y) => y.id === t[1]);
+      if (t[2] === '/purge') { window.__all = window.__all.filter((y) => y.id !== t[1]); return Promise.resolve(new Response(null, { status: 204 })); }
+      if (t[2] === '/restore') { x.deleted_at = null; return reply(x); }
+      x.deleted_at = '2026-10-30T09:00:00Z'; return Promise.resolve(new Response(null, { status: 204 }));
+    }
+    if (p === '/users?limit=50&offset=0&include_deleted=true') return page((window.__users || []).concat([Object.assign(
+      { id: 'u-9', name: 'Gone', email: 'gone@shop.test', role: 'editor', status: 'active', organization_id: 'o-Alpha', created_at: '2026-09-01T09:00:00Z',
+        updated_at: '2026-10-01T09:00:00Z' }, { deleted_at: '2026-10-29T09:00:00Z' })]));
     if (p === '/users?limit=50&offset=0') return page(window.__users || []);
     let m = p.match(/^\/users\/([^/?]+)$/);
     if (m) { const x = (window.__users || []).find((y) => y.id === m[1]); return x ? reply(x) : reply({ detail: 'nope' }, 404); }
-    m = p.match(/^\/admin\/users\?limit=50&offset=0(&q=(.*))?$/);
-    if (m) { const q = m[2] ? decodeURIComponent(m[2]).toLowerCase() : ''; const items = window.__all.filter((x) => !q || (x.email + x.name + x.organization_name).toLowerCase().indexOf(q) !== -1); return page(items); }
+    m = p.match(/^\/admin\/users\?limit=50&offset=0(&q=([^&]*))?(&deleted_only=true)?$/);
+    if (m) { const q = m[2] ? decodeURIComponent(m[2]).toLowerCase() : '', trash = !!m[3];
+      const items = window.__all.filter((x) => (!q || (x.email + x.name + x.organization_name).toLowerCase().indexOf(q) !== -1) && (!!x.deleted_at === trash)); return page(items); }
     m = p.match(/^\/admin\/users\/([^/?]+)$/);
     if (m) return reply(window.__all.find((y) => y.id === m[1]));
     if (p === '/admin/overview') return reply({ organizations: { total: 12, active: 10 }, users: { total: 40, active: 25 },
@@ -138,6 +154,13 @@ function installMock(me) {
     ['Users of your organization: 2 users.', ['Name', 'Email', 'Role', 'Status', 'Joined'],
       [['Hamed B', 'owner@shop.test', 'Owner', 'Active', '1 Sept 2026'], ['Vic', 'vic@shop.test', 'Viewer', 'Invited', '1 Sept 2026']], true]);
   check('org admin: the platform-only nav is hidden', await navShown(), [false, false]);
+  check('org admin (owner): Show deleted users offered; no Active/Deleted switch', await page.evaluate(() =>
+    [!document.querySelector('#screen-admin-users .admin-show-deleted').hidden, document.querySelector('#screen-admin-users .admin-trash-views').hidden]), [true, true]);
+  await page.check('#admin-show-deleted'); await settle();
+  v = await view('screen-admin-users');
+  check('Show deleted users: ?include_deleted=true; a deleted user carries the Deleted badge', [(await requests()).slice(-1), v.rows[2][3]],
+    [['GET /users?limit=50&offset=0&include_deleted=true'], 'ActiveDeleted']);
+  await page.uncheck('#admin-show-deleted'); await settle();
   await go('#screen-admin-overview');
   v = await view('screen-admin-overview');
   check('org admin: the overview says who may see it; nothing requested', [v.state, v.message, v.cardShown, (await requests()).filter((r) => r.indexOf('/admin') !== -1)],
@@ -167,9 +190,10 @@ function installMock(me) {
     ['GET /admin/organizations?limit=50&offset=0', 'GET /admin/overview', 'GET /admin/users?limit=50&offset=0']);
   await go('#screen-admin-users');
   v = await view('screen-admin-users');
-  check('platform admin: every user, with the organization and the admin column; search shown', [v.note, v.heads, v.rows[2], v.rows[0][6], v.search],
-    ['Every user on the platform: 3 users.', ['Name', 'Email', 'Organization', 'Role', 'Status', 'Joined', 'Platform admin'],
-      ['Bea', 'bea@beta.test', 'Beta', 'Editor', 'Suspended', '1 Sept 2026', 'Make admin'], 'Platform admin', false]);
+  check('platform admin: every user, with the organization, the admin column and Delete (not on your own row); search shown',
+    [v.note, v.heads, v.rows[2], v.rows[0][6], v.rows[0][7], v.search],
+    ['Every user on the platform: 3 users.', ['Name', 'Email', 'Organization', 'Role', 'Status', 'Joined', 'Platform admin', ''],
+      ['Bea', 'bea@beta.test', 'Beta', 'Editor', 'Suspended', '1 Sept 2026', 'Make admin', 'Delete'], 'Platform admin', '', false]);
   check('platform admin: the platform-only nav is shown', await navShown(), [true, true]);
   before = (await requests()).length;
   await page.fill('#admin-users-q', 'beta'); await page.dispatchEvent('#admin-users-q', 'change'); await settle();
@@ -189,6 +213,31 @@ function installMock(me) {
   await page.evaluate(() => document.getElementById('admin-grant').click()); await settle();
   check('Grant admin...: prompts, POSTs the email; an unknown one is reported', [(await writes()).slice(-1), await usersMsg()],
     [['POST /admin/grant {"email":"nobody@example.test"}'], 'No user or platform admin matches that.']);
+  // Trash (V5-admin-trash): the list is still filtered to Bea.
+  const rowButton = (label) => page.evaluate((l) => Array.from(document.querySelectorAll('#screen-admin-users .vis-live tbody button')).find((b) => b.textContent === l).click(), label);
+  answer = true;
+  await rowButton('Delete'); await settle();
+  check('Delete: asks, one DELETE, the message; Bea leaves the active list', [dialogs.slice(-1)[0], (await writes()).slice(-1), await usersMsg(),
+    (await view('screen-admin-users')).rows], ['Move ' + iso('bea@beta.test') + ' to the trash? They cannot sign in until restored.', ['DELETE /admin/users/u-3'],
+      iso('bea@beta.test') + ' moved to the trash.', [['No users match.']]]);
+  await page.click('#admin-view-deleted'); await settle();
+  v = await view('screen-admin-users');
+  check('Deleted users: ?deleted_only=true; Deleted date; Restore and Delete permanently', [(await requests()).slice(-1), v.note, v.heads[5], v.rows[0]],
+    [['GET /admin/users?limit=50&offset=0&q=beta&deleted_only=true'], 'Deleted users: 1 user. They cannot sign in; restore one, or delete it permanently.',
+      'Deleted', ['Bea', 'bea@beta.test', 'Beta', 'Editor', 'SuspendedDeleted', '30 Oct 2026', '', 'RestoreDelete permanently']]);
+  await rowButton('Restore'); await settle();
+  check('Restore: one POST, the message; the trash is empty again', [(await writes()).slice(-1), await usersMsg(), (await view('screen-admin-users')).rows],
+    [['POST /admin/users/u-3/restore'], iso('bea@beta.test') + ' restored.', [['No users match.']]]);
+  await page.click('#admin-view-active'); await settle(); await rowButton('Delete'); await settle();
+  await page.click('#admin-view-deleted'); await settle(); await rowButton('Delete permanently'); await settle();
+  check('Delete permanently: asks, one DELETE .../purge, the message', [dialogs.slice(-1)[0], (await writes()).slice(-1), await usersMsg()],
+    ['Delete ' + iso('bea@beta.test') + ' permanently? This cannot be undone.', ['DELETE /admin/users/u-3/purge'], iso('bea@beta.test') + ' deleted permanently.']);
+  await lang('fa');
+  check('fa: the Deleted users switch', await page.evaluate(() => document.getElementById('admin-view-deleted').textContent), F('deletedUsers'));
+  await lang('en');
+  await page.click('#admin-view-active'); await settle();
+  await page.evaluate((a) => { window.__all = a.map((x) => Object.assign({}, x)); }, ALL);
+  await page.dispatchEvent('#admin-users-q', 'change'); await settle();   // re-read, still filtered to Bea
   answer = null;
   await page.evaluate(() => document.querySelector('#screen-admin-users .vis-live tbody a').click()); await settle();
   check('platform admin: the detail from /admin/users/{id}, with the organization', (await view('screen-admin-user-detail')).facts,

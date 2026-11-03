@@ -55,7 +55,8 @@ def _locked(th: LoginCodeThrottle, now: datetime) -> Outcome | None:
 
 def _user(db: Session, email: str) -> User | None:
     user = db.execute(select(User).where(func.lower(User.email) == email.strip().lower())).scalar_one_or_none()
-    return user if user is not None and user.status == UserStatus.ACTIVE else None
+    # A deleted user (V5-admin-trash) is treated like an unknown address: no code, the same answer.
+    return user if user is not None and user.status == UserStatus.ACTIVE and user.deleted_at is None else None
 
 
 def request_code(db: Session, *, email: str) -> Outcome:

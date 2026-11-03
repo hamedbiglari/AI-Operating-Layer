@@ -30,22 +30,27 @@ _OWNER_ONLY = HTTPException(status_code=status.HTTP_403_FORBIDDEN,
 def _active_owner_count(db: Session, organization_id: UUID) -> int:
     return db.execute(select(func.count()).select_from(User).where(
         User.organization_id == organization_id, User.role == UserRole.OWNER,
-        User.status == UserStatus.ACTIVE)).scalar_one()
+        User.status == UserStatus.ACTIVE, User.deleted_at.is_(None))).scalar_one()
 
 
 @router.get("", response_model=Page[UserRead])
 def list_users(
     pagination: PaginationParams = Depends(),
     sort: SortParams = Depends(),
+    include_deleted: bool = False,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Page[UserRead]:
+    # Deleted users (V5-admin-trash) are listed only when an owner or admin asks.
+    if include_deleted and current_user.role not in ADMIN_ROLES:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only an owner or admin can list deleted users.")
     items, total = user_service.list_users(
         db,
         organization_id=current_user.organization_id,
         sort=sort,
         limit=pagination.limit,
         offset=pagination.offset,
+        include_deleted=include_deleted,
     )
     return Page(items=items, total=total, limit=pagination.limit, offset=pagination.offset)
 

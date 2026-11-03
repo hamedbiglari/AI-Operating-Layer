@@ -26,9 +26,12 @@ class EmailAlreadyRegisteredError(Exception):
 
 
 def list_users(
-    db: Session, *, organization_id: UUID, limit: int, offset: int, sort: SortParams | None = None
+    db: Session, *, organization_id: UUID, limit: int, offset: int, sort: SortParams | None = None,
+    include_deleted: bool = False,
 ) -> tuple[list[User], int]:
     base = select(User).where(User.organization_id == organization_id)
+    if not include_deleted:
+        base = base.where(User.deleted_at.is_(None))
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
     rows = (
         db.execute(apply_sort(base, User, sort, "created_at", SortDirection.ASC).limit(limit).offset(offset))

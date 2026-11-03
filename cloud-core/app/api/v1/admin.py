@@ -121,8 +121,14 @@ def _users_stmt():
 
 @router.get("/users", response_model=Page[AdminUser])
 def list_users(p: PaginationParams = Depends(), sort: SortParams = Depends(), q: str | None = Query(default=None, max_length=200),
-               status: UserStatus | None = None, _: User = PlatformAdmin, db: Session = Depends(get_db)) -> Page[AdminUser]:
+               status: UserStatus | None = None, include_deleted: bool = False, deleted_only: bool = False,
+               _: User = PlatformAdmin, db: Session = Depends(get_db)) -> Page[AdminUser]:
+    """Deleted users (V5-admin-trash) are left out unless include_deleted=true; deleted_only=true is the trash."""
     stmt = _users_stmt()
+    if deleted_only:
+        stmt = stmt.where(User.deleted_at.is_not(None))
+    elif not include_deleted:
+        stmt = stmt.where(User.deleted_at.is_(None))
     if q and q.strip():
         like = f"%{q.strip()}%"
         stmt = stmt.where(or_(User.email.ilike(like), User.name.ilike(like), Organization.name.ilike(like)))
@@ -140,6 +146,77 @@ def get_user(user_id: UUID, _: User = PlatformAdmin, db: Session = Depends(get_d
     if row is None:
         raise HTTPException(status_code=404, detail="User not found.")
     return _admin_user(row[0], row[1], row[2])
+
+
+# --- Trash (V5-admin-trash, migration 0058) ----------------------------------------------------------------------
+def _target(db: Session, user_id: UUID) -> User:
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return user
+
+
+@router.delete("/users/{user_id}", status_code=204)
+def delete_user(user_id: UUID, actor: User = PlatformAdmin, db: Session = Depends(get_db)) -> Response:
+    """Move a user to the trash: they cannot sign in and leave the lists; nothing else changes. Refused (409) for
+    yourself and for the last active owner of an organization. Deleting a deleted user changes nothing."""
+    from app.models.enums import UserRole
+
+    target = _target(db, user_id)
+    if target.id == actor.id:
+        raise HTTPException(status_code=409, detail="You cannot delete your own account.")
+    if target.deleted_at is not None:
+        return Response(status_code=204)
+    if target.role == UserRole.OWNER and target.status == UserStatus.ACTIVE:
+        owners = db.execute(select(func.count()).select_from(User).where(
+            User.organization_id == target.organization_id, User.role == UserRole.OWNER,
+            User.status == UserStatus.ACTIVE, User.deleted_at.is_(None))).scalar_one()
+        if owners <= 1:
+            raise HTTPException(status_code=409, detail="This is the last owner of its organization. Make another user owner first.")
+    target.deleted_at = datetime.now(timezone.utc)
+    target.deleted_by_id = actor.id
+    record_audit_log(db, organization_id=target.organization_id, user_id=actor.id, action="user.deleted",
+                     resource_type="user", resource_id=target.id, new_value={"email": target.email})
+    db.commit()
+    return Response(status_code=204)
+
+
+@router.post("/users/{user_id}/restore", response_model=AdminUser)
+def restore_user(user_id: UUID, actor: User = PlatformAdmin, db: Session = Depends(get_db)) -> AdminUser:
+    """Take a user out of the trash; they can sign in again. Restoring a user who is not deleted changes nothing."""
+    target = _target(db, user_id)
+    if target.deleted_at is not None:
+        old = target.deleted_at.isoformat()
+        target.deleted_at = None
+        target.deleted_by_id = None
+        record_audit_log(db, organization_id=target.organization_id, user_id=actor.id, action="user.restored",
+                         resource_type="user", resource_id=target.id, old_value={"deleted_at": old})
+        db.commit()
+    return get_user(target.id, actor, db)
+
+
+@router.delete("/users/{user_id}/purge", status_code=204)
+def purge_user(user_id: UUID, actor: User = PlatformAdmin, db: Session = Depends(get_db)) -> Response:
+    """Delete a user for good. Only from the trash (409 otherwise). Rows that point at the user follow the existing
+    foreign keys; if one of them refuses, nothing is deleted and the answer is 409."""
+    from sqlalchemy import delete
+    from sqlalchemy.exc import IntegrityError
+
+    target = _target(db, user_id)
+    if target.deleted_at is None:
+        raise HTTPException(status_code=409, detail="Move the user to the trash first.")
+    org, email = target.organization_id, target.email
+    db.expunge(target)
+    try:
+        db.execute(delete(User).where(User.id == user_id))
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Other records still point to this user, so it cannot be purged.") from None
+    record_audit_log(db, organization_id=org, user_id=actor.id, action="user.purged", resource_type="user",
+                     resource_id=user_id, old_value={"email": email})
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/grant", response_model=AdminUser)

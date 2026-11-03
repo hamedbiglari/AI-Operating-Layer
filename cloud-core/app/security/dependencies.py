@@ -48,7 +48,7 @@ def get_current_user(
         raise _CREDENTIALS_EXCEPTION from None
 
     user = db.get(User, user_id)
-    if user is None:
+    if user is None or user.deleted_at is not None:   # a deleted user's tokens stop working (V5-admin-trash)
         raise _CREDENTIALS_EXCEPTION
 
     if user.status != UserStatus.ACTIVE:

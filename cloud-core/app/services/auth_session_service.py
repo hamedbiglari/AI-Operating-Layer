@@ -145,7 +145,7 @@ def rotate(db: Session, *, cookie: str | None, user_agent: str | None = None, ip
     # The session proves the cookie is current; it does not prove the account still is.
     user = db.get(User, session.user_id)
     organization = db.get(Organization, session.organization_id) if user is not None else None
-    if (user is None or user.status != UserStatus.ACTIVE or organization is None
+    if (user is None or user.status != UserStatus.ACTIVE or user.deleted_at is not None or organization is None
             or organization.status not in (OrganizationStatus.ACTIVE, OrganizationStatus.PENDING)):
         _revoke(db, session, "logout", now=now)
         db.commit()

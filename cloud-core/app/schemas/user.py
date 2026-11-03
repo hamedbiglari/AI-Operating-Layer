@@ -17,6 +17,7 @@ class UserRead(BaseModel):
     name: str
     role: UserRole
     status: UserStatus
+    deleted_at: datetime | None = None   # in the admin trash since (V5-admin-trash); null = not deleted
     created_at: datetime
     updated_at: datetime
 

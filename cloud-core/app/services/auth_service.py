@@ -120,6 +120,6 @@ def authenticate(db: Session, *, email: str, password: str) -> User | None:
         return None
     if not verify_password(password, user.password_hash):
         return None
-    if user.status != UserStatus.ACTIVE:
+    if user.status != UserStatus.ACTIVE or user.deleted_at is not None:   # deleted = the same answer as a wrong password
         return None
     return user
