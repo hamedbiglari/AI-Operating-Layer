@@ -120,6 +120,24 @@ file from scratch (do not diff). Output only the file content.
 21. CI is authoritative for full backend suites (local Windows is slow
     and memory-heavy). CI uses pgvector/pgvector:pg16.
 
+### Feature review (owner requirement, permanent)
+22. Feature review questions. Every non-trivial feature answers these four
+    questions in its report BEFORE the commit. Non-trivial = any change to
+    runtime behaviour, schema, API or auth; docs-only and typo fixes are
+    exempt. Answers go in the commit body (short form) and in the report
+    to the owner (full form). A feature that ships without them is
+    incomplete, whether or not its tests pass. Four questions only; a
+    fifth is proposed to the owner, never added unasked.
+    (1) Security: is it built the most secure way? What attack surface
+        does it add or change? What was considered and rejected?
+    (2) Efficiency: is it the most efficient way? Cost (queries,
+        requests, CPU, payload size)? Is there an obvious cheaper
+        approach not taken?
+    (3) Blast radius: what does it break elsewhere? Every caller, test
+        and contract touching the changed code, and what was checked.
+    (4) Tests before ship: the failure modes that need coverage (not
+        "the tests we wrote"); any uncovered mode is named, with why.
+
 ## 3. Repository state (verifiable)
 
 - sha (last non-docs commit): cfa93a7
@@ -717,6 +735,8 @@ file from scratch (do not diff). Output only the file content.
 
 ### CURRENT (v36) — Phase B-4 complete; audit findings to triage
 
+- Rule 22 (feature review questions) applies to every feature from now on: answer the four
+  questions before each commit (see §2).
 - Phase B-4 is complete: Tasks 1-3 committed (624aa78, d89f64b, cfa93a7);
   migrations 0056-0058 each upgrade/downgrade/upgrade clean on a fresh DB.
 - Security audit run-1 is complete (see §4). Next work, in order of risk:
