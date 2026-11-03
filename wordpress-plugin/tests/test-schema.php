@@ -96,8 +96,16 @@ $xss = AIOL_Schema::build_from_core([
 ]);
 T::is(isset($xss['offers']['url']), false, 'javascript: URL is rejected, not rendered');
 $json = json_encode($xss, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-// wp_json_encode in production adds the same protection; here we assert the
-// value survives as DATA rather than being interpreted.
 T::true(is_string($json) && strpos($json, 'alert(1)') !== false, 'hostile name is carried as data, not executed');
+
+// The <script> element itself (security audit run-1, High): JSON does not escape "<" unless asked, and
+// wp_json_encode adds no such escaping, so a Core product name containing </script> used to close the
+// JSON-LD element and start a script of its own on every public product page.
+$tag = AIOL_Schema::script_tag($xss);
+T::is(substr_count(strtolower($tag), '</script'), 1, 'a value cannot close the JSON-LD <script> element early');
+T::is(strpos($tag, '<script>alert'), false, 'no second <script> element appears in the output');
+$inner = substr($tag, strlen('<script type="application/ld+json">'), -strlen("</script>\n"));
+T::is(json_decode($inner, true)['name'] ?? null, '</script><script>alert(1)</script>', 'the hostile name still decodes to the same text');
+T::is(strpos(AIOL_Schema::script_tag(['name' => 'A & B']), '&'), false, '& is escaped too (no entity tricks)');
 
 exit(T::report('schema'));

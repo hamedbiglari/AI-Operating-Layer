@@ -73,10 +73,20 @@ class AIOL_Schema
             return; // silence rather than guesswork - see class docstring
         }
 
-        printf(
-            "<script type=\"application/ld+json\">%s</script>\n",
-            wp_json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-        );
+        echo self::script_tag($payload);
+    }
+
+    /**
+     * The JSON-LD <script> element for a payload. Pure (no WordPress needed when wp_json_encode is
+     * absent) so tests/test-schema.php can check the encoding: no value may close the element early.
+     * JSON_HEX_TAG writes < and > as < / > and JSON_HEX_AMP writes & as &, so a value such
+     * as "</script>" stays data; JSON-LD readers decode them back to the same text.
+     */
+    public static function script_tag(array $payload): string
+    {
+        $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP;
+        $json = function_exists('wp_json_encode') ? wp_json_encode($payload, $flags) : json_encode($payload, $flags);
+        return sprintf("<script type=\"application/ld+json\">%s</script>\n", $json);
     }
 
     /**
