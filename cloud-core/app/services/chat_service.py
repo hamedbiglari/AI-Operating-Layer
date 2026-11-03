@@ -590,8 +590,9 @@ def ask(db: Session, *, convo: Conversation, user: User, question: str,
     emit("generating", {"units_consulted": len(offered), "units_not_consulted": len(not_consulted)})
     # ---- one ai_job, one item: the project's single AI execution path
     job_key = f"chat-{user_msg.id}"
+    # SEC-chat-memory-org-read: the goal (and the job_state row that copies it) never repeats the question.
     job, _created = ai_job_service.create_job(
-        db, organization_id=org, job_key=job_key, goal=f"chat answer: {' '.join(question.split())}"[:1000],
+        db, organization_id=org, job_key=job_key, goal="chat answer",
         policy_id=policy.id, items=[{"key": "answer", "prompt": prompt}], stage="chat", user_id=user.id,
         knowledge_object_id=convo.knowledge_object_id, max_output_tokens=row.max_output_tokens)
     result = ai_job_service.run_job(db, job, adapters=adapters, pricing=pricing)
