@@ -29,7 +29,7 @@ def _email():
 
 
 def _code(sent):
-    return re.search(r"\b(\d{6})\b", sent[-1]["body"]).group(1)
+    return re.search(r"\b(\d{8})\b", sent[-1]["body"]).group(1)
 
 
 def _request(client, email, name="Toranjebin Co", owner="Marzieh"):
@@ -70,7 +70,7 @@ def test_wrong_code_then_lockout(client: TestClient, mailbox) -> None:
     email = _email()
     _request(client, email)
     good = _code(mailbox)
-    bad = f"{(int(good) + 1) % 1000000:06d}"
+    bad = f"{(int(good) + 1) % 100000000:08d}"
     for _ in range(signup_code_service.MAX_ATTEMPTS):
         assert client.post(VER, json={"owner_email": email, "code": bad}).status_code == 401
     r = client.post(VER, json={"owner_email": email, "code": good})      # correct code, but the request is burnt
@@ -98,7 +98,7 @@ def test_a_code_works_only_once(client: TestClient, mailbox) -> None:
 
 
 def test_verify_without_any_request(client: TestClient, mailbox) -> None:
-    assert client.post(VER, json={"owner_email": _email(), "code": "123456"}).status_code == 401
+    assert client.post(VER, json={"owner_email": _email(), "code": "12345678"}).status_code == 401
 
 
 # ---------------------------------------------------------------- throttling and enumeration
@@ -143,7 +143,8 @@ def test_without_email_delivery_the_answer_is_honest(client: TestClient, monkeyp
 def test_validation(client: TestClient, mailbox) -> None:
     assert client.post(REQ, json={"organization_name": "A", "owner_email": _email(), "owner_name": "X"}).status_code == 422
     assert client.post(REQ, json={"organization_name": "Valid Co", "owner_email": "not-an-email", "owner_name": "X"}).status_code == 422
-    assert client.post(VER, json={"owner_email": _email(), "code": "12345"}).status_code == 422
+    assert client.post(VER, json={"owner_email": _email(), "code": "1234567"}).status_code == 422
+    assert client.post(VER, json={"owner_email": _email(), "code": "123456"}).status_code == 422     # 6 digits: old
 
 
 # ---------------------------------------------------------------- tenant isolation

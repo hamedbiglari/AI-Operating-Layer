@@ -255,7 +255,8 @@ def _reset_signin_throttles():
     client = None if _redis_unreachable else _redis_client()
     if client is not None:
         try:
-            for pattern in ("ratelimit:installation:login-pw-*", "ratelimit:installation:register-ip:*"):
+            for pattern in ("ratelimit:installation:login-pw-*", "ratelimit:installation:register-ip:*",
+                            "ratelimit:installation:login-code-*"):
                 for key in client.scan_iter(pattern):
                     client.delete(key)
         except RedisConnectionError:

@@ -121,11 +121,12 @@ class Settings(BaseSettings):
 
     # --- Email one-time login code (owner requirement, phases 1/13) ---
     LOGIN_CODE_TTL_SECONDS: int = 300          # owner gave no lifetime; = resend window (INFERENCE)
-    LOGIN_CODE_RESEND_SECONDS: int = 300       # owner: resend after 5 minutes
-    LOGIN_CODE_MAX_FAILURES: int = 3           # owner: 3 wrong codes -> lock
-    LOGIN_CODE_FIRST_LOCK_SECONDS: int = 3600  # owner: 1 hour
-    LOGIN_CODE_SECOND_LOCK_SECONDS: int = 86400  # owner: 24 hours, then contact support
-    LOGIN_CODE_IP_LIMIT_PER_MINUTE: int = 30
+    LOGIN_CODE_RESEND_SECONDS: int = 300       # email-change codes only (the login code has no per-address wait)
+    LOGIN_CODE_MAX_FAILURES: int = 3           # wrong guesses that cancel one code (never the account)
+    # SEC-login-code-lockout replaced the owner's 1 h / 24 h account lock: no account lock exists.
+    LOGIN_CODE_MAX_PER_HOUR: int = 5           # codes sent per address per rolling hour; 429 and no email above
+    LOGIN_CODE_REQUEST_IP_LIMIT_PER_MINUTE: int = 5   # code requests per IP per minute (each sends an email)
+    LOGIN_CODE_IP_LIMIT_PER_MINUTE: int = 30   # code verifications per IP per minute
     # Prompt-injection defences (ADR-126). The system policy (rules + canary in the provider's system channel)
     # and output checks apply to every AI job. With quarantine on, source text scored "high" is withheld from
     # the model and replaced by a visible placeholder; off = it is still sent (fenced) but flagged.

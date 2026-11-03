@@ -34,14 +34,16 @@ def outbox(monkeypatch):
 
 
 def _code(outbox):
-    return re.search(r"\b(\d{6})\b", outbox[-1]["body"]).group(1)
+    return re.search(r"\b(\d{8})\b", outbox[-1]["body"]).group(1)
 
 
 def _native_by_code(client, register_org, outbox):
     org = register_org()
     email = org["user"]["email"]
-    assert client.post("/api/v1/auth/login-code/request", json={"email": email}).status_code == 202
-    r = client.post(N, json={"grant": "login_code", "email": email, "code": _code(outbox), **TERMS},
+    req = client.post("/api/v1/auth/login-code/request", json={"email": email})
+    assert req.status_code == 202
+    r = client.post(N, json={"grant": "login_code", "email": email, "challenge": req.json()["challenge"],
+                             "code": _code(outbox), **TERMS},
                     headers={"User-Agent": "AIOL-Desktop/0.1.0 (windows)"})
     assert r.status_code == 200, r.text
     return org, r
@@ -71,6 +73,9 @@ def test_a_grant_without_its_secret_is_refused(client, register_org):
     org = register_org()
     assert client.post(N, json={"grant": "password", "email": org["user"]["email"], **TERMS}).status_code == 422
     assert client.post(N, json={"grant": "login_code", "email": org["user"]["email"], **TERMS}).status_code == 422
+    # SEC-login-code-lockout: a code without the challenge it was issued with is refused before any check.
+    assert client.post(N, json={"grant": "login_code", "email": org["user"]["email"], "code": "12345678",
+                                **TERMS}).status_code == 422
 
 
 def test_only_the_hash_of_the_refresh_secret_is_stored(client, register_org, outbox, db_session):

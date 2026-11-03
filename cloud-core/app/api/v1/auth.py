@@ -106,12 +106,12 @@ class SignupRequest(BaseModel):
 
 class SignupVerifyRequest(BaseModel):
     owner_email: EmailStr
-    code: str = Field(min_length=6, max_length=6)
+    code: str = Field(min_length=8, max_length=8)
 
 
 @router.post("/signup/request", status_code=status.HTTP_202_ACCEPTED)
 def signup_request(payload: SignupRequest, request: Request, db: Session = Depends(get_db)) -> dict:
-    """Start a passwordless sign-up: emails a 6-digit code. The answer never reveals whether the
+    """Start a passwordless sign-up: emails an 8-digit code. The answer never reveals whether the
     address already has an account."""
     ip = client_ip(request)
     out = signup_code_service.request_signup(db, email=payload.owner_email, organization_name=payload.organization_name,
@@ -128,7 +128,7 @@ def signup_request(payload: SignupRequest, request: Request, db: Session = Depen
                             "Email delivery is not configured on this server, so a sign-up code cannot be sent.")
     return {"status": "code_sent", "resend_available_in_seconds": out.retry_after_seconds,
             "expires_in_seconds": signup_code_service.TTL_SECONDS,
-            "detail": "If that address can be registered, a 6-digit code is on its way."}
+            "detail": "If that address can be registered, an 8-digit code is on its way."}
 
 
 @router.post("/signup/verify", response_model=RegisterOrganizationResponse, status_code=status.HTTP_201_CREATED)
@@ -194,44 +194,41 @@ class LoginCodeRequest(BaseModel):
 
 class LoginCodeVerify(BaseModel):
     email: EmailStr
-    code: str = Field(min_length=6, max_length=6)
+    # SEC-login-code-lockout: the challenge returned by /login-code/request; a code works only with its own.
+    challenge: str = Field(min_length=1, max_length=64)
+    code: str = Field(min_length=8, max_length=8)
 
 
-def _ip_limit(request: Request) -> None:
+def _ip_limit(request: Request, *, sending: bool = False) -> None:
+    """Per IP: code requests have their own bucket (each sends an email); verifications share the other."""
     from app.security.rate_limit import check_rate_limit
 
     ip = client_ip(request)
-    result = check_rate_limit(installation_id=f"login-code-ip:{ip}",
-                              limit=settings.LOGIN_CODE_IP_LIMIT_PER_MINUTE)
+    bucket, limit = (("login-code-request-ip", settings.LOGIN_CODE_REQUEST_IP_LIMIT_PER_MINUTE) if sending
+                     else ("login-code-ip", settings.LOGIN_CODE_IP_LIMIT_PER_MINUTE))
+    result = check_rate_limit(installation_id=f"{bucket}:{ip}", limit=limit)
     if not result.allowed:
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests.",
                             headers={"Retry-After": str(result.retry_after)})
-
-
-def _lock_error(outcome) -> HTTPException:  # noqa: ANN001
-    message = ("Too many wrong codes. Sign-in is locked for 24 hours; contact support."
-               if outcome.contact_support else "Too many wrong codes. Sign-in is locked for 1 hour.")
-    return HTTPException(status_code=status.HTTP_423_LOCKED, detail=message,
-                         headers={"Retry-After": str(outcome.retry_after_seconds or 0)})
 
 
 @router.post("/login-code/request", status_code=status.HTTP_202_ACCEPTED)
 def request_login_code(payload: LoginCodeRequest, request: Request, db: Session = Depends(get_db)) -> dict:
     from app.services import login_code_service
 
-    _ip_limit(request)
+    _ip_limit(request, sending=True)
     outcome = login_code_service.request_code(db, email=payload.email)
     if outcome.kind == "delivery_unavailable":
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                             detail="Email delivery is not available; no code was sent.")
-    if outcome.kind == "locked":
-        raise _lock_error(outcome)
-    if outcome.kind == "cooldown":
+    if outcome.kind == "rate_limited":
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                            detail="A code was sent recently. Try again later.",
+                            detail="Too many codes were requested for this email. Try again later.",
                             headers={"Retry-After": str(outcome.retry_after_seconds)})
-    # "sent" and "unknown" are deliberately indistinguishable.
-    return {"status": "code_sent_if_account_exists", "resend_after_seconds": settings.LOGIN_CODE_RESEND_SECONDS}
+    # "sent" and "unknown" are deliberately indistinguishable: both carry a challenge (the unknown one leads
+    # nowhere). The challenge goes back with the code; only this requester has it.
+    return {"status": "code_sent_if_account_exists", "challenge": outcome.challenge,
+            "expires_in_seconds": settings.LOGIN_CODE_TTL_SECONDS}
 
 
 @router.post("/login-code/verify", response_model=TokenResponse)
@@ -239,11 +236,9 @@ def verify_login_code(payload: LoginCodeVerify, request: Request, db: Session = 
     from app.services import login_code_service
 
     _ip_limit(request)
-    outcome = login_code_service.verify_code(db, email=payload.email, code=payload.code)
+    outcome = login_code_service.verify_code(db, email=payload.email, challenge=payload.challenge, code=payload.code)
     if outcome.kind == "ok":
         return _issue_token(outcome.user)
-    if outcome.kind == "locked":
-        raise _lock_error(outcome)
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired code.")
 
 
@@ -304,9 +299,7 @@ def open_session(payload: LoginCodeVerify, request: Request, response: Response,
     from app.services import login_code_service
 
     _ip_limit(request)
-    outcome = login_code_service.verify_code(db, email=payload.email, code=payload.code)
-    if outcome.kind == "locked":
-        raise _lock_error(outcome)
+    outcome = login_code_service.verify_code(db, email=payload.email, challenge=payload.challenge, code=payload.code)
     if outcome.kind != "ok":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired code.")
     started = auth_session_service.start(
@@ -364,7 +357,8 @@ def close_session(response: Response, db: Session = Depends(get_db),
 class NativeSessionOpen(BaseModel):
     grant: Literal["login_code", "password"]
     email: EmailStr
-    code: str | None = Field(default=None, min_length=6, max_length=6)
+    challenge: str | None = Field(default=None, min_length=1, max_length=64)   # with a login_code grant
+    code: str | None = Field(default=None, min_length=8, max_length=8)
     password: str | None = Field(default=None, min_length=1, max_length=200)
     # ADR-139: the sign-in checkbox. Required for the current CLIENT_TERMS_VERSION; one tick covers everything
     # listed next to it (terms, privacy, installation verification), so nothing else is asked afterwards.
@@ -439,12 +433,11 @@ def open_native_session(payload: NativeSessionOpen, request: Request,
     if payload.grant == "login_code":
         from app.services import login_code_service
 
-        if not payload.code:
-            raise HTTPException(status_code=422, detail="code is required for the login_code grant")
+        if not payload.code or not payload.challenge:
+            raise HTTPException(status_code=422, detail="code and challenge are required for the login_code grant")
         _ip_limit(request)
-        outcome = login_code_service.verify_code(db, email=payload.email, code=payload.code)
-        if outcome.kind == "locked":
-            raise _lock_error(outcome)
+        outcome = login_code_service.verify_code(db, email=payload.email, challenge=payload.challenge,
+                                                 code=payload.code)
         if outcome.kind != "ok":
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired code.")
         user = outcome.user

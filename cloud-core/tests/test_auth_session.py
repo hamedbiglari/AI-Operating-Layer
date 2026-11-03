@@ -29,15 +29,17 @@ def outbox(monkeypatch):
 
 
 def _code(outbox):
-    return re.search(r"\b(\d{6})\b", outbox[-1]["body"]).group(1)
+    return re.search(r"\b(\d{8})\b", outbox[-1]["body"]).group(1)
 
 
 def _open(client, register_org, outbox):
     """Sign in through the browser-session route and return (org, email, response)."""
     org = register_org()
     email = org["user"]["email"]
-    assert client.post("/api/v1/auth/login-code/request", json={"email": email}).status_code == 202
-    response = client.post("/api/v1/auth/session", json={"email": email, "code": _code(outbox)})
+    r = client.post("/api/v1/auth/login-code/request", json={"email": email})
+    assert r.status_code == 202
+    response = client.post("/api/v1/auth/session", json={"email": email, "challenge": r.json()["challenge"],
+                                                         "code": _code(outbox)})
     assert response.status_code == 200, response.text
     return org, email, response
 
@@ -97,8 +99,8 @@ def test_the_browser_access_token_is_shorter_lived_than_the_api_one(client, regi
 def test_a_wrong_code_opens_no_session(client, register_org, outbox):
     org = register_org()
     email = org["user"]["email"]
-    client.post("/api/v1/auth/login-code/request", json={"email": email})
-    response = client.post("/api/v1/auth/session", json={"email": email, "code": "000000"})
+    challenge = client.post("/api/v1/auth/login-code/request", json={"email": email}).json()["challenge"]
+    response = client.post("/api/v1/auth/session", json={"email": email, "challenge": challenge, "code": "00000000"})
     assert response.status_code == 401
     assert COOKIE not in response.headers.get("set-cookie", "")
 
@@ -305,8 +307,9 @@ def test_the_session_cookie_alone_does_not_authenticate_a_chat_or_api_call(clien
 def test_the_existing_bearer_login_routes_are_unchanged(client, register_org, outbox):
     org = register_org()
     email = org["user"]["email"]
-    client.post("/api/v1/auth/login-code/request", json={"email": email})
-    response = client.post("/api/v1/auth/login-code/verify", json={"email": email, "code": _code(outbox)})
+    challenge = client.post("/api/v1/auth/login-code/request", json={"email": email}).json()["challenge"]
+    response = client.post("/api/v1/auth/login-code/verify", json={"email": email, "challenge": challenge,
+                                                                    "code": _code(outbox)})
     assert response.status_code == 200
     assert response.json()["expires_in_minutes"] == settings.ACCESS_TOKEN_EXPIRE_MINUTES
     assert COOKIE not in response.headers.get("set-cookie", ""), \

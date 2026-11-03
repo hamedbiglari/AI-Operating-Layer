@@ -41,7 +41,9 @@ class LoginCode(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 
 class LoginCodeThrottle(TimestampMixin, Base):
-    """One row per user: resend window and the two-step lockout."""
+    """One row per user. Since SEC-login-code-lockout (option B) only its existence is used: the request path
+    locks it (SELECT ... FOR UPDATE) so the hourly count cannot be raced. Every column below is no longer read
+    or written; the data is kept for forensics."""
 
     __tablename__ = "login_code_throttles"
     __table_args__ = (
@@ -53,8 +55,11 @@ class LoginCodeThrottle(TimestampMixin, Base):
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    # Not used since SEC-login-code-lockout: there is no per-address wait (resend_available_at), and wrong
+    # guesses count on login_codes.failed_attempts, not here (failed_attempts).
     resend_available_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
     failed_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    # 0 = never locked, 1 = served the 1-hour lock, 2 = 24-hour lock (contact support)
+    # Not used since SEC-login-code-lockout (no account lock exists). Was: 0 = never locked, 1 = served the
+    # 1-hour lock, 2 = 24-hour lock (contact support).
     lock_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     locked_until: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)

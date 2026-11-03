@@ -1,7 +1,7 @@
 """
 Passwordless organization sign-up (ADR-106).
 
-request -> a 6-digit code is emailed; only its HMAC is stored, with the pending organization details.
+request -> an 8-digit code is emailed; only its HMAC is stored, with the pending organization details.
 verify  -> the organization, its owner and a token are created, once.
 
 Rules: 10-minute expiry, one-time use, at most 5 wrong attempts per request, a resend cooldown and an
@@ -82,7 +82,7 @@ def request_signup(db: Session, *, email: str, organization_name: str, owner_nam
         db.delete(row)
         db.commit()
         return Outcome("sent", retry_after_seconds=RESEND_SECONDS)
-    code = f"{secrets.randbelow(1_000_000):06d}"
+    code = f"{secrets.randbelow(100_000_000):08d}"
     row.code_hash = _hash(code, row.id)
     db.commit()
     email_delivery.send(to=email, subject="Your AI Operating Layer sign-up code",
@@ -104,7 +104,7 @@ def verify_signup(db: Session, *, email: str, code: str) -> Outcome:
         return Outcome("expired")
     if row.attempts >= MAX_ATTEMPTS:
         return Outcome("too_many_attempts")
-    if not (len(code) == 6 and code.isdigit() and hmac.compare_digest(row.code_hash, _hash(code, row.id))):
+    if not (len(code) == 8 and code.isdigit() and hmac.compare_digest(row.code_hash, _hash(code, row.id))):
         row.attempts += 1
         db.commit()
         return Outcome("invalid")

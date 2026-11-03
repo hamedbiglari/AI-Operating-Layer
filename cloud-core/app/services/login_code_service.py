@@ -1,9 +1,18 @@
-"""Email one-time login code — the owner's rules (see app/models/login_code.py)."""
+"""Email one-time login code (see app/models/login_code.py), as changed by SEC-login-code-lockout (option B):
+
+- every request creates its own 8-digit code, bound to a challenge (the code row's random id) that only the
+  requester receives; a new request never cancels another code;
+- a code is accepted only with its own challenge; wrong guesses count against that one code, and
+  LOGIN_CODE_MAX_FAILURES of them cancel it; nothing ever locks the account;
+- at most LOGIN_CODE_MAX_PER_HOUR codes are sent per address per rolling hour (no email above it);
+- a sign-in cancels the user's other live codes.
+"""
 from __future__ import annotations
 
 import hashlib
 import hmac
 import secrets
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
@@ -17,6 +26,9 @@ from app.models.user import User
 from app.services import email_delivery
 from app.services.audit import record_audit_log
 
+CODE_DIGITS = 8
+_WINDOW = timedelta(hours=1)
+
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
@@ -29,28 +41,20 @@ def _hash(code: str, user_id) -> str:  # noqa: ANN001
 
 @dataclass
 class Outcome:
-    kind: str                     # sent | unknown | cooldown | locked | delivery_unavailable | ok | invalid
+    kind: str                     # sent | unknown | rate_limited | delivery_unavailable | ok | invalid
+    challenge: str | None = None
     retry_after_seconds: int | None = None
-    locked_until: datetime | None = None
-    contact_support: bool = False
     user: User | None = None
 
 
-def _throttle(db: Session, user: User) -> LoginCodeThrottle:
+def _serialize(db: Session, user: User) -> None:
+    """Holds the user's throttle row for this transaction so two requests cannot both pass the hourly count.
+    The row's own columns (failed_attempts, lock_level, locked_until, resend_available_at) are no longer used."""
     row = db.execute(select(LoginCodeThrottle).where(LoginCodeThrottle.user_id == user.id)
                      .with_for_update()).scalar_one_or_none()
     if row is None:
-        row = LoginCodeThrottle(user_id=user.id, organization_id=user.organization_id, failed_attempts=0, lock_level=0)
-        db.add(row)
+        db.add(LoginCodeThrottle(user_id=user.id, organization_id=user.organization_id))
         db.flush()
-    return row
-
-
-def _locked(th: LoginCodeThrottle, now: datetime) -> Outcome | None:
-    if th.locked_until and th.locked_until > now:
-        return Outcome("locked", locked_until=th.locked_until, contact_support=th.lock_level >= 2,
-                       retry_after_seconds=int((th.locked_until - now).total_seconds()))
-    return None
 
 
 def _user(db: Session, email: str) -> User | None:
@@ -66,22 +70,21 @@ def request_code(db: Session, *, email: str) -> Outcome:
         return Outcome("delivery_unavailable")
     user = _user(db, email)
     if user is None:
-        # Same outward answer as "sent" (no account enumeration); nothing is created or sent.
-        return Outcome("unknown")
+        # Same outward answer as "sent", with a challenge that leads nowhere; nothing is created or sent.
+        return Outcome("unknown", challenge=str(uuid.uuid4()))
     now = _now()
-    th = _throttle(db, user)
-    if (locked := _locked(th, now)) is not None:
+    _serialize(db, user)
+    recent = db.execute(select(LoginCode.created_at).where(
+        LoginCode.user_id == user.id, LoginCode.created_at > now - _WINDOW,
+    ).order_by(LoginCode.created_at)).scalars().all()
+    if len(recent) >= settings.LOGIN_CODE_MAX_PER_HOUR:
         db.commit()
-        return locked
-    if th.resend_available_at and th.resend_available_at > now:
-        db.commit()
-        return Outcome("cooldown", retry_after_seconds=int((th.resend_available_at - now).total_seconds()) + 1)
-    code = f"{secrets.randbelow(1_000_000):06d}"
-    db.execute(update(LoginCode).where(LoginCode.user_id == user.id, LoginCode.consumed_at.is_(None))
-               .values(consumed_at=now))  # a new code supersedes older ones
-    db.add(LoginCode(user_id=user.id, organization_id=user.organization_id, code_hash=_hash(code, user.id),
-                     expires_at=now + timedelta(seconds=settings.LOGIN_CODE_TTL_SECONDS)))
-    th.resend_available_at = now + timedelta(seconds=settings.LOGIN_CODE_RESEND_SECONDS)
+        return Outcome("rate_limited", retry_after_seconds=int((recent[0] + _WINDOW - now).total_seconds()) + 1)
+    code = f"{secrets.randbelow(10 ** CODE_DIGITS):0{CODE_DIGITS}d}"
+    row = LoginCode(id=uuid.uuid4(), user_id=user.id, organization_id=user.organization_id,
+                    code_hash=_hash(code, user.id),
+                    expires_at=now + timedelta(seconds=settings.LOGIN_CODE_TTL_SECONDS))
+    db.add(row)
     try:
         email_delivery.send(to=user.email, subject=f"{settings.APP_NAME} sign-in code",
                             body=f"Your sign-in code is {code}. It expires in "
@@ -90,38 +93,33 @@ def request_code(db: Session, *, email: str) -> Outcome:
         db.rollback()
         return Outcome("delivery_unavailable")
     db.commit()
-    return Outcome("sent", retry_after_seconds=settings.LOGIN_CODE_RESEND_SECONDS)
+    return Outcome("sent", challenge=str(row.id))
 
 
-def verify_code(db: Session, *, email: str, code: str) -> Outcome:
+def verify_code(db: Session, *, email: str, challenge: str, code: str) -> Outcome:
     user = _user(db, email)
     if user is None:
         return Outcome("invalid")
+    try:
+        code_id = uuid.UUID(challenge)
+    except (ValueError, TypeError, AttributeError):
+        return Outcome("invalid")
     now = _now()
-    th = _throttle(db, user)
-    if (locked := _locked(th, now)) is not None:
-        db.commit()
-        return locked
     row = db.execute(select(LoginCode).where(
-        LoginCode.user_id == user.id, LoginCode.consumed_at.is_(None), LoginCode.expires_at > now,
-    ).order_by(LoginCode.created_at.desc()).limit(1)).scalar_one_or_none()
-    good = row is not None and code.isdigit() and len(code) == 6 and \
-        hmac.compare_digest(row.code_hash, _hash(code, user.id))
-    if good:
-        row.consumed_at = now
-        th.failed_attempts, th.lock_level, th.locked_until = 0, 0, None
+        LoginCode.id == code_id, LoginCode.user_id == user.id, LoginCode.consumed_at.is_(None),
+        LoginCode.expires_at > now,
+    ).with_for_update()).scalar_one_or_none()
+    if row is None:
+        return Outcome("invalid")   # unknown, used, cancelled or expired challenge: a guess changes nothing
+    if code.isdigit() and len(code) == CODE_DIGITS and hmac.compare_digest(row.code_hash, _hash(code, user.id)):
+        db.execute(update(LoginCode).where(LoginCode.user_id == user.id, LoginCode.consumed_at.is_(None))
+                   .values(consumed_at=now))      # this code, and the user's other live codes with it
         record_audit_log(db, organization_id=user.organization_id, user_id=user.id, action="auth.login_code",
                          resource_type="user", resource_id=user.id)
         db.commit()
         return Outcome("ok", user=user)
-    th.failed_attempts += 1
-    if th.failed_attempts >= settings.LOGIN_CODE_MAX_FAILURES:
-        th.failed_attempts = 0
-        th.lock_level = min(th.lock_level + 1, 2)
-        seconds = settings.LOGIN_CODE_FIRST_LOCK_SECONDS if th.lock_level == 1 else settings.LOGIN_CODE_SECOND_LOCK_SECONDS
-        th.locked_until = now + timedelta(seconds=seconds)
-        db.commit()
-        return Outcome("locked", locked_until=th.locked_until, contact_support=th.lock_level >= 2,
-                       retry_after_seconds=seconds)
+    row.failed_attempts += 1
+    if row.failed_attempts >= settings.LOGIN_CODE_MAX_FAILURES:
+        row.consumed_at = now                     # too many wrong guesses cancel this code, not the account
     db.commit()
     return Outcome("invalid")

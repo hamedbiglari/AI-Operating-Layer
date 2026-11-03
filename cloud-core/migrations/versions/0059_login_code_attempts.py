@@ -2,8 +2,8 @@
 
 Each emailed code is bound to the challenge returned when it was requested (the code row's own id), and wrong
 guesses are counted on that row: too many cancel that one code, never the account. Additive and reversible; existing
-rows start at 0. login_code_throttles.lock_level / locked_until are no longer read but are left as they are (data kept
-for forensics).
+rows start at 0. Every column of login_code_throttles (failed_attempts, lock_level, locked_until, resend_available_at)
+is no longer read or written after this change; they are left as they are (data kept for forensics).
 
 Revision ID: 0059
 Revises: 0058
