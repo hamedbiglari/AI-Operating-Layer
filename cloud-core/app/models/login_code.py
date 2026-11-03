@@ -36,6 +36,8 @@ class LoginCode(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     consumed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    # Wrong guesses against this code (migration 0059, SEC-login-code-lockout): too many cancel this code only.
+    failed_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
 
 
 class LoginCodeThrottle(TimestampMixin, Base):
