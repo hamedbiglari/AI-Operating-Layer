@@ -122,23 +122,18 @@ file from scratch (do not diff). Output only the file content.
 
 ## 3. Repository state (verifiable)
 
-- sha (last non-docs commit): a82ea59
+- sha (last non-docs commit): d89f64b
 - branch: v5-implementation
-- working_tree: clean
-- last_ci: green @ ee50657, 19e5fc4 (confirmed by the user). Phase A
-  (9500bcd, f43c7a9, fe7f65a, f3f8f5a, f26fe15) and Phase B (3b2a2c1,
-  25dfc02, 7829c9b) pushed without waiting for CI, as the user authorised
-  (Rule 21); their CI runs are not yet confirmed, nor Phase B-3's (b48df8a ..
-  a82ea59, also pushed without waiting). Locally, at every commit:
-  check-persian, i18n-coverage --require, source chars and the 28 browser
-  suites green. Phase A backend: auth/users/tenant/sorting suites 311 pass
-  after the users column; migrations 0054 and 0055 upgrade/downgrade/upgrade
-  clean on a fresh database. Phase B backend: products/offers/patch/sorting
-  146, access/telemetry 60, visibility 57 pass.
+- working_tree: DIRTY — 16 uncommitted Phase B-4 Task 3 files (see §5)
+- last_ci: in progress @ d89f64b. Earlier: green @ ee50657, 19e5fc4
+  (confirmed by the user); Phase A, B, B-3 and B-4 Task 1/2 were pushed
+  without waiting for CI (Rule 21). Locally, at every commit: check-persian,
+  i18n-coverage --require, source chars and the 28 browser suites green.
 - last merge commit: "merge: native apps and Device Intelligence into
   v5-implementation" @ 6965956
-- last code commit: "feat(debts): delete a source that nothing depends on" @ a82ea59
-- last feature commit: "feat(debts): delete a source that nothing depends on" @ a82ea59
+- last code commit: "feat(knowledge): evidence kind column and per-kind card (migration 0057)" @ d89f64b
+- last feature commit: "feat(knowledge): evidence kind column and per-kind card (migration 0057)" @ d89f64b
+- last docs commit (before v35): "docs(debt): correct A3 scope and add the knowledge-chain gap" @ aef4be6
 - last fix commit: "fix(auth): secure email verification flow for profile changes" @ ee50657
 
 ## 4. Completed steps (compact)
@@ -686,8 +681,90 @@ file from scratch (do not diff). Output only the file content.
 - CI now runs i18n-coverage.js --require
   screen-knowledge,screen-sources,screen-detail,screen-processing,screen-provenance,screen-add,screen-matrix,screen-coverage,screen-knowledge-detail,screen-ai-executions,screen-memory,screen-chat-settings,screen-ai-catalog,screen-ai-center,screen-chat,screen-visibility,screen-visibility-detail,screen-access,screen-products,screen-device-intel,screen-login,screen-signup,screen-login-code,screen-site-blog,screen-site-sections,screen-site-subscribers,screen-settings,screen-admin-users,screen-admin-user-detail,screen-admin-overview,screen-admin-orgs
   and 28 browser suites (the last is research.js).
+- Phase A (v32): 9500bcd, f43c7a9, fe7f65a, f3f8f5a, f26fe15 + v32 (65c86fe).
+- Phase B (v33): 3b2a2c1, 25dfc02, 7829c9b + v33 (810e161).
+- Phase B-4 (schema changes; the user approved exactly three migrations):
+  - Task 1 @ 624aa78 — source archive (migration 0056: sources.archived_at,
+    archive_reason); POST /sources/{id}/archive and /unarchive; include_archived
+    on /sources, /sources/overview, export.csv. test_source_archive.py (5).
+  - Task 2 @ d89f64b — evidence kind (migration 0057: evidence.kind enum);
+    GET /knowledge/{id}/evidence-by-kind (one grouped query, counts only);
+    new row V5-evidence-kind-autoclassify OPEN. test_evidence_kind.py (3).
+  - Task 3 — admin trash (migration 0058): built, NOT committed (see §5).
+- Architecture doc: docs/ARCHITECTURE.md @ 8d28ce9 (replaces the stub in
+  place; Windows is case-insensitive), §3 tenancy correction @ 49b02af.
+- Register correction @ aef4be6: A3 narrowed (migration 0010 only converted
+  the products chain); V5-tenant-isolation-composite-fk added OPEN (the
+  knowledge chain is on single-column FKs, checked against the live schema
+  at 0058; organization enforced only in the query layer; no current bug).
 
 ## 5. In progress — next step
+
+### CURRENT (v35) — Phase B-4 Task 3 held for the security audit
+
+Phase B-4 Task 3 (Admin Trash, migration 0058) is BUILT and TESTED but NOT
+COMMITTED. 16 uncommitted files:
+- cloud-core/app/api/v1/admin.py, users.py
+- cloud-core/app/models/user.py, schemas/user.py
+- cloud-core/app/security/dependencies.py
+- cloud-core/app/services/auth_service.py, auth_session_service.py,
+  login_code_service.py, user_service.py
+- docs/ai-context/DEBT_REGISTER.md (Task 3 changes only: V5-admin-trash
+  CLOSED, V5-admin-trash-sample added OPEN)
+- visual-harness/check-persian.js, e2e/admin.js, i18n-glossary.md, index.html
+- cloud-core/migrations/versions/0058_user_soft_delete.py (new)
+- cloud-core/tests/test_admin_trash.py (new)
+Commit subject when cleared: "feat(admin): user soft delete, restore, and
+purge (migration 0058)".
+
+Task 3 status:
+- test_admin_trash.py 5/5 pass (all 5 fail before the fix).
+- auth/users/sessions/login-code/signup/platform-admin/tenant-isolation:
+  155 pass.
+- Migration 0058 upgrade/downgrade/upgrade clean on a fresh DB.
+- Harness gate green (check-persian, i18n-coverage, source chars, 28
+  browser suites).
+- NOT committed because the security audit (of HEAD 624aa78, read-only,
+  source-only; output in ~/security-audit-skill/02-core-tool-full-repo/run-1)
+  has 14 UNVALIDATED candidate findings, 3 touching auth or identity:
+  * login-code-unauthenticated-account-lockout
+  * admin-created-user-unverified-email-prehijack (in users.py / admin.py /
+    user_service.py — the files Task 3 changes)
+  * cloud-core/app/security/machine_identity.py:resolve_machine_identity:pre-auth-bcrypt-unthrottled
+- Task 3 waits until these are validated and either dismissed or fixed.
+  User rule: a confirmed Critical/High [AUTH] finding pauses Phase B-4 (do
+  NOT commit Task 3); Low/Medium becomes a new debt row and B-4 continues.
+
+Security audit status at handoff (from a coverage-critic sub-agent):
+- 14 candidates, unvalidated, no severity yet; validation phase running
+  (coordinator agent a4d1aa01392e92f0a; after a rate limit resume it with
+  SendMessage, never relaunch).
+- 4 new areas proposed for follow-up: WordPress post-mapping authority,
+  shared-provider spend, Mathpix spend on editor-triggered reprocessing,
+  archiving a site does not revoke its WordPress machine credentials.
+- Composite-FK gap: no current bug in the knowledge chain; the "No current
+  bug" wording on V5-tenant-isolation-composite-fk stands. If the audit
+  reports the gap, reference the finding in that row.
+
+Next action (new chat):
+1. Ask Claude Code: "Is the security audit finished? For each of the 3
+   auth-touching candidates (login-code-unauthenticated-account-lockout,
+   admin-created-user-unverified-email-prehijack,
+   pre-auth-bcrypt-unthrottled), what is the validation status? Dismissed,
+   confirmed (with severity), or still pending?"
+2. Any auth candidate CONFIRMED Critical or High: fix first, do NOT commit
+   Task 3.
+3. All 3 DISMISSED or Low/Medium: commit Task 3, write memory v36, then fix
+   the Low/Medium issues or continue to Phase B-5.
+4. Audit still running: wait or check progress.
+
+Remaining OPEN debts: 54 rows in DEBT_REGISTER.md at aef4be6 (counted as
+rows whose status contains OPEN; includes V5-tenant-isolation-composite-fk).
+Task 3 keeps it at 54 (closes V5-admin-trash, adds V5-admin-trash-sample).
+Next planned after Task 3: Phase B-5 (schema changes, each approved first:
+V5-gap-history, V5-signup-terms-record, V5-admin-user-actions, V5-ai-prompts).
+
+### Earlier notes
 
 - Step 8 (Knowledge tools) is DONE (see §4).
 - Step 9 (AI) is 100% complete: 9A-9F done (see §4).
@@ -726,8 +803,8 @@ file from scratch (do not diff). Output only the file content.
   table for owner review first), and V5-source-detail-tab-history (needs a
   decision on who may read audit logs) and -tab-artifacts (needs a
   source-level artifacts endpoint).
-- Next up: Phase B-4 (debts that need a schema change, each approved by the
-  user first) or the two runtime-Persian steps above. Deferred: the real-key test (scripts/start-real-e2e.ps1) and
+- Phase B-4 is in progress (v35): Tasks 1 and 2 committed, Task 3 held
+  (see CURRENT above). Still to do: the two runtime-Persian steps above. Deferred: the real-key test (scripts/start-real-e2e.ps1) and
   Phase C, the Windows installer (blocked until the MSVC Build Tools and
   Windows SDK are installed: cargo cannot link without them). The real-key
   test is missing, on 2026-11-02: the four variables (ANTHROPIC_API_KEY, AI_CREDENTIAL_KEY,
@@ -756,10 +833,11 @@ file from scratch (do not diff). Output only the file content.
 
 ## 6. Next action
 
-State in sync → user says "go" → ask the user which phase comes next (Steps 5–14 are complete).
+State in sync → follow §5 CURRENT "Next action": get the validation status of the 3
+auth-touching audit candidates before committing Phase B-4 Task 3.
 
 Case A — anchor mismatch (STATE DRIFT): stop, report, wait.
-Case B — user says "go": ask the user which phase comes next (Steps 5–14 are complete).
+Case B — user says "go": §5 CURRENT step 1 (audit status), then steps 2-4.
 Case C — anything CI-red: paste log, fix before any new work.
 
 ## 7. Open decisions (blocking)
@@ -873,6 +951,11 @@ Case C — anything CI-red: paste log, fix before any new work.
   (b48df8a, 44796d1, 997e43a, 43d959e, a664f8b, 6f25ae4, a82ea59) and 2
   register corrections (b330404, 9343221); 13 rows CLOSED, 54 OPEN. Next:
   Phase B-4 (schema) or the runtime-Persian steps.
+- v35 @ d89f64b — Phase A, Phase B, Phase B-4 Task 1/2 committed (624aa78,
+  d89f64b). Task 3 built and uncommitted (held for audit). Security audit
+  has 14 unvalidated candidates, 3 touching auth. Architecture doc added and
+  corrected (8d28ce9, 49b02af). A3 corrected + V5-tenant-isolation-composite-fk
+  added (aef4be6). Handoff to new chat.
 
 ## 10. Historical context (from two prior sessions)
 
